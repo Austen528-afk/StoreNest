@@ -24,6 +24,15 @@ Create a hybrid storefront and marketplace where independent small businesses ca
 - Moderate listings and support users.
 - Establish role-based authorization, per-business isolation, and audit records before launching real orders.
 
+## Current implementation
+
+- Supabase email/password authentication with persistent sessions and logout
+- Owner-only business profiles, categories and catalogue items, protected by Row Level Security
+- First-time business setup and business settings
+- Responsive owner dashboard with data-backed catalogue counts and honest empty states
+- Public storefront pages show only published businesses and available catalogue items
+- Orders, bookings, customer records, visit tracking, image uploads and payments remain future work
+
 ## Infrastructure
 
 - Source: GitHub repository `Austen528-afk/StoreNest`

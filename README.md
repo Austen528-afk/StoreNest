@@ -22,18 +22,18 @@ Give every small business a simple online presence to showcase products or servi
 | GitHub | Source control |
 | Vercel | Web storefront, marketplace and business dashboards |
 | Cloudflare R2 | Business-uploaded images and media (bucket: `storenest-media`) |
-| Database and authentication | To be selected before implementation |
+| Database and authentication | Supabase project `cypbjzbagezdelmemuhb` |
 | Payments | To be evaluated before enabling real transactions |
 
 ## Status
 
-Initial project bootstrap. This repository contains an informational landing page; no live payments, fulfilment or customer accounts exist yet.
+StoreNest now includes Supabase business-owner authentication, a private business dashboard, first-time business setup, owner-scoped product and service management, and public storefront pages. Orders, bookings, customer accounts, image storage and visit analytics are not implemented. No live payments are enabled.
 
 ## Development principles
 
 1. Build a useful standalone storefront first.
 2. Keep each business's private dashboard separate from public customer pages.
-3. Require authenticated access and tenant-level data separation for business operations.
+3. Require authenticated access and tenant-level data separation for business operations. Business, category and catalogue tables use Row Level Security policies.
 4. Validate each workflow before expanding to marketplace discovery and monetisation.
 5. Keep API secrets out of the repository.
 
