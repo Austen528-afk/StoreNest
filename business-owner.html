@@ -237,6 +237,7 @@ html,body{background:#f8faf9;color:#192622}
 #itemModal .message.error{color:#983e39}
 .brand-preview{display:flex;align-items:center;gap:12px;margin:9px 0;flex-wrap:wrap}.brand-preview img{width:140px;height:95px;object-fit:cover;border-radius:11px;border:1px solid #d2dfd6;background:#eef4f0}.brand-preview #builderLogoPreview{width:88px;height:88px;border-radius:50%}
 .owner-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:12px}.owner-gallery-tile{background:#eff5f1;border:1px solid #d5e1d9;border-radius:12px;overflow:hidden}.owner-gallery-tile img{height:110px;width:100%;object-fit:cover}.owner-gallery-actions{display:flex;align-items:center;justify-content:space-between;gap:3px;padding:5px}.owner-gallery-actions span{font-size:10px;color:#3d5649;font-weight:700}.owner-gallery-actions button{background:#fff;color:#19382d;border:1px solid #d6e4db;border-radius:6px;min-width:24px;height:25px;cursor:pointer}.owner-gallery-actions button:disabled{opacity:.3;cursor:default}
+.business-switcher{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 0}.business-switcher label{color:#70877b;font-size:11px;font-weight:700}.business-switcher select{background:#fff;color:#1a3326;border:1px solid #cbdcd2;border-radius:10px;padding:10px;max-width:240px;min-width:140px}.business-switcher .outline-button{padding:10px 13px;font-size:12px;white-space:nowrap}@media(max-width:600px){.business-switcher{width:100%}.business-switcher select{flex:1;min-width:120px}}
 </style>
 </head>
 <body>
@@ -311,7 +312,7 @@ html,body{background:#f8faf9;color:#192622}
 <div class="message" role="status" aria-live="polite" hidden></div>
 </form>
 <div class="auth-view" data-view="account" hidden>
-  <div class="dashboard-head"><div><span class="eyebrow">BUSINESS WORKSPACE</span><h2 id="businessTitle">Your business</h2><p class="sub" id="dashboardWelcome">Here’s your business at a glance.</p></div><div class="head-actions"><button type="button" class="icon-button" id="notificationsButton" aria-label="Notifications">♧</button><button type="button" class="avatar" id="profileButton" aria-label="Business profile">SN</button></div></div>
+  <div class="dashboard-head"><div><span class="eyebrow">BUSINESS WORKSPACE</span><h2 id="businessTitle">Your business</h2><div class="business-switcher"><label for="businessSelect">Current business</label><select id="businessSelect" aria-label="Select business"></select><button type="button" id="createBusinessButton" class="outline-button">+ Create business</button></div><p class="sub" id="dashboardWelcome">Here’s your business at a glance.</p></div><div class="head-actions"><button type="button" class="icon-button" id="notificationsButton" aria-label="Notifications">♧</button><button type="button" class="avatar" id="profileButton" aria-label="Business profile">SN</button></div></div>
   <div class="dashboard-layout">
     <aside class="sidebar" id="dashboardSidebar"><div class="side-label">WORKSPACE</div><button class="side-link active" data-section="overview"><span>◫</span> Overview</button><button class="side-link" data-section="storefront"><span>⌂</span> My Storefront</button><button class="side-link" data-section="items"><span>▦</span> Products &amp; Services</button><div class="side-label side-label-spaced">MANAGE</div><button class="side-link" data-section="orders"><span>▤</span> Orders <small>0</small></button><button class="side-link" data-section="bookings"><span>▣</span> Bookings <small>0</small></button><button class="side-link" data-section="customers"><span>♙</span> Customers</button><button class="side-link" data-section="analytics"><span>⌁</span> Analytics</button><button class="side-link" data-section="settings"><span>⚙</span> Business Settings</button><div class="side-spacer"></div><button class="side-link signout" id="logoutButton"><span>↪</span> Sign out</button></aside>
     <div class="mobile-nav-wrap"><button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-expanded="false">☰ <span id="mobileNavLabel">Overview</span><span class="chevron">⌄</span></button><div id="mobileNavList" class="mobile-nav-list" hidden></div></div>
@@ -351,7 +352,7 @@ html,body{background:#f8faf9;color:#192622}
 "use strict";
 /* StoreNest dashboard: browser key is publishable; never place a service-role key here. */
 const STORE_AUTH={url:"https://cypbjzbagezdelmemuhb.supabase.co",publishableKey:"sb_publishable_8W8zyYtggQMWoFlnxrzoVA_BUKjQ9va"};
-let authClient=null, signingIn=false, recovering=false, activeView="start", currentUser=null, currentBusiness=null, businessItems=[], businessCategories=[], selectedFilter="all", itemQuery="", selectedLogoFile=null, storefrontDraft=null;
+let authClient=null, signingIn=false, recovering=false, activeView="start", currentUser=null, currentBusiness=null, ownerBusinesses=[], switchingBusiness=false, businessItems=[], businessCategories=[], selectedFilter="all", itemQuery="", selectedLogoFile=null, storefrontDraft=null;
 const $=id=>document.getElementById(id);
 const authViews=[...document.querySelectorAll("[data-view]")];
 const menuToggle=$("menuToggle"),siteMenu=$("siteMenu"),menuContainer=$("menuContainer");
@@ -362,7 +363,7 @@ function clearMessages(){document.querySelectorAll(".message").forEach(el=>{el.h
 function showMessage(view,message,type="error") {const el=document.querySelector('[data-view="'+view+'"] .message');if(!el)return;el.textContent=message;el.classList.remove("error","success");el.classList.add(type);el.hidden=false}
 function showView(view){if(!["start","register","login","forgot","new-password","account"].includes(view))view="start";activeView=view;clearMessages();authViews.forEach(el=>{el.hidden=el.dataset.view!==view});const panel=$("accountPanel");panel.classList.toggle("dashboard-mode",view==="account");panel.scrollTop=0;setMenuOpen(false)}
 function isConfigured(){return /^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(STORE_AUTH.url)&&/^(sb_publishable_|eyJ)/.test(STORE_AUTH.publishableKey)}
-async function loadAuth(){if(!isConfigured())throw new Error("StoreNest account registration is not connected yet.");if(authClient)return authClient;if(!window.supabase)await new Promise((resolve,reject)=>{const script=document.createElement("script");script.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0";script.onload=resolve;script.onerror=()=>reject(new Error("Unable to load the sign-in service. Check your internet connection."));document.head.appendChild(script)});if(!window.supabase)throw new Error("The sign-in service could not be loaded.");authClient=window.supabase.createClient(STORE_AUTH.url,STORE_AUTH.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});authClient.auth.onAuthStateChange((event,session)=>{if(event==="PASSWORD_RECOVERY"){recovering=true;showView("new-password");return}if(event==="SIGNED_OUT"){recovering=false;currentUser=null;currentBusiness=null;showView("login");return}if(event==="SIGNED_IN"&&!recovering&&!signingIn&&session?.user)activateDashboard(session.user).catch(error=>showToast(friendlyError(error),true))});return authClient}
+async function loadAuth(){if(!isConfigured())throw new Error("StoreNest account registration is not connected yet.");if(authClient)return authClient;if(!window.supabase)await new Promise((resolve,reject)=>{const script=document.createElement("script");script.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0";script.onload=resolve;script.onerror=()=>reject(new Error("Unable to load the sign-in service. Check your internet connection."));document.head.appendChild(script)});if(!window.supabase)throw new Error("The sign-in service could not be loaded.");authClient=window.supabase.createClient(STORE_AUTH.url,STORE_AUTH.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});authClient.auth.onAuthStateChange((event,session)=>{if(event==="PASSWORD_RECOVERY"){recovering=true;showView("new-password");return}if(event==="SIGNED_OUT"){recovering=false;currentUser=null;currentBusiness=null;ownerBusinesses=[];showView("login");return}if(event==="SIGNED_IN"&&!recovering&&!signingIn&&session?.user)activateDashboard(session.user).catch(error=>showToast(friendlyError(error),true))});return authClient}
 async function upsertOwnerProfile(client,user,fallbackName=""){if(!user?.id)return;const fullName=String(user.user_metadata?.full_name||fallbackName).trim().slice(0,100);if(fullName.length<2)return;const {error}=await client.from("business_owner_profiles").upsert({user_id:user.id,full_name:fullName,updated_at:new Date().toISOString()},{onConflict:"user_id"});if(error)console.warn("StoreNest profile sync failed:",error.message)}
 function friendlyError(error){if(!error)return"Something went wrong. Please try again.";if(/invalid login credentials/i.test(error.message))return"Incorrect email address or password.";if(/email not confirmed/i.test(error.message))return"Please verify your email address, then try logging in.";if(/rate limit|over_email_send_rate_limit/i.test(error.message))return"Too many attempts. Please try again later.";if(/row-level security|permission denied/i.test(error.message))return"StoreNest could not save that change. Check your account access and try again.";return error.message||"Something went wrong. Please try again."}
 function busy(form,state){const button=form.querySelector('button[type="submit"]');if(!button)return;if(state){button.dataset.original=button.textContent;button.textContent="Please wait…";button.disabled=true}else{button.textContent=button.dataset.original||button.textContent;button.disabled=false}}
@@ -373,10 +374,57 @@ function openModal(id){const el=$(id);if(el){el.hidden=false;document.body.style
 function closeModal(el){if(!el)return;el.hidden=true;if(!document.querySelector(".modal-backdrop:not([hidden])"))document.body.style.overflow=""}
 function profileToForm(prefix,b){const map={Name:"name",Category:"category",Description:"description",Location:"location",Phone:"phone",Email:"email",Website:"website",Hours:"hours"};for(const [suffix,key] of Object.entries(map)){const field=$(prefix+suffix);if(field)field.value=key==="hours"?(b?.operating_hours?.summary||""):(b?.[key]||"")}}
 function el(id){return $(id)}
-function applyBusiness(b){currentBusiness=b;$("businessTitle").textContent=b?.name||"Your business";$("dashboardWelcome").textContent=b?.name?"Here’s your business at a glance.":"Create your business profile to start building your storefront.";$("setupBanner").hidden=isProfileComplete(b);$("storePreviewName").textContent=b?.name||"Your business name";$("storePreviewCategory").textContent=b?.category||"Choose a category";const initials=(b?.name||"SN").split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join("").toUpperCase()||"SN";for(const id of ["storeLogoPreview","settingsLogoPreview"]){const el=$(id);el.replaceChildren();if(b?.logo_url){const img=document.createElement("img");img.src=b.logo_url;img.alt="Logo";img.style.cssText="width:100%;height:100%;object-fit:cover;border-radius:inherit";el.append(img)}else el.textContent=initials;}$("businessName").value=b?.name||"";$("businessCategory").value=b?.category||"";$("businessDescription").value=b?.description||"";$("businessLocation").value=b?.location||"";$("businessPhone").value=b?.phone||"";$("businessEmail").value=b?.email||"";$("businessWebsite").value=b?.website||"";$("businessHours").value=b?.operating_hours?.summary||"";const slug=b?.slug||slugify(b?.name||"");$("storeUrlText").textContent=location.origin+"/storefront.html?slug="+encodeURIComponent(slug);$("storeStatus").textContent=b?.is_published?"Published":"Draft";$("storeStatusHint").textContent=b?.is_published?"Your storefront is public":"Visible only to you";$("publishButton").textContent=b?.is_published?"Unpublish storefront":"Publish storefront";$("publishButton").disabled=!isProfileComplete(b);$("publishHint").textContent=isProfileComplete(b)?(b.is_published?"Your published storefront is visible to customers.":"Publish when your profile and catalogue are ready."):"Complete your business profile before publishing.";$("previewStoreButton").disabled=!b?.is_published}
-async function ensureBusiness(client,user){let {data,error}=await client.from("businesses").select("*").eq("owner_id",user.id).maybeSingle();if(error)throw error;if(data)return data;const name=String(user.user_metadata?.full_name||"").trim();const payload={owner_id:user.id,name:"",slug:"owner-"+user.id.replace(/-/g,"").slice(0,16),category:"",description:"",is_published:false};const result=await client.from("businesses").insert(payload).select("*").single();if(result.error)throw result.error;return result.data}
+function applyBusiness(b){currentBusiness=b;const existingIndex=ownerBusinesses.findIndex(x=>x.id===b?.id);if(existingIndex>=0)ownerBusinesses[existingIndex]=b;renderBusinessSelector();$("businessTitle").textContent=b?.name||"Your business";$("dashboardWelcome").textContent=b?.name?"Here’s your business at a glance.":"Create your business profile to start building your storefront.";$("setupBanner").hidden=isProfileComplete(b);$("storePreviewName").textContent=b?.name||"Your business name";$("storePreviewCategory").textContent=b?.category||"Choose a category";const initials=(b?.name||"SN").split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join("").toUpperCase()||"SN";for(const id of ["storeLogoPreview","settingsLogoPreview"]){const el=$(id);el.replaceChildren();if(b?.logo_url){const img=document.createElement("img");img.src=b.logo_url;img.alt="Logo";img.style.cssText="width:100%;height:100%;object-fit:cover;border-radius:inherit";el.append(img)}else el.textContent=initials;}$("businessName").value=b?.name||"";$("businessCategory").value=b?.category||"";$("businessDescription").value=b?.description||"";$("businessLocation").value=b?.location||"";$("businessPhone").value=b?.phone||"";$("businessEmail").value=b?.email||"";$("businessWebsite").value=b?.website||"";$("businessHours").value=b?.operating_hours?.summary||"";const slug=b?.slug||slugify(b?.name||"");$("storeUrlText").textContent=location.origin+"/storefront.html?slug="+encodeURIComponent(slug);$("storeStatus").textContent=b?.is_published?"Published":"Draft";$("storeStatusHint").textContent=b?.is_published?"Your storefront is public":"Visible only to you";$("publishButton").textContent=b?.is_published?"Unpublish storefront":"Publish storefront";$("publishButton").disabled=!isProfileComplete(b);$("publishHint").textContent=isProfileComplete(b)?(b.is_published?"Your published storefront is visible to customers.":"Publish when your profile and catalogue are ready."):"Complete your business profile before publishing.";$("previewStoreButton").disabled=!b?.is_published}
+function ownerBusinessKey(user){return "storenest-active-business:"+user.id}
+function renderBusinessSelector(){
+ const select=$("businessSelect");select.replaceChildren();
+ for(const b of ownerBusinesses){select.add(new Option(b.name?.trim()||"New business",b.id))}
+ select.value=currentBusiness?.id||"";
+}
+async function fetchOwnerBusinesses(client){
+ const {data,error}=await client.from("businesses").select("*").eq("owner_id",currentUser.id).order("created_at",{ascending:true});
+ if(error)throw error;ownerBusinesses=data||[];return ownerBusinesses;
+}
+async function ensureBusiness(client,user){
+ currentUser=user;await fetchOwnerBusinesses(client);
+ if(!ownerBusinesses.length){
+  const data=await createBusinessRecord(client);
+  ownerBusinesses=[data];
+ }
+ let savedId="";
+ try{savedId=localStorage.getItem(ownerBusinessKey(user))||""}catch{}
+ return ownerBusinesses.find(b=>b.id===savedId)||ownerBusinesses[0];
+}
+async function createBusinessRecord(client){
+ const payload={owner_id:currentUser.id,name:"",slug:"owner-"+crypto.randomUUID().replace(/-/g,"").slice(0,24),category:"",description:"",is_published:false};
+ const {data,error}=await client.from("businesses").insert(payload).select("*").single();if(error)throw error;return data;
+}
+async function chooseBusiness(id){
+ if(switchingBusiness||currentBusiness?.id===id)return;
+ const found=ownerBusinesses.find(b=>b.id===id);if(!found)return;
+ switchingBusiness=true;$("businessSelect").disabled=true;$("createBusinessButton").disabled=true;
+ try{
+  applyBusiness(found);
+  businessItems=[];businessCategories=[];storefrontDraft=null;renderItems();renderCategories();updateStats();
+  await loadBusinessData();await loadStorefrontDraft();
+  try{localStorage.setItem(ownerBusinessKey(currentUser),found.id)}catch{}
+  setDashboardSection("overview");
+ }catch(error){showToast(friendlyError(error),true)}
+ finally{switchingBusiness=false;$("businessSelect").disabled=false;$("createBusinessButton").disabled=false;renderBusinessSelector()}
+}
+$("businessSelect").addEventListener("change",event=>chooseBusiness(event.target.value));
+$("createBusinessButton").addEventListener("click",async()=>{
+ if(switchingBusiness||!currentUser)return;
+ const button=$("createBusinessButton");button.disabled=true;
+ try{
+  const client=await loadAuth(),business=await createBusinessRecord(client);
+  ownerBusinesses.push(business);await chooseBusiness(business.id);
+  openModal("profileModal");showToast("New business created. Complete its profile.");
+ }catch(error){showToast(friendlyError(error),true)}
+ finally{button.disabled=false}
+});
 async function loadBusinessData(){const client=await loadAuth();const [{data:items,error:itemsError},{data:categories,error:categoriesError}]=await Promise.all([client.from("business_items").select("*").eq("business_id",currentBusiness.id).order("display_order").order("created_at",{ascending:false}),client.from("business_categories").select("*").eq("business_id",currentBusiness.id).order("name")]);if(itemsError)throw itemsError;if(categoriesError)throw categoriesError;businessItems=items||[];businessCategories=categories||[];renderItems();renderCategories();updateStats()}
-async function activateDashboard(user){currentUser=user;const client=await loadAuth();const business=await ensureBusiness(client,user);applyBusiness(business);showView("account");await loadBusinessData();await loadStorefrontDraft().catch(error=>builderStatus(friendlyError(error)));if(!isProfileComplete(business))setTimeout(()=>openModal("profileModal"),140)}
+async function activateDashboard(user){currentUser=user;const client=await loadAuth();const business=await ensureBusiness(client,user);applyBusiness(business);renderBusinessSelector();showView("account");await loadBusinessData();await loadStorefrontDraft().catch(error=>builderStatus(friendlyError(error)));if(!isProfileComplete(business))setTimeout(()=>openModal("profileModal"),140)}
 
 
 const BRAND_BUCKET="storenest-brand-media",BRAND_MIME={"image/jpeg":"jpg","image/png":"png","image/webp":"webp","image/gif":"gif"};
