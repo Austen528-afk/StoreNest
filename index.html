@@ -3,7 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#151d25">
+<meta name="theme-color" content="#10171d">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="StoreNest">
 <meta name="description" content="StoreNest brings small businesses and customers together through shareable online storefronts.">
 <title>StoreNest — Your business. Your storefront.</title>
 <style>
@@ -63,13 +68,15 @@ p{color:#afbdc9;line-height:1.5;font-size:clamp(12px,min(1.7vw,2.5dvh),19px);max
   .card h2{font-size:10px;margin:2px 0}
   .card p{font-size:9px;line-height:1.15}
 }
+
+.install-btn{background:#60d6bd;color:#10171d;border:0;border-radius:999px;font-weight:800;padding:10px 15px;cursor:pointer;font-family:inherit;font-size:12px;display:none}.install-btn.visible{display:inline-block}.top-actions{display:flex;align-items:center;gap:10px}.install-hint{font-size:11px;color:#a4b8c4;margin-top:14px;display:none}.install-hint.visible{display:block}@media(max-width:430px){.install-btn{padding:8px 10px;font-size:10px}.top-actions{gap:5px}}
 </style>
 </head>
 <body>
 <div class="wrap">
-<header class="top"><div class="logo">store<span>nest.</span></div><div class="label">IN DEVELOPMENT</div></header>
+<header class="top"><div class="logo">store<span>nest.</span></div><div class="top-actions"><button class="install-btn" id="installBtn" type="button">Install app</button><div class="label">IN DEVELOPMENT</div></div></header>
 <main>
-<section class="hero"><div class="pill">A new home for independent business</div><h1>Your business.<br><em>Your storefront.</em></h1><p>StoreNest is building a simple way for local shops and service providers to showcase their offerings, share a storefront link, connect with customers, and manage their business online.</p></section>
+<section class="hero"><div class="pill">A new home for independent business</div><h1>Your business.<br><em>Your storefront.</em></h1><p>StoreNest is building a simple way for local shops and service providers to showcase their offerings, share a storefront link, connect with customers, and manage their business online.</p><p class="install-hint" id="installHint" role="status"></p></section>
 <section class="cards" aria-label="Planned platform features">
 <article class="card"><div class="emoji" aria-hidden="true">🏬</div><h2>Personal storefronts</h2><p>Your own branded digital home with products, services and a shareable link.</p></article>
 <article class="card"><div class="emoji" aria-hidden="true">🛍️</div><h2>Orders & bookings</h2><p>Give customers an easier way to shop, request services and make bookings.</p></article>
@@ -77,4 +84,12 @@ p{color:#afbdc9;line-height:1.5;font-size:clamp(12px,min(1.7vw,2.5dvh),19px);max
 </section>
 </main>
 <footer class="footer"><span>StoreNest · Building the future of local commerce</span><span>Early project preview · No live orders or payments</span></footer>
-</div></body></html>
+</div><script>
+if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("/sw.js").catch(()=>{})})}
+let installPrompt=null;const installBtn=document.getElementById("installBtn");const installHint=document.getElementById("installHint");
+function showHint(message){installHint.textContent=message;installHint.classList.add("visible")}
+window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();installPrompt=event;installBtn.classList.add("visible")});
+installBtn.addEventListener("click",async()=>{if(!installPrompt){showHint("Use your browser menu to install or add StoreNest to your home screen.");return}const prompt=installPrompt;installPrompt=null;installBtn.classList.remove("visible");await prompt.prompt();const result=await prompt.userChoice;if(result.outcome!=="accepted")showHint("You can install StoreNest later from your browser menu.")});
+window.addEventListener("appinstalled",()=>{installBtn.classList.remove("visible");showHint("StoreNest is installed.")});
+if(/iPhone|iPad|iPod/.test(navigator.userAgent)&&!window.navigator.standalone){showHint("On iPhone: open Share, then choose Add to Home Screen to install StoreNest.")}
+</script></body></html>

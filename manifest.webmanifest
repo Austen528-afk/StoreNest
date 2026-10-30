@@ -1,0 +1,25 @@
+{
+  "id": "/",
+  "name": "StoreNest",
+  "short_name": "StoreNest",
+  "description": "StoreNest — Your business. Your storefront.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#10171d",
+  "theme_color": "#10171d",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
