@@ -143,6 +143,17 @@ async function load(){
    const catalog=await client.from("business_items").select("id,name,item_type,description,price,image_url").eq("business_id",business.id).eq("is_available",true).order("display_order").order("created_at",{ascending:false});
    if(catalog.error)throw catalog.error;
    availableItems=catalog.data||[];
+   // Remember genuine storefront visits for this device only.
+   try{
+     const key="storenest:recent-businesses:v1";
+     const slugText=String(business.slug||"");
+     if(/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slugText)){
+       const previous=JSON.parse(localStorage.getItem(key)||"[]");
+       const record={slug:slugText,name:String(business.name||"").slice(0,120),category:String(business.category||"").slice(0,100),location:String(business.location||"").slice(0,120),logo_url:/^https:\/\//i.test(business.logo_url||"")?String(business.logo_url).slice(0,1024):""};
+       const next=[record,...(Array.isArray(previous)?previous:[]).filter(item=>item&&item.slug!==slugText)].slice(0,8);
+       localStorage.setItem(key,JSON.stringify(next));
+     }
+   }catch(error){console.warn("Recent storefront history unavailable",error)}
    document.title=business.name+" — StoreNest";
    const cfg=business.storefront_config||{};
    const accent=/^#[0-9a-f]{6}$/i.test(cfg.accent||"")?cfg.accent:"#e6a15e";
