@@ -5,10 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#10171d">
 <link rel="manifest" href="/manifest.webmanifest">
-<link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="StoreNest">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
 <meta name="description" content="StoreNest brings small businesses and customers together through shareable online storefronts.">
 <title>StoreNest — Your business. Your storefront.</title>
 <style>
@@ -95,10 +96,11 @@ p{color:#afbdc9;line-height:1.5;font-size:clamp(12px,min(1.7vw,2.5dvh),19px);max
 </div><script>
 if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("/sw.js").catch(()=>{})})}
 let installPrompt=null;const installBtn=document.getElementById("installBtn");const installHint=document.getElementById("installHint");
-function showHint(message){if(!installHint)return;installHint.textContent=message;installHint.classList.add("visible")}
+function showHint(message){if(installHint){installHint.textContent=message;installHint.classList.add("visible")}else{window.alert(message)}}
 window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();installPrompt=event;installBtn.classList.add("visible")});
-installBtn.addEventListener("click",async()=>{if(!installPrompt){showHint("Use your browser menu to install or add StoreNest to your home screen.");return}const prompt=installPrompt;installPrompt=null;installBtn.classList.remove("visible");await prompt.prompt();const result=await prompt.userChoice;if(result.outcome!=="accepted")showHint("You can install StoreNest later from your browser menu.")});
+installBtn.addEventListener("click",async()=>{if(!installPrompt){showHint("To install on Samsung: open this site in Samsung Internet or Chrome, tap the browser menu, then choose Add page to / Add to Home screen or Install app.");return}const prompt=installPrompt;installPrompt=null;installBtn.classList.remove("visible");await prompt.prompt();const result=await prompt.userChoice;if(result.outcome!=="accepted")showHint("You can install StoreNest later from your browser menu.")});
 window.addEventListener("appinstalled",()=>{installBtn.classList.remove("visible");showHint("StoreNest is installed.")});
+if(/Android/i.test(navigator.userAgent)){installBtn.classList.add("visible");installBtn.textContent="Install app"}
 if(/iPhone|iPad|iPod/.test(navigator.userAgent)&&!window.navigator.standalone){showHint("On iPhone: open Share, then choose Add to Home Screen to install StoreNest.")}
 
 const menuContainer=document.getElementById("menuContainer");
