@@ -21,10 +21,13 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: Ensure Android SDK 35 is installed
-        run: |
-          echo "Android SDK: ${ANDROID_HOME:-unknown}"
-          sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools'
+
+      - name: Install Android SDK 35
+        run: sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
       - name: Set up Gradle 8.11.1
         uses: gradle/actions/setup-gradle@v4
         with:
