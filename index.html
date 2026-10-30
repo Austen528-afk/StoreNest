@@ -138,15 +138,20 @@ html,body{background:#f8faf9;color:#182321}
 .clear-recent:hover{background:#ecf5f0;color:#1a5944}
 .clear-recent:focus-visible{outline:2px solid #31ac8e;outline-offset:2px}
 .recent-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-.recent-card{display:flex;min-width:0;align-items:center;gap:13px;padding:18px 15px;background:#fff;border:1px solid #dae6df;border-radius:16px;text-decoration:none;transition:background .15s,border-color .15s,transform .15s}
-.recent-card:hover{background:#f1f9f4;border-color:#83cdb5;transform:translateY(-1px)}
-.recent-card:focus-visible{outline:2px solid #31ac8e;outline-offset:2px}
+.recent-entry{display:flex;min-width:0;align-items:stretch;position:relative;background:#fff;border:1px solid #dae6df;border-radius:16px;transition:background .15s,border-color .15s,transform .15s}
+.recent-card{display:flex;min-width:0;flex:1;align-items:center;gap:13px;padding:18px 10px 18px 15px;text-decoration:none}
+.recent-entry:hover{background:#f1f9f4;border-color:#83cdb5;transform:translateY(-1px)}
+.recent-remove{align-self:flex-start;flex:0 0 32px;width:32px;height:32px;margin:9px 9px 0 0;border:1px solid #d9e6de;border-radius:50%;background:#f5f8f6;color:#6d8076;font-size:19px;line-height:1;display:grid;place-items:center;cursor:pointer}
+.recent-remove:hover{background:#ffe8e6;border-color:#f2bcba;color:#b43a35}
+.recent-remove:focus-visible{outline:2px solid #31ac8e;outline-offset:2px}
+
+.recent-card:focus-visible{outline:2px solid #31ac8e;outline-offset:-2px;border-radius:15px}
 .recent-avatar{width:50px;height:50px;flex:0 0 50px;background:#dff4e9;color:#138e73;border-radius:13px;display:grid;place-items:center;font-size:19px;font-weight:850;overflow:hidden}
 .recent-avatar img{width:100%;height:100%;object-fit:cover}
 .recent-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
 .recent-text strong{font-size:14px;letter-spacing:-.02em;color:#1a2c24;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .recent-text small{font-size:11px;color:#7b8981;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.recent-go{font-size:18px;color:#2eaa8b}
+.recent-go{font-size:18px;color:#2eaa8b;flex:0 0 auto}
 .recent-empty{grid-column:1/-1;border:1px dashed #dce8df;background:#ffffffab;border-radius:15px;padding:28px 18px;color:#819289;font-size:13px;line-height:1.5}
 @media(max-width:810px){.recent-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:490px){.recent-grid{grid-template-columns:minmax(0,1fr);gap:9px}.recent-card{padding:13px 14px}.recent-avatar{width:43px;height:43px;flex-basis:43px}.recent-heading{margin-bottom:13px}.recent-heading p{font-size:11px}.clear-recent{padding:8px;font-size:10px}.recent-businesses{padding-top:20px}}
@@ -168,7 +173,7 @@ html,body{background:#f8faf9;color:#182321}
     <div class="recent-heading">
       <div>
         <h2 id="recentHeading">Recently searched businesses</h2>
-        <p>Quickly return to stores you’ve opened before.</p>
+        <p>Your saved business history stays here until you remove it.</p>
       </div>
       <button id="clearRecentBusinesses" class="clear-recent" type="button" hidden>Clear history</button>
     </div>
@@ -207,16 +212,16 @@ function safeBusiness(b){
 function recentBusinessList(){
   try{
     const raw=JSON.parse(localStorage.getItem(RECENT_BUSINESSES_KEY)||"[]");
-    return Array.isArray(raw)?raw.map(safeBusiness).filter(Boolean).slice(0,8):[];
+    return Array.isArray(raw)?raw.map(safeBusiness).filter(Boolean):[];
   }catch{return recentFallback.slice()}
 }
 function storeRecentList(list){
-  recentFallback=list.slice(0,8);
+  recentFallback=list.slice();
   try{localStorage.setItem(RECENT_BUSINESSES_KEY,JSON.stringify(recentFallback))}catch{}
 }
 function rememberBusiness(b){
   const business=safeBusiness(b);if(!business||!business.name)return;
-  storeRecentList([business,...recentBusinessList().filter(other=>other.slug!==business.slug)].slice(0,8));
+  storeRecentList([business,...recentBusinessList().filter(other=>other.slug!==business.slug)]);
   renderRecentBusinesses();
 }
 function businessAvatar(b){
@@ -226,19 +231,28 @@ function businessAvatar(b){
 function renderRecentBusinesses(){
  const rows=recentBusinessList();
  clearRecentButton.hidden=rows.length===0;
- recentGrid.innerHTML=rows.length?rows.map(b=>'<a class="recent-card" href="/storefront.html?slug='+encodeURIComponent(b.slug)+'"><span class="recent-avatar">'+businessAvatar(b)+'</span><span class="recent-text"><strong>'+escapeResult(b.name)+'</strong><small>'+escapeResult([b.category,b.location].filter(Boolean).join(" · ")||"View storefront")+'</small></span><span class="recent-go" aria-hidden="true">→</span></a>').join(""):'<div class="recent-empty">No recent businesses yet. Search for a business and open its storefront to find it here next time.</div>';
+ recentGrid.innerHTML=rows.length?rows.map(b=>'<div class="recent-entry"><a class="recent-card" href="/storefront.html?slug='+encodeURIComponent(b.slug)+'"><span class="recent-avatar">'+businessAvatar(b)+'</span><span class="recent-text"><strong>'+escapeResult(b.name)+'</strong><small>'+escapeResult([b.category,b.location].filter(Boolean).join(" · ")||"View storefront")+'</small></span><span class="recent-go" aria-hidden="true">→</span></a><button type="button" class="recent-remove" data-remove-slug="'+escapeResult(b.slug)+'" aria-label="Remove '+escapeResult(b.name)+' from recent businesses" title="Remove from recent businesses">&times;</button></div>').join(""):'<div class="recent-empty">No recent businesses yet. Search for a business and open its storefront to find it here next time.</div>';
 }
 function setSearchActive(active){
  recentSection.hidden=active;
  resultRoot.hidden=!active;
 }
 clearRecentButton.addEventListener("click",()=>{
+ if(!confirm("Remove all businesses from your recent list?"))return;
  storeRecentList([]);
  renderRecentBusinesses();
 });
 window.addEventListener("pageshow",()=>{if(!storeSearchInput.value.trim())renderRecentBusinesses()});
 window.addEventListener("storage",event=>{if(event.key===RECENT_BUSINESSES_KEY)renderRecentBusinesses()});
 recentGrid.addEventListener("click",event=>{
+ const remove=event.target.closest("button[data-remove-slug]");
+ if(remove){
+   event.preventDefault();
+   event.stopPropagation();
+   storeRecentList(recentBusinessList().filter(b=>b.slug!==remove.dataset.removeSlug));
+   renderRecentBusinesses();
+   return;
+ }
  const link=event.target.closest("a.recent-card");
  if(!link)return;
  const business=recentBusinessList().find(b=>link.getAttribute("href")==="/storefront.html?slug="+encodeURIComponent(b.slug));
@@ -261,19 +275,8 @@ async function getSearchClient(){
  })().catch(error=>{searchClientPromise=null;throw error});
  return searchClientPromise;
 }
-async function refreshRecentBusinesses(){
- const history=recentBusinessList();
- if(!history.length)return;
- try{
-   const client=await getSearchClient();
-   const {data,error}=await client.from("businesses").select("slug,name,category,location,logo_url").eq("is_published",true).in("slug",history.map(b=>b.slug));
-   if(error)throw error;
-   const bySlug=new Map((data||[]).map(b=>[b.slug,b]));
-   storeRecentList(history.map(b=>safeBusiness(bySlug.get(b.slug))).filter(Boolean));
-   if(!storeSearchInput.value.trim())renderRecentBusinesses();
- }catch(error){console.warn("Could not refresh recent StoreNest businesses",error)}
-}
-refreshRecentBusinesses();
+// Keep remembered businesses even when they are temporarily unpublished or unavailable.
+// A business is removed from this device history only by the visitor's remove button.
 async function findBusinesses(query){
  const seq=++searchCounter;
  if(!query){setSearchActive(false);storeSearchStatus.hidden=true;renderRecentBusinesses();return}
