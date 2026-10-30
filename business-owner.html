@@ -6,116 +6,357 @@
 <meta name="theme-color" content="#10171d">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="StoreNest">
-<link rel="apple-touch-icon" href="/icons/icon-192.png">
-<meta name="description" content="StoreNest brings small businesses and customers together through shareable online storefronts.">
+<meta name="description" content="Create a StoreNest business-owner account and build your online storefront.">
 <title>Business Owners — StoreNest</title>
 <style>
 :root{color-scheme:dark;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 *{box-sizing:border-box}
 html,body{width:100%;height:100%;margin:0;overflow:hidden}
 body{height:100vh;height:100dvh;background:#10171d;color:#eff4f7}
+button,input{font:inherit}
+button{cursor:pointer}
 a{color:inherit}
+[hidden]{display:none!important}
 .wrap{width:min(1080px,calc(100% - 40px));height:100%;margin:auto;display:flex;flex-direction:column;min-height:0}
-.top{flex:0 0 clamp(55px,10dvh,84px);display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffffff19}
-.logo{font-weight:900;letter-spacing:-.08em;font-size:clamp(21px,2.6vw,27px)}
+.top{flex:0 0 clamp(54px,10dvh,84px);display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffffff19}
+.logo{font-weight:900;letter-spacing:-.08em;font-size:clamp(22px,2.6vw,27px);text-decoration:none}
 .logo span{color:#60d6bd}
-.label{padding:8px 13px;border:1px solid #ffffff36;border-radius:100px;color:#a4b8c4;font-size:11px;font-weight:700;letter-spacing:.04em}
-main{flex:1;min-height:0;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:clamp(8px,2dvh,20px);padding:clamp(10px,2dvh,22px) 0}
-.hero{min-height:0;max-width:820px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;overflow:hidden}
-h1{font-size:clamp(28px,min(6.5vw,10dvh),88px);line-height:1.04;letter-spacing:-.065em;margin:clamp(8px,2dvh,21px) 0}
-h1 em{font-style:normal;color:#60d6bd}
-p{color:#afbdc9;line-height:1.5;font-size:clamp(12px,min(1.7vw,2.5dvh),19px);max-width:630px;margin:0}
-.pill{color:#60d6bd;font-size:clamp(10px,1vw,12px);font-weight:800;text-transform:uppercase;letter-spacing:.14em}
-.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(8px,1.5vw,17px);margin:0}
-.card{background:#1a252c;border:1px solid #ffffff18;padding:clamp(11px,2vw,24px);border-radius:16px;min-width:0}
-.card .emoji{font-size:clamp(19px,2.2vw,27px)}
-.card h2{font-size:clamp(13px,1.5vw,18px);margin:clamp(8px,1.2dvh,16px) 0 7px}
-.card p{font-size:clamp(11px,1vw,14px);line-height:1.4;color:#adbfca}
-.footer{flex:0 0 clamp(36px,7dvh,55px);border-top:1px solid #ffffff20;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:clamp(10px,.9vw,12px);color:#879da9}
-@media(max-width:690px){
-  .wrap{width:calc(100% - 24px)}
-  .top{flex-basis:54px}
-  .label{font-size:9px;padding:7px 9px}
-  main{gap:8px;padding:10px 0}
-  .hero{justify-content:center}
-  h1{font-size:clamp(28px,min(8.5vw,7.8dvh),43px);margin:9px 0 11px}
-  .hero p{font-size:clamp(11px,2.7vw,13px);line-height:1.4}
-  .pill{font-size:9px;letter-spacing:.09em}
-  .cards{grid-template-columns:1fr;gap:6px}
-  .card{display:grid;grid-template-columns:32px minmax(0,1fr);grid-template-rows:auto auto;column-gap:8px;padding:9px 11px;border-radius:10px}
-  .card .emoji{grid-column:1;grid-row:1/3;font-size:23px;align-self:center}
-  .card h2{grid-column:2;grid-row:1;font-size:12px;margin:0 0 2px}
-  .card p{grid-column:2;grid-row:2;font-size:10.5px;line-height:1.3}
-  .footer{flex-basis:38px;font-size:9px;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px}
-}
-@media(max-height:500px){
-  .top{flex-basis:43px}
-  main{padding:6px 0;gap:6px}
-  .hero h1{font-size:clamp(25px,min(6vw,9dvh),45px);margin:5px 0}
-  .hero p{font-size:11px;line-height:1.3}
-  .pill{font-size:9px}
-  .card{padding:6px 10px}
-  .card h2{margin:2px 0}
-  .card p{font-size:10px;line-height:1.2}
-  .footer{flex-basis:30px;font-size:9px}
-}
-@media(max-width:690px) and (max-height:520px){
-  .cards{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .card{display:block;padding:7px}
-  .card .emoji{font-size:17px}
-  .card h2{font-size:10px;margin:2px 0}
-  .card p{font-size:9px;line-height:1.15}
-}
-
-.install-btn{background:#60d6bd;color:#10171d;border:0;border-radius:999px;font-weight:800;padding:10px 15px;cursor:pointer;font-family:inherit;font-size:12px;display:none}.install-btn.visible{display:inline-block}.top-actions{display:flex;align-items:center;gap:10px}.install-hint{font-size:11px;color:#a4b8c4;margin-top:14px;display:none}.install-hint.visible{display:block}@media(max-width:430px){.install-btn{padding:8px 10px;font-size:10px}.top-actions{gap:5px}}
-
+.top-actions{display:flex;align-items:center;gap:10px}
+.install-btn{background:#60d6bd;color:#10171d;border:0;border-radius:999px;font-weight:800;padding:10px 15px;font-size:12px;display:none}
+.install-btn.visible{display:inline-block}
 .menu-container{position:relative;flex:0 0 auto}
-.menu-toggle{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:46px;height:43px;padding:8px;border:1px solid #ffffff40;border-radius:12px;color:#eff4f7;background:#ffffff08;cursor:pointer}
+.menu-toggle{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:46px;height:43px;padding:8px;border:1px solid #ffffff40;border-radius:12px;color:#eff4f7;background:#ffffff08}
 .menu-toggle span{display:block;width:22px;height:2px;border-radius:2px;background:currentColor;transition:transform .18s ease,opacity .18s ease}
 .menu-toggle[aria-expanded="true"] span:nth-child(1){transform:translateY(7px) rotate(45deg)}
 .menu-toggle[aria-expanded="true"] span:nth-child(2){opacity:0}
 .menu-toggle[aria-expanded="true"] span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
-.menu-toggle:focus-visible,.menu-register:focus-visible{outline:2px solid #60d6bd;outline-offset:3px}
 .site-menu{position:absolute;z-index:20;right:0;top:calc(100% + 10px);width:min(300px,calc(100vw - 28px));padding:10px;background:#1a252c;border:1px solid #ffffff27;border-radius:14px;box-shadow:0 18px 45px #0007}
-.site-menu[hidden],.menu-feedback[hidden]{display:none}
-.menu-register{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px 12px;text-align:left;background:#26343b;border:1px solid #ffffff18;border-radius:9px;color:#eff4f7;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
-.menu-register:hover{background:#30434a}
-.menu-register span{color:#60d6bd;font-size:19px}
-.menu-feedback{margin:10px 4px 2px;color:#adbfca;font-size:12px;line-height:1.45}
-@media(max-width:430px){.menu-toggle{width:42px;height:40px}}
-.logo{text-decoration:none}.menu-register{text-decoration:none}
+.menu-link{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px 12px;text-align:left;background:#26343b;border:1px solid #ffffff18;border-radius:9px;color:#eff4f7;font-size:13px;font-weight:700;text-decoration:none;margin-bottom:6px}
+.menu-link:last-child{margin-bottom:0}
+.menu-link:hover{background:#30434a}
+.menu-link span{color:#60d6bd;font-size:19px}
+.menu-toggle:focus-visible,.menu-link:focus-visible,button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid #60d6bd;outline-offset:3px}
+main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(330px,420px);align-items:center;gap:clamp(22px,5vw,90px);padding:clamp(16px,4dvh,40px) 0}
+.intro{min-width:0;align-self:center}
+.eyebrow{color:#60d6bd;font-size:clamp(10px,1.05vw,13px);font-weight:800;letter-spacing:.13em;text-transform:uppercase}
+h1{font-size:clamp(37px,min(5vw,9dvh),69px);line-height:1.06;letter-spacing:-.065em;margin:clamp(15px,2.4dvh,25px) 0}
+h1 em{font-style:normal;color:#60d6bd}
+.intro p{color:#afbdc9;line-height:1.57;font-size:clamp(13px,1.35vw,17px);max-width:520px;margin:0}
+.features{display:flex;flex-wrap:wrap;gap:8px;margin-top:clamp(18px,4dvh,38px)}
+.features span{font-size:12px;color:#bfd0d9;border:1px solid #ffffff22;border-radius:100px;padding:8px 12px;background:#ffffff06}
+.auth-shell{width:100%;min-width:0;max-height:100%;overflow-y:auto;overscroll-behavior:contain;background:#1a252c;border:1px solid #ffffff20;border-radius:21px;padding:clamp(18px,2.4vw,31px);box-shadow:0 22px 65px #0003;scrollbar-width:thin}
+.auth-view h2{font-size:clamp(23px,2.15vw,29px);letter-spacing:-.045em;line-height:1.15;margin:0 0 10px}
+.auth-view .sub{font-size:13px;line-height:1.5;color:#aebfca;margin:0 0 21px}
+.button{display:flex;justify-content:center;align-items:center;gap:8px;width:100%;min-height:45px;border-radius:11px;border:1px solid #ffffff24;padding:10px 14px;font-weight:800;font-size:13px;text-decoration:none;text-align:center}
+.button:disabled{cursor:wait;opacity:.7}
+.button-primary{color:#10171d;background:#60d6bd;border-color:#60d6bd}
+.button-primary:hover:not(:disabled){background:#81e4cf}
+.button-secondary{color:#e9f2f6;background:#27363e}
+.button-secondary:hover:not(:disabled){background:#31444d}
+.button + .button{margin-top:10px}
+.field{margin-bottom:13px}
+.field label{display:block;color:#d9e5ec;font-size:12px;font-weight:750;margin-bottom:6px}
+.field input{display:block;width:100%;min-height:43px;padding:10px 12px;color:#eff4f7;background:#111b21;border:1px solid #ffffff2e;border-radius:10px;font-size:14px}
+.field input:focus{border-color:#60d6bd;outline:none;box-shadow:0 0 0 3px #60d6bd1c}
+.field input::placeholder{color:#839ba8}
+.field input[aria-invalid="true"]{border-color:#e79f9f}
+.form-help{color:#90a5b1;font-size:11px;line-height:1.4;margin:-3px 0 14px}
+.switch-row{font-size:12px;color:#aebfca;text-align:center;margin-top:16px}
+.link-button{padding:0;border:0;background:transparent;color:#60d6bd;font-weight:800;font-size:inherit;text-decoration:underline;text-underline-offset:3px}
+.back-row{margin-bottom:18px}
+.back-row .link-button{text-decoration:none}
+.inline-actions{display:flex;align-items:center;justify-content:flex-end;margin:-3px 0 14px}
+.inline-actions .link-button{font-size:12px}
+.message{font-size:12px;line-height:1.5;border-radius:10px;padding:11px 12px;margin:12px 0 0;border:1px solid #ffffff24;background:#111b21;color:#d9e9ee}
+.message.error{color:#ffd2d2;border-color:#e97f7f69;background:#733b3b27}
+.message.success{color:#bdf6de;border-color:#60d6bd61;background:#60d6bd13}
+.service-note{margin-top:15px;padding-top:13px;border-top:1px solid #ffffff19;color:#899ea9;font-size:11px;line-height:1.5}
+.account-id{color:#a9c1cd;font-size:13px;overflow-wrap:anywhere;background:#111b21;padding:11px;border-radius:10px;margin:10px 0 20px}
+.footer{flex:0 0 clamp(36px,7dvh,55px);border-top:1px solid #ffffff20;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11px;color:#879da9}
+@media(max-width:760px){
+.wrap{width:calc(100% - 26px)}
+.top{flex-basis:54px}
+main{display:flex;flex-direction:column;justify-content:center;align-items:stretch;gap:clamp(12px,2dvh,20px);padding:10px 0}
+.intro{width:100%;flex:0 0 auto}
+h1{font-size:clamp(28px,min(7vw,5.5dvh),42px);margin:8px 0}
+.intro p{font-size:12px;line-height:1.4}
+.eyebrow{font-size:10px}
+.features{display:none}
+.auth-shell{max-width:540px;margin-inline:auto;padding:clamp(14px,2.8dvh,23px);border-radius:15px}
+.auth-view h2{font-size:22px;margin-bottom:6px}
+.auth-view .sub{font-size:12px;margin-bottom:14px}
+.field{margin-bottom:9px}
+.field input{min-height:40px;padding:8px 11px}
+.button{min-height:41px;padding:8px}
+.footer{flex-basis:37px;font-size:9px;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px}
+}
+@media(max-height:580px){
+.top{flex-basis:46px}
+main{padding:6px 0;gap:7px}
+h1{font-size:clamp(25px,5dvh,42px);margin:6px 0}
+.intro p{font-size:11px;line-height:1.25}
+.features{display:none}
+.auth-shell{padding:12px 16px}
+.auth-view h2{font-size:21px}
+.auth-view .sub{margin-bottom:10px}
+.field{margin-bottom:7px}
+.field label{margin-bottom:3px}
+.field input{min-height:34px;padding:5px 10px}
+.form-help{margin-bottom:7px}
+.button{min-height:35px;padding:6px 9px}
+.footer{flex-basis:28px}
+}
+@media(max-width:410px){.menu-toggle{width:42px;height:40px}.top-actions{gap:5px}.install-btn{font-size:10px;padding:8px 10px}.intro p{font-size:11px}}
 </style>
 </head>
 <body>
 <div class="wrap">
-<header class="top"><a class="logo" href="/" aria-label="StoreNest home">store<span>nest.</span></a><div class="top-actions"><button class="install-btn" id="installBtn" type="button">Install app</button><div class="menu-container" id="menuContainer"><button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="siteMenu"><span></span><span></span><span></span></button><nav class="site-menu" id="siteMenu" aria-label="StoreNest menu" hidden><a class="menu-register" href="/business-owner.html">Register as business owner <span aria-hidden="true">→</span></a></nav></div></div></header>
+<header class="top">
+<a class="logo" href="/" aria-label="StoreNest home">store<span>nest.</span></a>
+<div class="top-actions">
+<button class="install-btn" id="installBtn" type="button">Install app</button>
+<div class="menu-container" id="menuContainer">
+<button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="siteMenu"><span></span><span></span><span></span></button>
+<nav class="site-menu" id="siteMenu" aria-label="StoreNest menu" hidden>
+<a class="menu-link" href="#register" data-switch="register">Register as business owner <span aria-hidden="true">→</span></a>
+<a class="menu-link" href="#login" data-switch="login">Log in <span aria-hidden="true">→</span></a>
+<a class="menu-link" href="/">Customer home <span aria-hidden="true">→</span></a>
+</nav>
+</div>
+</div>
+</header>
 <main>
-<section class="hero"><div class="pill">A new home for independent business</div><h1>Your business.<br><em>Your storefront.</em></h1><p>StoreNest is building a simple way for local shops and service providers to showcase their offerings, share a storefront link, connect with customers, and manage their business online.</p><p class="install-hint" id="installHint" role="status"></p></section>
-<section class="cards" aria-label="Planned platform features">
-<article class="card"><div class="emoji" aria-hidden="true">🏬</div><h2>Personal storefronts</h2><p>Your own branded digital home with products, services and a shareable link.</p></article>
-<article class="card"><div class="emoji" aria-hidden="true">🛍️</div><h2>Orders & bookings</h2><p>Give customers an easier way to shop, request services and make bookings.</p></article>
-<article class="card"><div class="emoji" aria-hidden="true">📊</div><h2>Business dashboard</h2><p>Organise your offerings and manage activity from one private workspace.</p></article>
+<section class="intro" aria-label="Business owner introduction">
+<div class="eyebrow">A new home for independent business</div>
+<h1>Your business.<br><em>Your storefront.</em></h1>
+<p>Create a business account, set up your digital storefront and manage everything from one place.</p>
+<div class="features"><span>Personal storefront</span><span>Orders & bookings</span><span>Business dashboard</span></div>
+</section>
+<section class="auth-shell" aria-label="Business owner account" id="accountPanel">
+<div class="auth-view" data-view="start">
+<h2>Start with StoreNest</h2>
+<p class="sub">Build your own digital home for customers to discover your products or services.</p>
+<button type="button" class="button button-primary" data-switch="register">Register as Business Owner</button>
+<button type="button" class="button button-secondary" data-switch="login">Log in to existing account</button>
+<p class="service-note">Account registration is being prepared. No live orders or payments are enabled.</p>
+</div>
+<form class="auth-view" data-view="register" id="registerForm" hidden>
+<div class="back-row"><button class="link-button" type="button" data-switch="start">← Back</button></div>
+<h2>Create your account</h2>
+<p class="sub">Your account comes first. We'll set up your business storefront next.</p>
+<div class="field"><label for="registerName">Full name</label><input id="registerName" type="text" name="name" autocomplete="name" maxlength="100" placeholder="Your full name" required></div>
+<div class="field"><label for="registerEmail">Email address</label><input id="registerEmail" type="email" name="email" autocomplete="email" placeholder="you@example.com" required></div>
+<div class="field"><label for="registerPassword">Password</label><input id="registerPassword" type="password" name="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters" required></div>
+<div class="field"><label for="registerConfirm">Confirm password</label><input id="registerConfirm" type="password" name="confirm" autocomplete="new-password" minlength="8" placeholder="Repeat your password" required></div>
+<p class="form-help">Use a strong, unique password. Never share it with anyone.</p>
+<button class="button button-primary" type="submit">Create account</button>
+<div class="message" role="status" aria-live="polite" hidden></div>
+<p class="switch-row">Already registered? <button type="button" class="link-button" data-switch="login">Log in</button></p>
+</form>
+<form class="auth-view" data-view="login" id="loginForm" hidden>
+<div class="back-row"><button class="link-button" type="button" data-switch="start">← Back</button></div>
+<h2>Welcome back</h2>
+<p class="sub">Log in to manage your StoreNest business account.</p>
+<div class="field"><label for="loginEmail">Email address</label><input id="loginEmail" name="email" type="email" autocomplete="email" placeholder="you@example.com" required></div>
+<div class="field"><label for="loginPassword">Password</label><input id="loginPassword" name="password" type="password" autocomplete="current-password" required></div>
+<div class="inline-actions"><button class="link-button" type="button" data-switch="forgot">Forgot password?</button></div>
+<button class="button button-primary" type="submit">Log in</button>
+<div class="message" role="status" aria-live="polite" hidden></div>
+<p class="switch-row">New to StoreNest? <button type="button" class="link-button" data-switch="register">Create an account</button></p>
+</form>
+<form class="auth-view" data-view="forgot" id="forgotForm" hidden>
+<div class="back-row"><button class="link-button" type="button" data-switch="login">← Back to login</button></div>
+<h2>Reset your password</h2>
+<p class="sub">Enter your registered email address to request a password reset link.</p>
+<div class="field"><label for="forgotEmail">Email address</label><input id="forgotEmail" name="email" type="email" autocomplete="email" placeholder="you@example.com" required></div>
+<button class="button button-primary" type="submit">Send reset link</button>
+<div class="message" role="status" aria-live="polite" hidden></div>
+</form>
+<form class="auth-view" data-view="new-password" id="newPasswordForm" hidden>
+<h2>Choose a new password</h2>
+<p class="sub">Enter a new password for your StoreNest account.</p>
+<div class="field"><label for="newPassword">New password</label><input id="newPassword" type="password" autocomplete="new-password" minlength="8" required></div>
+<div class="field"><label for="newPasswordConfirm">Confirm new password</label><input id="newPasswordConfirm" type="password" autocomplete="new-password" minlength="8" required></div>
+<button class="button button-primary" type="submit">Update password</button>
+<div class="message" role="status" aria-live="polite" hidden></div>
+</form>
+<div class="auth-view" data-view="account" hidden>
+<h2>You're signed in</h2>
+<p class="sub">Your StoreNest account is ready. Business setup and the private dashboard are the next development step.</p>
+<div class="account-id" id="accountEmail"></div>
+<button type="button" id="logoutButton" class="button button-secondary">Sign out</button>
+<div class="message" role="status" aria-live="polite" hidden></div>
+</div>
 </section>
 </main>
-<footer class="footer"><span>StoreNest · Building the future of local commerce</span><span>Early project preview · No live orders or payments</span></footer>
-</div><script>
-if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("/sw.js").catch(()=>{})})}
-let installPrompt=null;const installBtn=document.getElementById("installBtn");const installHint=document.getElementById("installHint");
-function showHint(message){if(installHint){installHint.textContent=message;installHint.classList.add("visible")}else{window.alert(message)}}
-window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();installPrompt=event;installBtn.classList.add("visible")});
-installBtn.addEventListener("click",async()=>{if(!installPrompt){showHint("To install on Samsung: open this site in Samsung Internet or Chrome, tap the browser menu, then choose Add page to / Add to Home screen or Install app.");return}const prompt=installPrompt;installPrompt=null;installBtn.classList.remove("visible");await prompt.prompt();const result=await prompt.userChoice;if(result.outcome!=="accepted")showHint("You can install StoreNest later from your browser menu.")});
-window.addEventListener("appinstalled",()=>{installBtn.classList.remove("visible");showHint("StoreNest is installed.")});
-if(/Android/i.test(navigator.userAgent)){installBtn.classList.add("visible");installBtn.textContent="Install app"}
-if(/iPhone|iPad|iPod/.test(navigator.userAgent)&&!window.navigator.standalone){showHint("On iPhone: open Share, then choose Add to Home Screen to install StoreNest.")}
-
-const menuContainer=document.getElementById("menuContainer");
-const menuToggle=document.getElementById("menuToggle");
-const siteMenu=document.getElementById("siteMenu");
+<footer class="footer"><span>StoreNest · Building the future of local commerce</span><span>No live orders or payments</span></footer>
+</div>
+<script>
+"use strict";
+/*
+ * Authentication setup:
+ * 1. Create a dedicated StoreNest Supabase project.
+ * 2. Add its URL and PUBLIC publishable key below. Never add a secret/service_role key.
+ * 3. Add the deployed StoreNest /business-owner.html URL to Supabase Auth allowed redirect URLs.
+ * 4. Configure an SMTP provider before launching public email verification/password resets.
+ */
+const STORE_AUTH={url:"",publishableKey:""};
+let authClient=null;
+let signingIn=false;
+let recovering=false;
+let activeView="start";
+const $=id=>document.getElementById(id);
+const authViews=[...document.querySelectorAll("[data-view]")];
+const menuToggle=$("menuToggle"),siteMenu=$("siteMenu"),menuContainer=$("menuContainer");
 function setMenuOpen(open){siteMenu.hidden=!open;menuToggle.setAttribute("aria-expanded",String(open));menuToggle.setAttribute("aria-label",open?"Close menu":"Open menu");}
 menuToggle.addEventListener("click",()=>setMenuOpen(siteMenu.hidden));
 document.addEventListener("click",event=>{if(!menuContainer.contains(event.target))setMenuOpen(false)});
+function clearMessages(){document.querySelectorAll(".message").forEach(el=>{el.hidden=true;el.textContent="";el.classList.remove("error","success")})}
+function showMessage(view,message,type="error"){
+ const el=document.querySelector('[data-view="'+view+'"] .message');
+ if(!el)return;
+ el.textContent=message;el.classList.remove("error","success");el.classList.add(type);el.hidden=false;
+}
+function showView(view){
+ if(!["start","register","login","forgot","new-password","account"].includes(view))view="start";
+ activeView=view;clearMessages();
+ authViews.forEach(el=>{el.hidden=el.dataset.view!==view});
+ setMenuOpen(false);
+ const panel=$("accountPanel");panel.scrollTop=0;
+}
+function isConfigured(){return /^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(STORE_AUTH.url)&&/^(sb_publishable_|eyJ)/.test(STORE_AUTH.publishableKey)}
+async function loadAuth(){
+ if(!isConfigured())throw new Error("StoreNest account registration is not connected yet. The authentication project must be set up before accounts can be created.");
+ if(authClient)return authClient;
+ if(!window.supabase){
+   await new Promise((resolve,reject)=>{
+     const script=document.createElement("script");
+     script.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.min.js";
+     script.onload=resolve;script.onerror=()=>reject(new Error("Unable to load the sign-in service. Check your internet connection."));
+     document.head.appendChild(script);
+   });
+ }
+ if(!window.supabase)throw new Error("The sign-in service could not be loaded.");
+ authClient=window.supabase.createClient(STORE_AUTH.url,STORE_AUTH.publishableKey,{
+   auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
+ });
+ authClient.auth.onAuthStateChange((event,session)=>{
+   if(event==="PASSWORD_RECOVERY"){recovering=true;showView("new-password");return}
+   if(event==="SIGNED_OUT"){recovering=false;if(activeView==="account")showView("login");return}
+   if(event==="SIGNED_IN"&&!recovering&&!signingIn&&session?.user){
+     $("accountEmail").textContent=session.user.email||"Business owner";
+     showView("account");
+   }
+ });
+ return authClient;
+}
+function busy(form,busyState){
+ const submit=form.querySelector('button[type="submit"]');
+ if(!submit)return;
+ if(busyState){submit.dataset.original=submit.textContent;submit.textContent="Please wait…";submit.disabled=true}
+ else{submit.textContent=submit.dataset.original||submit.textContent;submit.disabled=false}
+}
+function friendlyError(error){
+ if(!error)return"Something went wrong. Please try again.";
+ if(/invalid login credentials/i.test(error.message))return"Incorrect email address or password.";
+ if(/email not confirmed/i.test(error.message))return"Please verify your email address, then try logging in.";
+ if(/rate limit|over_email_send_rate_limit/i.test(error.message))return"Too many attempts. Please try again later.";
+ return error.message||"Something went wrong. Please try again.";
+}
+document.querySelectorAll("[data-switch]").forEach(control=>control.addEventListener("click",event=>{
+ event.preventDefault();
+ const view=control.dataset.switch;
+ history.replaceState(null,"",location.pathname+location.search+"#"+view);
+ showView(view);
+}));
+$("registerForm").addEventListener("submit",async event=>{
+ event.preventDefault();const form=event.currentTarget;
+ const name=$("registerName").value.trim(),email=$("registerEmail").value.trim(),password=$("registerPassword").value,confirm=$("registerConfirm").value;
+ if(name.length<2){showMessage("register","Please enter your full name.");return}
+ if(password.length<8){showMessage("register","Password must contain at least 8 characters.");return}
+ if(password!==confirm){showMessage("register","Your passwords do not match.");return}
+ busy(form,true);signingIn=true;
+ try{
+   const client=await loadAuth();
+   const {data,error}=await client.auth.signUp({email,password,options:{data:{full_name:name},emailRedirectTo:location.origin+location.pathname}});
+   if(error)throw error;
+   if(data.session?.user){$("accountEmail").textContent=data.user?.email||email;showView("account");}
+   else showMessage("register","Check your email for a confirmation link. Once confirmed, return here and log in.","success");
+ }catch(error){showMessage("register",friendlyError(error));}
+ finally{signingIn=false;busy(form,false)}
+});
+$("loginForm").addEventListener("submit",async event=>{
+ event.preventDefault();const form=event.currentTarget;busy(form,true);signingIn=true;
+ try{
+   const client=await loadAuth();
+   const {data,error}=await client.auth.signInWithPassword({email:$("loginEmail").value.trim(),password:$("loginPassword").value});
+   if(error)throw error;
+   if(!data.user)throw new Error("Login did not complete. Please try again.");
+   $("accountEmail").textContent=data.user.email||"Business owner";
+   showView("account");
+ }catch(error){showMessage("login",friendlyError(error))}
+ finally{signingIn=false;busy(form,false)}
+});
+$("forgotForm").addEventListener("submit",async event=>{
+ event.preventDefault();const form=event.currentTarget;busy(form,true);
+ try{
+   const client=await loadAuth();
+   const {error}=await client.auth.resetPasswordForEmail($("forgotEmail").value.trim(),{redirectTo:location.origin+location.pathname});
+   if(error)throw error;
+   showMessage("forgot","If this email is registered, a password reset message will be sent.","success");
+ }catch(error){showMessage("forgot",friendlyError(error))}
+ finally{busy(form,false)}
+});
+$("newPasswordForm").addEventListener("submit",async event=>{
+ event.preventDefault();const form=event.currentTarget;
+ const password=$("newPassword").value;
+ if(password!==$("newPasswordConfirm").value){showMessage("new-password","Passwords do not match.");return}
+ busy(form,true);
+ try{
+   const client=await loadAuth();
+   const {error}=await client.auth.updateUser({password});
+   if(error)throw error;
+   recovering=false;
+   await client.auth.signOut();
+   showView("login");
+   showMessage("login","Password updated. You can now log in.","success");
+ }catch(error){showMessage("new-password",friendlyError(error))}
+ finally{busy(form,false)}
+});
+$("logoutButton").addEventListener("click",async()=>{
+ const btn=$("logoutButton");btn.disabled=true;
+ try{
+   const client=await loadAuth();const {error}=await client.auth.signOut();if(error)throw error;
+   showView("login");
+ }catch(error){showMessage("account",friendlyError(error))}
+ finally{btn.disabled=false}
+});
 document.addEventListener("keydown",event=>{if(event.key==="Escape"&&!siteMenu.hidden){setMenuOpen(false);menuToggle.focus()}});
-</script></body></html>
+window.addEventListener("hashchange",()=>{
+ const hash=location.hash.replace("#","");
+ if(["start","register","login","forgot"].includes(hash))showView(hash);
+});
+showView(["start","register","login","forgot"].includes(location.hash.slice(1))?location.hash.slice(1):"start");
+if(isConfigured()){
+ loadAuth().then(async client=>{
+   const {data,error}=await client.auth.getUser();
+   if(error&&error.name!=="AuthSessionMissingError")return;
+   if(data.user&&!recovering){$("accountEmail").textContent=data.user.email||"Business owner";showView("account")}
+ }).catch(()=>{});
+}
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}))}
+let installPrompt=null;const installBtn=$("installBtn");
+window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();installPrompt=event;installBtn.classList.add("visible")});
+installBtn.addEventListener("click",async()=>{
+ if(!installPrompt){alert("Open your browser menu, then choose Install app or Add to Home screen.");return}
+ const prompt=installPrompt;installPrompt=null;installBtn.classList.remove("visible");await prompt.prompt();
+});
+window.addEventListener("appinstalled",()=>installBtn.classList.remove("visible"));
+if(/Android/i.test(navigator.userAgent))installBtn.classList.add("visible");
+</script>
+</body>
+</html>
