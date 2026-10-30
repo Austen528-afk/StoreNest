@@ -77,6 +77,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-off
 @media(max-width:750px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.hero{min-height:202px;padding:20px}.footer{flex-direction:column;align-items:flex-start;gap:5px}.top{height:55px}.item-body{min-height:174px}}
 @media(max-width:470px){.page{width:calc(100% - 18px)}.top{height:51px}.logo{font-size:19px}.top nav{gap:9px}.back-link,.owner-link{font-size:10px}.hero{min-height:195px;padding:16px;border-radius:17px}.brand-name{font-size:22px}.bag{width:44px;min-height:44px;border-radius:12px}.hero h1{font-size:25px}.hero p{font-size:11px}.hero-tag{font-size:12px}.grid{gap:9px}.card{border-radius:15px}.art{aspect-ratio:1.1/1}.item-body{padding:12px 11px;min-height:160px}.item-body h3{font-size:13px}.item-body p{font-size:11px;min-height:38px}.price{font-size:17px}.add{min-width:auto;padding:9px 11px;font-size:12px}.catalog-heading{margin:20px 0 13px}.catalog-heading h2{font-size:19px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:0.01ms!important;transition-duration:0.01ms!important}}
+.card{cursor:pointer}.card:focus-within{outline:2px solid #61ccb0}.card:hover{box-shadow:0 6px 24px #192a2017}.art{position:relative}.art .photo-count{position:absolute;right:10px;bottom:10px;background:#151515c9;color:white;padding:5px 8px;border-radius:7px;font-size:11px;font-weight:700}.item-open{display:block;width:100%;border:0;padding:0;background:none;text-align:inherit;color:inherit;cursor:pointer}.gallery-backdrop{position:fixed;inset:0;z-index:150;background:#000b;display:flex;justify-content:center;align-items:center;padding:15px}.gallery-panel{width:min(690px,100%);max-height:94dvh;display:flex;flex-direction:column;background:white;border-radius:18px;overflow:hidden;color:#171717}.gallery-top{padding:18px;display:flex;justify-content:space-between;gap:10px}.gallery-top h2{font-size:21px;margin:0 0 5px}.gallery-top p{font-size:12px;color:#777;margin:0;line-height:1.5}.gallery-close{height:36px;width:36px;flex-shrink:0;border:0;border-radius:50%;background:#f0f0f0;font-size:25px}.gallery-stage{position:relative;min-height:150px;flex:1;display:flex;justify-content:center;align-items:center;background:#f2f2f2;overflow:hidden}.gallery-stage img{display:block;max-width:100%;max-height:min(65dvh,650px);object-fit:contain}.gallery-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:1;width:39px;height:39px;border:0;border-radius:50%;background:#ffffffdb;color:#171717;font-size:29px}.gallery-nav:first-child{left:12px}.gallery-nav:last-child{right:12px}.gallery-nav:disabled{opacity:.22;cursor:default}.gallery-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px}.gallery-bottom>span{font-size:12px;color:#666;white-space:nowrap}.gallery-dots{display:flex;gap:7px;flex-wrap:wrap}.gallery-dots button{width:9px;height:9px;border-radius:50%;padding:0;border:0;background:#c4c4c4}.gallery-dots button.active{background:#181818}@media(max-width:480px){.gallery-backdrop{padding:0}.gallery-panel{height:100dvh;max-height:100dvh;border-radius:0}.gallery-stage img{max-height:66dvh}}
 </style>
 </head>
 <body>
@@ -98,15 +99,17 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-off
   </aside>
 </div>
 <div id="toast" class="toast" role="status" hidden></div>
+<div id="galleryDialog" class="gallery-backdrop" hidden><section class="gallery-panel" role="dialog" aria-modal="true" aria-labelledby="galleryTitle"><div class="gallery-top"><div><h2 id="galleryTitle">Product</h2><p id="galleryDescription"></p></div><button id="galleryClose" class="gallery-close" type="button" aria-label="Close product photos">×</button></div><div class="gallery-stage"><button type="button" id="galleryPrev" class="gallery-nav" aria-label="Previous photo">‹</button><img id="galleryImage" alt="Product photo"><button type="button" id="galleryNext" class="gallery-nav" aria-label="Next photo">›</button></div><div class="gallery-bottom"><span id="galleryPosition"></span><div id="galleryDots" class="gallery-dots"></div><button id="galleryAdd" class="add" type="button">+ Add</button></div></section></div>
 <script>
 "use strict";
 const CONFIG={url:"https://cypbjzbagezdelmemuhb.supabase.co",key:"sb_publishable_8W8zyYtggQMWoFlnxrzoVA_BUKjQ9va"};
 const cart=new Map();
-let availableItems=[],toastTimer=null;
+let availableItems=[],toastTimer=null,activeGalleryItem=null,galleryIndex=0,galleryReturnFocus=null;
 const $=id=>document.getElementById(id);
 function esc(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function initials(name){return String(name||"SN").split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join("").toUpperCase()||"SN"}
 function safeUrl(value){try{const u=new URL(value);return ["https:","http:"].includes(u.protocol)?u.href:""}catch{return""}}
+function galleryPhotos(item){const imgs=Array.isArray(item?.media_urls)?item.media_urls.filter(u=>typeof u==="string"&&safeUrl(u)):[];return imgs.length?imgs:(safeUrl(item?.image_url)?[item.image_url]:[])}
 function money(v){return "R"+Number(v||0).toFixed(2)}
 function toast(msg){clearTimeout(toastTimer);$("toast").textContent=msg;$("toast").hidden=false;toastTimer=setTimeout(()=>{$("toast").hidden=true},1900)}
 function cartQuantity(){return [...cart.values()].reduce((n,q)=>n+q,0)}
@@ -124,9 +127,45 @@ $("cartBackdrop").addEventListener("click",e=>{if(e.target===$("cartBackdrop"))c
 $("clearCart").addEventListener("click",()=>{cart.clear();renderCart()});
 $("cartItems").addEventListener("click",e=>{const b=e.target.closest("[data-cart-action]");if(!b)return;const id=b.dataset.id;const next=(cart.get(id)||0)+(b.dataset.cartAction==="plus"?1:-1);if(next<=0)cart.delete(id);else cart.set(id,next);renderCart()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("cartBackdrop").hidden)closeCart()});
+
+function showGalleryImage(){
+ const photos=galleryPhotos(activeGalleryItem);if(!photos.length)return;
+ galleryIndex=Math.max(0,Math.min(galleryIndex,photos.length-1));
+ $("galleryImage").src=photos[galleryIndex];$("galleryImage").alt=activeGalleryItem.name+" photo "+(galleryIndex+1);
+ $("galleryPosition").textContent=(galleryIndex+1)+" / "+photos.length;
+ $("galleryPrev").disabled=galleryIndex===0;$("galleryNext").disabled=galleryIndex===photos.length-1;
+ $("galleryDots").replaceChildren();
+ photos.forEach((_,i)=>{const dot=document.createElement("button");dot.type="button";dot.className=i===galleryIndex?"active":"";dot.setAttribute("aria-label","Show picture "+(i+1));dot.addEventListener("click",()=>{galleryIndex=i;showGalleryImage()});$("galleryDots").append(dot)});
+}
+function openProductGallery(id,trigger){
+ const item=availableItems.find(row=>row.id===id);if(!item)return;
+ activeGalleryItem=item;galleryReturnFocus=trigger;galleryIndex=0;
+ $("galleryTitle").textContent=item.name;$("galleryDescription").textContent=item.description||"";
+ $("galleryAdd").dataset.addItem=id;
+ const photos=galleryPhotos(item);
+ $("galleryImage").hidden=photos.length===0;
+ if(photos.length)showGalleryImage();else{$("galleryPosition").textContent="No pictures yet";$("galleryPrev").disabled=true;$("galleryNext").disabled=true;$("galleryDots").replaceChildren()}
+ $("galleryDialog").hidden=false;document.body.style.overflow="hidden";$("galleryClose").focus();
+}
+function closeProductGallery(){$("galleryDialog").hidden=true;document.body.style.overflow="";activeGalleryItem=null;galleryReturnFocus?.focus()}
+$("galleryClose").addEventListener("click",closeProductGallery);
+$("galleryPrev").addEventListener("click",()=>{galleryIndex--;showGalleryImage()});
+$("galleryNext").addEventListener("click",()=>{galleryIndex++;showGalleryImage()});
+$("galleryDialog").addEventListener("click",event=>{if(event.target===$("galleryDialog"))closeProductGallery()});
+$("galleryAdd").addEventListener("click",()=>{const id=activeGalleryItem?.id;if(id){cart.set(id,(cart.get(id)||0)+1);syncCartBadge();toast("Added to basket")}});
+document.addEventListener("keydown",event=>{
+ if($("galleryDialog").hidden)return;
+ if(event.key==="Escape")closeProductGallery();
+ else if(event.key==="ArrowLeft"&&!$("galleryPrev").disabled){galleryIndex--;showGalleryImage()}
+ else if(event.key==="ArrowRight"&&!$("galleryNext").disabled){galleryIndex++;showGalleryImage()}
+});
+let swipeX=null;
+$("galleryImage").addEventListener("touchstart",event=>{swipeX=event.touches[0]?.clientX??null},{passive:true});
+$("galleryImage").addEventListener("touchend",event=>{if(swipeX===null)return;const delta=(event.changedTouches[0]?.clientX??swipeX)-swipeX;swipeX=null;if(Math.abs(delta)<45)return;if(delta<0&&!$("galleryNext").disabled){galleryIndex++;showGalleryImage()}else if(delta>0&&!$("galleryPrev").disabled){galleryIndex--;showGalleryImage()}},{passive:true});
 $("main").addEventListener("click",e=>{
   const add=e.target.closest("[data-add-item]");
   if(add){const id=add.dataset.addItem;if(!availableItems.some(i=>i.id===id))return;cart.set(id,(cart.get(id)||0)+1);syncCartBadge();toast("Added to basket");return}
+  const open=e.target.closest("[data-open-product]");if(open){openProductGallery(open.dataset.openProduct,open);return}
   if(e.target.closest("#openCart"))openCart();
 });
 async function load(){
@@ -140,7 +179,7 @@ async function load(){
    if(response.error)throw response.error;
    const business=response.data;
    if(!business){root.innerHTML='<div class="notice">This storefront is unavailable. It may be unpublished or the link may have changed.</div>';return}
-   const catalog=await client.from("business_items").select("id,name,item_type,description,price,image_url").eq("business_id",business.id).eq("is_available",true).order("display_order").order("created_at",{ascending:false});
+   const catalog=await client.from("business_items").select("id,name,item_type,description,price,image_url,media_urls").eq("business_id",business.id).eq("is_available",true).order("display_order").order("created_at",{ascending:false});
    if(catalog.error)throw catalog.error;
    availableItems=catalog.data||[];
    // Remember genuine storefront visits for this device only.
@@ -168,8 +207,8 @@ async function load(){
    const cover=safeUrl(cfg.hero);
    const logo=safeUrl(business.logo_url);
    const photos=availableItems.map(item=>{
-     const media=safeUrl(item.image_url);
-     return '<article class="card"><div class="art">'+(media?'<img src="'+esc(media)+'" alt="'+esc(item.name)+'" loading="lazy">':item.item_type==="service"?"✦":"▧")+'</div><div class="item-body"><h3>'+esc(item.name)+'</h3><p>'+esc(item.description||"")+'</p><div class="item-bottom"><span class="price">'+money(item.price)+'</span><button class="add" type="button" data-add-item="'+esc(item.id)+'" aria-label="Add '+esc(item.name)+' to basket"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add</button></div></div></article>';
+     const media=galleryPhotos(item),first=media[0],count=media.length;
+     return '<article class="card"><button type="button" class="item-open" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos and details"><div class="art">'+(first?'<img src="'+esc(first)+'" alt="'+esc(item.name)+'" loading="lazy">':item.item_type==="service"?"✦":"▧")+(count>1?'<span class="photo-count">▧ '+count+' photos</span>':'')+'</div></button><div class="item-body"><h3>'+esc(item.name)+'</h3><p>'+esc(item.description||"")+'</p><div class="item-bottom"><span class="price">'+money(item.price)+'</span><button class="add" type="button" data-add-item="'+esc(item.id)+'" aria-label="Add '+esc(item.name)+' to basket"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add</button></div></div></article>';
    }).join("");
    root.innerHTML=
      '<section class="hero layout-'+layout+'">'+(cover?'<img class="hero-cover" src="'+esc(cover)+'" alt="">':'')+
