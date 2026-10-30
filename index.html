@@ -70,11 +70,26 @@ p{color:#afbdc9;line-height:1.5;font-size:clamp(12px,min(1.7vw,2.5dvh),19px);max
 }
 
 .install-btn{background:#60d6bd;color:#10171d;border:0;border-radius:999px;font-weight:800;padding:10px 15px;cursor:pointer;font-family:inherit;font-size:12px;display:none}.install-btn.visible{display:inline-block}.top-actions{display:flex;align-items:center;gap:10px}.install-hint{font-size:11px;color:#a4b8c4;margin-top:14px;display:none}.install-hint.visible{display:block}@media(max-width:430px){.install-btn{padding:8px 10px;font-size:10px}.top-actions{gap:5px}}
+
+.menu-container{position:relative;flex:0 0 auto}
+.menu-toggle{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:46px;height:43px;padding:8px;border:1px solid #ffffff40;border-radius:12px;color:#eff4f7;background:#ffffff08;cursor:pointer}
+.menu-toggle span{display:block;width:22px;height:2px;border-radius:2px;background:currentColor;transition:transform .18s ease,opacity .18s ease}
+.menu-toggle[aria-expanded="true"] span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.menu-toggle[aria-expanded="true"] span:nth-child(2){opacity:0}
+.menu-toggle[aria-expanded="true"] span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.menu-toggle:focus-visible,.menu-register:focus-visible{outline:2px solid #60d6bd;outline-offset:3px}
+.site-menu{position:absolute;z-index:20;right:0;top:calc(100% + 10px);width:min(300px,calc(100vw - 28px));padding:10px;background:#1a252c;border:1px solid #ffffff27;border-radius:14px;box-shadow:0 18px 45px #0007}
+.site-menu[hidden],.menu-feedback[hidden]{display:none}
+.menu-register{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px 12px;text-align:left;background:#26343b;border:1px solid #ffffff18;border-radius:9px;color:#eff4f7;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.menu-register:hover{background:#30434a}
+.menu-register span{color:#60d6bd;font-size:19px}
+.menu-feedback{margin:10px 4px 2px;color:#adbfca;font-size:12px;line-height:1.45}
+@media(max-width:430px){.menu-toggle{width:42px;height:40px}}
 </style>
 </head>
 <body>
 <div class="wrap">
-<header class="top"><div class="logo">store<span>nest.</span></div><div class="top-actions"><button class="install-btn" id="installBtn" type="button">Install app</button><div class="label">IN DEVELOPMENT</div></div></header>
+<header class="top"><div class="logo">store<span>nest.</span></div><div class="top-actions"><button class="install-btn" id="installBtn" type="button">Install app</button><div class="menu-container" id="menuContainer"><button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="siteMenu"><span></span><span></span><span></span></button><nav class="site-menu" id="siteMenu" aria-label="StoreNest menu" hidden><button class="menu-register" id="registerBusiness" type="button">Register as business owner <span aria-hidden="true">→</span></button><p class="menu-feedback" id="menuFeedback" role="status" hidden></p></nav></div></div></header>
 <main>
 <section class="hero"><div class="pill">A new home for independent business</div><h1>Your business.<br><em>Your storefront.</em></h1><p>StoreNest is building a simple way for local shops and service providers to showcase their offerings, share a storefront link, connect with customers, and manage their business online.</p><p class="install-hint" id="installHint" role="status"></p></section>
 <section class="cards" aria-label="Planned platform features">
@@ -92,4 +107,15 @@ window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();ins
 installBtn.addEventListener("click",async()=>{if(!installPrompt){showHint("Use your browser menu to install or add StoreNest to your home screen.");return}const prompt=installPrompt;installPrompt=null;installBtn.classList.remove("visible");await prompt.prompt();const result=await prompt.userChoice;if(result.outcome!=="accepted")showHint("You can install StoreNest later from your browser menu.")});
 window.addEventListener("appinstalled",()=>{installBtn.classList.remove("visible");showHint("StoreNest is installed.")});
 if(/iPhone|iPad|iPod/.test(navigator.userAgent)&&!window.navigator.standalone){showHint("On iPhone: open Share, then choose Add to Home Screen to install StoreNest.")}
+
+const menuContainer=document.getElementById("menuContainer");
+const menuToggle=document.getElementById("menuToggle");
+const siteMenu=document.getElementById("siteMenu");
+const registerBusiness=document.getElementById("registerBusiness");
+const menuFeedback=document.getElementById("menuFeedback");
+function setMenuOpen(open){siteMenu.hidden=!open;menuToggle.setAttribute("aria-expanded",String(open));menuToggle.setAttribute("aria-label",open?"Close menu":"Open menu");if(!open){menuFeedback.hidden=true;menuFeedback.textContent=""}}
+menuToggle.addEventListener("click",()=>setMenuOpen(siteMenu.hidden));
+registerBusiness.addEventListener("click",()=>{menuFeedback.textContent="Business owner registration will be added soon.";menuFeedback.hidden=false});
+document.addEventListener("click",event=>{if(!menuContainer.contains(event.target))setMenuOpen(false)});
+document.addEventListener("keydown",event=>{if(event.key==="Escape"&&!siteMenu.hidden){setMenuOpen(false);menuToggle.focus()}});
 </script></body></html>
