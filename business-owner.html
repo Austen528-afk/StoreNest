@@ -142,7 +142,7 @@ h1{font-size:clamp(25px,5dvh,42px);margin:6px 0}
 <p class="sub">Build your own digital home for customers to discover your products or services.</p>
 <button type="button" class="button button-primary" data-switch="register">Register as Business Owner</button>
 <button type="button" class="button button-secondary" data-switch="login">Log in to existing account</button>
-<p class="service-note">Account registration is being prepared. No live orders or payments are enabled.</p>
+<p class="service-note">Create an account with your email and password. No live orders or payments are enabled.</p>
 </div>
 <form class="auth-view" data-view="register" id="registerForm" hidden>
 <div class="back-row"><button class="link-button" type="button" data-switch="start">← Back</button></div>
@@ -199,12 +199,12 @@ h1{font-size:clamp(25px,5dvh,42px);margin:6px 0}
 "use strict";
 /*
  * Authentication setup:
- * 1. Create a dedicated StoreNest Supabase project.
- * 2. Add its URL and PUBLIC publishable key below. Never add a secret/service_role key.
- * 3. Add the deployed StoreNest /business-owner.html URL to Supabase Auth allowed redirect URLs.
- * 4. Configure an SMTP provider before launching public email verification/password resets.
+ * StoreNest has a dedicated Supabase organization and project.
+ * The key below is PUBLIC and safe for browser use. Never add a secret/service_role key.
+ * Configure Site URL and allowed redirect URLs in Supabase Auth for the deployed StoreNest domain.
+ * Configure custom SMTP before launching public email verification/password resets.
  */
-const STORE_AUTH={url:"",publishableKey:""};
+const STORE_AUTH={url:"https://cypbjzbagezdelmemuhb.supabase.co",publishableKey:"sb_publishable_8W8zyYtggQMWoFlnxrzoVA_BUKjQ9va"};
 let authClient=null;
 let signingIn=false;
 let recovering=false;
@@ -235,7 +235,7 @@ async function loadAuth(){
  if(!window.supabase){
    await new Promise((resolve,reject)=>{
      const script=document.createElement("script");
-     script.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.min.js";
+     script.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0";
      script.onload=resolve;script.onerror=()=>reject(new Error("Unable to load the sign-in service. Check your internet connection."));
      document.head.appendChild(script);
    });
@@ -253,6 +253,15 @@ async function loadAuth(){
    }
  });
  return authClient;
+}
+async function upsertOwnerProfile(client,user,fallbackName=""){
+ if(!user?.id)return;
+ const fullName=String(user.user_metadata?.full_name||fallbackName).trim().slice(0,100);
+ if(fullName.length<2)return;
+ const {error}=await client.from("business_owner_profiles").upsert({
+   user_id:user.id,full_name:fullName,updated_at:new Date().toISOString()
+ },{onConflict:"user_id"});
+ if(error)console.warn("StoreNest profile sync failed:",error.message);
 }
 function busy(form,busyState){
  const submit=form.querySelector('button[type="submit"]');
@@ -284,7 +293,7 @@ $("registerForm").addEventListener("submit",async event=>{
    const client=await loadAuth();
    const {data,error}=await client.auth.signUp({email,password,options:{data:{full_name:name},emailRedirectTo:location.origin+location.pathname}});
    if(error)throw error;
-   if(data.session?.user){$("accountEmail").textContent=data.user?.email||email;showView("account");}
+   if(data.session?.user){await upsertOwnerProfile(client,data.user,name);$("accountEmail").textContent=data.user?.email||email;showView("account");}
    else showMessage("register","Check your email for a confirmation link. Once confirmed, return here and log in.","success");
  }catch(error){showMessage("register",friendlyError(error));}
  finally{signingIn=false;busy(form,false)}
@@ -296,6 +305,7 @@ $("loginForm").addEventListener("submit",async event=>{
    const {data,error}=await client.auth.signInWithPassword({email:$("loginEmail").value.trim(),password:$("loginPassword").value});
    if(error)throw error;
    if(!data.user)throw new Error("Login did not complete. Please try again.");
+   await upsertOwnerProfile(client,data.user);
    $("accountEmail").textContent=data.user.email||"Business owner";
    showView("account");
  }catch(error){showMessage("login",friendlyError(error))}
@@ -345,7 +355,7 @@ if(isConfigured()){
  loadAuth().then(async client=>{
    const {data,error}=await client.auth.getUser();
    if(error&&error.name!=="AuthSessionMissingError")return;
-   if(data.user&&!recovering){$("accountEmail").textContent=data.user.email||"Business owner";showView("account")}
+   if(data.user&&!recovering){await upsertOwnerProfile(client,data.user);$("accountEmail").textContent=data.user.email||"Business owner";showView("account")}
  }).catch(()=>{});
 }
 if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}))}
