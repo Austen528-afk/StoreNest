@@ -1,21 +1,180 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#10171d"><meta name="description" content="Browse a StoreNest business storefront."><title>Storefront — StoreNest</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#fafafa">
+<meta name="description" content="Discover products and services from a StoreNest business.">
+<link rel="icon" type="image/png" href="/icons/icon-192.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<title>Business Storefront — StoreNest</title>
 <style>
-:root{color-scheme:dark;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#10171d;color:#eff4f7}a{color:inherit}.page{width:min(980px,calc(100% - 32px));margin:auto;min-height:100vh;display:flex;flex-direction:column}.top{height:68px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffffff19}.logo{font-size:23px;font-weight:900;letter-spacing:-.08em;text-decoration:none}.logo span{color:#60d6bd}.owner-link{font-size:11px;color:#9db0ba;text-decoration:none}.owner-link:hover{color:#60d6bd}.hero{margin-top:22px;min-height:220px;border:1px solid #ffffff1b;border-radius:16px;background:radial-gradient(ellipse at 80% 0%,#4e9e8050,transparent 40%),linear-gradient(130deg,#1b3735,#1a252a 65%);display:flex;align-items:flex-end;gap:16px;padding:24px}.avatar{width:62px;height:62px;flex:0 0 62px;border:1px solid #83e3cf55;border-radius:17px;background:#60d6bd22;color:#83e3cf;display:grid;place-items:center;font-size:20px;font-weight:900}.hero-copy{min-width:0}.eyebrow{color:#8bdccb;font-size:9px;letter-spacing:.13em;font-weight:850}.hero h1{font-size:clamp(24px,5vw,36px);letter-spacing:-.055em;margin:5px 0}.hero p{font-size:11px;line-height:1.5;color:#a7bdc0;margin:4px 0 0}.contact{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.contact a,.contact span{font-size:10px;color:#b5c7cc;text-decoration:none;border:1px solid #ffffff1c;background:#ffffff06;padding:7px 10px;border-radius:30px}.contact a:hover{border-color:#60d6bd69;color:#79dfc6}.catalog-head{display:flex;justify-content:space-between;align-items:end;margin:22px 0 12px}.catalog-head h2{font-size:18px;letter-spacing:-.04em;margin:0}.catalog-head span{color:#8da2ac;font-size:10px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}.card{border:1px solid #ffffff17;background:#18232a;border-radius:11px;overflow:hidden}.art{height:130px;background:linear-gradient(135deg,#25383d,#1a252b);display:grid;place-items:center;color:#60d6bd80;font-size:32px}.art img{width:100%;height:100%;object-fit:cover}.body{padding:11px}.body-top{display:flex;align-items:start;justify-content:space-between;gap:8px}.body h3{font-size:12px;margin:0}.type{font-size:8px;color:#88a5ac;border:1px solid #ffffff18;border-radius:20px;padding:3px 6px}.body p{font-size:10px;color:#9aadb5;line-height:1.45;margin:7px 0;min-height:28px}.price{font-size:13px;font-weight:850}.empty,.notice{margin:20px 0;border:1px dashed #ffffff20;border-radius:12px;padding:32px 20px;text-align:center;color:#9aadb5;font-size:11px}.empty strong{display:block;color:#e9f0f1;font-size:13px;margin-bottom:6px}.notice{border-style:solid;color:#e4b3a7}.footer{margin-top:auto;padding:22px 0 15px;border-top:1px solid #ffffff18;color:#81969f;font-size:9px;display:flex;justify-content:space-between;gap:8px}.state{padding:10px 0;color:#91a5ae;font-size:11px}@media(max-width:650px){.page{width:calc(100% - 24px)}.top{height:58px}.hero{margin-top:12px;min-height:178px;padding:15px;gap:11px}.avatar{width:49px;height:49px;flex-basis:49px;border-radius:13px;font-size:16px}.hero h1{font-size:23px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.art{height:104px}.body{padding:8px}.body h3{font-size:10px}.body p{font-size:8px}.price{font-size:11px}.catalog-head{margin-top:18px}.catalog-head h2{font-size:16px}}
-
-.hero.has-cover{background-size:cover;background-position:center}.hero.layout-showcase{min-height:320px}.hero.layout-compact{min-height:155px}
-.hero .hero-subtitle{font-weight:700;color:#e9f8f2;margin:3px 0}
-.welcome-block{padding:12px 16px;border-radius:12px;background:#ffffff06;color:#c0d1d5;margin:12px 0;font-size:12px;line-height:1.6}
+:root{color-scheme:light;--ink:#181818;--sub:#666;--canvas:#fafafa;--surface:#f2f2f2;--accent:#e6a15e;--hero:#251d18;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink)}
+button,a{font:inherit}button{cursor:pointer}a{color:inherit}
+button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+[hidden]{display:none!important}
+.page{width:min(1280px,calc(100% - 28px));min-height:100vh;margin:auto;display:flex;flex-direction:column}
+.top{height:58px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{font-weight:900;font-size:21px;letter-spacing:-.07em;text-decoration:none}.logo span{color:#279b83}
+.top nav{display:flex;align-items:center;gap:20px}
+.back-link,.owner-link{color:#656565;font-size:12px;text-decoration:none;font-weight:600}
+.back-link:hover,.owner-link:hover{color:#161616}
+.hero{position:relative;min-height:215px;isolation:isolate;display:flex;flex-direction:column;justify-content:space-between;border-radius:22px;overflow:hidden;background:var(--hero);color:#fff;padding:24px 28px 22px}
+.hero-cover{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
+.hero:has(.hero-cover):before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#1e1817ed 0%,#1e1817a1 66%,#1e181785 100%)}
+.hero-top{display:flex;align-items:start;justify-content:space-between;gap:16px}
+.store-identity{display:flex;align-items:center;gap:10px;min-width:0}
+.store-logo{width:35px;height:35px;border-radius:9px;object-fit:cover}
+.brand-name{font-size:clamp(20px,2.4vw,27px);font-weight:850;letter-spacing:-.035em;overflow-wrap:anywhere}
+.brand-dot{color:var(--accent)}
+.bag{width:52px;min-height:52px;display:flex;align-items:center;justify-content:center;gap:5px;flex-shrink:0;border:0;border-radius:15px;background:#ffffff1b;color:white;font-weight:800}
+.bag:hover{background:#ffffff32}.bag svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.hero-copy{margin-top:18px;max-width:740px}
+.hero h1{margin:0 0 7px;font-size:clamp(24px,3.3vw,40px);letter-spacing:-.045em;line-height:1.15}
+.hero-tag{margin:0 0 7px;color:#f9e6d2;font-weight:600;font-size:14px}
+.hero p{margin:0;color:#ddd0c9;font-size:13px;line-height:1.45}
+.layout-showcase{min-height:330px}.layout-compact{min-height:170px}
+.welcome{margin:16px 0 0;background:#fff;border:1px solid #e9e9e9;border-radius:12px;padding:15px 17px;color:#444;font-size:13px;line-height:1.6}
+.contacts{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:13px}
+.contacts:empty{display:none}
+.contacts a,.contacts span{font-size:11px;text-decoration:none;color:#555;background:#eee;padding:7px 11px;border-radius:100px}
+.contacts a:hover{background:#e1e1e1;color:#111}
+.catalog-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:23px 0 17px}
+.catalog-heading h2{margin:0;font-size:clamp(19px,2.4vw,24px);line-height:1.2;letter-spacing:-.04em;font-weight:800}
+.catalog-heading span{color:#777;font-size:12px;white-space:nowrap}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.card{display:flex;flex-direction:column;min-width:0;border-radius:19px;background:#f2f2f2;overflow:hidden}
+.art{aspect-ratio:1.17/1;width:100%;background:linear-gradient(135deg,#e5e3df,#d8d7d2);display:flex;align-items:center;justify-content:center;font-size:42px;color:#958f86}
+.art img{width:100%;height:100%;object-fit:cover;display:block}
+.item-body{padding:17px 16px 16px;display:flex;flex-direction:column;flex:1;min-height:170px}
+.item-body h3{margin:0 0 8px;font-size:17px;line-height:1.35;letter-spacing:-.025em;font-weight:750}
+.item-type{font-size:11px;color:#777;margin:-4px 0 6px}
+.item-body p{margin:0 0 14px;font-size:12px;color:#737373;line-height:1.55;min-height:38px;flex:1}
+.item-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.price{font-size:21px;font-weight:720;letter-spacing:-.035em;white-space:nowrap}
+.add{display:flex;align-items:center;gap:7px;justify-content:center;min-width:90px;padding:9px 13px;border:0;border-radius:100px;background:#151515;color:#fff;font-size:13px;font-weight:700;white-space:nowrap}
+.add:hover{background:#343434}.add svg{width:17px;height:17px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round}
+.empty,.notice{margin:20px 0;border:1px solid #e7e7e7;background:#fff;border-radius:17px;padding:35px 20px;text-align:center;color:#666;font-size:13px;line-height:1.6}
+.empty strong{display:block;color:#222;font-size:17px;margin-bottom:6px}
+.footer{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-top:auto;padding:35px 0 20px;color:#888;font-size:11px}
+.state{padding:24px 0;color:#777;font-size:14px}
+.cart-backdrop{position:fixed;inset:0;z-index:100;background:#0008;display:flex;justify-content:flex-end}
+.cart-panel{height:100%;width:min(420px,100%);background:#fff;box-shadow:-10px 0 40px #0002;display:flex;flex-direction:column;padding:23px}
+.cart-head{display:flex;align-items:center;justify-content:space-between;gap:15px;border-bottom:1px solid #e9e9e9;padding-bottom:16px}
+.cart-head h2{font-size:23px;margin:0}
+.close-cart{border:0;border-radius:10px;background:#f2f2f2;width:38px;height:38px;font-size:25px}
+.cart-items{flex:1;overflow:auto;padding:12px 0}
+.cart-item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid #eee}
+.cart-item strong{display:block;font-size:13px}.cart-item small{display:block;color:#7c7c7c;margin-top:5px}
+.cart-controls{display:flex;align-items:center;gap:9px}.cart-controls button{width:29px;height:29px;border:1px solid #ddd;border-radius:8px;background:white;font-weight:800}
+.cart-total{padding:18px 0 8px;border-top:1px solid #e9e9e9;display:flex;justify-content:space-between;align-items:center;font-size:18px;font-weight:800}
+.cart-note{font-size:12px;color:#777;line-height:1.5;margin:10px 0 0}
+.cart-clear{width:100%;padding:13px;border-radius:12px;border:0;background:#1a1a1a;color:white;font-weight:750}
+.toast{position:fixed;z-index:80;bottom:28px;left:50%;transform:translateX(-50%);background:#222;color:white;border-radius:12px;padding:10px 18px;font-size:12px;box-shadow:0 8px 25px #0003}
+@media(max-width:1000px){.grid{gap:12px}.item-body{padding:13px 12px}.item-body h3{font-size:15px}.art{aspect-ratio:1.12/1}}
+@media(max-width:750px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.hero{min-height:202px;padding:20px}.footer{flex-direction:column;align-items:flex-start;gap:5px}.top{height:55px}.item-body{min-height:174px}}
+@media(max-width:470px){.page{width:calc(100% - 18px)}.top{height:51px}.logo{font-size:19px}.top nav{gap:9px}.back-link,.owner-link{font-size:10px}.hero{min-height:195px;padding:16px;border-radius:17px}.brand-name{font-size:22px}.bag{width:44px;min-height:44px;border-radius:12px}.hero h1{font-size:25px}.hero p{font-size:11px}.hero-tag{font-size:12px}.grid{gap:9px}.card{border-radius:15px}.art{aspect-ratio:1.1/1}.item-body{padding:12px 11px;min-height:160px}.item-body h3{font-size:13px}.item-body p{font-size:11px;min-height:38px}.price{font-size:17px}.add{min-width:auto;padding:9px 11px;font-size:12px}.catalog-heading{margin:20px 0 13px}.catalog-heading h2{font-size:19px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:0.01ms!important;transition-duration:0.01ms!important}}
 </style>
 </head>
-<body><div class="page"><header class="top"><a href="/" class="logo">store<span>nest.</span></a><a href="/business-owner.html#login" class="owner-link">Business owner? Sign in →</a></header><main id="main"><div class="state">Loading storefront…</div></main><footer class="footer"><span>StoreNest · Your business. Your storefront.</span><span>Contact the business directly to enquire</span></footer></div>
+<body>
+<div class="page">
+  <header class="top">
+    <a class="logo" href="/" aria-label="StoreNest home">store<span>nest.</span></a>
+    <nav><a class="back-link" href="/">← Explore stores</a><a class="owner-link" href="/business-owner.html#login">Business owner</a></nav>
+  </header>
+  <main id="main"><div class="state">Loading storefront…</div></main>
+  <footer class="footer"><span>StoreNest · Your business. Your storefront.</span><span>Products displayed for browsing · Checkout not available yet</span></footer>
+</div>
+<div class="cart-backdrop" id="cartBackdrop" hidden>
+  <aside class="cart-panel" role="dialog" aria-modal="true" aria-label="Your basket">
+    <div class="cart-head"><h2>Your basket</h2><button type="button" class="close-cart" id="closeCart" aria-label="Close basket">×</button></div>
+    <div id="cartItems" class="cart-items"></div>
+    <div class="cart-total"><span>Subtotal</span><span id="cartTotal">R0.00</span></div>
+    <button type="button" id="clearCart" class="cart-clear">Clear basket</button>
+    <p class="cart-note">Basket preview only. Orders and checkout are not enabled yet.</p>
+  </aside>
+</div>
+<div id="toast" class="toast" role="status" hidden></div>
 <script>
 "use strict";
 const CONFIG={url:"https://cypbjzbagezdelmemuhb.supabase.co",key:"sb_publishable_8W8zyYtggQMWoFlnxrzoVA_BUKjQ9va"};
+const cart=new Map();
+let availableItems=[],toastTimer=null;
+const $=id=>document.getElementById(id);
 function esc(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function initials(name){return String(name||"SN").split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join("").toUpperCase()||"SN"}
-async function main(){const slug=new URLSearchParams(location.search).get("slug");const root=document.getElementById("main");if(!slug){root.innerHTML='<div class="notice">This storefront link is incomplete.</div>';return}try{if(!window.supabase)await new Promise((resolve,reject)=>{const script=document.createElement("script");script.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0";script.onload=resolve;script.onerror=reject;document.head.appendChild(script)});const client=window.supabase.createClient(CONFIG.url,CONFIG.key,{auth:{persistSession:false,autoRefreshToken:false}});const {data:business,error}=await client.from("businesses").select("id,name,slug,category,description,logo_url,location,phone,email,website,is_published,storefront_config").eq("slug",slug).eq("is_published",true).maybeSingle();if(error)throw error;if(!business){root.innerHTML='<div class="notice">This storefront is unavailable. It may be unpublished or the link may have changed.</div>';return}const {data:items,error:itemError}=await client.from("business_items").select("id,name,item_type,description,price,image_url").eq("business_id",business.id).eq("is_available",true).order("display_order").order("created_at",{ascending:false});if(itemError)throw itemError;document.title=`${business.name} — StoreNest`;const contact=[];if(business.location)contact.push(`<span>⌖ ${esc(business.location)}</span>`);if(business.phone)contact.push(`<a href="tel:${esc(business.phone)}">☎ ${esc(business.phone)}</a>`);if(business.email)contact.push(`<a href="mailto:${esc(business.email)}">✉ ${esc(business.email)}</a>`);if(business.website)contact.push(`<a href="${/^https?:\/\//i.test(business.website)?esc(business.website):"https://"+esc(business.website)}" target="_blank" rel="noopener noreferrer">↗ Visit website</a>`);const cards=(items||[]).map(item=>`<article class="card"><div class="art">${item.image_url?`<img src="${esc(item.image_url)}" alt="${esc(item.name)}">`:item.item_type==="service"?"✦":"▧"}</div><div class="body"><div class="body-top"><h3>${esc(item.name)}</h3><span class="type">${item.item_type==="service"?"Service":"Product"}</span></div><p>${esc(item.description||"")}</p><span class="price">R${Number(item.price||0).toFixed(2)}</span></div></article>`).join("");const config=business.storefront_config||{};const accent=/^#[0-9a-f]{6}$/i.test(config.accent||"")?config.accent:"#60d6bd";const hero=/^https:\/\/[^\s"'<>]+$/i.test(config.hero||"")?config.hero:"";const layout=["classic","showcase","compact"].includes(config.layout)?config.layout:"classic";document.documentElement.style.setProperty("--store-accent",accent);const heroStyle=hero?'style="background-image:linear-gradient(#10171d70,#10171dd1),url(&quot;'+esc(hero)+'&quot;);border-color:'+accent+'55"':'style="border-color:'+accent+'33"';root.innerHTML=`<section class="hero layout-${layout} ${hero?"has-cover":""}" ${heroStyle}><div class="avatar" style="color:${accent};border-color:${accent}55">${business.logo_url?`<img src="${esc(business.logo_url)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">`:esc(initials(business.name))}</div><div class="hero-copy"><span class="eyebrow">${esc(business.category||"LOCAL BUSINESS")}</span><h1>${esc(config.headline||business.name)}</h1>${config.tagline?`<p class="hero-subtitle">${esc(config.tagline)}</p>`:""}<p>${esc(business.description||"Welcome to our StoreNest storefront.")}</p></div></section>${config.welcome?`<div class="welcome-block">${esc(config.welcome)}</div>`:""}<div class="contact">${contact.join("")}</div><div class="catalog-head"><h2>Products &amp; Services</h2><span>${(items||[]).length} available</span></div>${cards?`<section class="grid">${cards}</section>`:'<section class="empty"><strong>Catalogue coming soon</strong>This business has not added available products or services yet.</section>'}`}catch(error){root.innerHTML='<div class="notice">We couldn’t load this storefront right now. Please try again later.</div>';console.error("Storefront load error",error)}}
-main();
-</script></body></html>
+function safeUrl(value){try{const u=new URL(value);return ["https:","http:"].includes(u.protocol)?u.href:""}catch{return""}}
+function money(v){return "R"+Number(v||0).toFixed(2)}
+function toast(msg){clearTimeout(toastTimer);$("toast").textContent=msg;$("toast").hidden=false;toastTimer=setTimeout(()=>{$("toast").hidden=true},1900)}
+function cartQuantity(){return [...cart.values()].reduce((n,q)=>n+q,0)}
+function syncCartBadge(){const count=$("bagCount");if(count)count.textContent=String(cartQuantity())}
+function renderCart(){
+  const rows=availableItems.filter(i=>cart.has(i.id));
+  $("cartItems").innerHTML=rows.length?rows.map(i=>'<div class="cart-item"><div><strong>'+esc(i.name)+'</strong><small>'+money(i.price)+' each</small></div><div class="cart-controls"><button type="button" data-cart-action="minus" data-id="'+esc(i.id)+'" aria-label="Remove one '+esc(i.name)+'">−</button><span>'+cart.get(i.id)+'</span><button type="button" data-cart-action="plus" data-id="'+esc(i.id)+'" aria-label="Add one '+esc(i.name)+'">+</button></div></div>').join(''):'<p class="empty">Your basket is empty. Add something from the menu.</p>';
+  $("cartTotal").textContent=money(rows.reduce((sum,i)=>sum+Number(i.price)*cart.get(i.id),0));
+  syncCartBadge();
+}
+function openCart(){renderCart();$("cartBackdrop").hidden=false;$("closeCart").focus()}
+function closeCart(){$("cartBackdrop").hidden=true;const trigger=$("openCart");if(trigger)trigger.focus()}
+$("closeCart").addEventListener("click",closeCart);
+$("cartBackdrop").addEventListener("click",e=>{if(e.target===$("cartBackdrop"))closeCart()});
+$("clearCart").addEventListener("click",()=>{cart.clear();renderCart()});
+$("cartItems").addEventListener("click",e=>{const b=e.target.closest("[data-cart-action]");if(!b)return;const id=b.dataset.id;const next=(cart.get(id)||0)+(b.dataset.cartAction==="plus"?1:-1);if(next<=0)cart.delete(id);else cart.set(id,next);renderCart()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("cartBackdrop").hidden)closeCart()});
+$("main").addEventListener("click",e=>{
+  const add=e.target.closest("[data-add-item]");
+  if(add){const id=add.dataset.addItem;if(!availableItems.some(i=>i.id===id))return;cart.set(id,(cart.get(id)||0)+1);syncCartBadge();toast("Added to basket");return}
+  if(e.target.closest("#openCart"))openCart();
+});
+async function load(){
+ const slug=new URLSearchParams(location.search).get("slug");
+ const root=$("main");
+ if(!slug){root.innerHTML='<div class="notice">This storefront link is incomplete.</div>';return}
+ try{
+   if(!window.supabase)await new Promise((resolve,reject)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0";s.onload=resolve;s.onerror=reject;document.head.append(s)});
+   const client=window.supabase.createClient(CONFIG.url,CONFIG.key,{auth:{persistSession:false,autoRefreshToken:false}});
+   const response=await client.from("businesses").select("id,name,slug,category,description,logo_url,location,phone,email,website,is_published,storefront_config").eq("slug",slug).eq("is_published",true).maybeSingle();
+   if(response.error)throw response.error;
+   const business=response.data;
+   if(!business){root.innerHTML='<div class="notice">This storefront is unavailable. It may be unpublished or the link may have changed.</div>';return}
+   const catalog=await client.from("business_items").select("id,name,item_type,description,price,image_url").eq("business_id",business.id).eq("is_available",true).order("display_order").order("created_at",{ascending:false});
+   if(catalog.error)throw catalog.error;
+   availableItems=catalog.data||[];
+   document.title=business.name+" — StoreNest";
+   const cfg=business.storefront_config||{};
+   const accent=/^#[0-9a-f]{6}$/i.test(cfg.accent||"")?cfg.accent:"#e6a15e";
+   document.documentElement.style.setProperty("--accent",accent);
+   const layout=["classic","showcase","compact"].includes(cfg.layout)?cfg.layout:"classic";
+   const contacts=[];
+   if(business.location)contacts.push('<span>⌖ '+esc(business.location)+'</span>');
+   if(business.phone)contacts.push('<a href="tel:'+esc(business.phone)+'">☎ '+esc(business.phone)+'</a>');
+   if(business.email)contacts.push('<a href="mailto:'+esc(business.email)+'">✉ '+esc(business.email)+'</a>');
+   const website=safeUrl(business.website&&business.website.includes("://")?business.website:"https://"+business.website);
+   if(business.website&&website)contacts.push('<a href="'+esc(website)+'" rel="noopener noreferrer" target="_blank">↗ Website</a>');
+   const cover=safeUrl(cfg.hero);
+   const logo=safeUrl(business.logo_url);
+   const photos=availableItems.map(item=>{
+     const media=safeUrl(item.image_url);
+     return '<article class="card"><div class="art">'+(media?'<img src="'+esc(media)+'" alt="'+esc(item.name)+'" loading="lazy">':item.item_type==="service"?"✦":"▧")+'</div><div class="item-body"><h3>'+esc(item.name)+'</h3><p>'+esc(item.description||"")+'</p><div class="item-bottom"><span class="price">'+money(item.price)+'</span><button class="add" type="button" data-add-item="'+esc(item.id)+'" aria-label="Add '+esc(item.name)+' to basket"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add</button></div></div></article>';
+   }).join("");
+   root.innerHTML=
+     '<section class="hero layout-'+layout+'">'+(cover?'<img class="hero-cover" src="'+esc(cover)+'" alt="">':'')+
+     '<div class="hero-top"><div class="store-identity">'+(logo?'<img class="store-logo" src="'+esc(logo)+'" alt="">':'')+
+     '<span class="brand-name">'+esc(business.name)+'<span class="brand-dot">.</span></span></div>'+
+     '<button type="button" id="openCart" class="bag" aria-label="Open basket"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 12H4L5 8ZM9 9V6a3 3 0 0 1 6 0v3"/></svg><span id="bagCount">0</span></button></div>'+
+     '<div class="hero-copy"><h1>'+esc(cfg.headline||"Welcome to "+business.name)+'</h1>'+
+     (cfg.tagline?'<p class="hero-tag">'+esc(cfg.tagline)+'</p>':'')+
+     '<p>'+esc(business.description||business.category||"Discover our products and services.")+'</p></div></section>'+
+     (cfg.welcome?'<div class="welcome">'+esc(cfg.welcome)+'</div>':'')+
+     '<div class="contacts">'+contacts.join("")+'</div>'+
+     '<div class="catalog-heading"><h2>'+esc(business.category==="Food & Drink"?"Our Menu":"Products & Services")+'</h2><span>'+availableItems.length+' item'+(availableItems.length===1?'':'s')+'</span></div>'+
+     (photos?'<section class="grid" aria-label="Available products and services">'+photos+'</section>':'<section class="empty"><strong>Catalogue coming soon</strong>This business has not added available products or services yet.</section>');
+ }catch(error){root.innerHTML='<div class="notice">We couldn’t load this storefront right now. Please try again later.</div>';console.error("Storefront load error",error)}
+}
+load();
+</script>
+</body>
+</html>
