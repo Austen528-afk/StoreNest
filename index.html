@@ -85,24 +85,17 @@ p{color:#afbdc9;line-height:1.5;font-size:clamp(12px,min(1.7vw,2.5dvh),19px);max
 .menu-register span{color:#60d6bd;font-size:19px}
 .menu-feedback{margin:10px 4px 2px;color:#adbfca;font-size:12px;line-height:1.45}
 @media(max-width:430px){.menu-toggle{width:42px;height:40px}}
+.empty-home{flex:1;min-height:0;display:block;padding:0}.menu-register{text-decoration:none}
 </style>
 </head>
 <body>
 <div class="wrap">
-<header class="top"><div class="logo">store<span>nest.</span></div><div class="top-actions"><button class="install-btn" id="installBtn" type="button">Install app</button><div class="menu-container" id="menuContainer"><button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="siteMenu"><span></span><span></span><span></span></button><nav class="site-menu" id="siteMenu" aria-label="StoreNest menu" hidden><button class="menu-register" id="registerBusiness" type="button">Register as business owner <span aria-hidden="true">→</span></button><p class="menu-feedback" id="menuFeedback" role="status" hidden></p></nav></div></div></header>
-<main>
-<section class="hero"><div class="pill">A new home for independent business</div><h1>Your business.<br><em>Your storefront.</em></h1><p>StoreNest is building a simple way for local shops and service providers to showcase their offerings, share a storefront link, connect with customers, and manage their business online.</p><p class="install-hint" id="installHint" role="status"></p></section>
-<section class="cards" aria-label="Planned platform features">
-<article class="card"><div class="emoji" aria-hidden="true">🏬</div><h2>Personal storefronts</h2><p>Your own branded digital home with products, services and a shareable link.</p></article>
-<article class="card"><div class="emoji" aria-hidden="true">🛍️</div><h2>Orders & bookings</h2><p>Give customers an easier way to shop, request services and make bookings.</p></article>
-<article class="card"><div class="emoji" aria-hidden="true">📊</div><h2>Business dashboard</h2><p>Organise your offerings and manage activity from one private workspace.</p></article>
-</section>
-</main>
-<footer class="footer"><span>StoreNest · Building the future of local commerce</span><span>Early project preview · No live orders or payments</span></footer>
+<header class="top"><div class="logo">store<span>nest.</span></div><div class="top-actions"><button class="install-btn" id="installBtn" type="button">Install app</button><div class="menu-container" id="menuContainer"><button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="siteMenu"><span></span><span></span><span></span></button><nav class="site-menu" id="siteMenu" aria-label="StoreNest menu" hidden><a class="menu-register" href="/business-owner.html">Register as business owner <span aria-hidden="true">→</span></a></nav></div></div></header>
+<main class="empty-home" aria-label="StoreNest home"></main>
 </div><script>
 if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("/sw.js").catch(()=>{})})}
 let installPrompt=null;const installBtn=document.getElementById("installBtn");const installHint=document.getElementById("installHint");
-function showHint(message){installHint.textContent=message;installHint.classList.add("visible")}
+function showHint(message){if(!installHint)return;installHint.textContent=message;installHint.classList.add("visible")}
 window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();installPrompt=event;installBtn.classList.add("visible")});
 installBtn.addEventListener("click",async()=>{if(!installPrompt){showHint("Use your browser menu to install or add StoreNest to your home screen.");return}const prompt=installPrompt;installPrompt=null;installBtn.classList.remove("visible");await prompt.prompt();const result=await prompt.userChoice;if(result.outcome!=="accepted")showHint("You can install StoreNest later from your browser menu.")});
 window.addEventListener("appinstalled",()=>{installBtn.classList.remove("visible");showHint("StoreNest is installed.")});
@@ -111,11 +104,8 @@ if(/iPhone|iPad|iPod/.test(navigator.userAgent)&&!window.navigator.standalone){s
 const menuContainer=document.getElementById("menuContainer");
 const menuToggle=document.getElementById("menuToggle");
 const siteMenu=document.getElementById("siteMenu");
-const registerBusiness=document.getElementById("registerBusiness");
-const menuFeedback=document.getElementById("menuFeedback");
-function setMenuOpen(open){siteMenu.hidden=!open;menuToggle.setAttribute("aria-expanded",String(open));menuToggle.setAttribute("aria-label",open?"Close menu":"Open menu");if(!open){menuFeedback.hidden=true;menuFeedback.textContent=""}}
+function setMenuOpen(open){siteMenu.hidden=!open;menuToggle.setAttribute("aria-expanded",String(open));menuToggle.setAttribute("aria-label",open?"Close menu":"Open menu");}
 menuToggle.addEventListener("click",()=>setMenuOpen(siteMenu.hidden));
-registerBusiness.addEventListener("click",()=>{menuFeedback.textContent="Business owner registration will be added soon.";menuFeedback.hidden=false});
 document.addEventListener("click",event=>{if(!menuContainer.contains(event.target))setMenuOpen(false)});
 document.addEventListener("keydown",event=>{if(event.key==="Escape"&&!siteMenu.hidden){setMenuOpen(false);menuToggle.focus()}});
 </script></body></html>
