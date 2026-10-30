@@ -87,11 +87,31 @@ p{color:#afbdc9;line-height:1.5;font-size:clamp(12px,min(1.7vw,2.5dvh),19px);max
 .menu-feedback{margin:10px 4px 2px;color:#adbfca;font-size:12px;line-height:1.45}
 @media(max-width:430px){.menu-toggle{width:42px;height:40px}}
 .empty-home{flex:1;min-height:0;display:block;padding:0}.menu-register{text-decoration:none}
+.search-row{flex:0 0 auto;padding:clamp(12px,2dvh,20px) 0 0}
+.search-form{width:min(720px,100%);display:flex;align-items:center;gap:10px;min-height:54px;padding:5px 6px 5px 18px;border:1px solid #ffffff32;border-radius:15px;background:#1a252c;transition:border-color .2s,box-shadow .2s}
+.search-form:focus-within{border-color:#60d6bd;box-shadow:0 0 0 3px #60d6bd18}
+.search-input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:#eff4f7;font:inherit;font-size:15px}
+.search-input::placeholder{color:#92a8b5}
+.search-submit{width:42px;height:42px;flex:0 0 42px;display:grid;place-items:center;border:0;border-radius:11px;background:#60d6bd;color:#10171d;cursor:pointer}
+.search-submit:hover{background:#80e4cd}
+.search-submit:focus-visible{outline:2px solid #eff4f7;outline-offset:2px}
+.search-submit svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.search-status{color:#a4b8c4;font-size:12px;margin:8px 0 0}
+.search-status[hidden]{display:none}
+@media(max-width:690px){.search-row{padding-top:12px}.search-form{min-height:48px;padding:4px 4px 4px 14px;border-radius:13px}.search-input{font-size:14px}.search-submit{width:40px;height:40px;flex-basis:40px;border-radius:10px}}
+@media(max-height:500px){.search-row{padding-top:6px}.search-form{min-height:42px;padding-top:2px;padding-bottom:2px}.search-submit{height:36px;width:36px;flex-basis:36px}}
 </style>
 </head>
 <body>
 <div class="wrap">
 <header class="top"><div class="logo">store<span>nest.</span></div><div class="top-actions"><button class="install-btn" id="installBtn" type="button">Install app</button><div class="menu-container" id="menuContainer"><button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="siteMenu"><span></span><span></span><span></span></button><nav class="site-menu" id="siteMenu" aria-label="StoreNest menu" hidden><a class="menu-register" href="/business-owner.html">Register as business owner <span aria-hidden="true">→</span></a></nav></div></div></header>
+<section class="search-row" role="search" aria-label="Search StoreNest">
+  <form class="search-form" id="storeSearchForm">
+    <input class="search-input" id="storeSearchInput" type="search" name="q" placeholder="Search stores, products or services" aria-label="Search stores, products or services" autocomplete="off">
+    <button class="search-submit" type="submit" aria-label="Search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg></button>
+  </form>
+  <p class="search-status" id="storeSearchStatus" role="status" hidden></p>
+</section>
 <main class="empty-home" aria-label="StoreNest home"></main>
 </div><script>
 if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("/sw.js").catch(()=>{})})}
@@ -103,6 +123,16 @@ window.addEventListener("appinstalled",()=>{installBtn.classList.remove("visible
 if(/Android/i.test(navigator.userAgent)){installBtn.classList.add("visible");installBtn.textContent="Install app"}
 if(/iPhone|iPad|iPod/.test(navigator.userAgent)&&!window.navigator.standalone){showHint("On iPhone: open Share, then choose Add to Home Screen to install StoreNest.")}
 
+const storeSearchForm=document.getElementById("storeSearchForm");
+const storeSearchInput=document.getElementById("storeSearchInput");
+const storeSearchStatus=document.getElementById("storeSearchStatus");
+storeSearchForm.addEventListener("submit",event=>{
+  event.preventDefault();
+  if(!storeSearchInput.value.trim()){storeSearchInput.focus();return}
+  storeSearchStatus.textContent="Search results will appear here when businesses are added to StoreNest.";
+  storeSearchStatus.hidden=false;
+});
+storeSearchInput.addEventListener("input",()=>{storeSearchStatus.hidden=true});
 const menuContainer=document.getElementById("menuContainer");
 const menuToggle=document.getElementById("menuToggle");
 const siteMenu=document.getElementById("siteMenu");
