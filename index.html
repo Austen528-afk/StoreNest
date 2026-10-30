@@ -100,6 +100,13 @@ p{color:#afbdc9;line-height:1.5;font-size:clamp(12px,min(1.7vw,2.5dvh),19px);max
 .search-status[hidden]{display:none}
 @media(max-width:690px){.search-row{padding-top:12px}.search-form{min-height:48px;padding:4px 4px 4px 14px;border-radius:13px}.search-input{font-size:14px}.search-submit{width:40px;height:40px;flex-basis:40px;border-radius:10px}}
 @media(max-height:500px){.search-row{padding-top:6px}.search-form{min-height:42px;padding-top:2px;padding-bottom:2px}.search-submit{height:36px;width:36px;flex-basis:36px}}
+
+.search-results{width:min(800px,100%);padding:14px 0;overflow-y:auto;max-height:calc(100dvh - 180px);scrollbar-width:thin}
+.search-results[hidden]{display:none}.results-head{font-size:12px;color:#9eb3bc;margin:0 0 11px}
+.result-card{display:flex;align-items:center;gap:13px;text-decoration:none;padding:14px;margin-bottom:9px;border:1px solid #ffffff22;background:#1a252c;border-radius:14px}
+.result-card:hover{border-color:#60d6bd66;background:#223038}.result-avatar{width:48px;height:48px;flex:0 0 48px;border-radius:13px;background:#60d6bd24;color:#60d6bd;display:grid;place-items:center;font-weight:900;overflow:hidden}
+.result-avatar img{width:100%;height:100%;object-fit:cover}
+.result-content{flex:1;min-width:0}.result-content strong{display:block;font-size:14px;color:#ecf7f8}.result-content span{display:block;font-size:11px;color:#9db2bc;margin-top:5px}.result-arrow{font-size:20px;color:#60d6bd}
 </style>
 </head>
 <body>
@@ -112,7 +119,7 @@ p{color:#afbdc9;line-height:1.5;font-size:clamp(12px,min(1.7vw,2.5dvh),19px);max
   </form>
   <p class="search-status" id="storeSearchStatus" role="status" hidden></p>
 </section>
-<main class="empty-home" aria-label="StoreNest home"></main>
+<main class="empty-home" aria-label="StoreNest home"><section id="searchResults" class="search-results" aria-live="polite" hidden></section></main>
 </div><script>
 if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("/sw.js").catch(()=>{})})}
 let installPrompt=null;const installBtn=document.getElementById("installBtn");const installHint=document.getElementById("installHint");
@@ -126,13 +133,33 @@ if(/iPhone|iPad|iPod/.test(navigator.userAgent)&&!window.navigator.standalone){s
 const storeSearchForm=document.getElementById("storeSearchForm");
 const storeSearchInput=document.getElementById("storeSearchInput");
 const storeSearchStatus=document.getElementById("storeSearchStatus");
-storeSearchForm.addEventListener("submit",event=>{
-  event.preventDefault();
-  if(!storeSearchInput.value.trim()){storeSearchInput.focus();return}
-  storeSearchStatus.textContent="Search results will appear here when businesses are added to StoreNest.";
-  storeSearchStatus.hidden=false;
-});
-storeSearchInput.addEventListener("input",()=>{storeSearchStatus.hidden=true});
+
+const resultRoot=document.getElementById("searchResults");
+const STORE_SEARCH={url:"https://cypbjzbagezdelmemuhb.supabase.co",key:"sb_publishable_8W8zyYtggQMWoFlnxrzoVA_BUKjQ9va"};
+let searchClient=null,searchCounter=0;
+function escapeResult(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+async function getSearchClient(){
+ if(searchClient)return searchClient;
+ if(!window.supabase)await new Promise((res,rej)=>{const script=document.createElement("script");script.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0";script.onload=res;script.onerror=rej;document.head.append(script)});
+ searchClient=window.supabase.createClient(STORE_SEARCH.url,STORE_SEARCH.key,{auth:{persistSession:false,autoRefreshToken:false}});
+ return searchClient;
+}
+async function findBusinesses(query){
+ const seq=++searchCounter;
+ if(!query){resultRoot.hidden=true;storeSearchStatus.hidden=true;return}
+ resultRoot.hidden=false;resultRoot.textContent="Searching published businesses…";
+ storeSearchStatus.hidden=true;
+ try{
+   const client=await getSearchClient();
+   const {data,error}=await client.rpc("search_storenest_businesses",{search_term:query});
+   if(error)throw error;if(seq!==searchCounter)return;
+   const rows=data||[],esc=escapeResult;
+   resultRoot.innerHTML='<p class="results-head">'+rows.length+' business'+(rows.length===1?'':'es')+' found for "'+esc(query)+'"</p>'+
+     (rows.length?rows.map(b=>'<a class="result-card" href="/storefront.html?slug='+encodeURIComponent(b.slug)+'"><span class="result-avatar">'+(b.logo_url&&/^https:\/\//i.test(b.logo_url)?'<img alt="" src="'+esc(b.logo_url)+'">':esc(b.name.slice(0,1).toUpperCase()))+'</span><span class="result-content"><strong>'+esc(b.name)+'</strong><span>'+esc([b.category,b.location].filter(Boolean).join(' · '))+'</span></span><span class="result-arrow">→</span></a>').join(''):'<p class="results-head">No published businesses match this search.</p>');
+ }catch(e){if(seq!==searchCounter)return;resultRoot.innerHTML='<p class="results-head">Search could not load. Please try again.</p>';console.error("Store search error",e)}
+}
+storeSearchForm.addEventListener("submit",event=>{event.preventDefault();findBusinesses(storeSearchInput.value.trim())});
+storeSearchInput.addEventListener("input",()=>{if(!storeSearchInput.value.trim()){searchCounter++;resultRoot.hidden=true;storeSearchStatus.hidden=true}});
 const menuContainer=document.getElementById("menuContainer");
 const menuToggle=document.getElementById("menuToggle");
 const siteMenu=document.getElementById("siteMenu");
