@@ -366,7 +366,7 @@ $("addItemButton").addEventListener("click",()=>openItemModal());$("emptyAddButt
 $("categoryForm").addEventListener("submit",async event=>{event.preventDefault();try{await addCategory($("categoryName").value)}catch(error){const msg=$("categoryMessage");msg.textContent=friendlyError(error);msg.className="message error";msg.hidden=false}});
 
 let itemMediaBlobUrl="",pendingRemoveItemMedia=false;
-const ITEM_BUCKET="storenest-products";
+const ITEM_BUCKET="storenest-product-media";
 const MEDIA_TYPES={"image/jpeg":"jpg","image/png":"png","image/webp":"webp","image/gif":"gif"};
 function showMediaPreview(url){
  if(itemMediaBlobUrl){URL.revokeObjectURL(itemMediaBlobUrl);itemMediaBlobUrl=""}
