@@ -125,6 +125,31 @@ html,body{background:#f8faf9;color:#182321}
 .result-content strong{color:#192622}.result-content span{color:#6b7771}
 .result-avatar{background:#e6f5ef;color:#178e77}
 .install-btn,.search-submit{background:#5ed4b6;color:#10231c}
+
+/* Personal, device-local business history. Only this content area may scroll. */
+.empty-home{overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#cadbd2 transparent}
+.search-results{max-height:none;overflow:visible;padding-top:16px}
+.recent-businesses{width:100%;padding:clamp(19px,3vw,32px) 0 30px}
+.recent-businesses[hidden]{display:none}
+.recent-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px}
+.recent-heading h2{color:#1a2c24;font-size:clamp(17px,2.1vw,21px);line-height:1.3;font-weight:800;letter-spacing:-.035em;margin:0}
+.recent-heading p{margin:6px 0 0;color:#7c8c84;font-size:12px;line-height:1.45}
+.clear-recent{flex:0 0 auto;background:transparent;border:1px solid #d4e1da;color:#61766b;padding:9px 12px;font-size:11px;font-weight:650;border-radius:10px;cursor:pointer}
+.clear-recent:hover{background:#ecf5f0;color:#1a5944}
+.clear-recent:focus-visible{outline:2px solid #31ac8e;outline-offset:2px}
+.recent-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.recent-card{display:flex;min-width:0;align-items:center;gap:13px;padding:18px 15px;background:#fff;border:1px solid #dae6df;border-radius:16px;text-decoration:none;transition:background .15s,border-color .15s,transform .15s}
+.recent-card:hover{background:#f1f9f4;border-color:#83cdb5;transform:translateY(-1px)}
+.recent-card:focus-visible{outline:2px solid #31ac8e;outline-offset:2px}
+.recent-avatar{width:50px;height:50px;flex:0 0 50px;background:#dff4e9;color:#138e73;border-radius:13px;display:grid;place-items:center;font-size:19px;font-weight:850;overflow:hidden}
+.recent-avatar img{width:100%;height:100%;object-fit:cover}
+.recent-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.recent-text strong{font-size:14px;letter-spacing:-.02em;color:#1a2c24;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.recent-text small{font-size:11px;color:#7b8981;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.recent-go{font-size:18px;color:#2eaa8b}
+.recent-empty{grid-column:1/-1;border:1px dashed #dce8df;background:#ffffffab;border-radius:15px;padding:28px 18px;color:#819289;font-size:13px;line-height:1.5}
+@media(max-width:810px){.recent-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:490px){.recent-grid{grid-template-columns:minmax(0,1fr);gap:9px}.recent-card{padding:13px 14px}.recent-avatar{width:43px;height:43px;flex-basis:43px}.recent-heading{margin-bottom:13px}.recent-heading p{font-size:11px}.clear-recent{padding:8px;font-size:10px}.recent-businesses{padding-top:20px}}
 </style>
 </head>
 <body>
@@ -137,7 +162,19 @@ html,body{background:#f8faf9;color:#182321}
   </form>
   <p class="search-status" id="storeSearchStatus" role="status" hidden></p>
 </section>
-<main class="empty-home" aria-label="StoreNest home"><section id="searchResults" class="search-results" aria-live="polite" hidden></section></main>
+<main class="empty-home" aria-label="StoreNest home">
+  <section id="searchResults" class="search-results" aria-live="polite" hidden></section>
+  <section id="recentBusinesses" class="recent-businesses" aria-labelledby="recentHeading">
+    <div class="recent-heading">
+      <div>
+        <h2 id="recentHeading">Recently searched businesses</h2>
+        <p>Quickly return to stores you’ve opened before.</p>
+      </div>
+      <button id="clearRecentBusinesses" class="clear-recent" type="button" hidden>Clear history</button>
+    </div>
+    <div id="recentBusinessGrid" class="recent-grid"></div>
+  </section>
+</main>
 </div><script>
 if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("/sw.js").catch(()=>{})})}
 let installPrompt=null;const installBtn=document.getElementById("installBtn");const installHint=document.getElementById("installHint");
@@ -154,30 +191,111 @@ const storeSearchStatus=document.getElementById("storeSearchStatus");
 
 const resultRoot=document.getElementById("searchResults");
 const STORE_SEARCH={url:"https://cypbjzbagezdelmemuhb.supabase.co",key:"sb_publishable_8W8zyYtggQMWoFlnxrzoVA_BUKjQ9va"};
-let searchClient=null,searchCounter=0;
+let searchClient=null,searchClientPromise=null,searchCounter=0,lastSearchResults=[];
+const RECENT_BUSINESSES_KEY="storenest:recent-businesses:v1";
+const recentSection=document.getElementById("recentBusinesses");
+const recentGrid=document.getElementById("recentBusinessGrid");
+const clearRecentButton=document.getElementById("clearRecentBusinesses");
+let recentFallback=[];
+function safeBusiness(b){
+  if(!b||typeof b!=="object")return null;
+  const slug=String(b.slug||"").slice(0,90);
+  if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))return null;
+  const logo=String(b.logo_url||"").trim();
+  return {slug,name:String(b.name||"").slice(0,120),category:String(b.category||"").slice(0,100),location:String(b.location||"").slice(0,120),logo_url:/^https:\/\//i.test(logo)?logo.slice(0,1024):""};
+}
+function recentBusinessList(){
+  try{
+    const raw=JSON.parse(localStorage.getItem(RECENT_BUSINESSES_KEY)||"[]");
+    return Array.isArray(raw)?raw.map(safeBusiness).filter(Boolean).slice(0,8):[];
+  }catch{return recentFallback.slice()}
+}
+function storeRecentList(list){
+  recentFallback=list.slice(0,8);
+  try{localStorage.setItem(RECENT_BUSINESSES_KEY,JSON.stringify(recentFallback))}catch{}
+}
+function rememberBusiness(b){
+  const business=safeBusiness(b);if(!business||!business.name)return;
+  storeRecentList([business,...recentBusinessList().filter(other=>other.slug!==business.slug)].slice(0,8));
+  renderRecentBusinesses();
+}
+function businessAvatar(b){
+ const img=b.logo_url?'<img src="'+escapeResult(b.logo_url)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':escapeResult(b.name.slice(0,1).toUpperCase()||"S");
+ return img;
+}
+function renderRecentBusinesses(){
+ const rows=recentBusinessList();
+ clearRecentButton.hidden=rows.length===0;
+ recentGrid.innerHTML=rows.length?rows.map(b=>'<a class="recent-card" href="/storefront.html?slug='+encodeURIComponent(b.slug)+'"><span class="recent-avatar">'+businessAvatar(b)+'</span><span class="recent-text"><strong>'+escapeResult(b.name)+'</strong><small>'+escapeResult([b.category,b.location].filter(Boolean).join(" · ")||"View storefront")+'</small></span><span class="recent-go" aria-hidden="true">→</span></a>').join(""):'<div class="recent-empty">No recent businesses yet. Search for a business and open its storefront to find it here next time.</div>';
+}
+function setSearchActive(active){
+ recentSection.hidden=active;
+ resultRoot.hidden=!active;
+}
+clearRecentButton.addEventListener("click",()=>{
+ storeRecentList([]);
+ renderRecentBusinesses();
+});
+window.addEventListener("pageshow",()=>{if(!storeSearchInput.value.trim())renderRecentBusinesses()});
+window.addEventListener("storage",event=>{if(event.key===RECENT_BUSINESSES_KEY)renderRecentBusinesses()});
+recentGrid.addEventListener("click",event=>{
+ const link=event.target.closest("a.recent-card");
+ if(!link)return;
+ const business=recentBusinessList().find(b=>link.getAttribute("href")==="/storefront.html?slug="+encodeURIComponent(b.slug));
+ if(business)rememberBusiness(business);
+});
+resultRoot.addEventListener("click",event=>{
+ const link=event.target.closest("a[data-business-slug]");
+ if(!link)return;
+ const business=lastSearchResults.find(row=>row.slug===link.dataset.businessSlug);
+ if(business)rememberBusiness(business);
+});
+renderRecentBusinesses();
 function escapeResult(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 async function getSearchClient(){
  if(searchClient)return searchClient;
- if(!window.supabase)await new Promise((res,rej)=>{const script=document.createElement("script");script.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0";script.onload=res;script.onerror=rej;document.head.append(script)});
- searchClient=window.supabase.createClient(STORE_SEARCH.url,STORE_SEARCH.key,{auth:{persistSession:false,autoRefreshToken:false}});
- return searchClient;
+ if(!searchClientPromise)searchClientPromise=(async()=>{
+   if(!window.supabase)await new Promise((res,rej)=>{const script=document.createElement("script");script.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0";script.onload=res;script.onerror=rej;document.head.append(script)});
+   searchClient=window.supabase.createClient(STORE_SEARCH.url,STORE_SEARCH.key,{auth:{persistSession:false,autoRefreshToken:false}});
+   return searchClient;
+ })().catch(error=>{searchClientPromise=null;throw error});
+ return searchClientPromise;
 }
+async function refreshRecentBusinesses(){
+ const history=recentBusinessList();
+ if(!history.length)return;
+ try{
+   const client=await getSearchClient();
+   const {data,error}=await client.from("businesses").select("slug,name,category,location,logo_url").eq("is_published",true).in("slug",history.map(b=>b.slug));
+   if(error)throw error;
+   const bySlug=new Map((data||[]).map(b=>[b.slug,b]));
+   storeRecentList(history.map(b=>safeBusiness(bySlug.get(b.slug))).filter(Boolean));
+   if(!storeSearchInput.value.trim())renderRecentBusinesses();
+ }catch(error){console.warn("Could not refresh recent StoreNest businesses",error)}
+}
+refreshRecentBusinesses();
 async function findBusinesses(query){
  const seq=++searchCounter;
- if(!query){resultRoot.hidden=true;storeSearchStatus.hidden=true;return}
- resultRoot.hidden=false;resultRoot.textContent="Searching published businesses…";
+ if(!query){setSearchActive(false);storeSearchStatus.hidden=true;renderRecentBusinesses();return}
+ setSearchActive(true);resultRoot.textContent="Searching published businesses…";
  storeSearchStatus.hidden=true;
  try{
    const client=await getSearchClient();
    const {data,error}=await client.rpc("search_storenest_businesses",{search_term:query});
    if(error)throw error;if(seq!==searchCounter)return;
-   const rows=data||[],esc=escapeResult;
+   const rows=(data||[]).map(safeBusiness).filter(Boolean),esc=escapeResult;lastSearchResults=rows;
    resultRoot.innerHTML='<p class="results-head">'+rows.length+' business'+(rows.length===1?'':'es')+' found for "'+esc(query)+'"</p>'+
-     (rows.length?rows.map(b=>'<a class="result-card" href="/storefront.html?slug='+encodeURIComponent(b.slug)+'"><span class="result-avatar">'+(b.logo_url&&/^https:\/\//i.test(b.logo_url)?'<img alt="" src="'+esc(b.logo_url)+'">':esc(b.name.slice(0,1).toUpperCase()))+'</span><span class="result-content"><strong>'+esc(b.name)+'</strong><span>'+esc([b.category,b.location].filter(Boolean).join(' · '))+'</span></span><span class="result-arrow">→</span></a>').join(''):'<p class="results-head">No published businesses match this search.</p>');
+     (rows.length?rows.map(b=>'<a class="result-card" data-business-slug="'+esc(b.slug)+'" href="/storefront.html?slug='+encodeURIComponent(b.slug)+'"><span class="result-avatar">'+(b.logo_url&&/^https:\/\//i.test(b.logo_url)?'<img alt="" src="'+esc(b.logo_url)+'">':esc(b.name.slice(0,1).toUpperCase()))+'</span><span class="result-content"><strong>'+esc(b.name)+'</strong><span>'+esc([b.category,b.location].filter(Boolean).join(' · '))+'</span></span><span class="result-arrow">→</span></a>').join(''):'<p class="results-head">No published businesses match this search.</p>');
  }catch(e){if(seq!==searchCounter)return;resultRoot.innerHTML='<p class="results-head">Search could not load. Please try again.</p>';console.error("Store search error",e)}
 }
 storeSearchForm.addEventListener("submit",event=>{event.preventDefault();findBusinesses(storeSearchInput.value.trim())});
-storeSearchInput.addEventListener("input",()=>{if(!storeSearchInput.value.trim()){searchCounter++;resultRoot.hidden=true;storeSearchStatus.hidden=true}});
+storeSearchInput.addEventListener("input",()=>{
+ if(!storeSearchInput.value.trim()){
+   searchCounter++;lastSearchResults=[];setSearchActive(false);storeSearchStatus.hidden=true;renderRecentBusinesses();
+ }else{
+   recentSection.hidden=true;
+ }
+});
 const menuContainer=document.getElementById("menuContainer");
 const menuToggle=document.getElementById("menuToggle");
 const siteMenu=document.getElementById("siteMenu");
