@@ -121,6 +121,103 @@ body[data-store-type="decor"] .gallery-stage{background:#f1ede7}
 @media(max-width:840px){body[data-store-type="decor"] .page{width:calc(100% - 32px)}.decor-hero{grid-template-columns:49% 51%;min-height:360px}.decor-copy{padding:27px;gap:20px}.decor-copy h1{font-size:clamp(31px,4.5vw,44px)}body[data-store-type="decor"] .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}}
 @media(max-width:540px){body[data-store-type="decor"] .page{width:calc(100% - 22px)}body[data-store-type="decor"] .top{height:60px}.decor-hero{display:flex;flex-direction:column-reverse;min-height:0;margin-top:12px}.decor-visual{min-height:245px;max-height:300px}.decor-copy{padding:23px;gap:21px}.decor-copy h1{font-size:38px}.decor-copy .decor-summary{font-size:12px}.decor-cta{width:100%;text-align:center}body[data-store-type="decor"] .catalog-heading{margin:30px 0 18px}body[data-store-type="decor"] .catalog-heading h2{font-size:28px}body[data-store-type="decor"] .grid{gap:12px}body[data-store-type="decor"] .art{aspect-ratio:4/5}body[data-store-type="decor"] .item-body{padding:12px 1px;min-height:155px}body[data-store-type="decor"] .item-body h3{font-size:17px}body[data-store-type="decor"] .price{font-size:18px}body[data-store-type="decor"] .add{padding:9px 11px}}
 
+
+/* Decor collection: show product details beside the artwork, not underneath it. */
+body[data-store-type="decor"] .grid{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:27px;
+}
+body[data-store-type="decor"] .card{
+  display:grid;
+  grid-template-columns:minmax(0,46%) minmax(0,54%);
+  align-items:stretch;
+  min-width:0;
+  border-radius:4px;
+  background:#f4f0e9;
+  box-shadow:none;
+  overflow:hidden;
+}
+body[data-store-type="decor"] .item-open{
+  height:100%;
+  min-width:0;
+}
+body[data-store-type="decor"] .art{
+  width:100%;
+  height:100%;
+  min-height:440px;
+  aspect-ratio:4/4.6;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:0;
+  background:#ebe6dc;
+  overflow:hidden;
+}
+body[data-store-type="decor"] .art img{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+}
+body[data-store-type="decor"] .item-body{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:flex-start;
+  gap:0;
+  min-height:0;
+  padding:clamp(24px,4.5vw,70px);
+}
+body[data-store-type="decor"] .item-body h3{
+  font-size:clamp(23px,3vw,40px);
+  line-height:1.17;
+  margin:0 0 17px;
+}
+body[data-store-type="decor"] .item-body p{
+  flex:none;
+  min-height:0;
+  max-width:44ch;
+  color:#7c6f62;
+  font-size:clamp(12px,1.3vw,15px);
+  line-height:1.7;
+  margin:0 0 34px;
+}
+body[data-store-type="decor"] .item-bottom{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:flex-start;
+  gap:23px;
+  width:100%;
+}
+body[data-store-type="decor"] .price{
+  font-size:clamp(25px,2.8vw,36px);
+  line-height:1.15;
+}
+body[data-store-type="decor"] .add{
+  min-width:120px;
+  justify-content:center;
+  padding:14px 22px;
+}
+@media(max-width:750px){
+  body[data-store-type="decor"] .grid{grid-template-columns:minmax(0,1fr)}
+  body[data-store-type="decor"] .card{grid-template-columns:minmax(0,48%) minmax(0,52%)}
+  body[data-store-type="decor"] .art{min-height:320px}
+  body[data-store-type="decor"] .item-body{padding:clamp(16px,4vw,28px)}
+  body[data-store-type="decor"] .item-body h3{font-size:clamp(19px,3vw,27px)}
+  body[data-store-type="decor"] .item-bottom{gap:18px}
+}
+@media(max-width:440px){
+  body[data-store-type="decor"] .card{grid-template-columns:minmax(0,45%) minmax(0,55%)}
+  body[data-store-type="decor"] .art{min-height:260px}
+  body[data-store-type="decor"] .item-body{padding:15px 12px}
+  body[data-store-type="decor"] .item-body h3{font-size:18px;margin-bottom:9px}
+  body[data-store-type="decor"] .item-body p{font-size:11px;line-height:1.45;margin-bottom:16px}
+  body[data-store-type="decor"] .price{font-size:20px}
+  body[data-store-type="decor"] .item-bottom{gap:15px}
+  body[data-store-type="decor"] .add{min-width:0;padding:10px 13px;font-size:12px}
+}
 </style>
 </head>
 <body>
