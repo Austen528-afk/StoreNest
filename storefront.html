@@ -130,7 +130,7 @@ body[data-store-type="decor"] .grid{
 }
 body[data-store-type="decor"] .card{
   display:grid;
-  grid-template-columns:minmax(0,46%) minmax(0,54%);
+  grid-template-columns:minmax(0,65%) minmax(0,35%);
   align-items:stretch;
   min-width:0;
   border-radius:4px;
@@ -145,7 +145,7 @@ body[data-store-type="decor"] .item-open{
 body[data-store-type="decor"] .art{
   width:100%;
   height:100%;
-  min-height:440px;
+  min-height:520px;
   aspect-ratio:4/4.6;
   display:flex;
   align-items:center;
@@ -158,7 +158,7 @@ body[data-store-type="decor"] .art img{
   display:block;
   width:100%;
   height:100%;
-  object-fit:contain;
+  object-fit:cover;
 }
 body[data-store-type="decor"] .item-body{
   display:flex;
@@ -167,7 +167,7 @@ body[data-store-type="decor"] .item-body{
   align-items:flex-start;
   gap:0;
   min-height:0;
-  padding:clamp(24px,4.5vw,70px);
+  padding:clamp(20px,3vw,42px);
 }
 body[data-store-type="decor"] .item-body h3{
   font-size:clamp(23px,3vw,40px);
@@ -202,15 +202,15 @@ body[data-store-type="decor"] .add{
 }
 @media(max-width:750px){
   body[data-store-type="decor"] .grid{grid-template-columns:minmax(0,1fr)}
-  body[data-store-type="decor"] .card{grid-template-columns:minmax(0,48%) minmax(0,52%)}
+  body[data-store-type="decor"] .card{grid-template-columns:minmax(0,58%) minmax(0,42%)}
   body[data-store-type="decor"] .art{min-height:320px}
   body[data-store-type="decor"] .item-body{padding:clamp(16px,4vw,28px)}
   body[data-store-type="decor"] .item-body h3{font-size:clamp(19px,3vw,27px)}
   body[data-store-type="decor"] .item-bottom{gap:18px}
 }
 @media(max-width:440px){
-  body[data-store-type="decor"] .card{grid-template-columns:minmax(0,45%) minmax(0,55%)}
-  body[data-store-type="decor"] .art{min-height:260px}
+  body[data-store-type="decor"] .card{grid-template-columns:minmax(0,54%) minmax(0,46%)}
+  body[data-store-type="decor"] .art{min-height:290px}
   body[data-store-type="decor"] .item-body{padding:15px 12px}
   body[data-store-type="decor"] .item-body h3{font-size:18px;margin-bottom:9px}
   body[data-store-type="decor"] .item-body p{font-size:11px;line-height:1.45;margin-bottom:16px}
