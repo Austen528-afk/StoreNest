@@ -249,6 +249,36 @@ body[data-store-type="decor"] .add{
   body[data-store-type="decor"] .item-bottom{gap:16px}
   body[data-store-type="decor"] .price{font-size:clamp(25px,2.4vw,31px)}
 }
+
+/* Flexible owner-defined sections; category styles are presentation, never business restrictions. */
+.catalog-area{display:flex;flex-direction:column;gap:35px;margin-top:35px}
+.offering-section{min-width:0}
+.offering-heading{margin-bottom:18px}
+.offering-heading .offering-label{display:block;color:#a58c73;font-size:10px;font-weight:800;letter-spacing:.17em;margin-bottom:9px}
+.offering-heading h2{font-size:clamp(23px,2.8vw,34px);font-weight:750;letter-spacing:-.035em;margin:0 0 7px}
+.offering-heading p{font-size:13px;color:#8a8b85;line-height:1.6;max-width:650px;margin:0}
+body[data-store-type="decor"] .offering-heading h2{font-family:Georgia,serif;font-size:clamp(27px,3.2vw,42px);font-weight:400}
+.offering-section.section-style-menu .grid,.offering-section.section-style-catalogue .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}
+.offering-section.section-style-menu .card,.offering-section.section-style-catalogue .card{display:flex;flex-direction:column;background:#f1f2ef;border-radius:14px;overflow:hidden}
+.offering-section.section-style-menu .art,.offering-section.section-style-catalogue .art{width:100%;height:auto;min-height:0;aspect-ratio:1.2/1}
+.offering-section.section-style-menu .art img,.offering-section.section-style-catalogue .art img{object-fit:cover}
+.offering-section.section-style-menu .item-body,.offering-section.section-style-catalogue .item-body{padding:14px;min-height:158px;display:flex;flex-direction:column;justify-content:space-between}
+.offering-section.section-style-menu .item-body h3,.offering-section.section-style-catalogue .item-body h3{font-family:inherit;font-size:17px;font-weight:750}
+.offering-section.section-style-menu .item-bottom,.offering-section.section-style-catalogue .item-bottom{flex-direction:row;justify-content:space-between;align-items:center;gap:7px}
+.offering-section.section-style-menu .price,.offering-section.section-style-catalogue .price{font-size:19px;font-family:inherit;font-weight:750}
+.offering-section.section-style-menu .add,.offering-section.section-style-catalogue .add{padding:9px 12px;min-width:0;border-radius:20px}
+.offering-section.section-style-showcase .grid,.offering-section.section-style-portfolio .grid,.offering-section.section-style-booking .grid{display:grid;grid-template-columns:1fr;gap:25px}
+.offering-section.section-style-showcase .card,.offering-section.section-style-portfolio .card,.offering-section.section-style-booking .card{display:grid;grid-template-columns:minmax(0,65%) minmax(0,35%);background:#f4f0e9;border-radius:4px;overflow:hidden}
+.offering-section.section-style-showcase .art,.offering-section.section-style-portfolio .art,.offering-section.section-style-booking .art{min-height:400px;aspect-ratio:4/4.3;width:100%;height:100%}
+.offering-section.section-style-showcase .art img,.offering-section.section-style-portfolio .art img,.offering-section.section-style-booking .art img{object-fit:cover}
+.offering-section.section-style-showcase .item-body,.offering-section.section-style-portfolio .item-body,.offering-section.section-style-booking .item-body{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;min-height:0;padding:clamp(20px,3vw,42px)}
+.offering-section.section-style-showcase .item-body h3,.offering-section.section-style-portfolio .item-body h3,.offering-section.section-style-booking .item-body h3{font-family:Georgia,serif;font-size:clamp(21px,2.6vw,36px);font-weight:500}
+.offering-section.section-style-showcase .item-bottom,.offering-section.section-style-portfolio .item-bottom,.offering-section.section-style-booking .item-bottom{display:flex;flex-direction:column;align-items:flex-start;gap:15px}
+.offering-section.section-style-booking .add svg{display:none}
+.offering-section.section-style-booking .add{font-size:0}
+.offering-section.section-style-booking .add:after{content:"Enquire";font-size:13px}
+@media(max-width:800px){.offering-section.section-style-menu .grid,.offering-section.section-style-catalogue .grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:500px){.catalog-area{gap:25px;margin-top:25px}.offering-section.section-style-showcase .card,.offering-section.section-style-portfolio .card,.offering-section.section-style-booking .card{grid-template-columns:55% 45%}.offering-section.section-style-showcase .art,.offering-section.section-style-portfolio .art,.offering-section.section-style-booking .art{min-height:260px}.offering-section.section-style-showcase .item-body,.offering-section.section-style-portfolio .item-body,.offering-section.section-style-booking .item-body{padding:14px}.offering-section.section-style-showcase .item-body h3,.offering-section.section-style-portfolio .item-body h3,.offering-section.section-style-booking .item-body h3{font-size:18px}.offering-section.section-style-menu .item-body,.offering-section.section-style-catalogue .item-body{padding:11px}}
 </style>
 </head>
 <body>
@@ -350,9 +380,12 @@ async function load(){
    if(response.error)throw response.error;
    const business=response.data;
    if(!business){root.innerHTML='<div class="notice">This storefront is unavailable. It may be unpublished or the link may have changed.</div>';return}
-   const catalog=await client.from("business_items").select("id,name,item_type,description,price,image_url,media_urls").eq("business_id",business.id).eq("is_available",true).order("display_order").order("created_at",{ascending:false});
+   const catalog=await client.from("business_items").select("id,name,item_type,description,price,image_url,media_urls,category_id").eq("business_id",business.id).eq("is_available",true).order("display_order").order("created_at",{ascending:false});
    if(catalog.error)throw catalog.error;
    availableItems=catalog.data||[];
+   const sectionResult=await client.from("business_categories").select("id,name,description,display_style,display_order").eq("business_id",business.id).order("display_order").order("name");
+   if(sectionResult.error)throw sectionResult.error;
+   const storefrontSections=sectionResult.data||[];
    // Remember genuine storefront visits for this device only.
    try{
      const key="storenest:recent-businesses:v1";
@@ -381,10 +414,20 @@ async function load(){
    if(business.website&&website)contacts.push('<a href="'+esc(website)+'" rel="noopener noreferrer" target="_blank">↗ Website</a>');
    const cover=safeUrl(cfg.hero);
    const logo=safeUrl(business.logo_url);
-   const photos=availableItems.map(item=>{
+   const cardForItem=item=>{
      const media=galleryPhotos(item),first=media[0],count=media.length;
      return '<article class="card"><button type="button" class="item-open" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos and details"><div class="art">'+(first?'<img src="'+esc(first)+'" alt="'+esc(item.name)+'" loading="lazy">':item.item_type==="service"?"✦":"▧")+(count>1?'<span class="photo-count">▧ '+count+' photos</span>':'')+'</div></button><div class="item-body"><h3>'+esc(item.name)+'</h3><p>'+esc(item.description||"")+'</p><div class="item-bottom"><span class="price">'+money(item.price)+'</span><button class="add" type="button" data-add-item="'+esc(item.id)+'" aria-label="Add '+esc(item.name)+' to basket"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add</button></div></div></article>';
+   };
+   const sectionStyles=["auto","menu","showcase","portfolio","catalogue","booking"];
+   const sectionsWithItems=storefrontSections.filter(section=>availableItems.some(item=>item.category_id===section.id));
+   const independent=availableItems.filter(item=>!storefrontSections.some(section=>section.id===item.category_id));
+   const renderedGroups=sectionsWithItems.map(section=>{
+     const style=sectionStyles.includes(section.display_style)?section.display_style:"auto";
+     const cards=availableItems.filter(item=>item.category_id===section.id).map(cardForItem).join("");
+     return '<section class="offering-section section-style-'+esc(style)+'" aria-label="'+esc(section.name)+'"><div class="offering-heading"><span class="offering-label">OUR OFFERINGS</span><h2>'+esc(section.name)+'</h2>'+(section.description?'<p>'+esc(section.description)+'</p>':'')+'</div><div class="grid">'+cards+'</div></section>';
    }).join("");
+   const uncategorized=independent.length?'<section class="offering-section section-style-auto"><div class="offering-heading"><h2>'+(sectionsWithItems.length?'More offerings':isDecor?'Explore the Collection':business.category==="Food & Drink"?"Our Menu":"Products & Services")+'</h2></div><div class="grid">'+independent.map(cardForItem).join("")+'</div></section>':"";
+   const catalogueMarkup=renderedGroups+uncategorized;
    const standardHero=
      '<section class="hero layout-'+layout+'">'+(cover?'<img class="hero-cover" src="'+esc(cover)+'" alt="">':'')+
      '<div class="hero-top"><div class="store-identity">'+(logo?'<img class="store-logo" src="'+esc(logo)+'" alt="">':'')+
@@ -408,8 +451,7 @@ async function load(){
    root.innerHTML=(isDecor?decorHero:standardHero)+
      (cfg.welcome?'<div class="welcome">'+esc(cfg.welcome)+'</div>':'')+
      '<div class="contacts">'+contacts.join("")+'</div>'+
-     '<div class="catalog-heading" id="catalog"><div>'+(isDecor?'<span class="decor-collection-eyebrow">DISCOVER MORE</span>':'')+'<h2>'+esc(isDecor?"Explore the Collection":business.category==="Food & Drink"?"Our Menu":"Products & Services")+'</h2></div><span>'+availableItems.length+' item'+(availableItems.length===1?'':'s')+'</span></div>'+
-     (photos?'<section class="grid" aria-label="Available products and services">'+photos+'</section>':'<section class="empty"><strong>Catalogue coming soon</strong>This business has not added available products or services yet.</section>');
+     '<div id="catalog" class="catalog-area">'+(catalogueMarkup||'<section class="empty"><strong>Catalogue coming soon</strong>This business has not added available offerings yet.</section>')+'</div>';
  }catch(error){root.innerHTML='<div class="notice">We couldn’t load this storefront right now. Please try again later.</div>';console.error("Storefront load error",error)}
 }
 load();
