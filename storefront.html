@@ -218,6 +218,37 @@ body[data-store-type="decor"] .add{
   body[data-store-type="decor"] .item-bottom{gap:15px}
   body[data-store-type="decor"] .add{min-width:0;padding:10px 13px;font-size:12px}
 }
+/* Compact, balanced décor catalogue cards on desktop. */
+@media (min-width:751px){
+  body[data-store-type="decor"] .grid{
+    max-width:1100px;
+    margin-inline:auto;
+    gap:22px;
+  }
+  body[data-store-type="decor"] .card{
+    grid-template-columns:minmax(0,53%) minmax(0,47%);
+    min-height:340px;
+  }
+  body[data-store-type="decor"] .item-open{
+    position:relative;
+    height:auto;
+    min-height:100%;
+  }
+  body[data-store-type="decor"] .art{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    min-height:0;
+    aspect-ratio:auto;
+  }
+  body[data-store-type="decor"] .art img{object-fit:contain}
+  body[data-store-type="decor"] .item-body{padding:clamp(24px,3vw,38px)}
+  body[data-store-type="decor"] .item-body h3{font-size:clamp(23px,2.5vw,33px);margin-bottom:12px}
+  body[data-store-type="decor"] .item-body p{margin-bottom:22px}
+  body[data-store-type="decor"] .item-bottom{gap:16px}
+  body[data-store-type="decor"] .price{font-size:clamp(25px,2.4vw,31px)}
+}
 </style>
 </head>
 <body>
