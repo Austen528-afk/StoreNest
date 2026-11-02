@@ -169,6 +169,21 @@ html,body{background:#f8faf9;color:#182321}
 .category-back{border:1px solid #d6e6dc;border-radius:9px;padding:8px 11px;font-size:12px;color:#396950;background:#fff;cursor:pointer;margin:0 0 14px}
 @media(max-width:830px){.marketplace-category-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:540px){.marketplace-category-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.marketplace-category-button{padding:15px 12px;border-radius:12px}.marketplace-category-button .category-icon{font-size:22px}.marketplace-heading h2{font-size:19px}}
+
+/* Compact latest-offering strip below each marketplace business. */
+.market-business{margin:0 0 24px;min-width:0}
+.market-business .result-card{margin-bottom:0}
+.market-latest-title{font-size:11px;font-weight:800;color:#708479;margin:12px 0 9px}
+.market-items{display:flex;gap:11px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;scrollbar-width:thin;padding:2px 1px 9px}
+.market-item{display:flex;flex-direction:column;flex:0 0 147px;min-width:0;background:#fff;border:1px solid #e0e9e3;border-radius:12px;overflow:hidden;color:#233a2e;text-decoration:none;scroll-snap-align:start;transition:border-color .16s}
+.market-item:hover{border-color:#69c2a2;background:#f8fffb}
+.market-item:focus-visible{outline:2px solid #23ac84;outline-offset:2px}
+.market-item-image{display:flex;align-items:center;justify-content:center;width:100%;aspect-ratio:1.3/1;background:#eef1ed;overflow:hidden}
+.market-item-image img{display:block;width:100%;height:100%;object-fit:cover}
+.market-no-photo{font-size:24px;color:#98a89a}
+.market-item-name{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:12px;font-weight:750;line-height:1.35;padding:10px 10px 0;min-height:42px}
+.market-item-price{display:block;padding:5px 10px 13px;font-size:13px;letter-spacing:-.015em}
+@media(max-width:500px){.market-item{flex-basis:132px}.market-items{gap:8px}}
 </style>
 </head>
 <body>
@@ -217,16 +232,46 @@ let activeMarketplaceCategory=null;
 function renderMarketplaceCategories(){categoryGrid.innerHTML=MARKETPLACE_CATEGORIES.map(([id,label,emoji])=>'<button type="button" class="marketplace-category-button'+(activeMarketplaceCategory===id?' active':'')+'" data-market-category="'+id+'"><span class="category-icon" aria-hidden="true">'+emoji+'</span><strong>'+label+'</strong></button>').join("")}
 function resetMarketplaceBrowse(){activeMarketplaceCategory=null;categorySection.hidden=false;renderMarketplaceCategories();setSearchActive(false);renderRecentBusinesses()}
 categoryGrid.addEventListener("click",event=>{const btn=event.target.closest("[data-market-category]");if(btn)browseMarketplaceCategory(btn.dataset.marketCategory)});
+function marketplaceItemHref(b,item){
+ return "/storefront.html?slug="+encodeURIComponent(b.slug)+(item.category_id?"&category="+encodeURIComponent(item.category_id):"")+"#catalog";
+}
+function marketplaceBusinessCard(b,items){
+ const esc=escapeResult,href="/storefront.html?slug="+encodeURIComponent(b.slug)+(b.section_id?"&category="+encodeURIComponent(b.section_id):"");
+ const header='<a class="result-card" data-business-slug="'+esc(b.slug)+'" href="'+href+'"><span class="result-avatar">'+(b.logo_url?'<img src="'+esc(b.logo_url)+'" alt="">':esc(b.name.slice(0,1).toUpperCase()))+'</span><span class="result-content"><strong>'+esc(b.name)+'</strong><span>'+esc([b.category,b.location].filter(Boolean).join(" · "))+'</span></span><span class="result-arrow">→</span></a>';
+ if(!items.length)return '<div class="market-business">'+header+'</div>';
+ return '<div class="market-business">'+header+'<div class="market-latest-title">Latest updates</div><div class="market-items" aria-label="Latest offerings from '+esc(b.name)+'">'+items.map(item=>{
+  const image=/^https:\/\//i.test(item.image_url||"")?'<img src="'+esc(item.image_url)+'" alt="" loading="lazy">':'<span class="market-no-photo">▧</span>';
+  const price=Number(item.price);
+  return '<a class="market-item" href="'+marketplaceItemHref(b,item)+'"><span class="market-item-image">'+image+'</span><span class="market-item-name">'+esc(item.name)+'</span><strong class="market-item-price">'+(Number.isFinite(price)?"R"+price.toFixed(2):"")+'</strong></a>';
+ }).join("")+'</div></div>';
+}
 async function browseMarketplaceCategory(id){
  const category=MARKETPLACE_CATEGORIES.find(row=>row[0]===id);if(!category)return;
  const seq=++searchCounter;activeMarketplaceCategory=id;renderMarketplaceCategories();storeSearchInput.value="";categorySection.hidden=true;setSearchActive(true);
  resultRoot.innerHTML='<p class="results-head">Loading '+escapeResult(category[1])+'…</p>';
  try{
-  const client=await getSearchClient();const {data,error}=await client.rpc("browse_storenest_category",{category_slug:id});if(error)throw error;if(seq!==searchCounter)return;
-  const rows=(data||[]).map(r=>({...safeBusiness(r),section_id:r.section_id})).filter(r=>r.slug);lastSearchResults=rows;
-  resultRoot.innerHTML='<button class="category-back" type="button" id="backToCategories">← All categories</button><p class="results-head">'+escapeResult(category[1])+' · '+rows.length+' business'+(rows.length===1?'':'es')+'</p>'+(
-   rows.length?rows.map(b=>'<a class="result-card" data-business-slug="'+escapeResult(b.slug)+'" href="/storefront.html?slug='+encodeURIComponent(b.slug)+(b.section_id?'&category='+encodeURIComponent(b.section_id):'')+'"><span class="result-avatar">'+(b.logo_url?'<img src="'+escapeResult(b.logo_url)+'" alt="">':escapeResult(b.name.slice(0,1).toUpperCase()))+'</span><span class="result-content"><strong>'+escapeResult(b.name)+'</strong><span>'+escapeResult([b.category,b.location].filter(Boolean).join(" · "))+'</span></span><span class="result-arrow">→</span></a>').join(""):'<p class="results-head">No businesses listed here yet.</p>');
- }catch(error){if(seq!==searchCounter)return;resultRoot.innerHTML='<button class="category-back" type="button" id="backToCategories">← All categories</button><p class="results-head">Unable to load this category. Please retry.</p>';console.error("Marketplace browse failed",error)}
+  const client=await getSearchClient();
+  const [businessResult,itemsResult]=await Promise.all([
+    client.rpc("browse_storenest_category",{category_slug:id}),
+    client.rpc("latest_storenest_category_items",{category_slug:id,max_per_business:5})
+  ]);
+  if(businessResult.error)throw businessResult.error;
+  if(itemsResult.error)throw itemsResult.error;
+  if(seq!==searchCounter)return;
+  const rows=(businessResult.data||[]).map(r=>({...safeBusiness(r),id:r.id,section_id:r.section_id})).filter(r=>r.slug);
+  lastSearchResults=rows;
+  const byBusiness=new Map();
+  for(const item of itemsResult.data||[]){
+    if(!byBusiness.has(item.business_id))byBusiness.set(item.business_id,[]);
+    byBusiness.get(item.business_id).push(item);
+  }
+  resultRoot.innerHTML='<button class="category-back" type="button" id="backToCategories">← All categories</button><p class="results-head">'+escapeResult(category[1])+' · '+rows.length+' business'+(rows.length===1?'':'es')+'</p>'+
+   (rows.length?rows.map(b=>marketplaceBusinessCard(b,byBusiness.get(b.id)||[])).join(""):'<p class="results-head">No businesses listed here yet.</p>');
+ }catch(error){
+  if(seq!==searchCounter)return;
+  resultRoot.innerHTML='<button class="category-back" type="button" id="backToCategories">← All categories</button><p class="results-head">Unable to load this category. Please retry.</p>';
+  console.error("Marketplace browse failed",error);
+ }
 }
 resultRoot.addEventListener("click",e=>{if(e.target.closest("#backToCategories"))resetMarketplaceBrowse()});
 renderMarketplaceCategories();
