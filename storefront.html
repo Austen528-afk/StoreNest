@@ -277,30 +277,25 @@ body[data-store-type="decor"] .offering-heading h2{font-family:Georgia,serif;fon
 @media(max-width:800px){.offering-section.section-style-menu .grid,.offering-section.section-style-catalogue .grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:500px){.catalog-area{gap:25px;margin-top:25px}.offering-section.section-style-showcase .card,.offering-section.section-style-portfolio .card,.offering-section.section-style-booking .card{grid-template-columns:55% 45%}.offering-section.section-style-showcase .art,.offering-section.section-style-portfolio .art,.offering-section.section-style-booking .art{min-height:260px}.offering-section.section-style-showcase .item-body,.offering-section.section-style-portfolio .item-body,.offering-section.section-style-booking .item-body{padding:14px}.offering-section.section-style-showcase .item-body h3,.offering-section.section-style-portfolio .item-body h3,.offering-section.section-style-booking .item-body h3{font-size:18px}.offering-section.section-style-menu .item-body,.offering-section.section-style-catalogue .item-body{padding:11px}}
 
-/* Per-business classification: category thumbnails and one active collection at a time. */
-.catalog-area{margin-top:34px;display:block;scroll-margin-top:20px}
-.category-browser-head{margin-bottom:20px}
-.category-eyebrow{display:block;color:#1e9a7a;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px}
-.category-browser-head h2{margin:0 0 7px;font-size:clamp(24px,3vw,35px);font-weight:750;letter-spacing:-.04em}
-.category-browser-head p{font-size:13px;color:#818f86;margin:0;line-height:1.5}
-.category-switcher{display:flex;align-items:stretch;gap:14px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;padding:2px 2px 14px;margin-bottom:23px;scrollbar-width:thin}
-.category-tab{flex:0 0 clamp(153px,19vw,218px);display:flex;flex-direction:column;align-items:flex-start;text-align:left;padding:8px 8px 13px;color:var(--ink);background:#fff;border:1px solid #e0e7e1;border-radius:13px;min-width:0;gap:5px;scroll-snap-align:start;transition:border-color .14s,background .14s}
-.category-tab:hover{border-color:#90c5ae;background:#f8fcf9}
-.category-tab.active{border:2px solid #19a982;background:#edf9f2;padding:7px 7px 12px;box-shadow:0 5px 19px #1b946b14}
-.category-thumbnail{display:block;position:relative;aspect-ratio:2.2/1;width:100%;overflow:hidden;border-radius:8px;background:linear-gradient(125deg,#e8e7df,#dcd9ce)}
-.category-thumbnail img{display:block;width:100%;height:100%;object-fit:cover}
-.category-placeholder{width:100%;height:100%;display:grid;place-items:center;color:#8b9b8d;font-size:25px}
-.category-name{display:block;margin:5px 4px 0;font-size:14px;font-weight:750;line-height:1.25;overflow-wrap:anywhere}
-.category-tab small{display:block;margin:0 4px;font-size:11px;color:#7a8b81}
+/* Each business category is a compact text tab; the selected panel is displayed below. */
+.catalog-area{margin-top:27px;display:block;scroll-margin-top:20px}
+.category-browser-head{margin-bottom:13px}
+.category-eyebrow{display:block;color:#1e9a7a;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+.category-browser-head h2{margin:0 0 4px;font-size:clamp(21px,2.5vw,29px);font-weight:750;letter-spacing:-.04em}
+.category-browser-head p{font-size:12px;color:#818f86;margin:0;line-height:1.5}
+.category-switcher{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:0 0 15px;margin-bottom:20px;border-bottom:1px solid #e8ede8}
+.category-tab{display:inline-flex;align-items:center;justify-content:center;min-height:34px;max-width:100%;padding:7px 13px;color:#506457;background:#fff;border:1px solid #dbe5de;border-radius:7px;font-size:12px;font-weight:700;line-height:1.25;white-space:normal;text-align:center;transition:border-color .14s,background .14s,color .14s}
+.category-tab:hover{border-color:#79bca1;background:#f3faf5;color:#176d50}
+.category-tab.active{color:#116f50;border-color:#45bb92;background:#e6f7ed}
+.category-tab:focus-visible{outline:2px solid #1ba57f;outline-offset:2px}
 .category-content{min-height:165px}
 .category-content [role="tabpanel"][hidden]{display:none!important}
-body[data-store-type="decor"] .category-browser-head h2{font-family:Georgia,serif;font-weight:400;font-size:clamp(28px,3.3vw,42px)}
+body[data-store-type="decor"] .category-browser-head h2{font-family:Georgia,serif;font-weight:400;font-size:clamp(25px,2.9vw,35px)}
 body[data-store-type="decor"] .category-eyebrow{color:#a38a70}
-body[data-store-type="decor"] .category-tab{background:#f4efe8;border-color:#e1d9cd;border-radius:4px}
-body[data-store-type="decor"] .category-tab.active{background:#e9e0d5;border-color:#8b765e}
-body[data-store-type="decor"] .category-thumbnail{border-radius:2px}
-body[data-store-type="decor"] .category-name{font-family:Georgia,serif;font-size:17px;font-weight:500}
-@media(max-width:600px){.category-switcher{gap:10px;margin-bottom:15px}.category-tab{flex-basis:150px}.category-thumbnail{aspect-ratio:1.65/1}.category-name{font-size:13px}.category-browser-head{margin-bottom:16px}.catalog-area{margin-top:24px}}
+body[data-store-type="decor"] .category-tab{background:#f8f5ef;border-color:#dfd6c9;color:#746655;border-radius:5px}
+body[data-store-type="decor"] .category-tab:hover{background:#efe9e0;border-color:#b3a08a}
+body[data-store-type="decor"] .category-tab.active{background:#e8ded1;border-color:#8b765e;color:#3c3026}
+@media(max-width:600px){.category-switcher{gap:7px;padding-bottom:13px;margin-bottom:15px}.category-tab{min-height:32px;padding:6px 11px;font-size:12px}.category-browser-head{margin-bottom:12px}.catalog-area{margin-top:22px}}
 
 </style>
 </head>
@@ -491,13 +486,8 @@ async function load(){
      '<h2>Browse by category</h2><p>Select a category to explore its offerings separately.</p></div>'+
      '<div class="category-switcher" role="tablist" aria-label="Browse business categories">'+
      groups.map(group=>{
-       const preview=group.items.find(item=>galleryPhotos(item).length);
-       const image=preview?galleryPhotos(preview)[0]:"";
        const selected=group.id===selectedCategory;
-       return '<button type="button" class="category-tab'+(selected?' active':'')+'" role="tab" data-category-tab="'+esc(group.id)+'" id="category-tab-'+esc(group.id)+'" aria-controls="category-panel-'+esc(group.id)+'" aria-selected="'+(selected?'true':'false')+'" tabindex="'+(selected?'0':'-1')+'">'+
-         '<span class="category-thumbnail">'+(image?'<img src="'+esc(image)+'" alt="" loading="lazy">':'<span class="category-placeholder">✦</span>')+'</span>'+
-         '<span class="category-name">'+esc(group.name)+'</span>'+
-         '<small>'+group.items.length+' offering'+(group.items.length===1?'':'s')+'</small></button>';
+       return '<button type="button" class="category-tab'+(selected?' active':'')+'" role="tab" data-category-tab="'+esc(group.id)+'" id="category-tab-'+esc(group.id)+'" aria-controls="category-panel-'+esc(group.id)+'" aria-selected="'+(selected?'true':'false')+'" tabindex="'+(selected?'0':'-1')+'">'+esc(group.name)+'</button>';
      }).join('')+'</div>'+
      '<div class="category-content">'+groups.map(group=>{
        const selected=group.id===selectedCategory;
