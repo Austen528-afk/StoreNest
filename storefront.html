@@ -276,6 +276,32 @@ body[data-store-type="decor"] .offering-heading h2{font-family:Georgia,serif;fon
 .offering-section.section-style-showcase .item-bottom,.offering-section.section-style-portfolio .item-bottom,.offering-section.section-style-booking .item-bottom{display:flex;flex-direction:column;align-items:flex-start;gap:15px}
 @media(max-width:800px){.offering-section.section-style-menu .grid,.offering-section.section-style-catalogue .grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:500px){.catalog-area{gap:25px;margin-top:25px}.offering-section.section-style-showcase .card,.offering-section.section-style-portfolio .card,.offering-section.section-style-booking .card{grid-template-columns:55% 45%}.offering-section.section-style-showcase .art,.offering-section.section-style-portfolio .art,.offering-section.section-style-booking .art{min-height:260px}.offering-section.section-style-showcase .item-body,.offering-section.section-style-portfolio .item-body,.offering-section.section-style-booking .item-body{padding:14px}.offering-section.section-style-showcase .item-body h3,.offering-section.section-style-portfolio .item-body h3,.offering-section.section-style-booking .item-body h3{font-size:18px}.offering-section.section-style-menu .item-body,.offering-section.section-style-catalogue .item-body{padding:11px}}
+
+/* Per-business classification: category thumbnails and one active collection at a time. */
+.catalog-area{margin-top:34px;display:block;scroll-margin-top:20px}
+.category-browser-head{margin-bottom:20px}
+.category-eyebrow{display:block;color:#1e9a7a;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px}
+.category-browser-head h2{margin:0 0 7px;font-size:clamp(24px,3vw,35px);font-weight:750;letter-spacing:-.04em}
+.category-browser-head p{font-size:13px;color:#818f86;margin:0;line-height:1.5}
+.category-switcher{display:flex;align-items:stretch;gap:14px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;padding:2px 2px 14px;margin-bottom:23px;scrollbar-width:thin}
+.category-tab{flex:0 0 clamp(153px,19vw,218px);display:flex;flex-direction:column;align-items:flex-start;text-align:left;padding:8px 8px 13px;color:var(--ink);background:#fff;border:1px solid #e0e7e1;border-radius:13px;min-width:0;gap:5px;scroll-snap-align:start;transition:border-color .14s,background .14s}
+.category-tab:hover{border-color:#90c5ae;background:#f8fcf9}
+.category-tab.active{border:2px solid #19a982;background:#edf9f2;padding:7px 7px 12px;box-shadow:0 5px 19px #1b946b14}
+.category-thumbnail{display:block;position:relative;aspect-ratio:2.2/1;width:100%;overflow:hidden;border-radius:8px;background:linear-gradient(125deg,#e8e7df,#dcd9ce)}
+.category-thumbnail img{display:block;width:100%;height:100%;object-fit:cover}
+.category-placeholder{width:100%;height:100%;display:grid;place-items:center;color:#8b9b8d;font-size:25px}
+.category-name{display:block;margin:5px 4px 0;font-size:14px;font-weight:750;line-height:1.25;overflow-wrap:anywhere}
+.category-tab small{display:block;margin:0 4px;font-size:11px;color:#7a8b81}
+.category-content{min-height:165px}
+.category-content [role="tabpanel"][hidden]{display:none!important}
+body[data-store-type="decor"] .category-browser-head h2{font-family:Georgia,serif;font-weight:400;font-size:clamp(28px,3.3vw,42px)}
+body[data-store-type="decor"] .category-eyebrow{color:#a38a70}
+body[data-store-type="decor"] .category-tab{background:#f4efe8;border-color:#e1d9cd;border-radius:4px}
+body[data-store-type="decor"] .category-tab.active{background:#e9e0d5;border-color:#8b765e}
+body[data-store-type="decor"] .category-thumbnail{border-radius:2px}
+body[data-store-type="decor"] .category-name{font-family:Georgia,serif;font-size:17px;font-weight:500}
+@media(max-width:600px){.category-switcher{gap:10px;margin-bottom:15px}.category-tab{flex-basis:150px}.category-thumbnail{aspect-ratio:1.65/1}.category-name{font-size:13px}.category-browser-head{margin-bottom:16px}.catalog-area{margin-top:24px}}
+
 </style>
 </head>
 <body>
@@ -360,7 +386,36 @@ document.addEventListener("keydown",event=>{
 let swipeX=null;
 $("galleryImage").addEventListener("touchstart",event=>{swipeX=event.touches[0]?.clientX??null},{passive:true});
 $("galleryImage").addEventListener("touchend",event=>{if(swipeX===null)return;const delta=(event.changedTouches[0]?.clientX??swipeX)-swipeX;swipeX=null;if(Math.abs(delta)<45)return;if(delta<0&&!$("galleryNext").disabled){galleryIndex++;showGalleryImage()}else if(delta>0&&!$("galleryPrev").disabled){galleryIndex--;showGalleryImage()}},{passive:true});
+function selectStorefrontCategory(id,focusTab=false){
+ const catalog=$("catalog");if(!catalog)return;
+ const tabs=[...catalog.querySelectorAll("[data-category-tab]")];
+ const selected=tabs.find(tab=>tab.dataset.categoryTab===id);
+ if(!selected)return;
+ tabs.forEach(tab=>{
+   const active=tab===selected;
+   tab.classList.toggle("active",active);
+   tab.setAttribute("aria-selected",String(active));
+   tab.tabIndex=active?0:-1;
+ });
+ catalog.querySelectorAll("[data-category-panel]").forEach(panel=>{panel.hidden=panel.dataset.categoryPanel!==id});
+ if(focusTab)selected.focus();
+ const url=new URL(location.href);url.searchParams.set("category",id);
+ history.replaceState(null,"",url.pathname+url.search+url.hash);
+}
+$("main").addEventListener("keydown",event=>{
+ const tab=event.target.closest('[data-category-tab]');if(!tab)return;
+ if(!["ArrowLeft","ArrowRight","Home","End"].includes(event.key))return;
+ const tabs=[...$("catalog").querySelectorAll("[data-category-tab]")];const current=tabs.indexOf(tab);
+ if(current<0)return;
+ event.preventDefault();
+ const next=event.key==="Home"?0:event.key==="End"?tabs.length-1:(current+(event.key==="ArrowRight"?1:-1)+tabs.length)%tabs.length;
+ selectStorefrontCategory(tabs[next].dataset.categoryTab,true);
+});
+window.addEventListener("popstate",()=>{const category=new URLSearchParams(location.search).get("category");if(category)selectStorefrontCategory(category)});
 $("main").addEventListener("click",e=>{
+  const category=e.target.closest("[data-category-tab]");
+  if(category){selectStorefrontCategory(category.dataset.categoryTab);return}
+
   const add=e.target.closest("[data-add-item]");
   if(add){const id=add.dataset.addItem;if(!availableItems.some(i=>i.id===id))return;cart.set(id,(cart.get(id)||0)+1);syncCartBadge();toast("Added to basket");return}
   const open=e.target.closest("[data-open-product]");if(open){openProductGallery(open.dataset.openProduct,open);return}
@@ -416,15 +471,43 @@ async function load(){
      return '<article class="card"><button type="button" class="item-open" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos and details"><div class="art">'+(first?'<img src="'+esc(first)+'" alt="'+esc(item.name)+'" loading="lazy">':item.item_type==="service"?"✦":"▧")+(count>1?'<span class="photo-count">▧ '+count+' photos</span>':'')+'</div></button><div class="item-body"><h3>'+esc(item.name)+'</h3><p>'+esc(item.description||"")+'</p><div class="item-bottom"><span class="price">'+money(item.price)+'</span><button class="add" type="button" data-add-item="'+esc(item.id)+'" aria-label="Add '+esc(item.name)+' to basket"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add</button></div></div></article>';
    };
    const sectionStyles=["auto","menu","showcase","portfolio","catalogue","booking"];
-   const sectionsWithItems=storefrontSections.filter(section=>availableItems.some(item=>item.category_id===section.id));
+   // Classifications are user-created, and every section appears even when no items are assigned yet.
    const independent=availableItems.filter(item=>!storefrontSections.some(section=>section.id===item.category_id));
-   const renderedGroups=sectionsWithItems.map(section=>{
-     const style=sectionStyles.includes(section.display_style)?section.display_style:"auto";
-     const cards=availableItems.filter(item=>item.category_id===section.id).map(cardForItem).join("");
-     return '<section class="offering-section section-style-'+esc(style)+'" aria-label="'+esc(section.name)+'"><div class="offering-heading"><span class="offering-label">OUR OFFERINGS</span><h2>'+esc(section.name)+'</h2>'+(section.description?'<p>'+esc(section.description)+'</p>':'')+'</div><div class="grid">'+cards+'</div></section>';
-   }).join("");
-   const uncategorized=independent.length?'<section class="offering-section section-style-auto"><div class="offering-heading"><h2>'+(sectionsWithItems.length?'More offerings':isDecor?'Explore the Collection':business.category==="Food & Drink"?"Our Menu":"Products & Services")+'</h2></div><div class="grid">'+independent.map(cardForItem).join("")+'</div></section>':"";
-   const catalogueMarkup=renderedGroups+uncategorized;
+   const groups=storefrontSections.map(section=>({
+     id:section.id,
+     name:section.name,
+     description:section.description||"",
+     style:sectionStyles.includes(section.display_style)?section.display_style:"auto",
+     items:availableItems.filter(item=>item.category_id===section.id)
+   }));
+   if(independent.length)groups.push({
+     id:"other",name:storefrontSections.length?"Other offerings":"Products & Services",
+     description:"",style:"auto",items:independent
+   });
+   const requestedCategory=new URLSearchParams(location.search).get("category");
+   const selectedCategory=groups.some(group=>group.id===requestedCategory)?requestedCategory:groups[0]?.id;
+   const catalogueMarkup=groups.length?(
+     '<div class="category-browser-head"><span class="category-eyebrow">EXPLORE '+esc(business.name)+'</span>'+
+     '<h2>Browse by category</h2><p>Select a category to explore its offerings separately.</p></div>'+
+     '<div class="category-switcher" role="tablist" aria-label="Browse business categories">'+
+     groups.map(group=>{
+       const preview=group.items.find(item=>galleryPhotos(item).length);
+       const image=preview?galleryPhotos(preview)[0]:"";
+       const selected=group.id===selectedCategory;
+       return '<button type="button" class="category-tab'+(selected?' active':'')+'" role="tab" data-category-tab="'+esc(group.id)+'" id="category-tab-'+esc(group.id)+'" aria-controls="category-panel-'+esc(group.id)+'" aria-selected="'+(selected?'true':'false')+'" tabindex="'+(selected?'0':'-1')+'">'+
+         '<span class="category-thumbnail">'+(image?'<img src="'+esc(image)+'" alt="" loading="lazy">':'<span class="category-placeholder">✦</span>')+'</span>'+
+         '<span class="category-name">'+esc(group.name)+'</span>'+
+         '<small>'+group.items.length+' offering'+(group.items.length===1?'':'s')+'</small></button>';
+     }).join('')+'</div>'+
+     '<div class="category-content">'+groups.map(group=>{
+       const selected=group.id===selectedCategory;
+       const cards=group.items.map(cardForItem).join("");
+       return '<section class="offering-section section-style-'+esc(group.style)+'" role="tabpanel" id="category-panel-'+esc(group.id)+'" data-category-panel="'+esc(group.id)+'" aria-labelledby="category-tab-'+esc(group.id)+'"'+(selected?'':' hidden')+'>'+
+         '<div class="offering-heading"><span class="offering-label">OUR OFFERINGS</span><h2>'+esc(group.name)+'</h2>'+
+         (group.description?'<p>'+esc(group.description)+'</p>':'')+'</div>'+
+         (cards?'<div class="grid">'+cards+'</div>':'<div class="empty"><strong>No offerings yet</strong>This category is ready for the business to add products or services.</div>')+'</section>';
+     }).join('')+'</div>'
+   ):'<section class="empty"><strong>Catalogue coming soon</strong>This business has not added categories or offerings yet.</section>';
    const standardHero=
      '<section class="hero layout-'+layout+'">'+(cover?'<img class="hero-cover" src="'+esc(cover)+'" alt="">':'')+
      '<div class="hero-top"><div class="store-identity">'+(logo?'<img class="store-logo" src="'+esc(logo)+'" alt="">':'')+
@@ -448,7 +531,7 @@ async function load(){
    root.innerHTML=(isDecor?decorHero:standardHero)+
      (cfg.welcome?'<div class="welcome">'+esc(cfg.welcome)+'</div>':'')+
      '<div class="contacts">'+contacts.join("")+'</div>'+
-     '<div id="catalog" class="catalog-area">'+(catalogueMarkup||'<section class="empty"><strong>Catalogue coming soon</strong>This business has not added available offerings yet.</section>')+'</div>';
+     '<div id="catalog" class="catalog-area">'+catalogueMarkup+'</div>';
  }catch(error){root.innerHTML='<div class="notice">We couldn’t load this storefront right now. Please try again later.</div>';console.error("Storefront load error",error)}
 }
 load();
