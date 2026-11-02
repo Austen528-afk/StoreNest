@@ -170,20 +170,22 @@ html,body{background:#f8faf9;color:#182321}
 @media(max-width:830px){.marketplace-category-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:540px){.marketplace-category-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.marketplace-category-button{padding:15px 12px;border-radius:12px}.marketplace-category-button .category-icon{font-size:22px}.marketplace-heading h2{font-size:19px}}
 
-/* Compact latest-offering strip below each marketplace business. */
-.market-business{margin:0 0 24px;min-width:0}
-.market-business .result-card{margin-bottom:0}
-.market-latest-title{font-size:11px;font-weight:800;color:#708479;margin:12px 0 9px}
-.market-items{display:flex;gap:11px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;scrollbar-width:thin;padding:2px 1px 9px}
-.market-item{display:flex;flex-direction:column;flex:0 0 147px;min-width:0;background:#fff;border:1px solid #e0e9e3;border-radius:12px;overflow:hidden;color:#233a2e;text-decoration:none;scroll-snap-align:start;transition:border-color .16s}
-.market-item:hover{border-color:#69c2a2;background:#f8fffb}
+/* Marketplace business: a single shared border around the business and its latest offerings. */
+.market-business{margin:0 0 20px;min-width:0;overflow:hidden;background:#fff;border:1px solid #dae6df;border-radius:16px;box-shadow:0 2px 14px #1a342309}
+.market-business .result-card{margin:0;padding:15px 17px;background:transparent;border:0;border-radius:0;box-shadow:none}
+.market-business .result-card:hover{background:#f5faf7;border:0}
+.market-business:has(.market-items) .result-card{border-bottom:1px solid #ebf0ed}
+.market-latest-title{font-size:11px;font-weight:800;color:#708479;margin:14px 16px 10px}
+.market-items{display:flex;gap:12px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;scrollbar-width:thin;padding:0 16px 16px}
+.market-item{display:flex;flex-direction:column;flex:0 0 148px;min-width:0;background:transparent;border:0;border-radius:9px;overflow:hidden;color:#233a2e;text-decoration:none;scroll-snap-align:start;transition:background .16s}
+.market-item:hover{background:#eff8f2}
 .market-item:focus-visible{outline:2px solid #23ac84;outline-offset:2px}
-.market-item-image{display:flex;align-items:center;justify-content:center;width:100%;aspect-ratio:1.3/1;background:#eef1ed;overflow:hidden}
+.market-item-image{display:flex;align-items:center;justify-content:center;width:100%;aspect-ratio:1.3/1;background:#eef1ed;border-radius:8px;overflow:hidden}
 .market-item-image img{display:block;width:100%;height:100%;object-fit:cover}
 .market-no-photo{font-size:24px;color:#98a89a}
-.market-item-name{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:12px;font-weight:750;line-height:1.35;padding:10px 10px 0;min-height:42px}
-.market-item-price{display:block;padding:5px 10px 13px;font-size:13px;letter-spacing:-.015em}
-@media(max-width:500px){.market-item{flex-basis:132px}.market-items{gap:8px}}
+.market-item-name{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:12px;font-weight:750;line-height:1.4;padding:9px 3px 5px}
+@media(max-width:500px){.market-business .result-card{padding:13px}.market-latest-title{margin:12px 13px 9px}.market-items{gap:9px;padding:0 13px 13px}.market-item{flex-basis:130px}}
+
 </style>
 </head>
 <body>
@@ -241,8 +243,7 @@ function marketplaceBusinessCard(b,items){
  if(!items.length)return '<div class="market-business">'+header+'</div>';
  return '<div class="market-business">'+header+'<div class="market-latest-title">Latest updates</div><div class="market-items" aria-label="Latest offerings from '+esc(b.name)+'">'+items.map(item=>{
   const image=/^https:\/\//i.test(item.image_url||"")?'<img src="'+esc(item.image_url)+'" alt="" loading="lazy">':'<span class="market-no-photo">▧</span>';
-  const price=Number(item.price);
-  return '<a class="market-item" href="'+marketplaceItemHref(b,item)+'"><span class="market-item-image">'+image+'</span><span class="market-item-name">'+esc(item.name)+'</span><strong class="market-item-price">'+(Number.isFinite(price)?"R"+price.toFixed(2):"")+'</strong></a>';
+  return '<a class="market-item" href="'+marketplaceItemHref(b,item)+'"><span class="market-item-image">'+image+'</span><span class="market-item-name">'+esc(item.name)+'</span></a>';
  }).join("")+'</div></div>';
 }
 async function browseMarketplaceCategory(id){
