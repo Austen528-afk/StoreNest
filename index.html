@@ -155,6 +155,20 @@ html,body{background:#f8faf9;color:#182321}
 .recent-empty{grid-column:1/-1;border:1px dashed #dce8df;background:#ffffffab;border-radius:15px;padding:28px 18px;color:#819289;font-size:13px;line-height:1.5}
 @media(max-width:810px){.recent-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:490px){.recent-grid{grid-template-columns:minmax(0,1fr);gap:9px}.recent-card{padding:13px 14px}.recent-avatar{width:43px;height:43px;flex-basis:43px}.recent-heading{margin-bottom:13px}.recent-heading p{font-size:11px}.clear-recent{padding:8px;font-size:10px}.recent-businesses{padding-top:20px}}
+
+.marketplace-categories{padding:19px 0 5px}
+.marketplace-heading{margin-bottom:15px}
+.marketplace-heading h2{font-size:21px;letter-spacing:-.035em;color:#172a21;margin:0 0 5px}
+.marketplace-heading p{font-size:12px;color:#7e9187}
+.marketplace-category-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.marketplace-category-button{min-width:0;background:#fff;border:1px solid #dce8df;border-radius:14px;padding:19px 15px;display:flex;flex-direction:column;align-items:flex-start;gap:9px;text-align:left;color:#22382c;cursor:pointer;transition:background .15s,border-color .15s}
+.marketplace-category-button:hover{border-color:#79c6a5;background:#effaf3}
+.marketplace-category-button.active{background:#e2f7ea;border-color:#35b58b}
+.marketplace-category-button .category-icon{font-size:25px;line-height:1.2}
+.marketplace-category-button strong{font-size:13px;line-height:1.35}
+.category-back{border:1px solid #d6e6dc;border-radius:9px;padding:8px 11px;font-size:12px;color:#396950;background:#fff;cursor:pointer;margin:0 0 14px}
+@media(max-width:830px){.marketplace-category-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:540px){.marketplace-category-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.marketplace-category-button{padding:15px 12px;border-radius:12px}.marketplace-category-button .category-icon{font-size:22px}.marketplace-heading h2{font-size:19px}}
 </style>
 </head>
 <body>
@@ -168,6 +182,7 @@ html,body{background:#f8faf9;color:#182321}
   <p class="search-status" id="storeSearchStatus" role="status" hidden></p>
 </section>
 <main class="empty-home" aria-label="StoreNest home">
+  <section id="marketplaceCategories" class="marketplace-categories"><div class="marketplace-heading"><h2>Explore local businesses</h2><p>Find what people in your community are offering.</p></div><div id="marketplaceCategoryGrid" class="marketplace-category-grid"></div></section>
   <section id="searchResults" class="search-results" aria-live="polite" hidden></section>
   <section id="recentBusinesses" class="recent-businesses" aria-labelledby="recentHeading">
     <div class="recent-heading">
@@ -195,6 +210,26 @@ const storeSearchInput=document.getElementById("storeSearchInput");
 const storeSearchStatus=document.getElementById("storeSearchStatus");
 
 const resultRoot=document.getElementById("searchResults");
+const categorySection=document.getElementById("marketplaceCategories");
+const categoryGrid=document.getElementById("marketplaceCategoryGrid");
+const MARKETPLACE_CATEGORIES=[["food-drink","Food & Drinks","🍔"],["events-decor","Events & Décor","🎉"],["electronics","Phones & Electronics","📱"],["fashion","Fashion & Accessories","👕"],["beauty","Beauty & Grooming","💈"],["home-living","Home & Living","🏠"],["groceries","Groceries & Essentials","🛒"],["local-services","Local Services","🛠️"],["other","Other Businesses","🏪"]];
+let activeMarketplaceCategory=null;
+function renderMarketplaceCategories(){categoryGrid.innerHTML=MARKETPLACE_CATEGORIES.map(([id,label,emoji])=>'<button type="button" class="marketplace-category-button'+(activeMarketplaceCategory===id?' active':'')+'" data-market-category="'+id+'"><span class="category-icon" aria-hidden="true">'+emoji+'</span><strong>'+label+'</strong></button>').join("")}
+function resetMarketplaceBrowse(){activeMarketplaceCategory=null;categorySection.hidden=false;renderMarketplaceCategories();setSearchActive(false);renderRecentBusinesses()}
+categoryGrid.addEventListener("click",event=>{const btn=event.target.closest("[data-market-category]");if(btn)browseMarketplaceCategory(btn.dataset.marketCategory)});
+async function browseMarketplaceCategory(id){
+ const category=MARKETPLACE_CATEGORIES.find(row=>row[0]===id);if(!category)return;
+ const seq=++searchCounter;activeMarketplaceCategory=id;renderMarketplaceCategories();storeSearchInput.value="";categorySection.hidden=true;setSearchActive(true);
+ resultRoot.innerHTML='<p class="results-head">Loading '+escapeResult(category[1])+'…</p>';
+ try{
+  const client=await getSearchClient();const {data,error}=await client.rpc("browse_storenest_category",{category_slug:id});if(error)throw error;if(seq!==searchCounter)return;
+  const rows=(data||[]).map(r=>({...safeBusiness(r),section_id:r.section_id})).filter(r=>r.slug);lastSearchResults=rows;
+  resultRoot.innerHTML='<button class="category-back" type="button" id="backToCategories">← All categories</button><p class="results-head">'+escapeResult(category[1])+' · '+rows.length+' business'+(rows.length===1?'':'es')+'</p>'+(
+   rows.length?rows.map(b=>'<a class="result-card" data-business-slug="'+escapeResult(b.slug)+'" href="/storefront.html?slug='+encodeURIComponent(b.slug)+(b.section_id?'&category='+encodeURIComponent(b.section_id):'')+'"><span class="result-avatar">'+(b.logo_url?'<img src="'+escapeResult(b.logo_url)+'" alt="">':escapeResult(b.name.slice(0,1).toUpperCase()))+'</span><span class="result-content"><strong>'+escapeResult(b.name)+'</strong><span>'+escapeResult([b.category,b.location].filter(Boolean).join(" · "))+'</span></span><span class="result-arrow">→</span></a>').join(""):'<p class="results-head">No businesses listed here yet.</p>');
+ }catch(error){if(seq!==searchCounter)return;resultRoot.innerHTML='<button class="category-back" type="button" id="backToCategories">← All categories</button><p class="results-head">Unable to load this category. Please retry.</p>';console.error("Marketplace browse failed",error)}
+}
+resultRoot.addEventListener("click",e=>{if(e.target.closest("#backToCategories"))resetMarketplaceBrowse()});
+renderMarketplaceCategories();
 const STORE_SEARCH={url:"https://cypbjzbagezdelmemuhb.supabase.co",key:"sb_publishable_8W8zyYtggQMWoFlnxrzoVA_BUKjQ9va"};
 let searchClient=null,searchClientPromise=null,searchCounter=0,lastSearchResults=[];
 const RECENT_BUSINESSES_KEY="storenest:recent-businesses:v1";
@@ -236,6 +271,7 @@ function renderRecentBusinesses(){
 function setSearchActive(active){
  recentSection.hidden=active;
  resultRoot.hidden=!active;
+ if(!active)categorySection.hidden=false;
 }
 clearRecentButton.addEventListener("click",()=>{
  if(!confirm("Remove all businesses from your recent list?"))return;
@@ -279,8 +315,8 @@ async function getSearchClient(){
 // A business is removed from this device history only by the visitor's remove button.
 async function findBusinesses(query){
  const seq=++searchCounter;
- if(!query){setSearchActive(false);storeSearchStatus.hidden=true;renderRecentBusinesses();return}
- setSearchActive(true);resultRoot.textContent="Searching published businesses…";
+ if(!query){resetMarketplaceBrowse();storeSearchStatus.hidden=true;return}
+ activeMarketplaceCategory=null;renderMarketplaceCategories();categorySection.hidden=true;setSearchActive(true);resultRoot.textContent="Searching published businesses…";
  storeSearchStatus.hidden=true;
  try{
    const client=await getSearchClient();
@@ -294,7 +330,7 @@ async function findBusinesses(query){
 storeSearchForm.addEventListener("submit",event=>{event.preventDefault();findBusinesses(storeSearchInput.value.trim())});
 storeSearchInput.addEventListener("input",()=>{
  if(!storeSearchInput.value.trim()){
-   searchCounter++;lastSearchResults=[];setSearchActive(false);storeSearchStatus.hidden=true;renderRecentBusinesses();
+   searchCounter++;lastSearchResults=[];resetMarketplaceBrowse();storeSearchStatus.hidden=true;
  }else{
    recentSection.hidden=true;
  }
