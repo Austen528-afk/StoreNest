@@ -325,6 +325,12 @@ html[data-embed="hero"] .decor-hero{min-height:320px}
 html[data-embed="hero"] .bag{pointer-events:none}
 html[data-embed="hero"] .welcome{margin:14px 0 0!important}
 
+
+/* Storefront hero motion is silent, loops, and never blocks text or interaction. */
+.hero-cover-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
+.hero:has(.hero-cover-video):before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#1e1817ed 0%,#1e1817a1 66%,#1e181785 100%)}
+.decor-visual .decor-cover-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+@media(prefers-reduced-motion:reduce){.hero-cover-video,.decor-cover-video{visibility:hidden}}
 </style>
 <link rel="stylesheet" href="/theme.css">
 <script src="/theme.js"></script>
@@ -463,9 +469,10 @@ function renderStorefrontHero(business,cfg,options={}){
  const accent=/^#[0-9a-f]{6}$/i.test(cfg.accent||"")?cfg.accent:"#e6a15e";
  document.documentElement.style.setProperty("--accent",isDecor&&(!cfg.accent||/^#60d6bd$/i.test(cfg.accent))?"#98836a":accent);
  const cover=resolveAsset(cfg.hero);
+ const videoCover=/\.(mp4|webm)(?:[?#]|$)/i.test(cover)||Boolean(options.preview&&cfg.heroIsVideo);
  const logo=resolveAsset(preview?(cfg.logo||business.logo_url):business.logo_url);
    const standardHero=
-     '<section class="hero layout-'+layout+'">'+(cover?'<img class="hero-cover" src="'+esc(cover)+'" alt="">':'')+
+     '<section class="hero layout-'+layout+'">'+(cover?(videoCover?'<video class="hero-cover-video" src="'+esc(cover)+'" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>':'<img class="hero-cover" src="'+esc(cover)+'" alt="">'):'')+
      '<div class="hero-top"><div class="store-identity">'+(logo?'<img class="store-logo" src="'+esc(logo)+'" alt="">':'')+
      '<span class="brand-name">'+esc(business.name)+'<span class="brand-dot">.</span></span></div>'+
      '<button type="button" id="openCart" class="bag" aria-label="Open basket"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 12H4L5 8ZM9 9V6a3 3 0 0 1 6 0v3"/></svg><span id="bagCount">0</span></button></div>'+
@@ -482,7 +489,7 @@ function renderStorefrontHero(business,cfg,options={}){
      (cfg.tagline?'<p class="decor-tag">'+esc(cfg.tagline)+'</p>':'')+
      '<p class="decor-summary">'+esc(business.description||"Explore pieces for the home and everyday spaces.")+'</p></div>'+
      '<a class="decor-cta" href="#catalog">Explore collection</a></div>'+
-     '<div class="decor-visual">'+(decorImage?'<img src="'+esc(decorImage)+'" alt="Featured home decor">':'')+
+     '<div class="decor-visual">'+(decorImage?(videoCover?'<video class="decor-cover-video" src="'+esc(decorImage)+'" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>':'<img src="'+esc(decorImage)+'" alt="Featured home decor">'):'')+
      '<button type="button" id="openCart" class="bag" aria-label="Open basket"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 12H4L5 8ZM9 9V6a3 3 0 0 1 6 0v3"/></svg><span id="bagCount">0</span></button></div></section>';
 
  return isDecor?decorHero:standardHero;
@@ -509,6 +516,7 @@ function setupPrivateHeroPreview(root){
    (config.welcome?'<div class="welcome">'+esc(config.welcome)+'</div>':'');
   requestAnimationFrame(notify);
   root.querySelectorAll("img").forEach(image=>image.addEventListener("load",notify,{once:true}));
+  root.querySelectorAll("video").forEach(video=>video.play().catch(()=>{}));
  });
  window.parent.postMessage({type:"storenest:preview-ready"},location.origin);
 }
