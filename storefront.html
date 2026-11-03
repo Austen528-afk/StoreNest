@@ -448,7 +448,8 @@ $("main").addEventListener("click",e=>{
 });
 async function load(){
  const search=new URLSearchParams(location.search);
- const embedded=search.get("embed")==="hero" && window.parent!==window && window.parent.location.origin===location.origin;
+ let embedded=false;
+ try{embedded=search.get("embed")==="hero" && window.parent!==window && window.parent.location.origin===location.origin}catch(_){}
  if(embedded)document.documentElement.dataset.embed="hero";
  const slug=search.get("slug");
  const root=$("main");
