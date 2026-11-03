@@ -443,6 +443,10 @@ html[data-theme="dark"] .page-refresh-button:hover{background:#2d4540;border-col
 .storefront-card .draft-preview-note{display:block;color:#91a9a2;font-size:11px;line-height:1.4;margin-top:4px}
 @media(max-width:600px){.live-storefront-preview{height:290px}.storefront-card .draft-preview-note{font-size:10px}}
 
+
+/* Short background video previews share the same presentation as images. */
+#builderCoverVideoPreview{display:block;width:min(100%,320px);max-height:190px;object-fit:cover;border-radius:12px}
+#builderCoverVideoPreview[hidden]{display:none!important}
 </style>
 <link rel="stylesheet" href="/theme.css">
 <script src="/theme.js"></script>
@@ -545,7 +549,7 @@ html[data-theme="dark"] .page-refresh-button:hover{background:#2d4540;border-col
 <div class="form-grid">
 <div class="field"><label for="builderHeadline">Headline</label><input id="builderHeadline" maxlength="90" placeholder="Fresh food, made with love"></div>
 <div class="field"><label for="builderTagline">Short tagline</label><input id="builderTagline" maxlength="120" placeholder="The best in town"></div>
-<div class="field full-field"><label for="builderLogoFile">Profile picture / business logo</label><input id="builderLogoFile" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><small>JPG, PNG, WebP or GIF · max 2 MB</small><div class="brand-preview"><img id="builderLogoPreview" hidden alt="Logo preview"><button type="button" class="outline-button" id="removeBuilderLogo">Remove logo</button></div></div><div class="field full-field"><label for="builderCoverFile">Storefront background picture</label><input id="builderCoverFile" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><small>JPG, PNG, WebP or GIF · max 8 MB</small><div class="brand-preview"><img id="builderCoverPreview" hidden alt="Background preview"><button type="button" class="outline-button" id="removeBuilderCover">Remove background</button></div></div><div class="field full-field"><label for="builderHero">Or HTTPS background image URL (optional)</label><input id="builderHero" type="url" placeholder="https://example.com/photo.jpg"></div>
+<div class="field full-field"><label for="builderLogoFile">Profile picture / business logo</label><input id="builderLogoFile" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><small>JPG, PNG, WebP or GIF · max 2 MB</small><div class="brand-preview"><img id="builderLogoPreview" hidden alt="Logo preview"><button type="button" class="outline-button" id="removeBuilderLogo">Remove logo</button></div></div><div class="field full-field"><label for="builderCoverFile">Storefront background picture or short video</label><input id="builderCoverFile" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"><small>Pictures: JPG, PNG, WebP, GIF · max 8 MB. Videos: MP4 or WebM · max 20 MB / 30 seconds.</small><div class="brand-preview"><img id="builderCoverPreview" hidden alt="Background preview"><video id="builderCoverVideoPreview" muted loop playsinline autoplay preload="metadata" hidden aria-label="Background video preview"></video><button type="button" class="outline-button" id="removeBuilderCover">Remove background</button></div></div><div class="field full-field"><label for="builderHero">Or HTTPS background image or video URL (optional)</label><input id="builderHero" type="url" placeholder="https://example.com/photo.jpg"></div>
 <div class="field"><label for="builderAccent">Storefront accent colour</label><input id="builderAccent" type="color" value="#60d6bd"></div>
 <div class="field"><label for="builderStyle">Storefront layout</label><select id="builderStyle"><option value="classic">Classic</option><option value="showcase">Showcase</option><option value="compact">Compact</option></select></div>
 <div class="field full-field"><label for="builderWelcome">Welcome message</label><textarea id="builderWelcome" maxlength="400" rows="3" placeholder="Tell customers about your business"></textarea></div>
@@ -706,14 +710,77 @@ async function loadBusinessData(){const client=await loadAuth();const [{data:ite
 async function activateDashboard(user){currentUser=user;const client=await loadAuth();const business=await ensureBusiness(client,user);applyBusiness(business);renderBusinessSelector();showView("account");await loadBusinessData();await loadStorefrontDraft().catch(error=>builderStatus(friendlyError(error)));/* Incomplete profiles are prompted by the overview setup banner, not a recurring login modal. */}
 
 
-const BRAND_BUCKET="storenest-brand-media",BRAND_MIME={"image/jpeg":"jpg","image/png":"png","image/webp":"webp","image/gif":"gif"};
+const BRAND_BUCKET="storenest-brand-media",BRAND_MIME={"image/jpeg":"jpg","image/png":"png","image/webp":"webp","image/gif":"gif","video/mp4":"mp4","video/webm":"webm"};
 const brandObjectUrls={logo:null,cover:null};let removeLogo=false,removeCover=false;
-function validateBrand(file,kind){const limit=(kind==="logo"?2:8)*1048576;if(!file||!BRAND_MIME[file.type]||!file.size||file.size>limit)throw Error("Choose a valid JPG, PNG, WebP or GIF under "+(limit/1048576)+" MB.")}
-function previewBrand(kind,file,url){if(brandObjectUrls[kind])URL.revokeObjectURL(brandObjectUrls[kind]);brandObjectUrls[kind]=file?URL.createObjectURL(file):null;const img=$(kind==="logo"?"builderLogoPreview":"builderCoverPreview"),src=brandObjectUrls[kind]||url||"";img.hidden=!src;if(src)img.src=src;else img.removeAttribute("src")}
-async function uploadBrand(client,file,kind){validateBrand(file,kind);if(!currentUser||!currentBusiness)throw Error("Sign in first.");const path=currentUser.id+"/"+currentBusiness.id+"/"+kind+"/"+crypto.randomUUID()+"."+BRAND_MIME[file.type];const {error}=await client.storage.from(BRAND_BUCKET).upload(path,file,{contentType:file.type,upsert:false});if(error)throw error;return {path,url:client.storage.from(BRAND_BUCKET).getPublicUrl(path).data.publicUrl}}
+function isCoverVideo(value){return /\.(mp4|webm)(?:[?#]|$)/i.test(String(value||""))}
+function validateBrand(file,kind){
+ const video=kind==="cover"&&["video/mp4","video/webm"].includes(file?.type);
+ const limit=(kind==="logo"?2:video?20:8)*1048576;
+ if(!file||!file.size||!BRAND_MIME[file.type]||(kind==="logo"&&file.type.startsWith("video/"))||file.size>limit)
+  throw Error(kind==="cover"?"Choose a JPG, PNG, WebP, GIF (up to 8 MB) or an MP4/WebM video (up to 20 MB, 30 seconds).":"Choose a JPG, PNG, WebP or GIF logo under 2 MB.");
+}
+function validateVideoDuration(file){
+ if(!file?.type.startsWith("video/"))return Promise.resolve();
+ return new Promise((resolve,reject)=>{
+  const url=URL.createObjectURL(file),video=document.createElement("video");
+  let done=false;
+  const finish=error=>{
+   if(done)return;
+   done=true;video.removeAttribute("src");video.load();URL.revokeObjectURL(url);
+   error?reject(error):resolve();
+  };
+  video.preload="metadata";
+  video.onloadedmetadata=()=>finish(Number.isFinite(video.duration)&&video.duration>0&&video.duration<=30?null:new Error("Background videos must be 30 seconds or shorter."));
+  video.onerror=()=>finish(new Error("Unable to read the selected video. Choose a valid MP4 or WebM."));
+  video.src=url;
+ });
+}
+function previewBrand(kind,file,url){
+ if(brandObjectUrls[kind])URL.revokeObjectURL(brandObjectUrls[kind]);
+ brandObjectUrls[kind]=file?URL.createObjectURL(file):null;
+ const src=brandObjectUrls[kind]||url||"",img=$(kind==="logo"?"builderLogoPreview":"builderCoverPreview");
+ if(kind==="cover"){
+  const video=$("builderCoverVideoPreview"),isVideo=file?file.type.startsWith("video/"):isCoverVideo(src);
+  if(video){video.hidden=!isVideo||!src;video.pause();video.removeAttribute("src");if(isVideo&&src){video.src=src;video.play().catch(()=>{});}}
+  img.hidden=!src||isVideo;if(src&&!isVideo)img.src=src;else img.removeAttribute("src");
+ }else{img.hidden=!src;if(src)img.src=src;else img.removeAttribute("src")}
+}
+async function uploadBrand(client,file,kind){
+ validateBrand(file,kind);
+ if(kind==="cover")await validateVideoDuration(file);
+ if(!currentUser||!currentBusiness)throw Error("Sign in first.");
+ const path=currentUser.id+"/"+currentBusiness.id+"/"+kind+"/"+crypto.randomUUID()+"."+BRAND_MIME[file.type];
+ const {error}=await client.storage.from(BRAND_BUCKET).upload(path,file,{contentType:file.type,upsert:false});
+ if(error)throw error;
+ return {path,url:client.storage.from(BRAND_BUCKET).getPublicUrl(path).data.publicUrl};
+}
 async function clearBrandUpload(client,asset){if(asset)try{await client.storage.from(BRAND_BUCKET).remove([asset.path])}catch{}}
-function resetBrandFields(config){removeLogo=false;removeCover=false;$("builderLogoFile").value="";$("builderCoverFile").value="";previewBrand("logo",null,config.logo||currentBusiness?.logo_url||"");previewBrand("cover",null,config.hero||"")}
-for(const kind of ["logo","cover"]){const el=$(kind==="logo"?"builderLogoFile":"builderCoverFile");el.addEventListener("change",()=>{const file=el.files?.[0];if(!file)return;try{validateBrand(file,kind);if(kind==="logo")removeLogo=false;else removeCover=false;previewBrand(kind,file);sendLivePreview()}catch(e){el.value="";builderStatus(e.message)}});$(kind==="logo"?"removeBuilderLogo":"removeBuilderCover").addEventListener("click",()=>{el.value="";if(kind==="logo")removeLogo=true;else{removeCover=true;$("builderHero").value=""}previewBrand(kind,null,"");sendLivePreview()})}
+function resetBrandFields(config){
+ removeLogo=false;removeCover=false;
+ $("builderLogoFile").value="";$("builderCoverFile").value="";
+ previewBrand("logo",null,config.logo||currentBusiness?.logo_url||"");
+ previewBrand("cover",null,config.hero||"");
+}
+for(const kind of ["logo","cover"]){
+ const el=$(kind==="logo"?"builderLogoFile":"builderCoverFile");
+ el.addEventListener("change",async()=>{
+  const file=el.files?.[0];if(!file)return;
+  try{
+   validateBrand(file,kind);
+   if(kind==="cover")await validateVideoDuration(file);
+   if(el.files?.[0]!==file)return;
+   if(kind==="logo")removeLogo=false;else removeCover=false;
+   previewBrand(kind,file);sendLivePreview();
+  }catch(e){
+   if(el.files?.[0]===file){el.value="";previewBrand(kind,null,kind==="cover"?storefrontDraft?.hero||"":storefrontDraft?.logo||"");builderStatus(e.message);sendLivePreview();}
+  }
+ });
+ $(kind==="logo"?"removeBuilderLogo":"removeBuilderCover").addEventListener("click",()=>{
+  el.value="";
+  if(kind==="logo")removeLogo=true;else{removeCover=true;$("builderHero").value=""}
+  previewBrand(kind,null,"");sendLivePreview();
+ });
+}
 $("builderHero").addEventListener("input",()=>{if(!$("builderCoverFile").files.length)previewBrand("cover",null,$("builderHero").value);sendLivePreview()});
 function safeStorefrontConfig(raw){
  const o=raw&&typeof raw==="object"?raw:{};
