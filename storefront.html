@@ -314,7 +314,7 @@ html[data-embed="hero"] .page{
   margin:0!important;
 }
 html[data-embed="hero"] .top,html[data-embed="hero"] .footer,
-html[data-embed="hero"] .welcome,html[data-embed="hero"] .contacts,
+html[data-embed="hero"] .contacts,
 html[data-embed="hero"] .catalog-area{display:none!important}
 html[data-embed="hero"] .hero,html[data-embed="hero"] .decor-hero{
   margin:0!important;
@@ -323,6 +323,7 @@ html[data-embed="hero"] .hero,html[data-embed="hero"] .decor-hero{
 html[data-embed="hero"] .hero{min-height:260px}
 html[data-embed="hero"] .decor-hero{min-height:320px}
 html[data-embed="hero"] .bag{pointer-events:none}
+html[data-embed="hero"] .welcome{margin:14px 0 0!important}
 
 </style>
 <link rel="stylesheet" href="/theme.css">
@@ -446,6 +447,72 @@ $("main").addEventListener("click",e=>{
   const open=e.target.closest("[data-open-product]");if(open){openProductGallery(open.dataset.openProduct,open);return}
   if(e.target.closest("#openCart"))openCart();
 });
+/* One hero renderer used for published storefronts and unsaved owner previews. */
+function renderStorefrontHero(business,cfg,options={}){
+ const featuredImage=String(options.featuredImage||"");
+ const preview=options.preview===true;
+ const resolveAsset=value=>{
+  const uri=String(value||"");
+  if(preview&&uri.startsWith("blob:"+location.origin+"/"))return uri;
+  return safeUrl(uri);
+ };
+ const layout=["classic","showcase","compact","decor"].includes(cfg.layout)?cfg.layout:"classic";
+ const decorCategory=/home\s*(?:&|and)\s*decor|decors?|furnish|interior|homeware|furniture/i.test([business.category,business.name].filter(Boolean).join(" "));
+ const isDecor=layout==="decor"||(decorCategory&&layout==="classic");
+ document.body.dataset.storeType=isDecor?"decor":"standard";
+ const accent=/^#[0-9a-f]{6}$/i.test(cfg.accent||"")?cfg.accent:"#e6a15e";
+ document.documentElement.style.setProperty("--accent",isDecor&&(!cfg.accent||/^#60d6bd$/i.test(cfg.accent))?"#98836a":accent);
+ const cover=resolveAsset(cfg.hero);
+ const logo=resolveAsset(preview?(cfg.logo||business.logo_url):business.logo_url);
+   const standardHero=
+     '<section class="hero layout-'+layout+'">'+(cover?'<img class="hero-cover" src="'+esc(cover)+'" alt="">':'')+
+     '<div class="hero-top"><div class="store-identity">'+(logo?'<img class="store-logo" src="'+esc(logo)+'" alt="">':'')+
+     '<span class="brand-name">'+esc(business.name)+'<span class="brand-dot">.</span></span></div>'+
+     '<button type="button" id="openCart" class="bag" aria-label="Open basket"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 12H4L5 8ZM9 9V6a3 3 0 0 1 6 0v3"/></svg><span id="bagCount">0</span></button></div>'+
+     '<div class="hero-copy"><h1>'+esc(cfg.headline||"Welcome to "+business.name)+'</h1>'+
+     (cfg.tagline?'<p class="hero-tag">'+esc(cfg.tagline)+'</p>':'')+
+     '<p>'+esc(business.description||window.StoreNestCategoryLabel(business.category)||"Discover our products and services.")+'</p></div></section>';
+
+   const decorImage=cover||resolveAsset(featuredImage)||"";
+   const decorHero=
+     '<section class="decor-hero"><div class="decor-copy"><div class="store-identity">'+
+     (logo?'<img class="store-logo" src="'+esc(logo)+'" alt="">':'')+
+     '<span class="brand-name">'+esc(business.name)+'<span class="brand-dot">.</span></span></div>'+
+     '<div><span class="decor-eyebrow">HOME &amp; DECOR</span><h1>'+esc(cfg.headline||"Made for the spaces you love")+'</h1>'+
+     (cfg.tagline?'<p class="decor-tag">'+esc(cfg.tagline)+'</p>':'')+
+     '<p class="decor-summary">'+esc(business.description||"Explore pieces for the home and everyday spaces.")+'</p></div>'+
+     '<a class="decor-cta" href="#catalog">Explore collection</a></div>'+
+     '<div class="decor-visual">'+(decorImage?'<img src="'+esc(decorImage)+'" alt="Featured home decor">':'')+
+     '<button type="button" id="openCart" class="bag" aria-label="Open basket"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 12H4L5 8ZM9 9V6a3 3 0 0 1 6 0v3"/></svg><span id="bagCount">0</span></button></div></section>';
+
+ return isDecor?decorHero:standardHero;
+}
+function setupPrivateHeroPreview(root){
+ let currentSlug="";
+ const notify=()=>{
+  if(!currentSlug)return;
+  window.parent.postMessage({
+   type:"storenest:hero-preview-height",
+   slug:currentSlug,
+   height:Math.ceil(root.getBoundingClientRect().height)
+  },location.origin);
+ };
+ if("ResizeObserver" in window)new ResizeObserver(notify).observe(root);
+ window.addEventListener("message",event=>{
+  if(event.source!==window.parent||event.origin!==location.origin)return;
+  const packet=event.data;
+  if(!packet||packet.type!=="storenest:preview-update"||!packet.business||!packet.config)return;
+  const b=packet.business,config=packet.config;
+  if(typeof b.slug!=="string"||typeof b.name!=="string")return;
+  currentSlug=b.slug;
+  root.innerHTML=renderStorefrontHero(b,config,{preview:true,featuredImage:packet.featuredImage})+
+   (config.welcome?'<div class="welcome">'+esc(config.welcome)+'</div>':'');
+  requestAnimationFrame(notify);
+  root.querySelectorAll("img").forEach(image=>image.addEventListener("load",notify,{once:true}));
+ });
+ window.parent.postMessage({type:"storenest:preview-ready"},location.origin);
+}
+
 async function load(){
  const search=new URLSearchParams(location.search);
  let embedded=false;
@@ -453,6 +520,7 @@ async function load(){
  if(embedded)document.documentElement.dataset.embed="hero";
  const slug=search.get("slug");
  const root=$("main");
+ if(embedded){setupPrivateHeroPreview(root);return}
  if(!slug){root.innerHTML='<div class="notice">This storefront link is incomplete.</div>';return}
  try{
    if(!window.supabase)await new Promise((resolve,reject)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0";s.onload=resolve;s.onerror=reject;document.head.append(s)});
@@ -537,46 +605,11 @@ async function load(){
          (cards?'<div class="grid">'+cards+'</div>':'<div class="empty"><strong>No offerings yet</strong>This category is ready for the business to add products or services.</div>')+'</section>';
      }).join('')+'</div>'
    ):'<section class="empty"><strong>Catalogue coming soon</strong>This business has not added categories or offerings yet.</section>';
-   const standardHero=
-     '<section class="hero layout-'+layout+'">'+(cover?'<img class="hero-cover" src="'+esc(cover)+'" alt="">':'')+
-     '<div class="hero-top"><div class="store-identity">'+(logo?'<img class="store-logo" src="'+esc(logo)+'" alt="">':'')+
-     '<span class="brand-name">'+esc(business.name)+'<span class="brand-dot">.</span></span></div>'+
-     '<button type="button" id="openCart" class="bag" aria-label="Open basket"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 12H4L5 8ZM9 9V6a3 3 0 0 1 6 0v3"/></svg><span id="bagCount">0</span></button></div>'+
-     '<div class="hero-copy"><h1>'+esc(cfg.headline||"Welcome to "+business.name)+'</h1>'+
-     (cfg.tagline?'<p class="hero-tag">'+esc(cfg.tagline)+'</p>':'')+
-     '<p>'+esc(business.description||window.StoreNestCategoryLabel(business.category)||"Discover our products and services.")+'</p></div></section>';
-
-   const decorImage=cover||galleryPhotos(availableItems.find(item=>galleryPhotos(item).length)||availableItems[0])[0]||"";
-   const decorHero=
-     '<section class="decor-hero"><div class="decor-copy"><div class="store-identity">'+
-     (logo?'<img class="store-logo" src="'+esc(logo)+'" alt="">':'')+
-     '<span class="brand-name">'+esc(business.name)+'<span class="brand-dot">.</span></span></div>'+
-     '<div><span class="decor-eyebrow">HOME &amp; DECOR</span><h1>'+esc(cfg.headline||"Made for the spaces you love")+'</h1>'+
-     (cfg.tagline?'<p class="decor-tag">'+esc(cfg.tagline)+'</p>':'')+
-     '<p class="decor-summary">'+esc(business.description||"Explore pieces for the home and everyday spaces.")+'</p></div>'+
-     '<a class="decor-cta" href="#catalog">Explore collection</a></div>'+
-     '<div class="decor-visual">'+(decorImage?'<img src="'+esc(decorImage)+'" alt="Featured home decor">':'')+
-     '<button type="button" id="openCart" class="bag" aria-label="Open basket"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 12H4L5 8ZM9 9V6a3 3 0 0 1 6 0v3"/></svg><span id="bagCount">0</span></button></div></section>';
-   root.innerHTML=embedded?(isDecor?decorHero:standardHero):
-     (isDecor?decorHero:standardHero)+
+   const renderedHero=renderStorefrontHero(business,cfg,{featuredImage:galleryPhotos(availableItems.find(item=>galleryPhotos(item).length)||availableItems[0])[0]||""});
+   root.innerHTML=renderedHero+
      (cfg.welcome?'<div class="welcome">'+esc(cfg.welcome)+'</div>':'')+
      '<div class="contacts">'+contacts.join("")+'</div>'+
      '<div id="catalog" class="catalog-area">'+catalogueMarkup+'</div>';
-   if(embedded){
-     const hero=root.querySelector(".hero,.decor-hero");
-     const notify=()=>{
-       if(hero)window.parent.postMessage({
-         type:"storenest:hero-preview-height",
-         slug:business.slug,
-         height:hero.getBoundingClientRect().height
-       },location.origin);
-     };
-     if(hero){
-       notify();
-       if("ResizeObserver" in window)new ResizeObserver(notify).observe(hero);
-       hero.querySelectorAll("img").forEach(img=>img.addEventListener("load",notify,{once:true}));
-     }
-   }
  }catch(error){root.innerHTML='<div class="notice">We couldn’t load this storefront right now. Please try again later.</div>';console.error("Storefront load error",error)}
 }
 load();
