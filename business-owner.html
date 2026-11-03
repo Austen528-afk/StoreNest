@@ -689,7 +689,8 @@ function sendLivePreview(){
    logo_url:removeLogo?"":currentBusiness.logo_url
   },
   config,
-  featuredImage:businessItems.find(item=>item.image_url)?.image_url||""
+  featuredImage:businessItems.find(item=>item.image_url)?.image_url||"",
+  serviceOnly:businessItems.length>0&&businessItems.every(item=>item.item_type==="service")
  },location.origin);
 }
 function updateLiveStorefrontPreview(b,refresh=false){
