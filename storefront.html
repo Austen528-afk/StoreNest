@@ -566,6 +566,7 @@ function setupPrivateHeroPreview(root){
   const b=packet.business,config=packet.config;
   if(typeof b.slug!=="string"||typeof b.name!=="string")return;
   currentSlug=b.slug;
+  document.body.dataset.catalogMode=packet.serviceOnly?"services":"mixed";
   root.innerHTML=renderStorefrontHero(b,config,{preview:true,featuredImage:packet.featuredImage})+
    (config.welcome?'<div class="welcome">'+esc(config.welcome)+'</div>':'');
   requestAnimationFrame(notify);
