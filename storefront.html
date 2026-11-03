@@ -305,6 +305,7 @@ body[data-store-type="decor"] .category-name{font-family:Georgia,serif;font-size
 </style>
 <link rel="stylesheet" href="/theme.css">
 <script src="/theme.js"></script>
+<script src="/categories.js"></script>
 </head>
 <body data-page-kind="storefront">
 <div class="page">
@@ -446,7 +447,7 @@ async function load(){
      const slugText=String(business.slug||"");
      if(/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slugText)){
        const previous=JSON.parse(localStorage.getItem(key)||"[]");
-       const record={slug:slugText,name:String(business.name||"").slice(0,120),category:String(business.category||"").slice(0,100),location:String(business.location||"").slice(0,120),logo_url:/^https:\/\//i.test(business.logo_url||"")?String(business.logo_url).slice(0,1024):""};
+       const record={slug:slugText,name:String(business.name||"").slice(0,120),category:window.StoreNestCategoryLabel(business.category).slice(0,100),location:String(business.location||"").slice(0,120),logo_url:/^https:\/\//i.test(business.logo_url||"")?String(business.logo_url).slice(0,1024):""};
        const next=[record,...(Array.isArray(previous)?previous:[]).filter(item=>item&&item.slug!==slugText)].slice(0,8);
        localStorage.setItem(key,JSON.stringify(next));
      }
@@ -517,7 +518,7 @@ async function load(){
      '<button type="button" id="openCart" class="bag" aria-label="Open basket"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 12H4L5 8ZM9 9V6a3 3 0 0 1 6 0v3"/></svg><span id="bagCount">0</span></button></div>'+
      '<div class="hero-copy"><h1>'+esc(cfg.headline||"Welcome to "+business.name)+'</h1>'+
      (cfg.tagline?'<p class="hero-tag">'+esc(cfg.tagline)+'</p>':'')+
-     '<p>'+esc(business.description||business.category||"Discover our products and services.")+'</p></div></section>';
+     '<p>'+esc(business.description||window.StoreNestCategoryLabel(business.category)||"Discover our products and services.")+'</p></div></section>';
 
    const decorImage=cover||galleryPhotos(availableItems.find(item=>galleryPhotos(item).length)||availableItems[0])[0]||"";
    const decorHero=
