@@ -606,24 +606,50 @@ function setupBusinessCategorySelect(){
  }
 }
 setupBusinessCategorySelect();
+/* Preview is always private: unsaved inputs never change published storefront data. */
+let livePreviewReady=false;
+function sendLivePreview(){
+ const frame=$("storefrontHeroFrame");
+ if(!livePreviewReady||!frame?.contentWindow||!currentBusiness)return;
+ const config=readStorefrontBuilder();
+ if(brandObjectUrls.logo)config.logo=brandObjectUrls.logo;
+ else if(removeLogo)config.logo="";
+ if(brandObjectUrls.cover)config.hero=brandObjectUrls.cover;
+ else if(removeCover)config.hero="";
+ frame.contentWindow.postMessage({
+  type:"storenest:preview-update",
+  business:{
+   name:currentBusiness.name||"Your business",
+   slug:currentBusiness.slug,
+   category:currentBusiness.category,
+   description:currentBusiness.description,
+   logo_url:removeLogo?"":currentBusiness.logo_url
+  },
+  config,
+  featuredImage:businessItems.find(item=>item.image_url)?.image_url||""
+ },location.origin);
+}
 function updateLiveStorefrontPreview(b,refresh=false){
  const live=$("liveStorefrontPreview"),fallback=$("storefrontDraftFallback"),frame=$("storefrontHeroFrame");
  if(!live||!fallback||!frame)return;
- const isLive=Boolean(b?.is_published&&b?.slug);
- live.hidden=!isLive;
- fallback.hidden=isLive;
- if(!isLive){frame.removeAttribute("src");return}
- const next="/storefront.html?slug="+encodeURIComponent(b.slug)+"&embed=hero";
- if(refresh||!frame.getAttribute("src")||!frame.getAttribute("src").startsWith(next)){
+ const hasProfile=Boolean(b?.id&&b?.slug);
+ live.hidden=!hasProfile;
+ fallback.hidden=hasProfile;
+ if(!hasProfile){livePreviewReady=false;frame.removeAttribute("src");return}
+ const source="/storefront.html?slug="+encodeURIComponent(b.slug)+"&embed=hero";
+ if(refresh||!frame.getAttribute("src")||!frame.getAttribute("src").startsWith(source)){
+  livePreviewReady=false;
   live.style.height="260px";
-  frame.src=next+(refresh?"&v="+Date.now():"");
- }
+  frame.src=source;
+ }else sendLivePreview();
 }
 window.addEventListener("message",event=>{
  const frame=$("storefrontHeroFrame"),live=$("liveStorefrontPreview");
  if(event.origin!==location.origin||!frame||event.source!==frame.contentWindow||!live||live.hidden)return;
  const data=event.data;
- if(!data||data.type!=="storenest:hero-preview-height"||data.slug!==currentBusiness?.slug)return;
+ if(!data)return;
+ if(data.type==="storenest:preview-ready"){livePreviewReady=true;sendLivePreview();return}
+ if(data.type!=="storenest:hero-preview-height"||data.slug!==currentBusiness?.slug)return;
  const height=Number(data.height);
  if(Number.isFinite(height)&&height>=160&&height<=1400)live.style.height=Math.ceil(height)+"px";
 });
@@ -687,14 +713,14 @@ function previewBrand(kind,file,url){if(brandObjectUrls[kind])URL.revokeObjectUR
 async function uploadBrand(client,file,kind){validateBrand(file,kind);if(!currentUser||!currentBusiness)throw Error("Sign in first.");const path=currentUser.id+"/"+currentBusiness.id+"/"+kind+"/"+crypto.randomUUID()+"."+BRAND_MIME[file.type];const {error}=await client.storage.from(BRAND_BUCKET).upload(path,file,{contentType:file.type,upsert:false});if(error)throw error;return {path,url:client.storage.from(BRAND_BUCKET).getPublicUrl(path).data.publicUrl}}
 async function clearBrandUpload(client,asset){if(asset)try{await client.storage.from(BRAND_BUCKET).remove([asset.path])}catch{}}
 function resetBrandFields(config){removeLogo=false;removeCover=false;$("builderLogoFile").value="";$("builderCoverFile").value="";previewBrand("logo",null,config.logo||currentBusiness?.logo_url||"");previewBrand("cover",null,config.hero||"")}
-for(const kind of ["logo","cover"]){const el=$(kind==="logo"?"builderLogoFile":"builderCoverFile");el.addEventListener("change",()=>{const file=el.files?.[0];if(!file)return;try{validateBrand(file,kind);if(kind==="logo")removeLogo=false;else removeCover=false;previewBrand(kind,file)}catch(e){el.value="";builderStatus(e.message)}});$(kind==="logo"?"removeBuilderLogo":"removeBuilderCover").addEventListener("click",()=>{el.value="";if(kind==="logo")removeLogo=true;else{removeCover=true;$("builderHero").value=""}previewBrand(kind,null,"")})}
-$("builderHero").addEventListener("input",()=>{if(!$("builderCoverFile").files.length)previewBrand("cover",null,$("builderHero").value)});
+for(const kind of ["logo","cover"]){const el=$(kind==="logo"?"builderLogoFile":"builderCoverFile");el.addEventListener("change",()=>{const file=el.files?.[0];if(!file)return;try{validateBrand(file,kind);if(kind==="logo")removeLogo=false;else removeCover=false;previewBrand(kind,file);sendLivePreview()}catch(e){el.value="";builderStatus(e.message)}});$(kind==="logo"?"removeBuilderLogo":"removeBuilderCover").addEventListener("click",()=>{el.value="";if(kind==="logo")removeLogo=true;else{removeCover=true;$("builderHero").value=""}previewBrand(kind,null,"");sendLivePreview()})}
+$("builderHero").addEventListener("input",()=>{if(!$("builderCoverFile").files.length)previewBrand("cover",null,$("builderHero").value);sendLivePreview()});
 function safeStorefrontConfig(raw){
  const o=raw&&typeof raw==="object"?raw:{};
  return {headline:String(o.headline||"").slice(0,90),tagline:String(o.tagline||"").slice(0,120),welcome:String(o.welcome||"").slice(0,400),hero:/^https:\/\/[^\s"'<>]+$/i.test(o.hero||"")?String(o.hero).slice(0,1500):"",logo:/^https:\/\/[^\s"\'<>]+$/i.test(o.logo||"")?String(o.logo).slice(0,1500):"",accent:/^#[0-9a-f]{6}$/i.test(o.accent||"")?o.accent:"#60d6bd",layout:["classic","showcase","compact"].includes(o.layout)?o.layout:"classic"};
 }
 function readStorefrontBuilder(){return safeStorefrontConfig({headline:$("builderHeadline").value,tagline:$("builderTagline").value,welcome:$("builderWelcome").value,hero:removeCover?"":$("builderHero").value,logo:removeLogo?"":(storefrontDraft?.logo||currentBusiness?.logo_url||""),accent:$("builderAccent").value,layout:$("builderStyle").value})}
-function fillStorefrontBuilder(config){const c=safeStorefrontConfig(config);$("builderHeadline").value=c.headline;$("builderTagline").value=c.tagline;$("builderWelcome").value=c.welcome;$("builderHero").value=c.hero;$("builderAccent").value=c.accent;$("builderStyle").value=c.layout;resetBrandFields(c)}
+function fillStorefrontBuilder(config){const c=safeStorefrontConfig(config);$("builderHeadline").value=c.headline;$("builderTagline").value=c.tagline;$("builderWelcome").value=c.welcome;$("builderHero").value=c.hero;$("builderAccent").value=c.accent;$("builderStyle").value=c.layout;resetBrandFields(c);sendLivePreview()}
 async function loadStorefrontDraft(){
  if(!currentBusiness)return;
  const client=await loadAuth(),{data,error}=await client.from("business_storefront_drafts").select("config").eq("business_id",currentBusiness.id).maybeSingle();
@@ -716,6 +742,8 @@ async function saveStorefrontDraft(){
 }
 function builderStatus(message){$("builderStatus").textContent=message}
 $("storefrontBuilder").addEventListener("submit",event=>event.preventDefault());
+$("storefrontBuilder").addEventListener("input",sendLivePreview);
+$("storefrontBuilder").addEventListener("change",sendLivePreview);
 $("saveStoreDraft").addEventListener("click",async()=>{try{await saveStorefrontDraft();builderStatus("Draft saved privately. Publish to make it visible to customers.")}catch(e){builderStatus(friendlyError(e))}});
 $("previewStoreDraft").addEventListener("click",()=>{if(!currentBusiness)return;const c=readStorefrontBuilder();if($("builderCoverFile").files.length)c.hero=brandObjectUrls.cover;if($("builderLogoFile").files.length)c.logo=brandObjectUrls.logo;const win=window.open("", "_blank");if(!win){builderStatus("Allow pop-ups to preview your draft.");return}const escape=value=>String(value).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));const html='<html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Storefront draft preview</title></head><body style="margin:0;background:#10171d;color:white;font-family:system-ui"><header style="padding:17px;border-bottom:1px solid #ffffff33">StoreNest · Private draft preview</header><section style="background:'+c.accent+'22;padding:60px 7%;background-size:cover;background-position:center;'+(c.hero?'background-image:linear-gradient(#10171d88,#10171dbb),url('+encodeURI(c.hero)+');':'')+'"><div style="font-size:12px;color:'+c.accent+'">'+escape(currentBusiness.category||"STORE")+'</div><h1>'+escape(c.headline||currentBusiness.name)+'</h1><p>'+escape(c.tagline)+'</p></section><main style="padding:25px 7%"><h2>'+escape(currentBusiness.name)+'</h2><p>'+escape(c.welcome||currentBusiness.description)+'</p><h3>Products & Services</h3>'+businessItems.filter(i=>i.is_available).map(i=>'<p>'+escape(i.name)+' — R'+Number(i.price).toFixed(2)+'</p>').join("")+'</main></body></html>';win.document.open();win.document.write(html);win.document.close()});
 $("publishStoreDesign").addEventListener("click",async()=>{if(!currentBusiness||!currentUser)return;if(!isProfileComplete()){builderStatus("Complete your business name and category before publishing.");return}const btn=$("publishStoreDesign");btn.disabled=true;try{const config=await saveStorefrontDraft();const client=await loadAuth();const {data,error}=await client.from("businesses").update({storefront_config:config,logo_url:config.logo||null,is_published:true,updated_at:new Date().toISOString()}).eq("id",currentBusiness.id).eq("owner_id",currentUser.id).select("*").single();if(error)throw error;applyBusiness(data);updateLiveStorefrontPreview(data,true);builderStatus("Frontend published. Customers can now find and open your storefront.");showToast("Storefront frontend published.")}catch(e){builderStatus(friendlyError(e))}finally{btn.disabled=false}});
