@@ -333,6 +333,11 @@ html[data-embed="hero"] .welcome{margin:14px 0 0!important}
 .hero:has(.hero-cover-video):before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,rgba(21,16,14,.65) 0%,rgba(21,16,14,.35) 56%,rgba(21,16,14,.14) 100%);pointer-events:none}
 .hero:has(.hero-cover-video)>.hero-top,.hero:has(.hero-cover-video)>.hero-copy{position:relative;z-index:2}
 .decor-visual .decor-cover-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;pointer-events:none}
+
+/* Mixed photo and video product galleries. */
+.art video{width:100%;height:100%;object-fit:cover;display:block}
+.gallery-stage video{display:block;max-width:100%;max-height:min(65dvh,650px);width:100%;background:#101819}
+.gallery-stage video[hidden]{display:none!important}
 </style>
 <link rel="stylesheet" href="/theme.css">
 <script src="/theme.js"></script>
@@ -357,7 +362,7 @@ html[data-embed="hero"] .welcome{margin:14px 0 0!important}
   </aside>
 </div>
 <div id="toast" class="toast" role="status" hidden></div>
-<div id="galleryDialog" class="gallery-backdrop" hidden><section class="gallery-panel" role="dialog" aria-modal="true" aria-labelledby="galleryTitle"><div class="gallery-top"><div><h2 id="galleryTitle">Product</h2><p id="galleryDescription"></p></div><button id="galleryClose" class="gallery-close" type="button" aria-label="Close product photos">×</button></div><div class="gallery-stage"><button type="button" id="galleryPrev" class="gallery-nav" aria-label="Previous photo">‹</button><img id="galleryImage" alt="Product photo"><button type="button" id="galleryNext" class="gallery-nav" aria-label="Next photo">›</button></div><div class="gallery-bottom"><span id="galleryPosition"></span><div id="galleryDots" class="gallery-dots"></div><button id="galleryAdd" class="add" type="button">+ Add</button></div></section></div>
+<div id="galleryDialog" class="gallery-backdrop" hidden><section class="gallery-panel" role="dialog" aria-modal="true" aria-labelledby="galleryTitle"><div class="gallery-top"><div><h2 id="galleryTitle">Product</h2><p id="galleryDescription"></p></div><button id="galleryClose" class="gallery-close" type="button" aria-label="Close product photos">×</button></div><div class="gallery-stage"><button type="button" id="galleryPrev" class="gallery-nav" aria-label="Previous photo">‹</button><img id="galleryImage" alt="Product photo"><video id="galleryVideo" controls playsinline preload="metadata" hidden aria-label="Product video"></video><button type="button" id="galleryNext" class="gallery-nav" aria-label="Next photo">›</button></div><div class="gallery-bottom"><span id="galleryPosition"></span><div id="galleryDots" class="gallery-dots"></div><button id="galleryAdd" class="add" type="button">+ Add</button></div></section></div>
 <script>
 "use strict";
 const CONFIG={url:"https://cypbjzbagezdelmemuhb.supabase.co",key:"sb_publishable_8W8zyYtggQMWoFlnxrzoVA_BUKjQ9va"};
@@ -367,6 +372,7 @@ const $=id=>document.getElementById(id);
 function esc(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function initials(name){return String(name||"SN").split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join("").toUpperCase()||"SN"}
 function safeUrl(value){try{const u=new URL(value);return ["https:","http:"].includes(u.protocol)?u.href:""}catch{return""}}
+function isProductVideo(value){return /\.(mp4|webm)(?:[?#]|$)/i.test(String(value||""))}
 function galleryPhotos(item){const imgs=Array.isArray(item?.media_urls)?item.media_urls.filter(u=>typeof u==="string"&&safeUrl(u)):[];return imgs.length?imgs:(safeUrl(item?.image_url)?[item.image_url]:[])}
 function money(v){return "R"+Number(v||0).toFixed(2)}
 function toast(msg){clearTimeout(toastTimer);$("toast").textContent=msg;$("toast").hidden=false;toastTimer=setTimeout(()=>{$("toast").hidden=true},1900)}
@@ -387,13 +393,17 @@ $("cartItems").addEventListener("click",e=>{const b=e.target.closest("[data-cart
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("cartBackdrop").hidden)closeCart()});
 
 function showGalleryImage(){
- const photos=galleryPhotos(activeGalleryItem);if(!photos.length)return;
- galleryIndex=Math.max(0,Math.min(galleryIndex,photos.length-1));
- $("galleryImage").src=photos[galleryIndex];$("galleryImage").alt=activeGalleryItem.name+" photo "+(galleryIndex+1);
- $("galleryPosition").textContent=(galleryIndex+1)+" / "+photos.length;
- $("galleryPrev").disabled=galleryIndex===0;$("galleryNext").disabled=galleryIndex===photos.length-1;
+ const media=galleryPhotos(activeGalleryItem);if(!media.length)return;
+ galleryIndex=Math.max(0,Math.min(galleryIndex,media.length-1));
+ const url=media[galleryIndex],video=isProductVideo(url),image=$("galleryImage"),movie=$("galleryVideo");
+ movie.pause();
+ movie.hidden=!video;image.hidden=video;
+ if(video){image.removeAttribute("src");movie.src=url;movie.load();}
+ else{movie.removeAttribute("src");image.src=url;image.alt=activeGalleryItem.name+" photo "+(galleryIndex+1);}
+ $("galleryPosition").textContent=(galleryIndex+1)+" / "+media.length;
+ $("galleryPrev").disabled=galleryIndex===0;$("galleryNext").disabled=galleryIndex===media.length-1;
  $("galleryDots").replaceChildren();
- photos.forEach((_,i)=>{const dot=document.createElement("button");dot.type="button";dot.className=i===galleryIndex?"active":"";dot.setAttribute("aria-label","Show picture "+(i+1));dot.addEventListener("click",()=>{galleryIndex=i;showGalleryImage()});$("galleryDots").append(dot)});
+ media.forEach((url,i)=>{const dot=document.createElement("button");dot.type="button";dot.className=i===galleryIndex?"active":"";dot.setAttribute("aria-label","Show "+(isProductVideo(url)?"video":"picture")+" "+(i+1));dot.addEventListener("click",()=>{galleryIndex=i;showGalleryImage()});$("galleryDots").append(dot)});
 }
 function openProductGallery(id,trigger){
  const item=availableItems.find(row=>row.id===id);if(!item)return;
@@ -401,11 +411,11 @@ function openProductGallery(id,trigger){
  $("galleryTitle").textContent=item.name;$("galleryDescription").textContent=item.description||"";
  $("galleryAdd").dataset.addItem=id;
  const photos=galleryPhotos(item);
- $("galleryImage").hidden=photos.length===0;
+ $("galleryImage").hidden=photos.length===0;$("galleryVideo").hidden=true;
  if(photos.length)showGalleryImage();else{$("galleryPosition").textContent="No pictures yet";$("galleryPrev").disabled=true;$("galleryNext").disabled=true;$("galleryDots").replaceChildren()}
  $("galleryDialog").hidden=false;document.body.style.overflow="hidden";$("galleryClose").focus();
 }
-function closeProductGallery(){$("galleryDialog").hidden=true;document.body.style.overflow="";activeGalleryItem=null;galleryReturnFocus?.focus()}
+function closeProductGallery(){$("galleryVideo").pause();$("galleryVideo").removeAttribute("src");$("galleryDialog").hidden=true;document.body.style.overflow="";activeGalleryItem=null;galleryReturnFocus?.focus()}
 $("galleryClose").addEventListener("click",closeProductGallery);
 $("galleryPrev").addEventListener("click",()=>{galleryIndex--;showGalleryImage()});
 $("galleryNext").addEventListener("click",()=>{galleryIndex++;showGalleryImage()});
@@ -593,7 +603,7 @@ async function load(){
    const logo=safeUrl(business.logo_url);
    const cardForItem=item=>{
      const media=galleryPhotos(item),first=media[0],count=media.length;
-     return '<article class="card"><button type="button" class="item-open" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos and details"><div class="art">'+(first?'<img src="'+esc(first)+'" alt="'+esc(item.name)+'" loading="lazy">':item.item_type==="service"?"✦":"▧")+(count>1?'<span class="photo-count">▧ '+count+' photos</span>':'')+'</div></button><div class="item-body"><h3>'+esc(item.name)+'</h3><p>'+esc(item.description||"")+'</p><div class="item-bottom"><span class="price">'+money(item.price)+'</span><button class="add" type="button" data-add-item="'+esc(item.id)+'" aria-label="Add '+esc(item.name)+' to basket"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add</button></div></div></article>';
+     return '<article class="card"><button type="button" class="item-open" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos, videos and details"><div class="art">'+(first?(isProductVideo(first)?'<video src="'+esc(first)+'" muted loop playsinline autoplay preload="metadata" aria-label="'+esc(item.name)+' video"></video>':'<img src="'+esc(first)+'" alt="'+esc(item.name)+'" loading="lazy">'):item.item_type==="service"?"✦":"▧")+(count>1?'<span class="photo-count">▧ '+count+' media</span>':'')+'</div></button><div class="item-body"><h3>'+esc(item.name)+'</h3><p>'+esc(item.description||"")+'</p><div class="item-bottom"><span class="price">'+money(item.price)+'</span><button class="add" type="button" data-add-item="'+esc(item.id)+'" aria-label="Add '+esc(item.name)+' to basket"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add</button></div></div></article>';
    };
    const sectionStyles=["auto","menu","showcase","portfolio","catalogue","booking"];
    // Classifications are user-created, and every section appears even when no items are assigned yet.
