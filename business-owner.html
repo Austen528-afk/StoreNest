@@ -277,8 +277,10 @@ html,body{background:#f8faf9;color:#192622}
 }
 
 </style>
+<link rel="stylesheet" href="/theme.css">
+<script src="/theme.js"></script>
 </head>
-<body>
+<body data-page-kind="owner">
 <div class="wrap">
 <header class="top">
 <a class="logo" href="/" aria-label="StoreNest home">store<span>nest.</span></a>
@@ -290,6 +292,7 @@ html,body{background:#f8faf9;color:#192622}
 <a class="menu-link" href="#register" data-switch="register">Register as business owner <span aria-hidden="true">→</span></a>
 <a class="menu-link" href="#login" data-switch="login">Log in <span aria-hidden="true">→</span></a>
 <a class="menu-link" href="/">Customer home <span aria-hidden="true">→</span></a>
+<button class="theme-switch" data-theme-toggle type="button" aria-label="Switch to dark mode" aria-pressed="false"><span class="theme-switch-icon" aria-hidden="true">☾</span><span class="theme-switch-label">Dark mode</span></button>
 </nav>
 </div>
 </div>
@@ -350,7 +353,7 @@ html,body{background:#f8faf9;color:#192622}
 <div class="message" role="status" aria-live="polite" hidden></div>
 </form>
 <div class="auth-view" data-view="account" hidden>
-  <div class="dashboard-head"><div><span class="eyebrow">BUSINESS WORKSPACE</span><h2 id="businessTitle">Your business</h2><div class="business-switcher"><label for="businessSelect">Current business</label><select id="businessSelect" aria-label="Select business"></select><button type="button" id="createBusinessButton" class="outline-button">+ Create business</button></div><p class="sub" id="dashboardWelcome">Here’s your business at a glance.</p></div><div class="head-actions"><button type="button" class="icon-button" id="notificationsButton" aria-label="Notifications">♧</button><button type="button" class="avatar" id="profileButton" aria-label="Business profile">SN</button></div></div>
+  <div class="dashboard-head"><div><span class="eyebrow">BUSINESS WORKSPACE</span><h2 id="businessTitle">Your business</h2><div class="business-switcher"><label for="businessSelect">Current business</label><select id="businessSelect" aria-label="Select business"></select><button type="button" id="createBusinessButton" class="outline-button">+ Create business</button></div><p class="sub" id="dashboardWelcome">Here’s your business at a glance.</p></div><div class="head-actions"><button type="button" class="theme-switch theme-switch-header" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false"><span class="theme-switch-icon" aria-hidden="true">☾</span><span class="theme-switch-label">Dark mode</span></button><button type="button" class="icon-button" id="notificationsButton" aria-label="Notifications">♧</button><button type="button" class="avatar" id="profileButton" aria-label="Business profile">SN</button></div></div>
   <div class="dashboard-layout">
     <aside class="sidebar" id="dashboardSidebar"><div class="side-label">WORKSPACE</div><button class="side-link active" data-section="overview"><span>◫</span> Overview</button><button class="side-link" data-section="storefront"><span>⌂</span> My Storefront</button><button class="side-link" data-section="items"><span>▦</span> Products &amp; Services</button><div class="side-label side-label-spaced">MANAGE</div><button class="side-link" data-section="orders"><span>▤</span> Orders <small>0</small></button><button class="side-link" data-section="bookings"><span>▣</span> Bookings <small>0</small></button><button class="side-link" data-section="customers"><span>♙</span> Customers</button><button class="side-link" data-section="analytics"><span>⌁</span> Analytics</button><button class="side-link" data-section="settings"><span>⚙</span> Business Settings</button><div class="side-spacer"></div><button class="side-link signout" id="logoutButton"><span>↪</span> Sign out</button></aside>
     <div class="mobile-nav-wrap"><button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-expanded="false">☰ <span id="mobileNavLabel">Overview</span><span class="chevron">⌄</span></button><div id="mobileNavList" class="mobile-nav-list" hidden></div></div>
