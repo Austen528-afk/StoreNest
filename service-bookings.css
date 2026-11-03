@@ -1,0 +1,41 @@
+/* Service quotes: separate from ordinary shopping-cart checkout */
+body[data-catalog-mode="services"] .hero .bag,
+body[data-catalog-mode="services"] .decor-visual .bag{display:none!important}
+.card:has(.service-disclaimer) .add{min-width:150px;border-radius:7px;background:#37332d}
+.card:has(.service-disclaimer) .add:hover{background:#5b5045}
+.service-disclaimer{font-size:10px;color:#786c5c;margin-top:10px;line-height:1.45}
+.booking-backdrop{position:fixed;inset:0;z-index:140;display:grid;place-items:center;background:#11201bd2;backdrop-filter:blur(4px);padding:16px}
+.booking-panel{width:min(680px,100%);max-height:94dvh;overflow-y:auto;border-radius:18px;border:1px solid #dce6dd;background:#fff;color:#23352d;padding:24px;box-shadow:0 24px 95px #0b1d1b66}
+.booking-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
+.booking-top small{font-size:10px;color:#16866b;letter-spacing:.14em;font-weight:850}
+.booking-top h2{font-size:24px;letter-spacing:-.035em;line-height:1.2;margin:7px 0}
+.booking-top p{font-size:12px;color:#708079;margin:0}
+.booking-close{width:35px;height:35px;flex:none;border:0;border-radius:10px;background:#f0f4f0;font-size:23px;color:#243d33}
+.booking-package{padding:13px 15px;border:1px solid #d9e8de;border-radius:12px;background:#f5faf7;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.booking-package strong{font-size:14px}.booking-package span{font-size:12px;font-weight:750;color:#356955;white-space:nowrap}
+.booking-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.booking-form-grid label{display:flex;flex-direction:column;gap:6px;font-size:11px;font-weight:750;min-width:0}
+.booking-form-grid label em{color:#bd4c43;font-style:normal}
+.booking-form-grid input,.booking-form-grid textarea{background:#fff;border:1px solid #d2e0d6;border-radius:9px;padding:11px 12px;min-width:0;width:100%;color:#1f342a;font:inherit;font-size:12px;resize:vertical}
+.booking-form-grid input:focus-visible,.booking-form-grid textarea:focus-visible{outline:2px solid #5fc8a9;outline-offset:1px}
+.booking-wide{grid-column:1/-1}
+.booking-help{color:#72867b;font-size:11px;line-height:1.5;margin:14px 0 6px}
+.booking-error{border:1px solid #e9b6b2;background:#fff1ef;color:#a52e26;font-size:12px;padding:10px;border-radius:9px}
+.booking-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:17px}
+.booking-secondary,.booking-submit{border-radius:10px;padding:11px 17px;font-size:12px;font-weight:800}
+.booking-secondary{background:#fff;border:1px solid #cbdcd1;color:#254235}
+.booking-submit{background:#43c7a5;border:1px solid #43c7a5;color:#102b22}
+.booking-submit:disabled{opacity:.6;cursor:wait}
+.booking-success{text-align:center;padding:25px 12px 12px}
+.booking-success>span{display:inline-grid;place-items:center;width:52px;height:52px;border-radius:50%;background:#e1f7ee;color:#087553;font-size:26px}
+.booking-success h3{font-size:22px;margin:12px 0 5px}
+.booking-success p{font-size:13px;color:#687e72;line-height:1.55;margin:0 auto 22px;max-width:430px}
+html[data-theme="dark"] .booking-panel{background:#1b2b2d;border-color:#40544e;color:#edf8f3}
+html[data-theme="dark"] .booking-package{background:#233a36;border-color:#40574e}
+html[data-theme="dark"] .booking-package span{color:#9cdec5}
+html[data-theme="dark"] .booking-form-grid input,html[data-theme="dark"] .booking-form-grid textarea{background:#172528;border-color:#4c625b;color:#edf8f3}
+html[data-theme="dark"] .booking-top p,html[data-theme="dark"] .booking-help,html[data-theme="dark"] .booking-success p{color:#a8bcb2}
+html[data-theme="dark"] .booking-close,html[data-theme="dark"] .booking-secondary{background:#253b39;border-color:#47615a;color:#eff9f4}
+html[data-theme="dark"] .service-disclaimer{color:#adbbb4}
+html[data-theme="dark"] .card:has(.service-disclaimer) .add{background:#62cba7;color:#152e24}
+@media(max-width:520px){.booking-panel{padding:16px;max-height:96dvh}.booking-form-grid{grid-template-columns:1fr}.booking-top h2{font-size:21px}}
