@@ -310,6 +310,15 @@ html[data-theme="dark"] body[data-page-kind="owner"] .mobile-nav-list .sidebar-g
 
 .category-help{display:block;margin-top:6px;color:#6b8476;font-size:10px;line-height:1.5}
 html[data-theme="dark"] .category-help{color:#a1b9ac}
+
+/* One-click page refresh, placed next to the top-right menu. */
+.page-refresh-button{display:grid;place-items:center;flex:0 0 auto;width:46px;height:43px;padding:0;border:1px solid #d8e3dd;border-radius:12px;background:#fff;color:#24382f;cursor:pointer;transition:background .16s,border-color .16s}
+.page-refresh-button:hover{background:#eaf6ef;border-color:#9bcfb7}
+.page-refresh-button:focus-visible{outline:2px solid #30b695;outline-offset:3px}
+.page-refresh-button:active svg{transform:rotate(28deg)}
+html[data-theme="dark"] .page-refresh-button{background:#1b292c;color:#edf6f3;border-color:#344b49}
+html[data-theme="dark"] .page-refresh-button:hover{background:#2d4540;border-color:#68d6b7}
+@media(max-width:410px){.page-refresh-button{width:42px;height:40px}}
 </style>
 <link rel="stylesheet" href="/theme.css">
 <script src="/theme.js"></script>
@@ -321,6 +330,7 @@ html[data-theme="dark"] .category-help{color:#a1b9ac}
 <a class="logo" href="/" aria-label="StoreNest home">store<span>nest.</span></a>
 <div class="top-actions">
 <button class="install-btn" id="installBtn" type="button">Install app</button>
+<button class="page-refresh-button" id="pageRefreshButton" type="button" aria-label="Refresh page" title="Refresh page"><svg aria-hidden="true" viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.4 6.3"/><path d="M20 4v7h-7"/></svg></button>
 <div class="menu-container" id="menuContainer">
 <button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="siteMenu"><span></span><span></span><span></span></button>
 <nav class="site-menu" id="siteMenu" aria-label="StoreNest menu" hidden>
@@ -685,6 +695,7 @@ window.addEventListener("hashchange",()=>{const hash=location.hash.replace("#","
 if(isConfigured())loadAuth().then(async client=>{const {data,error}=await client.auth.getUser();if(error&&error.name!=="AuthSessionMissingError")return;if(data.user&&!recovering){await upsertOwnerProfile(client,data.user);await activateDashboard(data.user)}}).catch(()=>{});
 if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}));let installPrompt=null;const installBtn=$("installBtn");window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();installPrompt=event;installBtn.classList.add("visible")});installBtn.addEventListener("click",async()=>{if(!installPrompt){alert("Open your browser menu, then choose Install app or Add to Home screen.");return}const prompt=installPrompt;installPrompt=null;installBtn.classList.remove("visible");await prompt.prompt()});window.addEventListener("appinstalled",()=>installBtn.classList.remove("visible"));if(/Android/i.test(navigator.userAgent))installBtn.classList.add("visible");
 
+document.getElementById("pageRefreshButton")?.addEventListener("click",()=>window.location.reload());
 </script>
 </body>
 </html>
