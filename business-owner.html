@@ -642,7 +642,7 @@ $("createBusinessButton").addEventListener("click",async()=>{
  finally{button.disabled=false}
 });
 async function loadBusinessData(){const client=await loadAuth();const [{data:items,error:itemsError},{data:categories,error:categoriesError}]=await Promise.all([client.from("business_items").select("*").eq("business_id",currentBusiness.id).order("display_order").order("created_at",{ascending:false}),client.from("business_categories").select("*").eq("business_id",currentBusiness.id).order("display_order").order("name")]);if(itemsError)throw itemsError;if(categoriesError)throw categoriesError;businessItems=items||[];businessCategories=categories||[];renderItems();renderCategories();updateStats()}
-async function activateDashboard(user){currentUser=user;const client=await loadAuth();const business=await ensureBusiness(client,user);applyBusiness(business);renderBusinessSelector();showView("account");await loadBusinessData();await loadStorefrontDraft().catch(error=>builderStatus(friendlyError(error)));if(!isProfileComplete(business))setTimeout(()=>openModal("profileModal"),140)}
+async function activateDashboard(user){currentUser=user;const client=await loadAuth();const business=await ensureBusiness(client,user);applyBusiness(business);renderBusinessSelector();showView("account");await loadBusinessData();await loadStorefrontDraft().catch(error=>builderStatus(friendlyError(error)));/* Incomplete profiles are prompted by the overview setup banner, not a recurring login modal. */}
 
 
 const BRAND_BUCKET="storenest-brand-media",BRAND_MIME={"image/jpeg":"jpg","image/png":"png","image/webp":"webp","image/gif":"gif"};
