@@ -303,12 +303,14 @@ body[data-store-type="decor"] .category-name{font-family:Georgia,serif;font-size
 @media(max-width:600px){.category-switcher{gap:10px;margin-bottom:15px}.category-tab{flex-basis:150px}.category-thumbnail{aspect-ratio:1.65/1}.category-name{font-size:13px}.category-browser-head{margin-bottom:16px}.catalog-area{margin-top:24px}}
 
 </style>
+<link rel="stylesheet" href="/theme.css">
+<script src="/theme.js"></script>
 </head>
-<body>
+<body data-page-kind="storefront">
 <div class="page">
   <header class="top">
     <a class="logo" href="/" aria-label="StoreNest home">store<span>nest.</span></a>
-    <nav><a class="back-link" href="/">← Explore stores</a><a class="owner-link" href="/business-owner.html#login">Business owner</a></nav>
+    <nav><a class="back-link" href="/">← Explore stores</a><a class="owner-link" href="/business-owner.html#login">Business owner</a><button type="button" class="theme-switch theme-switch-header" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false"><span class="theme-switch-icon" aria-hidden="true">☾</span><span class="theme-switch-label">Dark mode</span></button></nav>
   </header>
   <main id="main"><div class="state">Loading storefront…</div></main>
   <footer class="footer"><span>StoreNest · Your business. Your storefront.</span><span>Products displayed for browsing · Checkout not available yet</span></footer>
