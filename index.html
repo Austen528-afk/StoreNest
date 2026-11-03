@@ -209,6 +209,8 @@ html,body{background:#f8faf9;color:#182321}
 html[data-theme="dark"] .page-refresh-button{background:#1b292c;color:#edf6f3;border-color:#344b49}
 html[data-theme="dark"] .page-refresh-button:hover{background:#2d4540;border-color:#68d6b7}
 @media(max-width:410px){.page-refresh-button{width:42px;height:40px}}
+
+.market-item-image video{display:block;width:100%;height:100%;object-fit:cover}
 </style>
 <link rel="stylesheet" href="/theme.css">
 <script src="/theme.js"></script>
@@ -290,7 +292,7 @@ function marketplaceBusinessCard(b,items){
  const header='<a class="result-card" data-business-slug="'+esc(b.slug)+'" href="'+href+'"><span class="result-avatar">'+(b.logo_url?'<img src="'+esc(b.logo_url)+'" alt="">':esc(b.name.slice(0,1).toUpperCase()))+'</span><span class="result-content"><strong>'+esc(b.name)+'</strong><span>'+esc([b.category,b.location].filter(Boolean).join(" · "))+'</span></span><span class="result-arrow">→</span></a>';
  if(!items.length)return '<div class="market-business">'+header+'</div>';
  return '<div class="market-business">'+header+'<div class="market-latest-title">Latest updates</div><div class="market-items" aria-label="Latest offerings from '+esc(b.name)+'">'+items.map(item=>{
-  const image=/^https:\/\//i.test(item.image_url||"")?'<img src="'+esc(item.image_url)+'" alt="" loading="lazy">':'<span class="market-no-photo">▧</span>';
+  const media=item.image_url||"";const image=/^https:\/\//i.test(media)?(/\.(mp4|webm)(?:[?#]|$)/i.test(media)?'<video src="'+esc(media)+'" muted loop playsinline autoplay preload="metadata" aria-label="Video preview"></video>':'<img src="'+esc(media)+'" alt="" loading="lazy">'):'<span class="market-no-photo">▧</span>';
   return '<a class="market-item" href="'+marketplaceItemHref(b,item)+'"><span class="market-item-image">'+image+'</span><span class="market-item-name">'+esc(item.name)+'</span></a>';
  }).join("")+'</div></div>';
 }
