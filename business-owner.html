@@ -618,7 +618,7 @@ function sendLivePreview(){
  const config=readStorefrontBuilder();
  if(brandObjectUrls.logo)config.logo=brandObjectUrls.logo;
  else if(removeLogo)config.logo="";
- if(brandObjectUrls.cover)config.hero=brandObjectUrls.cover;
+ if(brandObjectUrls.cover){config.hero=brandObjectUrls.cover;config.heroIsVideo=Boolean($("builderCoverFile").files?.[0]?.type.startsWith("video/"));}
  else if(removeCover)config.hero="";
  frame.contentWindow.postMessage({
   type:"storenest:preview-update",
