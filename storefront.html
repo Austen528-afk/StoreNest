@@ -416,13 +416,13 @@ body[data-store-type="decor"] .decor-copy .brand-name{font-weight:780}
  </section>
 </div>
 <div id="toast" class="toast" role="status" hidden></div>
-<div id="galleryDialog" class="gallery-backdrop" hidden><section class="gallery-panel" role="dialog" aria-modal="true" aria-labelledby="galleryTitle"><div class="gallery-top"><div><h2 id="galleryTitle">Product</h2><p id="galleryDescription"></p></div><button id="galleryClose" class="gallery-close" type="button" aria-label="Close product photos">×</button></div><div class="gallery-stage"><button type="button" id="galleryPrev" class="gallery-nav" aria-label="Previous photo">‹</button><img id="galleryImage" alt="Product photo"><video id="galleryVideo" controls playsinline preload="metadata" hidden aria-label="Product video"></video><button type="button" id="galleryNext" class="gallery-nav" aria-label="Next photo">›</button></div><div class="gallery-bottom"><span id="galleryPosition"></span><div id="galleryDots" class="gallery-dots"></div><button id="galleryAdd" class="add" type="button">+ Add</button></div></section></div>
+<div id="galleryDialog" class="gallery-backdrop" hidden><section class="gallery-panel" role="dialog" aria-modal="true" aria-labelledby="galleryTitle"><div class="gallery-top"><div><h2 id="galleryTitle">Product</h2><p id="galleryDescription"></p></div><button id="galleryClose" class="gallery-close" type="button" aria-label="Close product photos">×</button></div><div class="gallery-stage"><button type="button" id="galleryPrev" class="gallery-nav" aria-label="Previous photo">‹</button><img id="galleryImage" alt="Product photo"><video id="galleryVideo" controls playsinline preload="metadata" hidden aria-label="Product video"></video><button type="button" id="galleryNext" class="gallery-nav" aria-label="Next photo">›</button></div><div class="gallery-bottom"><span id="galleryPosition"></span><div id="galleryDots" class="gallery-dots"></div><div class="gallery-action-row"><button id="galleryAdd" class="add" type="button">+ Add</button><a id="galleryWhatsApp" class="service-whatsapp" target="_blank" rel="noopener noreferrer" hidden aria-label="Contact business on WhatsApp"><span aria-hidden="true">💬</span> WhatsApp</a></div></div></section></div>
 <script src="/service-bookings.js"></script>
 <script>
 "use strict";
 const CONFIG={url:"https://cypbjzbagezdelmemuhb.supabase.co",key:"sb_publishable_8W8zyYtggQMWoFlnxrzoVA_BUKjQ9va"};
 const cart=new Map();
-let availableItems=[],toastTimer=null,activeGalleryItem=null,galleryIndex=0,galleryReturnFocus=null;
+let availableItems=[],toastTimer=null,activeGalleryItem=null,galleryIndex=0,galleryReturnFocus=null,activePublicBusiness=null;
 const $=id=>document.getElementById(id);
 function esc(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function initials(name){return String(name||"SN").split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join("").toUpperCase()||"SN"}
@@ -430,6 +430,25 @@ function safeUrl(value){try{const u=new URL(value);return ["https:","http:"].inc
 function isProductVideo(value){return /\.(mp4|webm)(?:[?#]|$)/i.test(String(value||""))}
 function galleryPhotos(item){const imgs=Array.isArray(item?.media_urls)?item.media_urls.filter(u=>typeof u==="string"&&safeUrl(u)):[];return imgs.length?imgs:(safeUrl(item?.image_url)?[item.image_url]:[])}
 function money(v){return "R"+Number(v||0).toFixed(2)}
+/* Contact an owner directly via the phone saved in their business profile.
+ * Handles local ZA 0XXXXXXXXX, +27..., 27..., and international +... formats.
+ * Never invents a WhatsApp number; the link is omitted if no valid number is present.
+ */
+function serviceWhatsAppUrl(business,item){
+ const raw=String(business?.phone||"").trim();
+ if(!raw)return "";
+ let digits=raw.replace(/\D/g,"");
+ if(digits.startsWith("00"))digits=digits.slice(2);
+ else if(/^0\d{9}$/.test(digits))digits="27"+digits.slice(1);
+ if(!/^[1-9]\d{7,14}$/.test(digits))return "";
+ const message="Hello, I'm interested in "+String(item?.name||"this service")+" from "+String(business?.name||"your business")+". Could we discuss availability and details?";
+ return "https://wa.me/"+digits+"?text="+encodeURIComponent(message);
+}
+function serviceWhatsAppAction(business,item){
+ const url=serviceWhatsAppUrl(business,item);
+ return url?'<a class="service-whatsapp" href="'+esc(url)+'" rel="noopener noreferrer" target="_blank" aria-label="Contact '+esc(business.name)+' directly on WhatsApp about '+esc(item.name)+'"><span aria-hidden="true">💬</span> WhatsApp</a>':"";
+}
+
 function toast(msg){clearTimeout(toastTimer);$("toast").textContent=msg;$("toast").hidden=false;toastTimer=setTimeout(()=>{$("toast").hidden=true},1900)}
 function cartQuantity(){return [...cart.values()].reduce((n,q)=>n+q,0)}
 function syncCartBadge(){const count=$("bagCount");if(count)count.textContent=String(cartQuantity())}
@@ -466,6 +485,9 @@ function openProductGallery(id,trigger){
  $("galleryTitle").textContent=item.name;$("galleryDescription").textContent=item.description||"";
  $("galleryAdd").dataset.addItem=id;
  $("galleryAdd").textContent=window.StoreNestBookings.isService(item)?"Request booking":"＋ Add";
+ const wa=$("galleryWhatsApp"),waUrl=window.StoreNestBookings.isService(item)?serviceWhatsAppUrl(activePublicBusiness,item):"";
+ wa.hidden=!waUrl;
+ if(waUrl){wa.href=waUrl;wa.setAttribute("aria-label","Contact "+activePublicBusiness.name+" on WhatsApp about "+item.name)}else wa.removeAttribute("href");
  const photos=galleryPhotos(item);
  $("galleryImage").hidden=photos.length===0;$("galleryVideo").hidden=true;
  if(photos.length)showGalleryImage();else{$("galleryPosition").textContent="No pictures yet";$("galleryPrev").disabled=true;$("galleryNext").disabled=true;$("galleryDots").replaceChildren()}
@@ -623,6 +645,7 @@ async function load(){
    const response=await client.from("businesses").select("id,name,slug,category,description,logo_url,location,phone,email,website,is_published,storefront_config").eq("slug",slug).eq("is_published",true).maybeSingle();
    if(response.error)throw response.error;
    const business=response.data;
+   activePublicBusiness=business;
    if(!business){root.innerHTML='<div class="notice">This storefront is unavailable. It may be unpublished or the link may have changed.</div>';return}
    const catalog=await client.from("business_items").select("id,name,item_type,description,price,image_url,media_urls,category_id").eq("business_id",business.id).eq("is_available",true).order("display_order").order("created_at",{ascending:false});
    if(catalog.error)throw catalog.error;
@@ -663,7 +686,8 @@ async function load(){
      const media=galleryPhotos(item),first=media[0],count=media.length;
      const service=window.StoreNestBookings.isService(item);
      const action=service?"Request booking":"Add";
-     return '<article class="card"><button type="button" class="item-open" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos, videos and details"><div class="art">'+(first?(isProductVideo(first)?'<video src="'+esc(first)+'" muted loop playsinline autoplay preload="metadata" aria-label="'+esc(item.name)+' video"></video>':'<img src="'+esc(first)+'" alt="'+esc(item.name)+'" loading="lazy">'):service?"✦":"▧")+(count>1?'<span class="photo-count">▧ '+count+' media</span>':'')+'</div></button><div class="item-body"><h3>'+esc(item.name)+'</h3><p>'+esc(item.description||"")+'</p><div class="item-bottom"><span class="price">'+(service?'<small style="font-size:.56em;font-weight:600">From </small>':'')+money(item.price)+'</span><button class="add" type="button" data-add-item="'+esc(item.id)+'" aria-label="'+(service?"Request booking for ":"Add ")+esc(item.name)+(service?"":" to basket")+'">'+(service?"":'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>')+action+'</button></div>'+(service?'<div class="service-disclaimer">Date and final quotation confirmed by the business</div>':'')+'</div></article>';
+     const whatsapp=service?serviceWhatsAppAction(business,item):"";
+     return '<article class="card"><button type="button" class="item-open" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos, videos and details"><div class="art">'+(first?(isProductVideo(first)?'<video src="'+esc(first)+'" muted loop playsinline autoplay preload="metadata" aria-label="'+esc(item.name)+' video"></video>':'<img src="'+esc(first)+'" alt="'+esc(item.name)+'" loading="lazy">'):service?"✦":"▧")+(count>1?'<span class="photo-count">▧ '+count+' media</span>':'')+'</div></button><div class="item-body"><h3>'+esc(item.name)+'</h3><p>'+esc(item.description||"")+'</p><div class="item-bottom"><span class="price">'+(service?'<small style="font-size:.56em;font-weight:600">From </small>':'')+money(item.price)+'</span>'+(service?'<div class="service-action-row">':'')+'<button class="add" type="button" data-add-item="'+esc(item.id)+'" aria-label="'+(service?"Request booking for ":"Add ")+esc(item.name)+(service?"":" to basket")+'">'+(service?"":'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>')+action+'</button>'+(service?whatsapp+'</div>':"")+'</div>'+(service?'<div class="service-disclaimer">Date and final quotation confirmed by the business</div>':'')+'</div></article>';
    };
    const sectionStyles=["auto","menu","showcase","portfolio","catalogue","booking"];
    // Classifications are user-created, and every section appears even when no items are assigned yet.
