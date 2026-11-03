@@ -340,6 +340,7 @@ html[data-embed="hero"] .welcome{margin:14px 0 0!important}
 .gallery-stage video[hidden]{display:none!important}
 </style>
 <link rel="stylesheet" href="/theme.css">
+<link rel="stylesheet" href="/service-bookings.css">
 <script src="/theme.js"></script>
 <script src="/categories.js"></script>
 </head>
@@ -361,8 +362,30 @@ html[data-embed="hero"] .welcome{margin:14px 0 0!important}
     <p class="cart-note">Basket preview only. Orders and checkout are not enabled yet.</p>
   </aside>
 </div>
+<div id="bookingBackdrop" class="booking-backdrop" hidden>
+ <section class="booking-panel" role="dialog" aria-modal="true" aria-labelledby="bookingTitle">
+  <div class="booking-top"><div><small>BOOKING ENQUIRY</small><h2 id="bookingTitle">Request a booking</h2><p>Tell the business about your event. No payment is required.</p></div><button type="button" id="bookingClose" class="booking-close" aria-label="Close booking request">×</button></div>
+  <div class="booking-package"><strong id="bookingPackageName"></strong><span id="bookingPackagePrice"></span></div>
+  <form id="bookingRequestForm">
+   <div class="booking-form-grid">
+    <label>Your name <em>*</em><input name="customer_name" required minlength="2" maxlength="100" autocomplete="name" placeholder="Full name"></label>
+    <label>Event date <em>*</em><input name="event_date" type="date" required></label>
+    <label>Phone number <input name="contact_phone" type="tel" maxlength="40" autocomplete="tel" placeholder="e.g. 07..."></label>
+    <label>Email address <input name="contact_email" type="email" maxlength="160" autocomplete="email" placeholder="you@example.com"></label>
+    <label class="booking-wide">Venue or event location <em>*</em><input name="event_location" required minlength="2" maxlength="180" placeholder="Town, area and venue"></label>
+    <label>Estimated guests (optional)<input name="guest_count" type="number" min="1" max="100000" placeholder="e.g. 50"></label>
+    <label class="booking-wide">Requirements or special requests<textarea name="notes" rows="3" maxlength="1500" placeholder="Occasion, theme, colours, setup time, or catering needs"></textarea></label>
+   </div>
+   <p class="booking-help">Provide a phone number or email. Your contact details will be visible only to this business. Availability and the final quotation must be confirmed by the owner.</p>
+   <p id="bookingFormError" class="booking-error" role="alert" hidden></p>
+   <div class="booking-actions"><button type="button" id="bookingCancel" class="booking-secondary">Cancel</button><button type="submit" class="booking-submit" id="bookingSubmit">Send request →</button></div>
+  </form>
+  <div id="bookingSuccess" class="booking-success" hidden><span>✓</span><h3>Request sent</h3><p>The business has received your enquiry and can contact you to confirm availability and provide a quotation.</p><button type="button" id="bookingDone" class="booking-submit">Done</button></div>
+ </section>
+</div>
 <div id="toast" class="toast" role="status" hidden></div>
 <div id="galleryDialog" class="gallery-backdrop" hidden><section class="gallery-panel" role="dialog" aria-modal="true" aria-labelledby="galleryTitle"><div class="gallery-top"><div><h2 id="galleryTitle">Product</h2><p id="galleryDescription"></p></div><button id="galleryClose" class="gallery-close" type="button" aria-label="Close product photos">×</button></div><div class="gallery-stage"><button type="button" id="galleryPrev" class="gallery-nav" aria-label="Previous photo">‹</button><img id="galleryImage" alt="Product photo"><video id="galleryVideo" controls playsinline preload="metadata" hidden aria-label="Product video"></video><button type="button" id="galleryNext" class="gallery-nav" aria-label="Next photo">›</button></div><div class="gallery-bottom"><span id="galleryPosition"></span><div id="galleryDots" class="gallery-dots"></div><button id="galleryAdd" class="add" type="button">+ Add</button></div></section></div>
+<script src="/service-bookings.js"></script>
 <script>
 "use strict";
 const CONFIG={url:"https://cypbjzbagezdelmemuhb.supabase.co",key:"sb_publishable_8W8zyYtggQMWoFlnxrzoVA_BUKjQ9va"};
@@ -410,6 +433,7 @@ function openProductGallery(id,trigger){
  activeGalleryItem=item;galleryReturnFocus=trigger;galleryIndex=0;
  $("galleryTitle").textContent=item.name;$("galleryDescription").textContent=item.description||"";
  $("galleryAdd").dataset.addItem=id;
+ $("galleryAdd").textContent=window.StoreNestBookings.isService(item)?"Request booking":"＋ Add";
  const photos=galleryPhotos(item);
  $("galleryImage").hidden=photos.length===0;$("galleryVideo").hidden=true;
  if(photos.length)showGalleryImage();else{$("galleryPosition").textContent="No pictures yet";$("galleryPrev").disabled=true;$("galleryNext").disabled=true;$("galleryDots").replaceChildren()}
@@ -420,7 +444,7 @@ $("galleryClose").addEventListener("click",closeProductGallery);
 $("galleryPrev").addEventListener("click",()=>{galleryIndex--;showGalleryImage()});
 $("galleryNext").addEventListener("click",()=>{galleryIndex++;showGalleryImage()});
 $("galleryDialog").addEventListener("click",event=>{if(event.target===$("galleryDialog"))closeProductGallery()});
-$("galleryAdd").addEventListener("click",()=>{const id=activeGalleryItem?.id;if(id){cart.set(id,(cart.get(id)||0)+1);syncCartBadge();toast("Added to basket")}});
+$("galleryAdd").addEventListener("click",()=>{const item=activeGalleryItem;if(!item)return;const trigger=galleryReturnFocus;closeProductGallery();if(window.StoreNestBookings.isService(item)){window.StoreNestBookings.open(item,trigger);return}cart.set(item.id,(cart.get(item.id)||0)+1);syncCartBadge();toast("Added to basket")});
 document.addEventListener("keydown",event=>{
  if($("galleryDialog").hidden)return;
  if(event.key==="Escape")closeProductGallery();
@@ -461,7 +485,7 @@ $("main").addEventListener("click",e=>{
   if(category){selectStorefrontCategory(category.dataset.categoryTab);return}
 
   const add=e.target.closest("[data-add-item]");
-  if(add){const id=add.dataset.addItem;if(!availableItems.some(i=>i.id===id))return;cart.set(id,(cart.get(id)||0)+1);syncCartBadge();toast("Added to basket");return}
+  if(add){const item=availableItems.find(i=>i.id===add.dataset.addItem);if(!item)return;if(window.StoreNestBookings.isService(item)){window.StoreNestBookings.open(item,add);return}cart.set(item.id,(cart.get(item.id)||0)+1);syncCartBadge();toast("Added to basket");return}
   const open=e.target.closest("[data-open-product]");if(open){openProductGallery(open.dataset.openProduct,open);return}
   if(e.target.closest("#openCart"))openCart();
 });
@@ -570,6 +594,7 @@ async function load(){
    const catalog=await client.from("business_items").select("id,name,item_type,description,price,image_url,media_urls,category_id").eq("business_id",business.id).eq("is_available",true).order("display_order").order("created_at",{ascending:false});
    if(catalog.error)throw catalog.error;
    availableItems=catalog.data||[];
+   window.StoreNestBookings.setContext(client,business,availableItems);
    const sectionResult=await client.from("business_categories").select("id,name,description,display_style,display_order").eq("business_id",business.id).order("display_order").order("name");
    if(sectionResult.error)throw sectionResult.error;
    const storefrontSections=sectionResult.data||[];
@@ -603,7 +628,9 @@ async function load(){
    const logo=safeUrl(business.logo_url);
    const cardForItem=item=>{
      const media=galleryPhotos(item),first=media[0],count=media.length;
-     return '<article class="card"><button type="button" class="item-open" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos, videos and details"><div class="art">'+(first?(isProductVideo(first)?'<video src="'+esc(first)+'" muted loop playsinline autoplay preload="metadata" aria-label="'+esc(item.name)+' video"></video>':'<img src="'+esc(first)+'" alt="'+esc(item.name)+'" loading="lazy">'):item.item_type==="service"?"✦":"▧")+(count>1?'<span class="photo-count">▧ '+count+' media</span>':'')+'</div></button><div class="item-body"><h3>'+esc(item.name)+'</h3><p>'+esc(item.description||"")+'</p><div class="item-bottom"><span class="price">'+money(item.price)+'</span><button class="add" type="button" data-add-item="'+esc(item.id)+'" aria-label="Add '+esc(item.name)+' to basket"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add</button></div></div></article>';
+     const service=window.StoreNestBookings.isService(item);
+     const action=service?"Request booking":"Add";
+     return '<article class="card"><button type="button" class="item-open" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos, videos and details"><div class="art">'+(first?(isProductVideo(first)?'<video src="'+esc(first)+'" muted loop playsinline autoplay preload="metadata" aria-label="'+esc(item.name)+' video"></video>':'<img src="'+esc(first)+'" alt="'+esc(item.name)+'" loading="lazy">'):service?"✦":"▧")+(count>1?'<span class="photo-count">▧ '+count+' media</span>':'')+'</div></button><div class="item-body"><h3>'+esc(item.name)+'</h3><p>'+esc(item.description||"")+'</p><div class="item-bottom"><span class="price">'+(service?'<small style="font-size:.56em;font-weight:600">From </small>':'')+money(item.price)+'</span><button class="add" type="button" data-add-item="'+esc(item.id)+'" aria-label="'+(service?"Request booking for ":"Add ")+esc(item.name)+(service?"":" to basket")+'">'+(service?"":'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>')+action+'</button></div>'+(service?'<div class="service-disclaimer">Date and final quotation confirmed by the business</div>':'')+'</div></article>';
    };
    const sectionStyles=["auto","menu","showcase","portfolio","catalogue","booking"];
    // Classifications are user-created, and every section appears even when no items are assigned yet.
