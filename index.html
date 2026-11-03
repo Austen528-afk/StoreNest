@@ -167,6 +167,20 @@ html,body{background:#f8faf9;color:#182321}
 .marketplace-category-button .category-icon{font-size:25px;line-height:1.2}
 .marketplace-category-button strong{font-size:13px;line-height:1.35}
 .category-back{border:1px solid #d6e6dc;border-radius:9px;padding:8px 11px;font-size:12px;color:#396950;background:#fff;cursor:pointer;margin:0 0 14px}
+.category-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 14px}
+.category-actions .category-back{margin:0}
+.category-description-toggle{border:1px solid #d6e6dc;border-radius:9px;padding:8px 11px;font-size:12px;color:#396950;background:#fff;cursor:pointer}
+.category-description-toggle:hover,.category-back:hover{background:#f0faf4;border-color:#85c7a7}
+.category-description-toggle[aria-expanded="true"]{background:#e5f6ee;border-color:#69ba95;color:#256c50}
+.category-description-toggle:focus-visible,.category-back:focus-visible{outline:2px solid #28ae91;outline-offset:2px}
+.category-description-panel{margin:0 0 16px;padding:16px 17px;border:1px solid #d4e8da;border-radius:13px;background:#f2faf5;color:#263d30}
+.category-description-panel[hidden]{display:none}
+.category-description-panel>strong{display:block;font-size:14px;margin-bottom:6px}
+.category-description-panel p{font-size:13px;line-height:1.55;color:#4f695a;margin:0 0 11px}
+.category-description-examples{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.category-description-examples>strong{font-size:12px;color:#547765;margin-right:3px}
+.category-description-examples>span{font-size:11px;background:#fff;border:1px solid #d9e8df;border-radius:999px;padding:5px 9px;color:#3d604c}
+
 @media(max-width:830px){.marketplace-category-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:540px){.marketplace-category-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.marketplace-category-button{padding:15px 12px;border-radius:12px}.marketplace-category-button .category-icon{font-size:22px}.marketplace-heading h2{font-size:19px}}
 
@@ -230,6 +244,27 @@ const resultRoot=document.getElementById("searchResults");
 const categorySection=document.getElementById("marketplaceCategories");
 const categoryGrid=document.getElementById("marketplaceCategoryGrid");
 const MARKETPLACE_CATEGORIES=[["food-drink","Food & Drinks","🍔"],["events-decor","Catering and Decor Services","🎉"],["electronics","Electronics","📱"],["fashion","Fashion & Accessories","👕"],["beauty","Personal Care Services","💈"],["home-living","Home & Living","🏠"],["groceries","Groceries & Essentials","🛒"],["local-services","Local Services","🛠️"],["other","Other Businesses","🏪"]];
+const MARKETPLACE_CATEGORY_DESCRIPTIONS={
+ "food-drink":{overview:"Ready-to-eat food, snacks, baked goods, desserts and beverages prepared or sold by local businesses.",examples:["Kota shops","Restaurants & takeaways","Home cooks","Bakeries","Juice & drinks sellers"]},
+ "events-decor":{overview:"Businesses that prepare food for gatherings, decorate venues or provide event setup and hire services.",examples:["Caterers","Party decorators","Wedding setups","Tent & chair hire","Balloon decorators"]},
+ "electronics":{overview:"Businesses that sell, maintain or repair electronic devices and their accessories.",examples:["Phone shops","Laptop & computer sellers","Gadget accessories","Electronics repair shops"]},
+ "fashion":{overview:"Clothing, footwear and wearable accessories for everyday use or special occasions.",examples:["Clothing boutiques","Shoe & sneaker sellers","Bags & jewellery","Tailors"]},
+ "beauty":{overview:"Personal appearance, beauty and grooming services, along with related care products.",examples:["Barbershops","Hair salons","Nail technicians","Makeup artists","Skincare & perfume sellers"]},
+ "home-living":{overview:"Products that help people furnish, decorate, equip or improve their homes.",examples:["Furniture shops","Home décor sellers","Appliance stores","Hardware suppliers","Bedding & curtains"]},
+ "groceries":{overview:"Food ingredients and everyday household essentials bought for home use.",examples:["Spaza shops","Fruit & vegetable sellers","Butcheries","Grocery stores","Bulk essentials sellers"]},
+ "local-services":{overview:"Practical services people book or request for their homes, vehicles and everyday needs.",examples:["Plumbers","Electricians","House cleaners","Mechanics","Repair technicians"]},
+ "other":{overview:"Businesses with products or services that do not fit neatly into the other marketplace categories.",examples:["Specialist retailers","Niche products","Other local businesses"]}
+};
+let categoryDescriptionExpanded=false;
+function marketplaceCategoryControls(id){
+ const category=MARKETPLACE_CATEGORIES.find(row=>row[0]===id);
+ const details=MARKETPLACE_CATEGORY_DESCRIPTIONS[id];
+ if(!category||!details)return "";
+ const expanded=categoryDescriptionExpanded;
+ const title=escapeResult(category[1]);
+ return '<div class="category-actions"><button class="category-back" type="button" id="backToCategories">← All categories</button><button class="category-description-toggle" type="button" id="categoryDescriptionToggle" aria-expanded="'+expanded+'" aria-controls="categoryDescriptionPanel">Category Description</button></div>'+
+ '<section class="category-description-panel" id="categoryDescriptionPanel" aria-label="About '+title+'"'+(expanded?'':' hidden')+'><strong>What belongs in '+title+'?</strong><p>'+escapeResult(details.overview)+'</p><div class="category-description-examples"><strong>Examples:</strong>'+details.examples.map(example=>'<span>'+escapeResult(example)+'</span>').join("")+'</div></section>';
+}
 let activeMarketplaceCategory=null;
 function renderMarketplaceCategories(){categoryGrid.innerHTML=MARKETPLACE_CATEGORIES.map(([id,label,emoji])=>'<button type="button" class="marketplace-category-button'+(activeMarketplaceCategory===id?' active':'')+'" data-market-category="'+id+'"><span class="category-icon" aria-hidden="true">'+emoji+'</span><strong>'+label+'</strong></button>').join("")}
 function resetMarketplaceBrowse(){activeMarketplaceCategory=null;categorySection.hidden=false;renderMarketplaceCategories();setSearchActive(false);renderRecentBusinesses()}
@@ -248,8 +283,8 @@ function marketplaceBusinessCard(b,items){
 }
 async function browseMarketplaceCategory(id){
  const category=MARKETPLACE_CATEGORIES.find(row=>row[0]===id);if(!category)return;
- const seq=++searchCounter;activeMarketplaceCategory=id;renderMarketplaceCategories();storeSearchInput.value="";categorySection.hidden=true;setSearchActive(true);
- resultRoot.innerHTML='<p class="results-head">Loading '+escapeResult(category[1])+'…</p>';
+ const seq=++searchCounter;activeMarketplaceCategory=id;categoryDescriptionExpanded=false;renderMarketplaceCategories();storeSearchInput.value="";categorySection.hidden=true;setSearchActive(true);
+ resultRoot.innerHTML=marketplaceCategoryControls(id)+'<p class="results-head">Loading '+escapeResult(category[1])+'…</p>';
  try{
   const client=await getSearchClient();
   const [businessResult,itemsResult]=await Promise.all([
@@ -266,15 +301,24 @@ async function browseMarketplaceCategory(id){
     if(!byBusiness.has(item.business_id))byBusiness.set(item.business_id,[]);
     byBusiness.get(item.business_id).push(item);
   }
-  resultRoot.innerHTML='<button class="category-back" type="button" id="backToCategories">← All categories</button><p class="results-head">'+escapeResult(category[1])+' · '+rows.length+' business'+(rows.length===1?'':'es')+'</p>'+
+  resultRoot.innerHTML=marketplaceCategoryControls(id)+'<p class="results-head">'+escapeResult(category[1])+' · '+rows.length+' business'+(rows.length===1?'':'es')+'</p>'+
    (rows.length?rows.map(b=>marketplaceBusinessCard(b,byBusiness.get(b.id)||[])).join(""):'<p class="results-head">No businesses listed here yet.</p>');
  }catch(error){
   if(seq!==searchCounter)return;
-  resultRoot.innerHTML='<button class="category-back" type="button" id="backToCategories">← All categories</button><p class="results-head">Unable to load this category. Please retry.</p>';
+  resultRoot.innerHTML=marketplaceCategoryControls(id)+'<p class="results-head">Unable to load this category. Please retry.</p>';
   console.error("Marketplace browse failed",error);
  }
 }
-resultRoot.addEventListener("click",e=>{if(e.target.closest("#backToCategories"))resetMarketplaceBrowse()});
+resultRoot.addEventListener("click",e=>{
+ if(e.target.closest("#backToCategories")){resetMarketplaceBrowse();return}
+ const button=e.target.closest("#categoryDescriptionToggle");
+ if(!button)return;
+ const panel=resultRoot.querySelector("#categoryDescriptionPanel");
+ if(!panel)return;
+ categoryDescriptionExpanded=!categoryDescriptionExpanded;
+ panel.hidden=!categoryDescriptionExpanded;
+ button.setAttribute("aria-expanded",String(categoryDescriptionExpanded));
+});
 renderMarketplaceCategories();
 const STORE_SEARCH={url:"https://cypbjzbagezdelmemuhb.supabase.co",key:"sb_publishable_8W8zyYtggQMWoFlnxrzoVA_BUKjQ9va"};
 let searchClient=null,searchClientPromise=null,searchCounter=0,lastSearchResults=[];
