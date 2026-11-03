@@ -326,11 +326,13 @@ html[data-embed="hero"] .bag{pointer-events:none}
 html[data-embed="hero"] .welcome{margin:14px 0 0!important}
 
 
-/* Storefront hero motion is silent, loops, and never blocks text or interaction. */
-.hero-cover-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
-.hero:has(.hero-cover-video):before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#1e1817ed 0%,#1e1817a1 66%,#1e181785 100%)}
-.decor-visual .decor-cover-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-@media(prefers-reduced-motion:reduce){.hero-cover-video,.decor-cover-video{visibility:hidden}}
+/* Video sits in front of the hero background, below a translucent text overlay.
+   Do not hide it when reduced-motion is enabled: the still frame must remain visible. */
+.hero:has(.hero-cover-video){isolation:isolate}
+.hero .hero-cover-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;pointer-events:none}
+.hero:has(.hero-cover-video):before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,rgba(21,16,14,.65) 0%,rgba(21,16,14,.35) 56%,rgba(21,16,14,.14) 100%);pointer-events:none}
+.hero:has(.hero-cover-video)>.hero-top,.hero:has(.hero-cover-video)>.hero-copy{position:relative;z-index:2}
+.decor-visual .decor-cover-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;pointer-events:none}
 </style>
 <link rel="stylesheet" href="/theme.css">
 <script src="/theme.js"></script>
@@ -494,6 +496,24 @@ function renderStorefrontHero(business,cfg,options={}){
 
  return isDecor?decorHero:standardHero;
 }
+function activateBackgroundVideos(root){
+ root.querySelectorAll(".hero-cover-video,.decor-cover-video").forEach(video=>{
+  video.muted=true;
+  video.defaultMuted=true;
+  video.loop=true;
+  video.playsInline=true;
+  const start=()=>{
+   const attempt=video.play();
+   if(attempt&&typeof attempt.catch==="function")attempt.catch(error=>{
+    console.warn("Background video playback blocked:",error?.message||error);
+    // Keep the first video frame visible if autoplay is denied.
+   });
+  };
+  if(video.readyState>=2)start();
+  else video.addEventListener("loadeddata",start,{once:true});
+  video.addEventListener("error",()=>console.warn("Storefront video could not be loaded:",video.error?.code),{once:true});
+ });
+}
 function setupPrivateHeroPreview(root){
  let currentSlug="";
  const notify=()=>{
@@ -516,7 +536,7 @@ function setupPrivateHeroPreview(root){
    (config.welcome?'<div class="welcome">'+esc(config.welcome)+'</div>':'');
   requestAnimationFrame(notify);
   root.querySelectorAll("img").forEach(image=>image.addEventListener("load",notify,{once:true}));
-  root.querySelectorAll("video").forEach(video=>video.play().catch(()=>{}));
+  activateBackgroundVideos(root);
  });
  window.parent.postMessage({type:"storenest:preview-ready"},location.origin);
 }
@@ -618,6 +638,7 @@ async function load(){
      (cfg.welcome?'<div class="welcome">'+esc(cfg.welcome)+'</div>':'')+
      '<div class="contacts">'+contacts.join("")+'</div>'+
      '<div id="catalog" class="catalog-area">'+catalogueMarkup+'</div>';
+   activateBackgroundVideos(root);
  }catch(error){root.innerHTML='<div class="notice">We couldn’t load this storefront right now. Please try again later.</div>';console.error("Storefront load error",error)}
 }
 load();
