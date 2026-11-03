@@ -302,6 +302,28 @@ body[data-store-type="decor"] .category-thumbnail{border-radius:2px}
 body[data-store-type="decor"] .category-name{font-family:Georgia,serif;font-size:17px;font-weight:500}
 @media(max-width:600px){.category-switcher{gap:10px;margin-bottom:15px}.category-tab{flex-basis:150px}.category-thumbnail{aspect-ratio:1.65/1}.category-name{font-size:13px}.category-browser-head{margin-bottom:16px}.catalog-area{margin-top:24px}}
 
+
+/* Render the published storefront hero directly in the owner's preview iframe. */
+html[data-embed="hero"],html[data-embed="hero"] body{
+  min-height:0!important;
+  overflow:hidden!important;
+}
+html[data-embed="hero"] .page{
+  width:100%!important;
+  min-height:0!important;
+  margin:0!important;
+}
+html[data-embed="hero"] .top,html[data-embed="hero"] .footer,
+html[data-embed="hero"] .welcome,html[data-embed="hero"] .contacts,
+html[data-embed="hero"] .catalog-area{display:none!important}
+html[data-embed="hero"] .hero,html[data-embed="hero"] .decor-hero{
+  margin:0!important;
+  border-radius:0!important;
+}
+html[data-embed="hero"] .hero{min-height:260px}
+html[data-embed="hero"] .decor-hero{min-height:320px}
+html[data-embed="hero"] .bag{pointer-events:none}
+
 </style>
 <link rel="stylesheet" href="/theme.css">
 <script src="/theme.js"></script>
@@ -425,7 +447,10 @@ $("main").addEventListener("click",e=>{
   if(e.target.closest("#openCart"))openCart();
 });
 async function load(){
- const slug=new URLSearchParams(location.search).get("slug");
+ const search=new URLSearchParams(location.search);
+ const embedded=search.get("embed")==="hero" && window.parent!==window && window.parent.location.origin===location.origin;
+ if(embedded)document.documentElement.dataset.embed="hero";
+ const slug=search.get("slug");
  const root=$("main");
  if(!slug){root.innerHTML='<div class="notice">This storefront link is incomplete.</div>';return}
  try{
@@ -441,8 +466,8 @@ async function load(){
    const sectionResult=await client.from("business_categories").select("id,name,description,display_style,display_order").eq("business_id",business.id).order("display_order").order("name");
    if(sectionResult.error)throw sectionResult.error;
    const storefrontSections=sectionResult.data||[];
-   // Remember genuine storefront visits for this device only.
-   try{
+   // Do not add dashboard preview frames to customer browsing history.
+   if(!embedded)try{
      const key="storenest:recent-businesses:v1";
      const slugText=String(business.slug||"");
      if(/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slugText)){
@@ -531,10 +556,26 @@ async function load(){
      '<a class="decor-cta" href="#catalog">Explore collection</a></div>'+
      '<div class="decor-visual">'+(decorImage?'<img src="'+esc(decorImage)+'" alt="Featured home decor">':'')+
      '<button type="button" id="openCart" class="bag" aria-label="Open basket"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 12H4L5 8ZM9 9V6a3 3 0 0 1 6 0v3"/></svg><span id="bagCount">0</span></button></div></section>';
-   root.innerHTML=(isDecor?decorHero:standardHero)+
+   root.innerHTML=embedded?(isDecor?decorHero:standardHero):
+     (isDecor?decorHero:standardHero)+
      (cfg.welcome?'<div class="welcome">'+esc(cfg.welcome)+'</div>':'')+
      '<div class="contacts">'+contacts.join("")+'</div>'+
      '<div id="catalog" class="catalog-area">'+catalogueMarkup+'</div>';
+   if(embedded){
+     const hero=root.querySelector(".hero,.decor-hero");
+     const notify=()=>{
+       if(hero)window.parent.postMessage({
+         type:"storenest:hero-preview-height",
+         slug:business.slug,
+         height:hero.getBoundingClientRect().height
+       },location.origin);
+     };
+     if(hero){
+       notify();
+       if("ResizeObserver" in window)new ResizeObserver(notify).observe(hero);
+       hero.querySelectorAll("img").forEach(img=>img.addEventListener("load",notify,{once:true}));
+     }
+   }
  }catch(error){root.innerHTML='<div class="notice">We couldn’t load this storefront right now. Please try again later.</div>';console.error("Storefront load error",error)}
 }
 load();
