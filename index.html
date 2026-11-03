@@ -229,7 +229,7 @@ const storeSearchStatus=document.getElementById("storeSearchStatus");
 const resultRoot=document.getElementById("searchResults");
 const categorySection=document.getElementById("marketplaceCategories");
 const categoryGrid=document.getElementById("marketplaceCategoryGrid");
-const MARKETPLACE_CATEGORIES=[["food-drink","Food & Drinks","🍔"],["events-decor","Events & Décor","🎉"],["electronics","Phones & Electronics","📱"],["fashion","Fashion & Accessories","👕"],["beauty","Beauty & Grooming","💈"],["home-living","Home & Living","🏠"],["groceries","Groceries & Essentials","🛒"],["local-services","Local Services","🛠️"],["other","Other Businesses","🏪"]];
+const MARKETPLACE_CATEGORIES=[["food-drink","Food & Drinks","🍔"],["events-decor","Events & Décor","🎉"],["electronics","Electronics","📱"],["fashion","Fashion & Accessories","👕"],["beauty","Beauty & Grooming","💈"],["home-living","Home & Living","🏠"],["groceries","Groceries & Essentials","🛒"],["local-services","Local Services","🛠️"],["other","Other Businesses","🏪"]];
 let activeMarketplaceCategory=null;
 function renderMarketplaceCategories(){categoryGrid.innerHTML=MARKETPLACE_CATEGORIES.map(([id,label,emoji])=>'<button type="button" class="marketplace-category-button'+(activeMarketplaceCategory===id?' active':'')+'" data-market-category="'+id+'"><span class="category-icon" aria-hidden="true">'+emoji+'</span><strong>'+label+'</strong></button>').join("")}
 function resetMarketplaceBrowse(){activeMarketplaceCategory=null;categorySection.hidden=false;renderMarketplaceCategories();setSearchActive(false);renderRecentBusinesses()}
