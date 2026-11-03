@@ -447,6 +447,50 @@ html[data-theme="dark"] .page-refresh-button:hover{background:#2d4540;border-col
 /* Short background video previews share the same presentation as images. */
 #builderCoverVideoPreview{display:block;width:min(100%,320px);max-height:190px;object-fit:cover;border-radius:12px}
 #builderCoverVideoPreview[hidden]{display:none!important}
+
+/* Put business logo and storefront background upload in the same desktop row. */
+#storefrontBuilder .storefront-media-row{
+ grid-column:1 / -1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ align-items:stretch;gap:14px;margin:2px 0 12px
+}
+#storefrontBuilder .storefront-media-card{
+ min-width:0;min-height:0;display:flex;flex-direction:column;
+ padding:16px;border:1px solid #d9e6dd;background:#f8fbf9;border-radius:12px;margin:0
+}
+#storefrontBuilder .storefront-media-card label{font-size:11px;font-weight:750;margin-bottom:8px}
+#storefrontBuilder .storefront-media-card input[type=file]{
+ width:100%;min-width:0;height:auto;min-height:40px;background:#fff;
+ padding:7px 9px;font-size:11px;color:#25362c;overflow:hidden
+}
+#storefrontBuilder .storefront-media-card small{
+ display:block;color:#637d70;font-size:10px;line-height:1.5;margin-top:7px
+}
+#storefrontBuilder .storefront-media-card .brand-preview{
+ display:flex;align-items:center;gap:12px;min-height:110px;flex-wrap:wrap;
+ margin:12px 0 0
+}
+#storefrontBuilder .storefront-media-card .brand-preview img:not([hidden]){
+ max-width:100%;object-fit:cover
+}
+#storefrontBuilder .storefront-media-card #builderCoverPreview:not([hidden]),
+#storefrontBuilder .storefront-media-card #builderCoverVideoPreview:not([hidden]){
+ width:180px;height:105px;max-width:100%;object-fit:cover;border-radius:11px
+}
+#storefrontBuilder .storefront-media-card .brand-preview button{
+ flex:0 0 auto;max-width:100%
+}
+html[data-theme="dark"] #storefrontBuilder .storefront-media-card{
+ background:#1b2a2b;color:#edf6f3;border-color:#344b49
+}
+html[data-theme="dark"] #storefrontBuilder .storefront-media-card input[type=file]{
+ background:#152327;color:#edf6f3;border-color:#3a5653
+}
+html[data-theme="dark"] #storefrontBuilder .storefront-media-card small{color:#a5b8b0}
+@media(max-width:700px){
+ #storefrontBuilder .storefront-media-row{grid-template-columns:minmax(0,1fr);gap:10px}
+ #storefrontBuilder .storefront-media-card{padding:13px}
+}
+
 </style>
 <link rel="stylesheet" href="/theme.css">
 <script src="/theme.js"></script>
@@ -549,7 +593,10 @@ html[data-theme="dark"] .page-refresh-button:hover{background:#2d4540;border-col
 <div class="form-grid">
 <div class="field"><label for="builderHeadline">Headline</label><input id="builderHeadline" maxlength="90" placeholder="Fresh food, made with love"></div>
 <div class="field"><label for="builderTagline">Short tagline</label><input id="builderTagline" maxlength="120" placeholder="The best in town"></div>
-<div class="field full-field"><label for="builderLogoFile">Profile picture / business logo</label><input id="builderLogoFile" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><small>JPG, PNG, WebP or GIF · max 2 MB</small><div class="brand-preview"><img id="builderLogoPreview" hidden alt="Logo preview"><button type="button" class="outline-button" id="removeBuilderLogo">Remove logo</button></div></div><div class="field full-field"><label for="builderCoverFile">Storefront background picture or short video</label><input id="builderCoverFile" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"><small>Pictures: JPG, PNG, WebP, GIF · max 8 MB. Videos: MP4 or WebM · max 20 MB / 30 seconds.</small><div class="brand-preview"><img id="builderCoverPreview" hidden alt="Background preview"><video id="builderCoverVideoPreview" muted loop playsinline autoplay preload="metadata" hidden aria-label="Background video preview"></video><button type="button" class="outline-button" id="removeBuilderCover">Remove background</button></div></div><div class="field full-field"><label for="builderHero">Or HTTPS background image or video URL (optional)</label><input id="builderHero" type="url" placeholder="https://example.com/photo.jpg"></div>
+<div class="storefront-media-row">
+<div class="field storefront-media-card"><label for="builderLogoFile">Profile picture / business logo</label><input id="builderLogoFile" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><small>JPG, PNG, WebP or GIF · max 2 MB</small><div class="brand-preview"><img id="builderLogoPreview" hidden alt="Logo preview"><button type="button" class="outline-button" id="removeBuilderLogo">Remove logo</button></div></div><div class="field storefront-media-card"><label for="builderCoverFile">Storefront background picture or short video</label><input id="builderCoverFile" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"><small>Pictures: JPG, PNG, WebP, GIF · max 8 MB. Videos: MP4 or WebM · max 20 MB / 30 seconds.</small><div class="brand-preview"><img id="builderCoverPreview" hidden alt="Background preview"><video id="builderCoverVideoPreview" muted loop playsinline autoplay preload="metadata" hidden aria-label="Background video preview"></video><button type="button" class="outline-button" id="removeBuilderCover">Remove background</button></div></div>
+</div>
+<div class="field full-field"><label for="builderHero">Or HTTPS background image or video URL (optional)</label><input id="builderHero" type="url" placeholder="https://example.com/photo.jpg"></div>
 <div class="field"><label for="builderAccent">Storefront accent colour</label><input id="builderAccent" type="color" value="#60d6bd"></div>
 <div class="field"><label for="builderStyle">Storefront layout</label><select id="builderStyle"><option value="classic">Classic</option><option value="showcase">Showcase</option><option value="compact">Compact</option></select></div>
 <div class="field full-field"><label for="builderWelcome">Welcome message</label><textarea id="builderWelcome" maxlength="400" rows="3" placeholder="Tell customers about your business"></textarea></div>
