@@ -239,6 +239,43 @@ html,body{background:#f8faf9;color:#192622}
 .owner-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:12px}.owner-gallery-tile{background:#eff5f1;border:1px solid #d5e1d9;border-radius:12px;overflow:hidden}.owner-gallery-tile img{height:110px;width:100%;object-fit:cover}.owner-gallery-actions{display:flex;align-items:center;justify-content:space-between;gap:3px;padding:5px}.owner-gallery-actions span{font-size:10px;color:#3d5649;font-weight:700}.owner-gallery-actions button{background:#fff;color:#19382d;border:1px solid #d6e4db;border-radius:6px;min-width:24px;height:25px;cursor:pointer}.owner-gallery-actions button:disabled{opacity:.3;cursor:default}
 .business-switcher{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 0}.business-switcher label{color:#70877b;font-size:11px;font-weight:700}.business-switcher select{background:#fff;color:#1a3326;border:1px solid #cbdcd2;border-radius:10px;padding:10px;max-width:240px;min-width:140px}.business-switcher .outline-button{padding:10px 13px;font-size:12px;white-space:nowrap}@media(max-width:600px){.business-switcher{width:100%}.business-switcher select{flex:1;min-width:120px}}
 .owner-sections{margin:12px 0 26px;padding:20px;border-radius:15px;background:#f6faf7;border:1px solid #d9e8df}.owner-sections .section-heading{margin-bottom:14px}.section-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}.section-card{background:#fff;color:#18392c;padding:15px;border:1px solid #dbe8df;border-radius:12px;display:flex;flex-direction:column;justify-content:space-between;gap:15px}.section-card strong{font-size:15px}.section-card p{font-size:12px;color:#698176;margin:6px 0}.section-card small{font-size:11px;color:#74897e}.section-tools{display:flex;gap:5px;flex-wrap:wrap}.section-tools .outline-button{padding:6px 10px;font-size:11px}.section-empty{font-size:13px;color:#62766b}.owner-sections h3{color:#173b2c}
+
+/* Allow the owner header to grow with the business selector.
+   Previously a fixed 72px/64px/58px header let the welcome text overlap
+   the sidebar's WORKSPACE label when multiple profiles were enabled. */
+.auth-view[data-view="account"] > .dashboard-head{
+  height:auto;
+  min-height:124px;
+  flex:0 0 auto;
+  padding-block:12px;
+}
+.auth-view[data-view="account"] > .dashboard-head > div:first-child{
+  flex:1 1 auto;
+  min-width:0;
+}
+.auth-view[data-view="account"] .dashboard-head .sub{
+  margin:8px 0 0;
+  line-height:1.45;
+}
+.auth-view[data-view="account"] .business-switcher{
+  margin-top:9px;
+  row-gap:8px;
+}
+.auth-view[data-view="account"] .dashboard-head .head-actions{
+  flex:0 0 auto;
+}
+@media(max-width:600px){
+  .auth-view[data-view="account"] > .dashboard-head{
+    height:auto;
+    min-height:114px;
+    flex-basis:auto;
+    padding:12px 14px;
+  }
+  .auth-view[data-view="account"] .business-switcher{
+    gap:6px;
+  }
+}
+
 </style>
 </head>
 <body>
