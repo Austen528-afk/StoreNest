@@ -1,5 +1,5 @@
-const CACHE_NAME="storenest-shell-v5";
-const SHELL=["/","/index.html","/business-owner.html","/storefront.html","/categories.js","/theme.css","/theme.js","/manifest.webmanifest","/icons/icon-192.png","/icons/icon-512.png"];
+const CACHE_NAME="storenest-shell-v6";
+const SHELL=["/","/index.html","/business-owner.html","/storefront.html","/categories.js","/theme.css","/theme.js","/manifest.webmanifest","/icons/icon-192.png","/icons/icon-512.png","/assets/install-iphone-share.svg","/assets/install-iphone-home-screen.svg","/assets/install-iphone-confirm.svg"];
 self.addEventListener("install",event=>{
  event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(SHELL)));
  self.skipWaiting();
