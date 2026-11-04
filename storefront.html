@@ -648,6 +648,7 @@ function renderGalleryOptions(item){
  list.innerHTML=groups.map(group=>
   '<fieldset class="gallery-choice-group" data-group-id="'+esc(group.id)+'">'+
   '<legend>'+esc(group.name)+'<small>'+(group.required?"Required":"Optional")+(group.selection==="multiple"?" · choose up to "+group.max:" · choose one")+'</small></legend>'+
+  (!group.required&&group.selection==="single"?'<label class="gallery-choice-option"><span><input type="radio" data-group-id="'+esc(group.id)+'" data-option-id="" name="choice-'+esc(group.id)+'" value=""><span>No extra / None</span></span><em>Free</em></label>':"")+
   group.options.map(option=>
    '<label class="gallery-choice-option"><span><input type="'+(group.selection==="multiple"?"checkbox":"radio")+'" data-group-id="'+esc(group.id)+'" data-option-id="'+esc(option.id)+'" name="choice-'+esc(group.id)+'" value="'+esc(option.id)+'"><span>'+esc(option.name)+'</span></span><em>'+(option.price?"+"+money(option.price):"Free")+'</em></label>'
   ).join("")+'</fieldset>'
@@ -663,7 +664,7 @@ $("galleryChoiceGroups").addEventListener("change",event=>{
  const input=event.target.closest("[data-option-id]");if(!input||!activeGalleryItem)return;
  const groups=window.StoreNestOptions.normalize(activeGalleryItem.customization_options);
  const group=groups.find(g=>g.id===input.dataset.groupId);if(!group)return;
- const chosen=[...$("galleryChoiceGroups").querySelectorAll('input[data-group-id="'+group.id+'"]:checked')].map(x=>x.dataset.optionId);
+ const chosen=[...$("galleryChoiceGroups").querySelectorAll('input[data-group-id="'+group.id+'"]:checked')].map(x=>x.dataset.optionId).filter(Boolean);
  if(group.selection==="multiple"&&chosen.length>group.max){
   input.checked=false;
   $("galleryOptionsError").hidden=false;
