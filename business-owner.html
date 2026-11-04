@@ -506,6 +506,13 @@ html[data-theme="dark"] #storefrontBuilder .storefront-media-card small{color:#a
 @media(max-width:1080px){.storefront-heading-actions{flex:1 1 100%;justify-content:flex-start}.storefront-heading-actions #previewStoreButton{margin-left:auto}}
 @media(max-width:600px){.storefront-heading{gap:9px}.storefront-heading-title{flex-basis:100%}.storefront-heading-actions{gap:6px}.storefront-heading-actions .primary-button,.storefront-heading-actions .outline-button{font-size:9px;min-height:32px;padding:7px 9px}.storefront-heading-actions #previewStoreButton{margin-left:0}}
 
+
+.danger-outline-button{background:#fff2f1!important;border:1px solid #efb6b2!important;color:#a52d28!important}
+.danger-outline-button:hover:not(:disabled){background:#fee4e2!important;border-color:#d92d20!important;color:#8a1c17!important}
+.danger-button{display:inline-flex;align-items:center;justify-content:center;min-height:36px;border-radius:9px;padding:8px 13px;font-size:11px;font-weight:800;white-space:nowrap;cursor:pointer;background:#b42318;border:1px solid #b42318;color:#fff;transition:.15s}
+.danger-button:hover:not(:disabled){background:#912018;border-color:#912018}
+.danger-button:disabled{opacity:.65;cursor:wait}
+.delete-business-status{margin:10px 0 0;padding:9px 11px;border-radius:8px;background:#fff0ed;color:#912018;font-size:12px}
 </style>
 <link rel="stylesheet" href="/theme.css">
 <link rel="stylesheet" href="/owner-bookings.css">
@@ -586,7 +593,7 @@ html[data-theme="dark"] #storefrontBuilder .storefront-media-card small{color:#a
 <div class="message" role="status" aria-live="polite" hidden></div>
 </form>
 <div class="auth-view" data-view="account" hidden>
-  <div class="dashboard-head"><div><span class="eyebrow">BUSINESS WORKSPACE</span><h2 id="businessTitle">Your business</h2><div class="business-switcher"><label for="businessSelect">Current business</label><select id="businessSelect" aria-label="Select business"></select><button type="button" id="createBusinessButton" class="outline-button">+ Create business</button></div><p class="sub" id="dashboardWelcome">Here’s your business at a glance.</p></div><div class="head-actions"><button type="button" class="theme-switch theme-switch-header" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false"><span class="theme-switch-icon" aria-hidden="true">☾</span><span class="theme-switch-label">Dark mode</span></button><button type="button" class="icon-button" id="notificationsButton" aria-label="Notifications">♧</button><button type="button" class="avatar" id="profileButton" aria-label="Business profile">SN</button></div></div>
+  <div class="dashboard-head"><div><span class="eyebrow">BUSINESS WORKSPACE</span><h2 id="businessTitle">Your business</h2><div class="business-switcher"><label for="businessSelect">Current business</label><select id="businessSelect" aria-label="Select business"></select><button type="button" id="createBusinessButton" class="outline-button">+ Create business</button><button type="button" id="deleteBusinessButton" class="outline-button danger-outline-button" disabled>Delete store</button></div><p class="sub" id="dashboardWelcome">Here’s your business at a glance.</p></div><div class="head-actions"><button type="button" class="theme-switch theme-switch-header" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false"><span class="theme-switch-icon" aria-hidden="true">☾</span><span class="theme-switch-label">Dark mode</span></button><button type="button" class="icon-button" id="notificationsButton" aria-label="Notifications">♧</button><button type="button" class="avatar" id="profileButton" aria-label="Business profile">SN</button></div></div>
   <div class="dashboard-layout">
     <aside class="sidebar" id="dashboardSidebar" aria-label="Business dashboard navigation">
 <div class="sidebar-group"><div class="side-label">DAILY WORKSPACE</div><button type="button" class="side-link active" data-section="overview"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span class="nav-name">Overview</span></button><button type="button" class="side-link" data-section="orders"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l1 12H4L5 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg></span><span class="nav-name">Orders</span></button><button type="button" class="side-link" data-section="bookings"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M8 14h3M14 14h3M8 17h3"/></svg></span><span class="nav-name">Bookings</span></button></div>
@@ -625,6 +632,7 @@ html[data-theme="dark"] #storefrontBuilder .storefront-media-card small{color:#a
   <div class="modal-backdrop" id="profileModal" hidden><div class="modal-card profile-setup-modal" role="dialog" aria-modal="true" aria-labelledby="setupTitle"><div class="modal-head"><div><span class="eyebrow">YOUR STOREFRONT STARTS HERE</span><h3 id="setupTitle">Set up your business</h3></div><button class="close-modal" type="button" data-close-modal aria-label="Close">×</button></div><p class="modal-subtitle">Share the details customers need to recognize and contact your business.</p><form id="setupForm" class="business-form"><div class="form-grid"><div class="field"><label for="setupName">Business name <em>*</em></label><input id="setupName" maxlength="120" required placeholder="e.g. Dineo’s Kitchen"></div><div class="field"><label for="setupCategory">Business category <em>*</em></label><select id="setupCategory" required><option value="">Choose a category</option></select><small class="category-help">Choose the main StoreNest marketplace category for your business. You can still sell different products and services.</small></div><div class="field full-field"><label for="setupDescription">Business description</label><textarea id="setupDescription" maxlength="500" rows="3" placeholder="Tell customers what you offer"></textarea></div><div class="field"><label for="setupLocation">Location</label><input id="setupLocation" placeholder="Town, province"></div><div class="field"><label for="setupPhone">Contact number</label><input id="setupPhone" type="tel" placeholder="e.g. 060 000 0000"></div><div class="field"><label for="setupEmail">Contact email</label><input id="setupEmail" type="email" placeholder="Business email"></div><div class="field"><label for="setupWebsite">Website or social link</label><input id="setupWebsite" type="url" placeholder="https://"></div><div class="field"><label for="setupHours">Operating hours</label><input id="setupHours" placeholder="e.g. Mon–Sat, 08:00–17:00"></div></div><div class="message" id="setupMessage" role="status" aria-live="polite" hidden></div><div class="modal-actions"><button class="outline-button" type="button" data-close-modal>Do this later</button><button class="primary-button" type="submit">Save and continue <span>→</span></button></div></form></div></div>
   <div class="modal-backdrop" id="itemModal" hidden><div class="modal-card item-modal" role="dialog" aria-modal="true" aria-labelledby="itemModalTitle"><div class="modal-head"><div><span class="eyebrow">YOUR CATALOGUE</span><h3 id="itemModalTitle">Add an item</h3></div><button class="close-modal" type="button" data-close-modal aria-label="Close">×</button></div><p class="modal-subtitle">Add a product or service to your business catalogue.</p><form id="itemForm" class="business-form"><input type="hidden" id="itemId"><div class="form-grid"><div class="field"><label for="itemType">Item type <em>*</em></label><select id="itemType"><option value="product">Product</option><option value="service">Service</option></select></div><div class="field"><label for="itemName">Name <em>*</em></label><input id="itemName" maxlength="120" required placeholder="e.g. Kota combo"></div><div class="field"><label for="itemPrice">Price (ZAR) <em>*</em></label><div class="price-input"><span>R</span><input id="itemPrice" type="number" min="0" step="0.01" required placeholder="0.00"></div></div><div class="field"><label for="itemCategory">Category</label><div class="category-input"><select id="itemCategory"><option value="">No category</option></select><button type="button" id="addCategoryButton" aria-label="Add category">＋</button></div></div><div class="field full-field"><label for="itemDescription">Description</label><textarea id="itemDescription" rows="3" maxlength="500" placeholder="Describe your item"></textarea></div><div class="field full-field"><label for="itemMedia">Product photos, GIFs & short videos (up to 12)</label><input id="itemMedia" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"><small>Images/GIFs: max 10 MB. MP4/WebM videos: max 20 MB and 30 seconds. First file is the cover.</small><div id="itemMediaGallery" class="owner-gallery"></div></div><div class="field"><label for="itemAvailability">Availability</label><select id="itemAvailability"><option value="true">Available</option><option value="false">Unavailable</option></select></div><div class="field"><label for="itemOrder">Display order</label><input id="itemOrder" type="number" min="0" step="1" value="0"></div></div><div class="message" id="itemFormMessage" role="status" aria-live="polite" hidden></div><div class="modal-actions"><button class="outline-button" type="button" data-close-modal>Cancel</button><button class="primary-button" type="submit">Save item <span>→</span></button></div></form></div></div>
   <div class="modal-backdrop" id="categoryModal" hidden><div class="modal-card small-modal" role="dialog" aria-modal="true" aria-labelledby="categoryModalTitle"><div class="modal-head"><div><span class="eyebrow">CATALOGUE ORGANISATION</span><h3 id="categoryModalTitle">Add a category</h3></div><button class="close-modal" type="button" data-close-modal aria-label="Close">×</button></div><form id="categoryForm"><div class="field"><label for="categoryName">Section name</label><input id="categoryName" required maxlength="60" placeholder="e.g. Catering, Décor, Ice Cream"><label for="categoryMarketplace">Marketplace category</label><select id="categoryMarketplace"><option value="food-drink">Food & Drinks</option><option value="events-decor">Catering and Decor Services</option><option value="electronics">Electronics</option><option value="fashion">Fashion & Accessories</option><option value="beauty">Personal Care Services and Products</option><option value="home-living">Home & Living</option><option value="groceries">Groceries & Essentials</option><option value="local-services">Local Services</option><option value="gifts-occasions">Gifts &amp; Occasions</option><option value="other">Other</option></select><small>Controls where customers discover this section on StoreNest. It does not restrict what you offer.</small><label for="categoryStyle">Display style</label><select id="categoryStyle"><option value="auto">Automatic</option><option value="menu">Food menu</option><option value="showcase">Visual showcase</option><option value="portfolio">Service portfolio</option><option value="catalogue">Product catalogue</option><option value="booking">Booking / enquiry</option></select><label for="categoryDescription">Short introduction (optional)</label><textarea id="categoryDescription" maxlength="300" rows="2" placeholder="What this section offers"></textarea><input id="categoryEditId" type="hidden"></div><div class="message" id="categoryMessage" role="status" aria-live="polite" hidden></div><div class="modal-actions"><button class="outline-button" type="button" data-close-modal>Cancel</button><button class="primary-button" type="submit">Add category</button></div></form></div></div>
+  <div class="modal-backdrop" id="deleteBusinessModal" hidden><div class="modal-card small-modal danger-store-modal" role="dialog" aria-modal="true" aria-labelledby="deleteBusinessTitle"><div class="modal-head"><div><span class="eyebrow">PERMANENT STORE REMOVAL</span><h3 id="deleteBusinessTitle">Delete this store?</h3></div><button class="close-modal" type="button" data-close-modal aria-label="Cancel">×</button></div><p class="modal-subtitle">You are deleting <strong id="deleteBusinessName">this store</strong>. This also permanently removes its products and services, categories, storefront design, booking requests, and uploaded media. This cannot be undone.</p><p class="delete-business-status" id="deleteBusinessStatus" role="status" aria-live="polite" hidden></p><div class="modal-actions"><button class="outline-button" type="button" data-close-modal>Cancel</button><button class="danger-button" type="button" id="confirmDeleteBusiness">Delete store</button></div></div></div>
   <div class="message dashboard-toast" id="dashboardToast" role="status" aria-live="polite" hidden></div>
 </div>
 </section>
@@ -719,10 +727,11 @@ window.addEventListener("message",event=>{
  const height=Number(data.height);
  if(Number.isFinite(height)&&height>=160&&height<=1400)live.style.height=Math.ceil(height)+"px";
 });
-function applyBusiness(b){currentBusiness=b;const existingIndex=ownerBusinesses.findIndex(x=>x.id===b?.id);if(existingIndex>=0)ownerBusinesses[existingIndex]=b;renderBusinessSelector();$("businessTitle").textContent=b?.name||"Your business";$("dashboardWelcome").textContent=b?.name?"Here’s your business at a glance.":"Create your business profile to start building your storefront.";$("setupBanner").hidden=isProfileComplete(b);$("storePreviewName").textContent=b?.name||"Your business name";$("storePreviewCategory").textContent=displayBusinessCategory(b?.category)||"Choose a category";const initials=(b?.name||"SN").split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join("").toUpperCase()||"SN";for(const id of ["storeLogoPreview","settingsLogoPreview"]){const el=$(id);el.replaceChildren();if(b?.logo_url){const img=document.createElement("img");img.src=b.logo_url;img.alt="Logo";img.style.cssText="width:100%;height:100%;object-fit:cover;border-radius:inherit";el.append(img)}else el.textContent=initials;}$("businessName").value=b?.name||"";$("businessCategory").value=window.StoreNestCategoryId(b?.category)||"";$("businessDescription").value=b?.description||"";$("businessLocation").value=b?.location||"";$("businessPhone").value=b?.phone||"";$("businessEmail").value=b?.email||"";$("businessWebsite").value=b?.website||"";$("businessHours").value=b?.operating_hours?.summary||"";const slug=b?.slug||slugify(b?.name||"");$("storeUrlText").textContent=location.origin+"/storefront.html?slug="+encodeURIComponent(slug);$("storeStatus").textContent=b?.is_published?"Published":"Draft";$("storeStatusHint").textContent=b?.is_published?"Your storefront is public":"Visible only to you";$("publishButton").hidden=!b?.is_published;$("publishButton").disabled=!isProfileComplete(b);$("previewStoreButton").disabled=!b?.is_published;updateLiveStorefrontPreview(b)}
+function applyBusiness(b){currentBusiness=b;const existingIndex=ownerBusinesses.findIndex(x=>x.id===b?.id);if(existingIndex>=0)ownerBusinesses[existingIndex]=b;renderBusinessSelector();$("deleteBusinessButton").disabled=!b;$("businessTitle").textContent=b?.name||"Your business";$("dashboardWelcome").textContent=b?.name?"Here’s your business at a glance.":"Create your business profile to start building your storefront.";$("setupBanner").hidden=isProfileComplete(b);$("storePreviewName").textContent=b?.name||"Your business name";$("storePreviewCategory").textContent=displayBusinessCategory(b?.category)||"Choose a category";const initials=(b?.name||"SN").split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join("").toUpperCase()||"SN";for(const id of ["storeLogoPreview","settingsLogoPreview"]){const el=$(id);el.replaceChildren();if(b?.logo_url){const img=document.createElement("img");img.src=b.logo_url;img.alt="Logo";img.style.cssText="width:100%;height:100%;object-fit:cover;border-radius:inherit";el.append(img)}else el.textContent=initials;}$("businessName").value=b?.name||"";$("businessCategory").value=window.StoreNestCategoryId(b?.category)||"";$("businessDescription").value=b?.description||"";$("businessLocation").value=b?.location||"";$("businessPhone").value=b?.phone||"";$("businessEmail").value=b?.email||"";$("businessWebsite").value=b?.website||"";$("businessHours").value=b?.operating_hours?.summary||"";const slug=b?.slug||slugify(b?.name||"");$("storeUrlText").textContent=location.origin+"/storefront.html?slug="+encodeURIComponent(slug);$("storeStatus").textContent=b?.is_published?"Published":"Draft";$("storeStatusHint").textContent=b?.is_published?"Your storefront is public":"Visible only to you";$("publishButton").hidden=!b?.is_published;$("publishButton").disabled=!isProfileComplete(b);$("previewStoreButton").disabled=!b?.is_published;updateLiveStorefrontPreview(b)}
 function ownerBusinessKey(user){return "storenest-active-business:"+user.id}
 function renderBusinessSelector(){
  const select=$("businessSelect");select.replaceChildren();
+ if(!ownerBusinesses.length)select.add(new Option("No stores yet",""));
  for(const b of ownerBusinesses){select.add(new Option(b.name?.trim()||"New business",b.id))}
  select.value=currentBusiness?.id||"";
 }
@@ -732,10 +741,7 @@ async function fetchOwnerBusinesses(client){
 }
 async function ensureBusiness(client,user){
  currentUser=user;await fetchOwnerBusinesses(client);
- if(!ownerBusinesses.length){
-  const data=await createBusinessRecord(client);
-  ownerBusinesses=[data];
- }
+ if(!ownerBusinesses.length)return null;
  let savedId="";
  try{savedId=localStorage.getItem(ownerBusinessKey(user))||""}catch{}
  return ownerBusinesses.find(b=>b.id===savedId)||ownerBusinesses[0];
@@ -744,10 +750,37 @@ async function createBusinessRecord(client){
  const payload={owner_id:currentUser.id,name:"",slug:"owner-"+crypto.randomUUID().replace(/-/g,"").slice(0,24),category:"",description:"",is_published:false};
  const {data,error}=await client.from("businesses").insert(payload).select("*").single();if(error)throw error;return data;
 }
+async function listBusinessStoragePaths(client,bucket,path){
+ const paths=[];let offset=0;
+ while(true){
+  const {data,error}=await client.storage.from(bucket).list(path,{limit:100,offset});
+  if(error)throw error;
+  const entries=data||[];
+  for(const entry of entries)if(entry.id!==null)paths.push(path+"/"+entry.name);
+  if(entries.length<100)break;
+  offset+=entries.length;
+ }
+ return paths;
+}
+async function deleteBusinessMedia(client,business){
+ const prefix=currentUser.id+"/"+business.id;
+ const targets=[
+  {bucket:ITEM_BUCKET,path:prefix},
+  {bucket:BRAND_BUCKET,path:prefix+"/logo"},
+  {bucket:BRAND_BUCKET,path:prefix+"/cover"}
+ ];
+ for(const target of targets){
+  const paths=await listBusinessStoragePaths(client,target.bucket,target.path);
+  for(let i=0;i<paths.length;i+=100){
+   const {error}=await client.storage.from(target.bucket).remove(paths.slice(i,i+100));
+   if(error)throw error;
+  }
+ }
+}
 async function chooseBusiness(id){
  if(switchingBusiness||currentBusiness?.id===id)return;
  const found=ownerBusinesses.find(b=>b.id===id);if(!found)return;
- switchingBusiness=true;$("businessSelect").disabled=true;$("createBusinessButton").disabled=true;
+ switchingBusiness=true;$("businessSelect").disabled=true;$("createBusinessButton").disabled=true;$("deleteBusinessButton").disabled=true;
  try{
   applyBusiness(found);
   businessItems=[];businessCategories=[];storefrontDraft=null;renderItems();renderCategories();updateStats();
@@ -755,7 +788,7 @@ async function chooseBusiness(id){
   try{localStorage.setItem(ownerBusinessKey(currentUser),found.id)}catch{}
   setDashboardSection("overview");
  }catch(error){showToast(friendlyError(error),true)}
- finally{switchingBusiness=false;$("businessSelect").disabled=false;$("createBusinessButton").disabled=false;renderBusinessSelector()}
+ finally{switchingBusiness=false;$("businessSelect").disabled=false;$("createBusinessButton").disabled=false;$("deleteBusinessButton").disabled=!currentBusiness;renderBusinessSelector()}
 }
 $("businessSelect").addEventListener("change",event=>chooseBusiness(event.target.value));
 $("createBusinessButton").addEventListener("click",async()=>{
@@ -768,8 +801,54 @@ $("createBusinessButton").addEventListener("click",async()=>{
  }catch(error){showToast(friendlyError(error),true)}
  finally{button.disabled=false}
 });
+$("deleteBusinessButton").addEventListener("click",()=>{
+ if(!currentBusiness||!currentUser)return;
+ $("deleteBusinessName").textContent=currentBusiness.name?.trim()||"New business";
+ $("deleteBusinessStatus").textContent="";
+ $("deleteBusinessStatus").hidden=true;
+ openModal("deleteBusinessModal");
+});
+$("confirmDeleteBusiness").addEventListener("click",async()=>{
+ const button=$("confirmDeleteBusiness");
+ if(button.disabled||!currentBusiness||!currentUser)return;
+ const target=currentBusiness,targetName=target.name?.trim()||"Store",originalLabel=button.textContent;
+ button.disabled=true;button.textContent="Deleting…";
+ $("deleteBusinessStatus").textContent="Removing the store and its uploaded media…";
+ $("deleteBusinessStatus").hidden=false;
+ try{
+  const client=await loadAuth();
+  await deleteBusinessMedia(client,target);
+  const {data,error}=await client.from("businesses").delete().eq("id",target.id).eq("owner_id",currentUser.id).select("id").maybeSingle();
+  if(error)throw error;
+  if(!data?.id)throw Error("The store was not deleted. Refresh the page and try again.");
+  ownerBusinesses=ownerBusinesses.filter(b=>b.id!==target.id);
+  closeModal($("deleteBusinessModal"));
+  if(ownerBusinesses.length){
+   await chooseBusiness(ownerBusinesses[0].id);
+   showToast(targetName+" deleted.");
+  }else{
+   try{localStorage.removeItem(ownerBusinessKey(currentUser))}catch{}
+   applyBusiness(null);
+   businessItems=[];businessCategories=[];storefrontDraft=null;
+   renderItems();renderCategories();updateStats();setDashboardSection("overview");
+   showToast(targetName+" deleted. Create a new store whenever you’re ready.");
+  }
+ }catch(error){
+  const message=friendlyError(error);
+  $("deleteBusinessStatus").textContent=message;
+  $("deleteBusinessStatus").hidden=false;
+  showToast("Could not delete the store: "+message,true);
+ }finally{
+  button.disabled=false;button.textContent=originalLabel;
+ }
+});
 async function loadBusinessData(){const client=await loadAuth();const [{data:items,error:itemsError},{data:categories,error:categoriesError}]=await Promise.all([client.from("business_items").select("*").eq("business_id",currentBusiness.id).order("display_order").order("created_at",{ascending:false}),client.from("business_categories").select("*").eq("business_id",currentBusiness.id).order("display_order").order("name")]);if(itemsError)throw itemsError;if(categoriesError)throw categoriesError;businessItems=items||[];businessCategories=categories||[];renderItems();renderCategories();updateStats();await window.StoreNestOwnerBookings.refresh(client,currentBusiness,businessItems)}
-async function activateDashboard(user){currentUser=user;const client=await loadAuth();const business=await ensureBusiness(client,user);applyBusiness(business);renderBusinessSelector();showView("account");await loadBusinessData();await loadStorefrontDraft().catch(error=>builderStatus(friendlyError(error)));/* Incomplete profiles are prompted by the overview setup banner, not a recurring login modal. */}
+async function activateDashboard(user){
+ currentUser=user;const client=await loadAuth();const business=await ensureBusiness(client,user);applyBusiness(business);renderBusinessSelector();showView("account");
+ if(business){await loadBusinessData();await loadStorefrontDraft().catch(error=>builderStatus(friendlyError(error)))}
+ else{businessItems=[];businessCategories=[];storefrontDraft=null;renderItems();renderCategories();updateStats();setDashboardSection("overview")}
+ /* Incomplete profiles are prompted by the overview setup banner, not a recurring login modal. */
+}
 
 
 const BRAND_BUCKET="storenest-brand-media",BRAND_MIME={"image/jpeg":"jpg","image/png":"png","image/webp":"webp","image/gif":"gif","video/mp4":"mp4","video/webm":"webm"};
@@ -962,7 +1041,7 @@ $("loginForm").addEventListener("submit",async event=>{event.preventDefault();co
 $("forgotForm").addEventListener("submit",async event=>{event.preventDefault();const form=event.currentTarget;busy(form,true);try{const client=await loadAuth();const {error}=await client.auth.resetPasswordForEmail($("forgotEmail").value.trim(),{redirectTo:location.origin+location.pathname});if(error)throw error;showMessage("forgot","If this email is registered, a password reset message will be sent.","success")}catch(error){showMessage("forgot",friendlyError(error))}finally{busy(form,false)}});
 $("newPasswordForm").addEventListener("submit",async event=>{event.preventDefault();const form=event.currentTarget,password=$("newPassword").value;if(password!==$("newPasswordConfirm").value){showMessage("new-password","Passwords do not match.");return}busy(form,true);try{const client=await loadAuth();const {error}=await client.auth.updateUser({password});if(error)throw error;recovering=false;await client.auth.signOut();showView("login");showMessage("login","Password updated. You can now log in.","success")}catch(error){showMessage("new-password",friendlyError(error))}finally{busy(form,false)}});
 $("logoutButton").addEventListener("click",async()=>{const btn=$("logoutButton");btn.disabled=true;try{const client=await loadAuth();const {error}=await client.auth.signOut();if(error)throw error;showView("login")}catch(error){showToast(friendlyError(error),true)}finally{btn.disabled=false}});
-$("setupShortcut").addEventListener("click",()=>{profileToForm("setup",currentBusiness);$("setupMessage").hidden=true;openModal("profileModal")});$("startSetupButton").addEventListener("click",()=>$("setupShortcut").click());$("profileButton").addEventListener("click",()=>{setDashboardSection("settings")});
+$("setupShortcut").addEventListener("click",()=>{if(!currentBusiness){$("createBusinessButton").click();return}profileToForm("setup",currentBusiness);$("setupMessage").hidden=true;openModal("profileModal")});$("startSetupButton").addEventListener("click",()=>$("setupShortcut").click());$("profileButton").addEventListener("click",()=>{setDashboardSection("settings")});
 $("setupForm").addEventListener("submit",async event=>{event.preventDefault();try{await saveBusiness(getFormData("setup"),event.currentTarget,"setupMessage")}catch(error){const el=$("setupMessage");el.textContent=friendlyError(error);el.className="message error";el.hidden=false}});
 $("businessForm").addEventListener("submit",async event=>{event.preventDefault();try{await saveBusiness(getFormData("business"),event.currentTarget,"businessFormMessage")}catch(error){const el=$("businessFormMessage");el.textContent=friendlyError(error);el.className="message error";el.hidden=false}});
 $("businessLogo").addEventListener("change",event=>{const file=event.target.files?.[0];if(!file)return;try{validateLogoSelection(file);selectedLogoFile=file;$("logoUploadNote").textContent="Selected: "+file.name+". Save changes to upload. Large photos will be resized automatically."}catch(e){event.target.value="";showToast(e.message,true)}});
