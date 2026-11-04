@@ -917,7 +917,27 @@ function builderStatus(message){$("builderStatus").textContent=message}
 $("storefrontBuilder").addEventListener("submit",event=>event.preventDefault());
 $("storefrontBuilder").addEventListener("input",sendLivePreview);
 $("storefrontBuilder").addEventListener("change",sendLivePreview);
-$("saveStoreDraft").addEventListener("click",async()=>{try{await saveStorefrontDraft();builderStatus("Draft saved privately. Publish to make it visible to customers.")}catch(e){builderStatus(friendlyError(e))}});
+$("saveStoreDraft").addEventListener("click",async()=>{
+ const button=$("saveStoreDraft");
+ if(button.disabled)return;
+ const originalLabel=button.textContent;
+ button.disabled=true;
+ button.textContent="Saving…";
+ builderStatus("Saving your private storefront draft…");
+ try{
+  await saveStorefrontDraft();
+  const message="Draft saved. It’s private until you publish.";
+  builderStatus(message);
+  showToast(message);
+ }catch(error){
+  const message=friendlyError(error);
+  builderStatus(message);
+  showToast(message,true);
+ }finally{
+  button.disabled=false;
+  button.textContent=originalLabel;
+ }
+});
 $("publishStoreDesign").addEventListener("click",async()=>{if(!currentBusiness||!currentUser)return;if(!isProfileComplete()){builderStatus("Complete your business name and category before publishing.");return}const btn=$("publishStoreDesign");btn.disabled=true;try{const config=await saveStorefrontDraft();const client=await loadAuth();const {data,error}=await client.from("businesses").update({storefront_config:config,logo_url:config.logo||null,is_published:true,updated_at:new Date().toISOString()}).eq("id",currentBusiness.id).eq("owner_id",currentUser.id).select("*").single();if(error)throw error;applyBusiness(data);updateLiveStorefrontPreview(data,true);builderStatus("Frontend published. Customers can now find and open your storefront.");showToast("Storefront frontend published.")}catch(e){builderStatus(friendlyError(e))}finally{btn.disabled=false}});
 
 function updateStats(){$("statItems").textContent=String(businessItems.length);$("allCount").textContent=String(businessItems.length);$("statViews").textContent="—";$("statOrders").textContent="—";$("statPending").textContent="—";$("statCompleted").textContent="—";$("statBookings").textContent="—";$("statRevenue").textContent="—";$("chartEmpty").hidden=false;$("visitChart").hidden=true;$("activityEmpty").hidden=false;$("activityList").replaceChildren()}
