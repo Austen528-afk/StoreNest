@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -28,6 +29,10 @@ public final class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // Keep the WebView content area fitted below Android system bars.
+            getWindow().setDecorFitsSystemWindows(true);
+        }
         // Own the system bar surface so web content cannot show behind the status icons.
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
