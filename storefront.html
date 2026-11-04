@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#fafafa">
+<link rel="preconnect" href="https://cypbjzbagezdelmemuhb.supabase.co" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0" as="script">
 <meta name="description" content="Discover products and services from a StoreNest business.">
 <link rel="icon" type="image/png" href="/icons/icon-192.png">
 <link rel="manifest" href="/manifest.webmanifest">
@@ -574,7 +577,7 @@ function renderStorefrontHero(business,cfg,options={}){
  const videoCover=/\.(mp4|webm)(?:[?#]|$)/i.test(cover)||Boolean(options.preview&&cfg.heroIsVideo);
  const logo=resolveAsset(preview?(cfg.logo||business.logo_url):business.logo_url);
    const standardHero=
-     '<section class="hero layout-'+layout+'">'+(cover?(videoCover?'<video class="hero-cover-video" src="'+esc(cover)+'" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>':'<img class="hero-cover" src="'+esc(cover)+'" alt="">'):'')+
+     '<section class="hero layout-'+layout+'">'+(cover?(videoCover?'<video class="hero-cover-video" src="'+esc(cover)+'" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>':'<img class="hero-cover" src="'+esc(cover)+'" alt="" fetchpriority="high" decoding="async">'):'')+
      '<div class="hero-top"><div class="store-identity">'+(logo?'<img class="store-logo" src="'+esc(logo)+'" alt="">':'')+
      '<span class="brand-name">'+esc(business.name)+'<span class="brand-dot">.</span></span></div>'+
      '<button type="button" id="openCart" class="bag" aria-label="Open basket"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 12H4L5 8ZM9 9V6a3 3 0 0 1 6 0v3"/></svg><span id="bagCount">0</span></button></div>'+
@@ -591,7 +594,7 @@ function renderStorefrontHero(business,cfg,options={}){
      (cfg.tagline?'<p class="decor-tag">'+esc(cfg.tagline)+'</p>':'')+
      '<p class="decor-summary">'+esc(business.description||"Explore pieces for the home and everyday spaces.")+'</p></div>'+
      '<a class="decor-cta" href="#catalog">Explore collection</a></div>'+
-     '<div class="decor-visual">'+(decorImage?(videoCover?'<video class="decor-cover-video" src="'+esc(decorImage)+'" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>':'<img src="'+esc(decorImage)+'" alt="Featured home decor">'):'')+
+     '<div class="decor-visual">'+(decorImage?(videoCover?'<video class="decor-cover-video" src="'+esc(decorImage)+'" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>':'<img src="'+esc(decorImage)+'" alt="Featured home decor" fetchpriority="high" decoding="async">'):'')+
      '<button type="button" id="openCart" class="bag" aria-label="Open basket"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 12H4L5 8ZM9 9V6a3 3 0 0 1 6 0v3"/></svg><span id="bagCount">0</span></button></div></section>';
 
  return isDecor?decorHero:standardHero;
@@ -613,6 +616,24 @@ function activateBackgroundVideos(root){
   else video.addEventListener("loadeddata",start,{once:true});
   video.addEventListener("error",()=>console.warn("Storefront video could not be loaded:",video.error?.code),{once:true});
  });
+}
+let catalogPreviewObserver=null;
+function activateCatalogPreviews(root){
+ catalogPreviewObserver?.disconnect();
+ const videos=[...root.querySelectorAll("video[data-catalog-preview]")];
+ const start=video=>{
+  if(!video.src)video.src=video.dataset.src;
+  const playback=video.play();
+  if(playback?.catch)playback.catch(()=>{});
+ };
+ if(!("IntersectionObserver" in window)){videos.forEach(start);return}
+ catalogPreviewObserver=new IntersectionObserver(entries=>{
+  for(const {target,isIntersecting} of entries){
+   if(isIntersecting)start(target);
+   else target.pause();
+  }
+ },{rootMargin:"180px 0px"});
+ videos.forEach(video=>catalogPreviewObserver.observe(video));
 }
 function setupPrivateHeroPreview(root){
  let currentSlug="";
@@ -642,32 +663,26 @@ function setupPrivateHeroPreview(root){
  window.parent.postMessage({type:"storenest:preview-ready"},location.origin);
 }
 
-async function load(){
- const search=new URLSearchParams(location.search);
- let embedded=false;
- try{embedded=search.get("embed")==="hero" && window.parent!==window && window.parent.location.origin===location.origin}catch(_){}
- if(embedded)document.documentElement.dataset.embed="hero";
- const slug=search.get("slug");
- const root=$("main");
- if(embedded){setupPrivateHeroPreview(root);return}
- if(!slug){root.innerHTML='<div class="notice">This storefront link is incomplete.</div>';return}
+
+const STOREFRONT_CACHE_PREFIX="storenest:public-store:v2:";
+const STOREFRONT_CACHE_MAX_AGE=90*1000;
+function readStorefrontSnapshot(slug){
  try{
-   if(!window.supabase)await new Promise((resolve,reject)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0";s.onload=resolve;s.onerror=reject;document.head.append(s)});
-   const client=window.supabase.createClient(CONFIG.url,CONFIG.key,{auth:{persistSession:false,autoRefreshToken:false}});
-   const response=await client.from("businesses").select("id,name,slug,category,description,logo_url,location,phone,email,website,is_published,storefront_config").eq("slug",slug).eq("is_published",true).maybeSingle();
-   if(response.error)throw response.error;
-   const business=response.data;
+  const value=JSON.parse(sessionStorage.getItem(STOREFRONT_CACHE_PREFIX+slug)||"null");
+  if(value?.business?.slug!==slug||!Array.isArray(value.items)||!Array.isArray(value.sections))return null;
+  if(Date.now()-value.savedAt>STOREFRONT_CACHE_MAX_AGE)return null;
+  return value;
+ }catch{return null}
+}
+function storeStorefrontSnapshot(slug,business,items,sections){
+ try{sessionStorage.setItem(STOREFRONT_CACHE_PREFIX+slug,JSON.stringify({savedAt:Date.now(),business,items,sections}))}catch{}
+}
+function renderPublishedStorefront(root,client,business,items,storefrontSections){
    activePublicBusiness=business;
-   if(!business){root.innerHTML='<div class="notice">This storefront is unavailable. It may be unpublished or the link may have changed.</div>';return}
-   const catalog=await client.from("business_items").select("id,name,item_type,description,price,image_url,media_urls,category_id").eq("business_id",business.id).eq("is_available",true).order("display_order").order("created_at",{ascending:false});
-   if(catalog.error)throw catalog.error;
-   availableItems=catalog.data||[];
+   availableItems=items;
    window.StoreNestBookings.setContext(client,business,availableItems);
-   const sectionResult=await client.from("business_categories").select("id,name,description,display_style,display_order").eq("business_id",business.id).order("display_order").order("name");
-   if(sectionResult.error)throw sectionResult.error;
-   const storefrontSections=sectionResult.data||[];
    // Do not add dashboard preview frames to customer browsing history.
-   if(!embedded)try{
+   try{
      const key="storenest:recent-businesses:v1";
      const slugText=String(business.slug||"");
      if(/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slugText)){
@@ -699,7 +714,7 @@ async function load(){
      const service=window.StoreNestBookings.isService(item);
      const action=service?"Request booking":"Add";
      const whatsapp=service?serviceWhatsAppAction(business,item):"";
-     return '<article class="card"><button type="button" class="item-open" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos, videos and details"><div class="art">'+(first?(isProductVideo(first)?'<video src="'+esc(first)+'" muted loop playsinline autoplay preload="metadata" aria-label="'+esc(item.name)+' video"></video>':'<img src="'+esc(first)+'" alt="'+esc(item.name)+'" loading="lazy">'):service?"✦":"▧")+(count>1?'<span class="photo-count">▧ '+count+' media</span>':'')+'</div></button><div class="item-body"><h3><button class="item-title-open" type="button" data-open-product="'+esc(item.id)+'" title="'+esc(item.name)+'" aria-label="View details for '+esc(item.name)+'">'+esc(item.name)+'</button></h3><div class="item-bottom"><span class="price">'+(service?'<small style="font-size:.56em;font-weight:600">From </small>':'')+money(item.price)+'</span>'+(service?'<div class="service-action-row">':'')+'<button class="add" type="button" data-add-item="'+esc(item.id)+'" aria-label="'+(service?"Request booking for ":"Add ")+esc(item.name)+(service?"":" to basket")+'">'+(service?"":'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>')+action+'</button>'+(service?whatsapp+'</div>':"")+'</div>'+(service?'<div class="service-disclaimer">Date and final quotation confirmed by the business</div>':'')+'</div></article>';
+     return '<article class="card"><button type="button" class="item-open" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos, videos and details"><div class="art">'+(first?(isProductVideo(first)?'<video data-catalog-preview data-src="'+esc(first)+'" muted loop playsinline preload="none" aria-label="'+esc(item.name)+' video"></video>':'<img src="'+esc(first)+'" alt="'+esc(item.name)+'" loading="lazy" decoding="async">'):service?"✦":"▧")+(count>1?'<span class="photo-count">▧ '+count+' media</span>':'')+'</div></button><div class="item-body"><h3><button class="item-title-open" type="button" data-open-product="'+esc(item.id)+'" title="'+esc(item.name)+'" aria-label="View details for '+esc(item.name)+'">'+esc(item.name)+'</button></h3><div class="item-bottom"><span class="price">'+(service?'<small style="font-size:.56em;font-weight:600">From </small>':'')+money(item.price)+'</span>'+(service?'<div class="service-action-row">':'')+'<button class="add" type="button" data-add-item="'+esc(item.id)+'" aria-label="'+(service?"Request booking for ":"Add ")+esc(item.name)+(service?"":" to basket")+'">'+(service?"":'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>')+action+'</button>'+(service?whatsapp+'</div>':"")+'</div>'+(service?'<div class="service-disclaimer">Date and final quotation confirmed by the business</div>':'')+'</div></article>';
    };
    const sectionStyles=["auto","menu","showcase","portfolio","catalogue","booking"];
    // Classifications are user-created, and every section appears even when no items are assigned yet.
@@ -726,7 +741,7 @@ async function load(){
        const image=preview?galleryPhotos(preview)[0]:"";
        const selected=group.id===selectedCategory;
        return '<button type="button" class="category-tab'+(selected?' active':'')+'" role="tab" data-category-tab="'+esc(group.id)+'" id="category-tab-'+esc(group.id)+'" aria-controls="category-panel-'+esc(group.id)+'" aria-selected="'+(selected?'true':'false')+'" tabindex="'+(selected?'0':'-1')+'">'+
-         '<span class="category-thumbnail">'+(image?'<img src="'+esc(image)+'" alt="" loading="lazy">':'<span class="category-placeholder">✦</span>')+'</span>'+
+         '<span class="category-thumbnail">'+(image?'<img src="'+esc(image)+'" alt="" loading="lazy" decoding="async">':'<span class="category-placeholder">✦</span>')+'</span>'+
          '<span class="category-name">'+esc(group.name)+'</span>'+
          '<small>'+group.items.length+' offering'+(group.items.length===1?'':'s')+'</small></button>';
      }).join('')+'</div>'+
@@ -745,7 +760,50 @@ async function load(){
      '<div class="contacts">'+contacts.join("")+'</div>'+
      '<div id="catalog" class="catalog-area">'+catalogueMarkup+'</div>';
    activateBackgroundVideos(root);
- }catch(error){root.innerHTML='<div class="notice">We couldn’t load this storefront right now. Please try again later.</div>';console.error("Storefront load error",error)}
+   activateCatalogPreviews(root);
+
+}
+async function load(){
+ const search=new URLSearchParams(location.search);
+ let embedded=false;
+ try{embedded=search.get("embed")==="hero" && window.parent!==window && window.parent.location.origin===location.origin}catch(_){}
+ if(embedded)document.documentElement.dataset.embed="hero";
+ const slug=search.get("slug");
+ const root=$("main");
+ if(embedded){setupPrivateHeroPreview(root);return}
+ if(!slug){root.innerHTML='<div class="notice">This storefront link is incomplete.</div>';return}
+ let renderedCache=false;
+ try{
+   if(!window.supabase)await new Promise((resolve,reject)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0";s.onload=resolve;s.onerror=reject;document.head.append(s)});
+   const client=window.supabase.createClient(CONFIG.url,CONFIG.key,{auth:{persistSession:false,autoRefreshToken:false}});
+   // Display the last public snapshot while a fresh request runs in the background.
+   const cached=readStorefrontSnapshot(slug);
+   if(cached){renderPublishedStorefront(root,client,cached.business,cached.items,cached.sections);renderedCache=true}
+   const response=await client.from("businesses").select("id,name,slug,category,description,logo_url,location,phone,email,website,is_published,storefront_config").eq("slug",slug).eq("is_published",true).maybeSingle();
+   if(response.error)throw response.error;
+   const business=response.data;
+   if(!business){
+     try{sessionStorage.removeItem(STOREFRONT_CACHE_PREFIX+slug)}catch{}
+     root.innerHTML='<div class="notice">This storefront is unavailable. It may be unpublished or the link may have changed.</div>';
+     return;
+   }
+   // Catalogue and category metadata are independent once the business ID is known.
+   const [catalog,sectionResult]=await Promise.all([
+     client.from("business_items").select("id,name,item_type,description,price,image_url,media_urls,category_id").eq("business_id",business.id).eq("is_available",true).order("display_order").order("created_at",{ascending:false}),
+     client.from("business_categories").select("id,name,description,display_style,display_order").eq("business_id",business.id).order("display_order").order("name")
+   ]);
+   if(catalog.error)throw catalog.error;
+   if(sectionResult.error)throw sectionResult.error;
+   const items=catalog.data||[],sections=sectionResult.data||[];
+   storeStorefrontSnapshot(slug,business,items,sections);
+   // Avoid destroying the visitor's current UI if the background result is unchanged.
+   if(!cached||JSON.stringify(cached.business)!==JSON.stringify(business)||JSON.stringify(cached.items)!==JSON.stringify(items)||JSON.stringify(cached.sections)!==JSON.stringify(sections)){
+     renderPublishedStorefront(root,client,business,items,sections);
+   }
+ }catch(error){
+   if(!renderedCache)root.innerHTML='<div class="notice">We couldn’t load this storefront right now. Please try again later.</div>';
+   console.error("Storefront load error",error);
+ }
 }
 load();
 </script>
