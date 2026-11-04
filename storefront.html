@@ -809,7 +809,7 @@ function renderPublishedStorefront(root,client,business,items,storefrontSections
    };
    const hasProducts=availableItems.some(item=>item.item_type==="product");
    const hasServices=availableItems.some(item=>item.item_type==="service");
-   const catalogueLabel=hasProducts&&hasServices?"Products & Services":hasServices?"Services":"Products";
+   const catalogueLabel=hasServices?"Services":"Products";
    const sectionStyles=["auto","menu","showcase","portfolio","catalogue","booking"];
    // Only owner-created sections count as categories. Never manufacture a
    // "Products & Services" category for stores with no categories.
