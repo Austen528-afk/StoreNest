@@ -1,4 +1,4 @@
-const CACHE_NAME="storenest-shell-v3";
+const CACHE_NAME="storenest-shell-v4";
 const SHELL=["/","/index.html","/business-owner.html","/storefront.html","/categories.js","/theme.css","/theme.js","/manifest.webmanifest","/icons/icon-192.png","/icons/icon-512.png"];
 self.addEventListener("install",event=>{
  event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(SHELL)));
@@ -12,7 +12,7 @@ self.addEventListener("fetch",event=>{
  const req=event.request;
  if(req.method!=="GET"||new URL(req.url).origin!==self.location.origin)return;
  const url=new URL(req.url);
- if(req.mode==="navigate"||url.pathname==="/categories.js"||url.pathname==="/theme.js"||url.pathname==="/theme.css"){
+ if(req.mode==="navigate"||url.pathname==="/categories.js"||url.pathname==="/theme.js"||url.pathname==="/theme.css"||url.pathname==="/manifest.webmanifest"){
    event.respondWith(fetch(req).then(response=>{
      if(response.ok){const clone=response.clone();caches.open(CACHE_NAME).then(cache=>cache.put(req,clone)).catch(()=>{});}
      return response;
