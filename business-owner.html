@@ -513,11 +513,43 @@ html[data-theme="dark"] #storefrontBuilder .storefront-media-card small{color:#a
 .danger-button:hover:not(:disabled){background:#912018;border-color:#912018}
 .danger-button:disabled{opacity:.65;cursor:wait}
 .delete-business-status{margin:10px 0 0;padding:9px 11px;border-radius:8px;background:#fff0ed;color:#912018;font-size:12px}
+
+/* Product customization groups live directly in the existing Edit Item form. */
+#itemOptionsEditor[hidden]{display:none!important}
+#itemOptionsEditor{margin:10px 0 14px;padding:15px;border:1px solid #d9e8dc;border-radius:12px;background:#f6faf7}
+.item-options-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.item-options-heading strong{display:block;font-size:14px;color:#183629}
+.item-options-heading small{display:block;color:#64766a;font-size:11px;line-height:1.45;max-width:380px;margin-top:3px}
+#itemOptionsEditor .outline-button{font-size:11px;min-height:35px;white-space:nowrap}
+.item-options-note{color:#688276;font-size:11px;line-height:1.45}
+.option-group-editor{border:1px solid #dce7df;border-radius:11px;background:#fff;padding:13px;margin:11px 0}
+.option-group-editor-head{display:flex;align-items:flex-end;justify-content:space-between;gap:9px;flex-wrap:wrap}
+.option-group-editor-head label{flex:1;min-width:155px}
+.option-group-editor label{font-size:11px;color:#30483b;font-weight:700;display:flex;flex-direction:column;gap:5px}
+.option-group-editor input:not([type="checkbox"]),.option-group-editor select{width:100%;min-height:38px;border:1px solid #ceded4;border-radius:8px;padding:8px 9px;font:inherit;font-size:12px;background:#fff;color:#22392c}
+.option-group-settings{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:11px 0}
+.option-group-settings .option-group-required{flex-direction:row;align-items:center;gap:7px}
+.option-group-settings .option-group-required input{width:17px;height:17px;accent-color:#43b99a}
+.option-group-settings .option-selection-label{min-width:150px;flex:1}
+.option-group-settings .option-maximum-label{width:90px}
+.option-entry{display:grid;grid-template-columns:minmax(0,1fr) minmax(85px,.32fr) auto;gap:8px;align-items:end;margin:8px 0}
+.option-entry>button{height:38px;width:38px;border:1px solid #ecd2ce;color:#a44334;border-radius:8px;background:#fff7f5;cursor:pointer;font-size:17px}
+.option-group-editor .option-editor-actions{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:8px}
+.option-group-editor .option-editor-actions button{min-height:35px}
+.option-group-editor .option-remove-group{color:#a44334;border-color:#eed5d1}
+html[data-theme="dark"] #itemOptionsEditor{background:#1d302a;border-color:#38564b}
+html[data-theme="dark"] .option-group-editor{background:#1c2a29;border-color:#3e554c}
+html[data-theme="dark"] #itemOptionsEditor :is(label,strong){color:#eff9f2}
+html[data-theme="dark"] .option-group-editor :is(input:not([type="checkbox"]),select){background:#15241f;color:#eff9f2;border-color:#3d594a}
+html[data-theme="dark"] #itemOptionsEditor small{color:#afc4b6}
+@media(max-width:520px){#itemOptionsEditor{padding:10px}.option-group-editor{padding:10px}.option-entry{grid-template-columns:minmax(0,1fr) 85px 32px;gap:5px}.option-entry>button{width:32px}.item-options-heading .outline-button{width:100%}}
+
 </style>
 <link rel="stylesheet" href="/theme.css">
 <link rel="stylesheet" href="/owner-bookings.css">
 <script src="/theme.js"></script>
 <script src="/categories.js"></script>
+<script src="/product-customization.js"></script>
 </head>
 <body data-page-kind="owner">
 <div class="wrap">
@@ -630,7 +662,13 @@ html[data-theme="dark"] #storefrontBuilder .storefront-media-card small{color:#a
   </div>
   <div class="mobile-nav-backdrop" id="mobileNavBackdrop" hidden></div>
   <div class="modal-backdrop" id="profileModal" hidden><div class="modal-card profile-setup-modal" role="dialog" aria-modal="true" aria-labelledby="setupTitle"><div class="modal-head"><div><span class="eyebrow">YOUR STOREFRONT STARTS HERE</span><h3 id="setupTitle">Set up your business</h3></div><button class="close-modal" type="button" data-close-modal aria-label="Close">×</button></div><p class="modal-subtitle">Share the details customers need to recognize and contact your business.</p><form id="setupForm" class="business-form"><div class="form-grid"><div class="field"><label for="setupName">Business name <em>*</em></label><input id="setupName" maxlength="120" required placeholder="e.g. Dineo’s Kitchen"></div><div class="field"><label for="setupCategory">Business category <em>*</em></label><select id="setupCategory" required><option value="">Choose a category</option></select><small class="category-help">Choose the main StoreNest marketplace category for your business. You can still sell different products and services.</small></div><div class="field full-field"><label for="setupDescription">Business description</label><textarea id="setupDescription" maxlength="500" rows="3" placeholder="Tell customers what you offer"></textarea></div><div class="field"><label for="setupLocation">Location</label><input id="setupLocation" placeholder="Town, province"></div><div class="field"><label for="setupPhone">Contact number</label><input id="setupPhone" type="tel" placeholder="e.g. 060 000 0000"></div><div class="field"><label for="setupEmail">Contact email</label><input id="setupEmail" type="email" placeholder="Business email"></div><div class="field"><label for="setupWebsite">Website or social link</label><input id="setupWebsite" type="url" placeholder="https://"></div><div class="field"><label for="setupHours">Operating hours</label><input id="setupHours" placeholder="e.g. Mon–Sat, 08:00–17:00"></div></div><div class="message" id="setupMessage" role="status" aria-live="polite" hidden></div><div class="modal-actions"><button class="outline-button" type="button" data-close-modal>Do this later</button><button class="primary-button" type="submit">Save and continue <span>→</span></button></div></form></div></div>
-  <div class="modal-backdrop" id="itemModal" hidden><div class="modal-card item-modal" role="dialog" aria-modal="true" aria-labelledby="itemModalTitle"><div class="modal-head"><div><span class="eyebrow">YOUR CATALOGUE</span><h3 id="itemModalTitle">Add an item</h3></div><button class="close-modal" type="button" data-close-modal aria-label="Close">×</button></div><p class="modal-subtitle">Add a product or service to your business catalogue.</p><form id="itemForm" class="business-form"><input type="hidden" id="itemId"><div class="form-grid"><div class="field"><label for="itemType">Item type <em>*</em></label><select id="itemType"><option value="product">Product</option><option value="service">Service</option></select></div><div class="field"><label for="itemName">Name <em>*</em></label><input id="itemName" maxlength="120" required placeholder="e.g. Kota combo"></div><div class="field"><label for="itemPrice">Price (ZAR) <em>*</em></label><div class="price-input"><span>R</span><input id="itemPrice" type="number" min="0" step="0.01" required placeholder="0.00"></div></div><div class="field"><label for="itemCategory">Category</label><div class="category-input"><select id="itemCategory"><option value="">No category</option></select><button type="button" id="addCategoryButton" aria-label="Add category">＋</button></div></div><div class="field full-field"><label for="itemDescription">Description</label><textarea id="itemDescription" rows="3" maxlength="500" placeholder="Describe your item"></textarea></div><div class="field full-field"><label for="itemMedia">Product photos, GIFs & short videos (up to 12)</label><input id="itemMedia" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"><small>Images/GIFs: max 10 MB. MP4/WebM videos: max 20 MB and 30 seconds. First file is the cover.</small><div id="itemMediaGallery" class="owner-gallery"></div></div><div class="field"><label for="itemAvailability">Availability</label><select id="itemAvailability"><option value="true">Available</option><option value="false">Unavailable</option></select></div><div class="field"><label for="itemOrder">Display order</label><input id="itemOrder" type="number" min="0" step="1" value="0"></div></div><div class="message" id="itemFormMessage" role="status" aria-live="polite" hidden></div><div class="modal-actions"><button class="outline-button" type="button" data-close-modal>Cancel</button><button class="primary-button" type="submit">Save item <span>→</span></button></div></form></div></div>
+  <div class="modal-backdrop" id="itemModal" hidden><div class="modal-card item-modal" role="dialog" aria-modal="true" aria-labelledby="itemModalTitle"><div class="modal-head"><div><span class="eyebrow">YOUR CATALOGUE</span><h3 id="itemModalTitle">Add an item</h3></div><button class="close-modal" type="button" data-close-modal aria-label="Close">×</button></div><p class="modal-subtitle">Add a product or service to your business catalogue.</p><form id="itemForm" class="business-form"><input type="hidden" id="itemId"><div class="form-grid"><div class="field"><label for="itemType">Item type <em>*</em></label><select id="itemType"><option value="product">Product</option><option value="service">Service</option></select></div><div class="field"><label for="itemName">Name <em>*</em></label><input id="itemName" maxlength="120" required placeholder="e.g. Kota combo"></div><div class="field"><label for="itemPrice">Price (ZAR) <em>*</em></label><div class="price-input"><span>R</span><input id="itemPrice" type="number" min="0" step="0.01" required placeholder="0.00"></div></div><div class="field"><label for="itemCategory">Category</label><div class="category-input"><select id="itemCategory"><option value="">No category</option></select><button type="button" id="addCategoryButton" aria-label="Add category">＋</button></div></div><div class="field full-field"><label for="itemDescription">Description</label><textarea id="itemDescription" rows="3" maxlength="500" placeholder="Describe your item"></textarea></div>
+<div id="itemOptionsEditor" class="field full-field item-options-editor">
+  <div class="item-options-heading"><div><strong>Customization &amp; Extras</strong><small>Add flavours, sauces, chilli levels or paid extras customers can select.</small></div>
+  <button type="button" id="addCustomizationGroup" class="outline-button">+ Add option group</button></div>
+  <div id="customizationGroupsList"></div>
+  <small class="item-options-note">Each group can require one choice or allow several. Added prices increase the product total.</small>
+</div><div class="field full-field"><label for="itemMedia">Product photos, GIFs & short videos (up to 12)</label><input id="itemMedia" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"><small>Images/GIFs: max 10 MB. MP4/WebM videos: max 20 MB and 30 seconds. First file is the cover.</small><div id="itemMediaGallery" class="owner-gallery"></div></div><div class="field"><label for="itemAvailability">Availability</label><select id="itemAvailability"><option value="true">Available</option><option value="false">Unavailable</option></select></div><div class="field"><label for="itemOrder">Display order</label><input id="itemOrder" type="number" min="0" step="1" value="0"></div></div><div class="message" id="itemFormMessage" role="status" aria-live="polite" hidden></div><div class="modal-actions"><button class="outline-button" type="button" data-close-modal>Cancel</button><button class="primary-button" type="submit">Save item <span>→</span></button></div></form></div></div>
   <div class="modal-backdrop" id="categoryModal" hidden><div class="modal-card small-modal" role="dialog" aria-modal="true" aria-labelledby="categoryModalTitle"><div class="modal-head"><div><span class="eyebrow">CATALOGUE ORGANISATION</span><h3 id="categoryModalTitle">Add a category</h3></div><button class="close-modal" type="button" data-close-modal aria-label="Close">×</button></div><form id="categoryForm"><div class="field"><label for="categoryName">Section name</label><input id="categoryName" required maxlength="60" placeholder="e.g. Catering, Décor, Ice Cream"><label for="categoryMarketplace">Marketplace category</label><select id="categoryMarketplace"><option value="food-drink">Food & Drinks</option><option value="events-decor">Catering and Decor Services</option><option value="electronics">Electronics</option><option value="fashion">Fashion & Accessories</option><option value="beauty">Personal Care Services and Products</option><option value="home-living">Home & Living</option><option value="groceries">Groceries & Essentials</option><option value="local-services">Local Services</option><option value="gifts-occasions">Gifts &amp; Occasions</option><option value="other">Other</option></select><small>Controls where customers discover this section on StoreNest. It does not restrict what you offer.</small><label for="categoryStyle">Display style</label><select id="categoryStyle"><option value="auto">Automatic</option><option value="menu">Food menu</option><option value="showcase">Visual showcase</option><option value="portfolio">Service portfolio</option><option value="catalogue">Product catalogue</option><option value="booking">Booking / enquiry</option></select><label for="categoryDescription">Short introduction (optional)</label><textarea id="categoryDescription" maxlength="300" rows="2" placeholder="What this section offers"></textarea><input id="categoryEditId" type="hidden"></div><div class="message" id="categoryMessage" role="status" aria-live="polite" hidden></div><div class="modal-actions"><button class="outline-button" type="button" data-close-modal>Cancel</button><button class="primary-button" type="submit">Add category</button></div></form></div></div>
   <div class="modal-backdrop" id="deleteBusinessModal" hidden><div class="modal-card small-modal danger-store-modal" role="dialog" aria-modal="true" aria-labelledby="deleteBusinessTitle"><div class="modal-head"><div><span class="eyebrow">PERMANENT STORE REMOVAL</span><h3 id="deleteBusinessTitle">Delete this store?</h3></div><button class="close-modal" type="button" data-close-modal aria-label="Cancel">×</button></div><p class="modal-subtitle">You are deleting <strong id="deleteBusinessName">this store</strong>. This also permanently removes its products and services, categories, storefront design, booking requests, and uploaded media. This cannot be undone.</p><p class="delete-business-status" id="deleteBusinessStatus" role="status" aria-live="polite" hidden></p><div class="modal-actions"><button class="outline-button" type="button" data-close-modal>Cancel</button><button class="danger-button" type="button" id="confirmDeleteBusiness">Delete store</button></div></div></div>
   <div class="message dashboard-toast" id="dashboardToast" role="status" aria-live="polite" hidden></div>
@@ -1030,7 +1068,82 @@ $("sectionCards").addEventListener("click",async event=>{const button=event.targ
 $("newSectionButton").addEventListener("click",()=>openSectionEditor(null));
 async function saveBusiness(formData,form,messageId){const client=await loadAuth();const message=$(messageId);message.hidden=true;const rawName=formData.name.trim();if(rawName.length<2)throw new Error("Please enter a business name.");const chosenCategory=window.StoreNestCategoryId(formData.category);if(!chosenCategory)throw new Error("Please choose a valid business category.");const payload={name:rawName,category:chosenCategory,description:formData.description||"",location:formData.location||"",phone:formData.phone||"",email:formData.email||"",website:formData.website||"",operating_hours:{summary:formData.hours||""},slug:currentBusiness?.name===rawName?currentBusiness.slug:slugify(rawName),updated_at:new Date().toISOString()};busy(form,true);try{let imageAsset=null;if(selectedLogoFile){imageAsset=await uploadBrand(client,selectedLogoFile,"logo");payload.logo_url=imageAsset.url}const {data,error}=await client.from("businesses").update(payload).eq("id",currentBusiness.id).eq("owner_id",currentUser.id).select("*").single();if(error){await clearBrandUpload(client,imageAsset);throw error}selectedLogoFile=null;$("businessLogo").value="";$("logoUploadNote").textContent="Logo saved.";applyBusiness(data);updateLiveStorefrontPreview(data,true);closeModal($("profileModal"));showToast("Business profile saved.");if(message){message.textContent="Your business profile was saved.";message.className="message success";message.hidden=false}}finally{busy(form,false)}}
 function getFormData(prefix){return{name:$(prefix+"Name").value,category:window.StoreNestCategoryId($(prefix+"Category").value),description:$(prefix+"Description").value,location:$(prefix+"Location").value,phone:$(prefix+"Phone").value,email:$(prefix+"Email").value,website:$(prefix+"Website").value,hours:$(prefix+"Hours").value}}
-function openItemModal(item){try{const form=$("itemForm");if(!form)throw new Error("Product editor is unavailable.");form.reset();$("itemId").value=item?.id||"";$("itemModalTitle").textContent=item?"Edit item":"Add an item";$("itemType").value=item?.item_type||"product";$("itemName").value=item?.name||"";$("itemPrice").value=item?.price??"";$("itemDescription").value=item?.description||"";$("itemAvailability").value=String(item?.is_available??true);$("itemOrder").value=item?.display_order??businessItems.length;$("itemCategory").value=item?.category_id||"";$("itemFormMessage").hidden=true;resetItemGallery(item);openModal("itemModal");if($("itemModal")?.hidden)throw new Error("The edit form could not be opened.");}catch(error){console.error("StoreNest product edit error",error);showToast("Could not open the product editor: "+friendlyError(error),true)}}
+
+let editedOptionGroups=[];
+const newCustomizationId=()=>crypto.randomUUID().replace(/-/g,"");
+function createCustomizationOption(){return {id:newCustomizationId(),name:"",price:0}}
+function drawCustomizationEditor(){
+ const root=$("customizationGroupsList");
+ $("itemOptionsEditor").hidden=$("itemType").value!=="product";
+ root.innerHTML=editedOptionGroups.map((group,gi)=>`
+  <section class="option-group-editor" data-group-index="${gi}">
+   <div class="option-group-editor-head">
+    <label>Group name<input type="text" maxlength="75" data-group-field="name" value="${escapeHtml(group.name)}" placeholder="e.g. Sauces or Extras" aria-label="Option group name"></label>
+    <button class="outline-button option-remove-group" type="button" data-option-action="remove-group">Remove group</button>
+   </div>
+   <div class="option-group-settings">
+    <label class="option-selection-label">Selection type
+      <select data-group-field="selection"><option value="single" ${group.selection==="single"?"selected":""}>Choose one</option><option value="multiple" ${group.selection==="multiple"?"selected":""}>Choose multiple</option></select>
+    </label>
+    <label class="option-group-required"><input type="checkbox" data-group-field="required" ${group.required?"checked":""}> Required</label>
+    ${group.selection==="multiple"?`<label class="option-maximum-label">Max choices<input type="number" min="1" max="16" data-group-field="max" value="${Number(group.max)||1}"></label>`:""}
+   </div>
+   <div class="option-entries">
+    ${group.options.map((option,oi)=>`<div class="option-entry" data-option-index="${oi}">
+       <label>Choice<input type="text" maxlength="75" data-option-field="name" value="${escapeHtml(option.name)}" placeholder="e.g. Extra chilli"></label>
+       <label>Extra R<input type="number" min="0" max="100000" step="0.01" data-option-field="price" value="${Number(option.price)||0}"></label>
+       <button type="button" data-option-action="remove-option" aria-label="Remove choice">×</button>
+    </div>`).join("")}
+   </div>
+   <div class="option-editor-actions"><button type="button" class="outline-button" data-option-action="add-option">+ Add choice</button><small>${group.options.length}/16 choices</small></div>
+  </section>`).join("");
+}
+$("itemType").addEventListener("change",drawCustomizationEditor);
+$("addCustomizationGroup").addEventListener("click",()=>{
+ if(editedOptionGroups.length>=10){showToast("Up to 10 option groups per product.",true);return}
+ editedOptionGroups.push({id:newCustomizationId(),name:"",selection:"single",required:true,max:1,options:[createCustomizationOption()]});
+ drawCustomizationEditor();
+ const groups=$("customizationGroupsList").querySelectorAll(".option-group-editor");
+ groups[groups.length-1]?.querySelector('[data-group-field="name"]')?.focus();
+});
+$("customizationGroupsList").addEventListener("input",event=>{
+ const field=event.target,card=field.closest("[data-group-index]");if(!card)return;
+ const group=editedOptionGroups[Number(card.dataset.groupIndex)];if(!group)return;
+ const name=field.dataset.groupField;
+ if(name){group[name]=name==="required"?field.checked:name==="max"?Number(field.value):field.value;return}
+ const optionName=field.dataset.optionField,optionRow=field.closest("[data-option-index]");
+ if(optionName&&optionRow){const option=group.options[Number(optionRow.dataset.optionIndex)];if(option)option[optionName]=optionName==="price"?field.value:field.value}
+});
+$("customizationGroupsList").addEventListener("change",event=>{
+ const field=event.target;
+ if(field.dataset.groupField==="selection")drawCustomizationEditor();
+});
+$("customizationGroupsList").addEventListener("click",event=>{
+ const button=event.target.closest("[data-option-action]");if(!button)return;
+ const card=button.closest("[data-group-index]");if(!card)return;
+ const gi=Number(card.dataset.groupIndex),group=editedOptionGroups[gi],action=button.dataset.optionAction;if(!group)return;
+ if(action==="remove-group")editedOptionGroups.splice(gi,1);
+ if(action==="add-option"){if(group.options.length>=16){showToast("Up to 16 choices per group.",true);return}group.options.push(createCustomizationOption())}
+ if(action==="remove-option"){const row=button.closest("[data-option-index]");if(row)group.options.splice(Number(row.dataset.optionIndex),1)}
+ drawCustomizationEditor();
+});
+function optionsForSave(){
+ if($("itemType").value!=="product")return [];
+ for(const group of editedOptionGroups){
+  if(!group.name.trim())throw Error("Name each customization group, or remove the empty group.");
+  if(!group.options.length)throw Error("Add at least one choice to "+group.name+".");
+  for(const option of group.options){
+   if(!String(option.name).trim())throw Error("Enter each choice name in "+group.name+".");
+   if(!Number.isFinite(Number(option.price))||Number(option.price)<0||Number(option.price)>100000)
+    throw Error("Enter a valid extra price between R0 and R100,000.");
+  }
+  if(group.selection==="multiple"&&(!Number.isInteger(Number(group.max))||Number(group.max)<1||Number(group.max)>group.options.length))
+   throw Error("Maximum choices must be between 1 and "+group.options.length+" for "+group.name+".");
+ }
+ return window.StoreNestOptions.normalize(editedOptionGroups);
+}
+
+function openItemModal(item){try{const form=$("itemForm");if(!form)throw new Error("Product editor is unavailable.");form.reset();$("itemId").value=item?.id||"";$("itemModalTitle").textContent=item?"Edit item":"Add an item";$("itemType").value=item?.item_type||"product";$("itemName").value=item?.name||"";$("itemPrice").value=item?.price??"";$("itemDescription").value=item?.description||"";editedOptionGroups=window.StoreNestOptions.normalize(item?.customization_options);drawCustomizationEditor();$("itemAvailability").value=String(item?.is_available??true);$("itemOrder").value=item?.display_order??businessItems.length;$("itemCategory").value=item?.category_id||"";$("itemFormMessage").hidden=true;resetItemGallery(item);openModal("itemModal");if($("itemModal")?.hidden)throw new Error("The edit form could not be opened.");}catch(error){console.error("StoreNest product edit error",error);showToast("Could not open the product editor: "+friendlyError(error),true)}}
 function setDashboardSection(name){document.querySelectorAll("[data-section-view]").forEach(section=>section.hidden=section.dataset.sectionView!==name);document.querySelectorAll(".side-link[data-section]").forEach(button=>button.classList.toggle("active",button.dataset.section===name));$("mobileNavLabel").textContent=({overview:"Overview",storefront:"My Storefront",items:"Products & Services",orders:"Orders",bookings:"Bookings",customers:"Customers",payments:"Payments & Earnings",analytics:"Analytics",settings:"Business Settings"})[name]||"Overview";$("mobileNavList").hidden=true;$("mobileNavToggle").setAttribute("aria-expanded","false");$("workspace").scrollTop=0}
 function populateMobileNav(){const mobile=$("mobileNavList");mobile.replaceChildren();document.querySelectorAll("#dashboardSidebar .sidebar-group").forEach(group=>{const copy=group.cloneNode(true);copy.querySelectorAll(".side-link[data-section]").forEach(button=>button.addEventListener("click",()=>setDashboardSection(button.dataset.section)));mobile.append(copy)});const logout=$("logoutButton").cloneNode(true);logout.removeAttribute("id");logout.addEventListener("click",()=>{$("mobileNavList").hidden=true;$("logoutButton").click()});mobile.append(logout)}
 async function addCategory(name){const client=await loadAuth();const clean=name.trim();if(!clean)throw Error("Enter a section name.");const id=$("categoryEditId").value;const payload={name:clean,display_style:$("categoryStyle").value,marketplace_category:$("categoryMarketplace").value,description:$("categoryDescription").value.trim()};const query=id?client.from("business_categories").update(payload).eq("id",id).eq("business_id",currentBusiness.id):client.from("business_categories").insert({...payload,business_id:currentBusiness.id,display_order:businessCategories.length});const {data,error}=await query.select("*").single();if(error)throw error;await loadBusinessData();$("itemCategory").value=data.id;closeModal($("categoryModal"));showToast(id?"Section updated.":"Section created.")}
@@ -1123,7 +1236,7 @@ $("itemForm").addEventListener("submit",async event=>{
    else entries.push(entry.url);
   }
   const primaryImage=entries.find(url=>!isProductVideo(url))||null;
-  const row={image_url:primaryImage,media_urls:entries,business_id:currentBusiness.id,item_type:$("itemType").value,name:$("itemName").value.trim(),description:$("itemDescription").value.trim(),price:Number($("itemPrice").value),category_id:$("itemCategory").value||null,is_available:$("itemAvailability").value==="true",display_order:Number($("itemOrder").value)||0,updated_at:new Date().toISOString()};
+  const row={image_url:primaryImage,media_urls:entries,customization_options:optionsForSave(),business_id:currentBusiness.id,item_type:$("itemType").value,name:$("itemName").value.trim(),description:$("itemDescription").value.trim(),price:Number($("itemPrice").value),category_id:$("itemCategory").value||null,is_available:$("itemAvailability").value==="true",display_order:Number($("itemOrder").value)||0,updated_at:new Date().toISOString()};
   const prior=businessItems.find(item=>item.id===itemId);
   const query=itemId?client.from("business_items").update(row).eq("id",itemId).eq("business_id",currentBusiness.id):client.from("business_items").insert(row);
   const {data,error}=await query.select("id");
