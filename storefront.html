@@ -716,8 +716,12 @@ function renderPublishedStorefront(root,client,business,items,storefrontSections
      const whatsapp=service?serviceWhatsAppAction(business,item):"";
      return '<article class="card"><button type="button" class="item-open" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos, videos and details"><div class="art">'+(first?(isProductVideo(first)?'<video data-catalog-preview data-src="'+esc(first)+'" muted loop playsinline preload="none" aria-label="'+esc(item.name)+' video"></video>':'<img src="'+esc(first)+'" alt="'+esc(item.name)+'" loading="lazy" decoding="async">'):service?"✦":"▧")+(count>1?'<span class="photo-count">▧ '+count+' media</span>':'')+'</div></button><div class="item-body"><h3><button class="item-title-open" type="button" data-open-product="'+esc(item.id)+'" title="'+esc(item.name)+'" aria-label="View details for '+esc(item.name)+'">'+esc(item.name)+'</button></h3><div class="item-bottom"><span class="price">'+(service?'<small style="font-size:.56em;font-weight:600">From </small>':'')+money(item.price)+'</span>'+(service?'<div class="service-action-row">':'')+'<button class="add" type="button" data-add-item="'+esc(item.id)+'" aria-label="'+(service?"Request booking for ":"Add ")+esc(item.name)+(service?"":" to basket")+'">'+(service?"":'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>')+action+'</button>'+(service?whatsapp+'</div>':"")+'</div>'+(service?'<div class="service-disclaimer">Date and final quotation confirmed by the business</div>':'')+'</div></article>';
    };
+   const hasProducts=availableItems.some(item=>item.item_type==="product");
+   const hasServices=availableItems.some(item=>item.item_type==="service");
+   const catalogueLabel=hasProducts&&hasServices?"Products & Services":hasServices?"Services":"Products";
    const sectionStyles=["auto","menu","showcase","portfolio","catalogue","booking"];
-   // Classifications are user-created, and every section appears even when no items are assigned yet.
+   // Only owner-created sections count as categories. Never manufacture a
+   // "Products & Services" category for stores with no categories.
    const independent=availableItems.filter(item=>!storefrontSections.some(section=>section.id===item.category_id));
    const groups=storefrontSections.map(section=>({
      id:section.id,
@@ -726,34 +730,46 @@ function renderPublishedStorefront(root,client,business,items,storefrontSections
      style:sectionStyles.includes(section.display_style)?section.display_style:"auto",
      items:availableItems.filter(item=>item.category_id===section.id)
    }));
-   if(independent.length)groups.push({
-     id:"other",name:storefrontSections.length?"Other offerings":"Products & Services",
+   if(storefrontSections.length&&independent.length)groups.push({
+     id:"other",name:"Other "+catalogueLabel.toLowerCase(),
      description:"",style:"auto",items:independent
    });
-   const requestedCategory=new URLSearchParams(location.search).get("category");
-   const selectedCategory=groups.some(group=>group.id===requestedCategory)?requestedCategory:groups[0]?.id;
-   const catalogueMarkup=groups.length?(
-     '<div class="category-browser-head"><span class="category-eyebrow">EXPLORE '+esc(business.name)+'</span>'+
-     '<h2>Browse by category</h2><p>Select a category to explore its offerings separately.</p></div>'+
-     '<div class="category-switcher" role="tablist" aria-label="Browse business categories">'+
-     groups.map(group=>{
-       const preview=group.items.find(item=>galleryPhotos(item).length);
-       const image=preview?galleryPhotos(preview)[0]:"";
-       const selected=group.id===selectedCategory;
-       return '<button type="button" class="category-tab'+(selected?' active':'')+'" role="tab" data-category-tab="'+esc(group.id)+'" id="category-tab-'+esc(group.id)+'" aria-controls="category-panel-'+esc(group.id)+'" aria-selected="'+(selected?'true':'false')+'" tabindex="'+(selected?'0':'-1')+'">'+
-         '<span class="category-thumbnail">'+(image?'<img src="'+esc(image)+'" alt="" loading="lazy" decoding="async">':'<span class="category-placeholder">✦</span>')+'</span>'+
-         '<span class="category-name">'+esc(group.name)+'</span>'+
-         '<small>'+group.items.length+' offering'+(group.items.length===1?'':'s')+'</small></button>';
-     }).join('')+'</div>'+
-     '<div class="category-content">'+groups.map(group=>{
-       const selected=group.id===selectedCategory;
-       const cards=group.items.map(cardForItem).join("");
-       return '<section class="offering-section section-style-'+esc(group.style)+'" role="tabpanel" id="category-panel-'+esc(group.id)+'" data-category-panel="'+esc(group.id)+'" aria-labelledby="category-tab-'+esc(group.id)+'"'+(selected?'':' hidden')+'>'+
-         '<div class="offering-heading"><span class="offering-label">OUR OFFERINGS</span><h2>'+esc(group.name)+'</h2>'+
-         (group.description?'<p>'+esc(group.description)+'</p>':'')+'</div>'+
-         (cards?'<div class="grid">'+cards+'</div>':'<div class="empty"><strong>No offerings yet</strong>This category is ready for the business to add products or services.</div>')+'</section>';
-     }).join('')+'</div>'
-   ):'<section class="empty"><strong>Catalogue coming soon</strong>This business has not added categories or offerings yet.</section>';
+
+   let catalogueMarkup;
+   if(!storefrontSections.length){
+     // Show a simple product/service catalogue until the owner actually
+     // creates a section. All offerings stay visible and can be opened.
+     catalogueMarkup='<section class="offering-section storefront-uncategorized">'+
+       '<div class="offering-heading"><span class="offering-label">OUR OFFERINGS</span><h2>'+esc(catalogueLabel)+'</h2></div>'+
+       (availableItems.length?
+         '<div class="grid">'+availableItems.map(cardForItem).join("")+'</div>':
+         '<div class="empty"><strong>No offerings yet</strong>This store has not added any offerings yet.</div>')+
+       '</section>';
+   }else{
+     const requestedCategory=new URLSearchParams(location.search).get("category");
+     const selectedCategory=groups.some(group=>group.id===requestedCategory)?requestedCategory:groups[0]?.id;
+     catalogueMarkup=
+       '<div class="category-browser-head"><span class="category-eyebrow">EXPLORE '+esc(business.name)+'</span>'+
+       '<h2>Browse by category</h2><p>Select a category to explore its offerings separately.</p></div>'+
+       '<div class="category-switcher" role="tablist" aria-label="Browse business categories">'+
+       groups.map(group=>{
+         const preview=group.items.find(item=>galleryPhotos(item).length);
+         const image=preview?galleryPhotos(preview)[0]:"";
+         const selected=group.id===selectedCategory;
+         return '<button type="button" class="category-tab'+(selected?' active':'')+'" role="tab" data-category-tab="'+esc(group.id)+'" id="category-tab-'+esc(group.id)+'" aria-controls="category-panel-'+esc(group.id)+'" aria-selected="'+(selected?'true':'false')+'" tabindex="'+(selected?'0':'-1')+'">'+
+           '<span class="category-thumbnail">'+(image?'<img src="'+esc(image)+'" alt="" loading="lazy" decoding="async">':'<span class="category-placeholder">✦</span>')+'</span>'+
+           '<span class="category-name">'+esc(group.name)+'</span>'+
+           '<small>'+group.items.length+' offering'+(group.items.length===1?'':'s')+'</small></button>';
+       }).join('')+'</div>'+
+       '<div class="category-content">'+groups.map(group=>{
+         const selected=group.id===selectedCategory;
+         const cards=group.items.map(cardForItem).join("");
+         return '<section class="offering-section section-style-'+esc(group.style)+'" role="tabpanel" id="category-panel-'+esc(group.id)+'" data-category-panel="'+esc(group.id)+'" aria-labelledby="category-tab-'+esc(group.id)+'"'+(selected?'':' hidden')+'>'+
+           '<div class="offering-heading"><span class="offering-label">OUR OFFERINGS</span><h2>'+esc(group.name)+'</h2>'+
+           (group.description?'<p>'+esc(group.description)+'</p>':'')+'</div>'+
+           (cards?'<div class="grid">'+cards+'</div>':'<div class="empty"><strong>No offerings yet</strong>This category is ready for new offerings.</div>')+'</section>';
+       }).join('')+'</div>';
+   }
    const renderedHero=renderStorefrontHero(business,cfg,{featuredImage:galleryPhotos(availableItems.find(item=>galleryPhotos(item).length)||availableItems[0])[0]||""});
    root.innerHTML=renderedHero+
      (cfg.welcome?'<div class="welcome">'+esc(cfg.welcome)+'</div>':'')+
