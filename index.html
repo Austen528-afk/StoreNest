@@ -291,10 +291,10 @@ function marketplaceItemHref(b,item){
 }
 function marketplaceBusinessCard(b,items){
  const esc=escapeResult,href="/storefront.html?slug="+encodeURIComponent(b.slug)+(b.section_id?"&category="+encodeURIComponent(b.section_id):"");
- const header='<a class="result-card" data-business-slug="'+esc(b.slug)+'" href="'+href+'"><span class="result-avatar">'+(b.logo_url?'<img src="'+esc(b.logo_url)+'" alt="">':esc(b.name.slice(0,1).toUpperCase()))+'</span><span class="result-content"><strong>'+esc(b.name)+'</strong><span>'+esc([b.category,b.location].filter(Boolean).join(" · "))+'</span></span><span class="result-arrow">→</span></a>';
+ const header='<a class="result-card" data-business-slug="'+esc(b.slug)+'" href="'+href+'"><span class="result-avatar">'+(b.logo_url?'<img src="'+esc(b.logo_url)+'" alt="" loading="lazy" decoding="async">':esc(b.name.slice(0,1).toUpperCase()))+'</span><span class="result-content"><strong>'+esc(b.name)+'</strong><span>'+esc([b.category,b.location].filter(Boolean).join(" · "))+'</span></span><span class="result-arrow">→</span></a>';
  if(!items.length)return '<div class="market-business">'+header+'</div>';
  return '<div class="market-business">'+header+'<div class="market-latest-title">Latest updates</div><div class="market-items" aria-label="Latest offerings from '+esc(b.name)+'">'+items.map(item=>{
-  const media=item.image_url||"";const image=/^https:\/\//i.test(media)?(/\.(mp4|webm)(?:[?#]|$)/i.test(media)?'<video data-market-preview data-src="'+esc(media)+'" muted loop playsinline preload="none" aria-label="Video preview"></video>':'<img src="'+esc(media)+'" alt="" loading="lazy">'):'<span class="market-no-photo">▧</span>';
+  const media=item.image_url||"";const image=/^https:\/\//i.test(media)?(/\.(mp4|webm)(?:[?#]|$)/i.test(media)?'<video data-market-preview data-src="'+esc(media)+'" muted loop playsinline preload="none" aria-label="Video preview"></video>':'<img src="'+esc(media)+'" alt="" loading="lazy" decoding="async">'):'<span class="market-no-photo">▧</span>';
   return '<a class="market-item" href="'+marketplaceItemHref(b,item)+'"><span class="market-item-image">'+image+'</span><span class="market-item-name">'+esc(item.name)+'</span></a>';
  }).join("")+'</div></div>';
 }
@@ -500,7 +500,7 @@ async function findBusinesses(query){
    if(error)throw error;if(seq!==searchCounter)return;
    const rows=(data||[]).map(safeBusiness).filter(Boolean),esc=escapeResult;lastSearchResults=rows;
    resultRoot.innerHTML='<p class="results-head">'+rows.length+' business'+(rows.length===1?'':'es')+' found for "'+esc(query)+'"</p>'+
-     (rows.length?rows.map(b=>'<a class="result-card" data-business-slug="'+esc(b.slug)+'" href="/storefront.html?slug='+encodeURIComponent(b.slug)+'"><span class="result-avatar">'+(b.logo_url&&/^https:\/\//i.test(b.logo_url)?'<img alt="" src="'+esc(b.logo_url)+'">':esc(b.name.slice(0,1).toUpperCase()))+'</span><span class="result-content"><strong>'+esc(b.name)+'</strong><span>'+esc([b.category,b.location].filter(Boolean).join(' · '))+'</span></span><span class="result-arrow">→</span></a>').join(''):'<p class="results-head">No published businesses match this search.</p>');
+     (rows.length?rows.map(b=>'<a class="result-card" data-business-slug="'+esc(b.slug)+'" href="/storefront.html?slug='+encodeURIComponent(b.slug)+'"><span class="result-avatar">'+(b.logo_url&&/^https:\/\//i.test(b.logo_url)?'<img alt="" src="'+esc(b.logo_url)+'" loading="lazy" decoding="async">':esc(b.name.slice(0,1).toUpperCase()))+'</span><span class="result-content"><strong>'+esc(b.name)+'</strong><span>'+esc([b.category,b.location].filter(Boolean).join(' · '))+'</span></span><span class="result-arrow">→</span></a>').join(''):'<p class="results-head">No published businesses match this search.</p>');
  }catch(e){if(seq!==searchCounter)return;resultRoot.innerHTML='<p class="results-head">Search could not load. Please try again.</p>';console.error("Store search error",e)}
 }
 storeSearchForm.addEventListener("submit",event=>{event.preventDefault();findBusinesses(storeSearchInput.value.trim())});
