@@ -65,3 +65,22 @@ html[data-theme="dark"] .service-whatsapp:hover{background:#75edaa}
  .gallery-bottom{flex-wrap:wrap}
  .gallery-bottom .gallery-action-row{width:100%;justify-content:flex-start}
 }
+
+/* Match booking CTAs to the Local Services editorial palette; preserve WhatsApp
+   and service quotation behaviour while keeping actions inside narrow cards. */
+body[data-local-services-layout="true"] .card:has(.service-disclaimer) .add{
+ background:#205f50;color:#fff;border-radius:5px;min-width:0;
+}
+body[data-local-services-layout="true"] .card:has(.service-disclaimer) .add:hover{
+ background:#2b826b;
+}
+html[data-theme="dark"] body[data-local-services-layout="true"] .card:has(.service-disclaimer) .add{
+ background:#53b995;color:#10271f;
+}
+@media(max-width:600px){
+ body[data-local-services-layout="true"] .service-action-row{flex-direction:column;align-items:stretch}
+ body[data-local-services-layout="true"] .service-action-row :is(.add,.service-whatsapp){
+   width:100%;min-width:0;max-width:100%;padding:10px 7px;font-size:11px;
+   white-space:normal;overflow-wrap:anywhere;
+ }
+}

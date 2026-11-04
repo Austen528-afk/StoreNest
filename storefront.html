@@ -441,6 +441,38 @@ body[data-store-type="decor"] .decor-copy .brand-name{font-weight:780}
   #galleryDialog .gallery-top { flex-shrink:0; }
 }
 
+
+/* Local Services: use the Catering & Decor editorial split layout, in a service palette.
+   This override only applies to Local Services storefronts using the editorial layout. */
+body[data-store-type="decor"][data-local-services-layout="true"]{
+  --canvas:#f6faf8;--ink:#203a33;--surface:#e8f2ed;
+}
+body[data-local-services-layout="true"] .decor-hero{background:#e6f1eb;color:#203a33}
+body[data-local-services-layout="true"] .decor-visual{background:linear-gradient(135deg,#beddd0,#86b4a1)}
+body[data-local-services-layout="true"] .decor-eyebrow,
+body[data-local-services-layout="true"] .decor-collection-eyebrow{color:#26836b}
+body[data-local-services-layout="true"] .decor-copy .decor-tag,
+body[data-local-services-layout="true"] .decor-copy .decor-summary{color:#536f63}
+body[data-local-services-layout="true"] .decor-cta,
+body[data-local-services-layout="true"] .add{background:#205f50;color:white}
+body[data-local-services-layout="true"] .decor-cta:hover,
+body[data-local-services-layout="true"] .add:hover{background:#2b826b}
+body[data-local-services-layout="true"] .contacts :is(a,span){background:#e3f2eb;color:#315f4e}
+body[data-local-services-layout="true"] .welcome{background:#edf7f1;color:#416c58;border-color:#d7eadf}
+body[data-local-services-layout="true"] .card{background:#edf5f0}
+body[data-local-services-layout="true"] .art{background:#dce9e1}
+body[data-local-services-layout="true"] .item-body p{color:#627e70}
+body[data-local-services-layout="true"] .gallery-stage{background:#edf4f0}
+body[data-local-services-layout="true"] .service-action-row{width:100%;min-width:0}
+@media(max-width:600px){
+  body[data-local-services-layout="true"] .service-action-row :is(.add,.service-whatsapp){
+    width:100%;min-width:0;max-width:100%;white-space:normal;text-align:center;
+  }
+  body[data-local-services-layout="true"] .card:has(.service-disclaimer) .item-body{
+    min-width:0;
+  }
+}
+
 </style>
 <link rel="stylesheet" href="/theme.css">
 <link rel="stylesheet" href="/service-bookings.css">
@@ -624,10 +656,12 @@ function renderStorefrontHero(business,cfg,options={}){
  };
  const layout=["classic","showcase","compact","decor"].includes(cfg.layout)?cfg.layout:"classic";
  const decorCategory=/home\s*(?:&|and)\s*decor|decors?|furnish|interior|homeware|furniture/i.test([business.category,business.name].filter(Boolean).join(" "));
- const isDecor=layout==="decor"||(decorCategory&&layout==="classic");
+ const isLocalServices=window.StoreNestCategoryId(business.category)==="local-services";
+ const isDecor=layout==="decor"||((decorCategory||isLocalServices)&&layout==="classic");
  document.body.dataset.storeType=isDecor?"decor":"standard";
+ document.body.dataset.localServicesLayout=String(isDecor&&isLocalServices);
  const accent=/^#[0-9a-f]{6}$/i.test(cfg.accent||"")?cfg.accent:"#e6a15e";
- document.documentElement.style.setProperty("--accent",isDecor&&(!cfg.accent||/^#60d6bd$/i.test(cfg.accent))?"#98836a":accent);
+ document.documentElement.style.setProperty("--accent",isDecor&&(!cfg.accent||/^#60d6bd$/i.test(cfg.accent))?(isLocalServices?"#27856d":"#98836a"):accent);
  const cover=resolveAsset(cfg.hero);
  const videoCover=/\.(mp4|webm)(?:[?#]|$)/i.test(cover)||Boolean(options.preview&&cfg.heroIsVideo);
  const logo=resolveAsset(preview?(cfg.logo||business.logo_url):business.logo_url);
@@ -645,11 +679,11 @@ function renderStorefrontHero(business,cfg,options={}){
      '<section class="decor-hero"><div class="decor-copy"><div class="store-identity">'+
      (logo?'<img class="store-logo" src="'+esc(logo)+'" alt="">':'')+
      '<span class="brand-name">'+esc(business.name)+'<span class="brand-dot">.</span></span></div>'+
-     '<div><span class="decor-eyebrow">HOME &amp; DECOR</span><h1>'+esc(cfg.headline||"Made for the spaces you love")+'</h1>'+
+     '<div><span class="decor-eyebrow">'+(isLocalServices?"LOCAL SERVICES":"HOME &amp; DECOR")+'</span><h1>'+esc(cfg.headline||(isLocalServices?"Local expertise, close to home":"Made for the spaces you love"))+'</h1>'+
      (cfg.tagline?'<p class="decor-tag">'+esc(cfg.tagline)+'</p>':'')+
-     '<p class="decor-summary">'+esc(business.description||"Explore pieces for the home and everyday spaces.")+'</p></div>'+
-     '<a class="decor-cta" href="#catalog">Explore collection</a></div>'+
-     '<div class="decor-visual">'+(decorImage?(videoCover?'<video class="decor-cover-video" src="'+esc(decorImage)+'" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>':'<img src="'+esc(decorImage)+'" alt="Featured home decor" fetchpriority="high" decoding="async">'):'')+
+     '<p class="decor-summary">'+esc(business.description||(isLocalServices?"Explore helpful services for everyday needs.":"Explore pieces for the home and everyday spaces."))+'</p></div>'+
+     '<a class="decor-cta" href="#catalog">'+(isLocalServices?"Explore services":"Explore collection")+'</a></div>'+
+     '<div class="decor-visual">'+(decorImage?(videoCover?'<video class="decor-cover-video" src="'+esc(decorImage)+'" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>':'<img src="'+esc(decorImage)+'" alt="'+(isLocalServices?"Featured local service":"Featured home decor")+'" fetchpriority="high" decoding="async">'):'')+
      '<button type="button" id="openCart" class="bag" aria-label="Open basket"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 12H4L5 8ZM9 9V6a3 3 0 0 1 6 0v3"/></svg><span id="bagCount">0</span></button></div></section>';
 
  return isDecor?decorHero:standardHero;
@@ -753,9 +787,11 @@ function renderPublishedStorefront(root,client,business,items,storefrontSections
    document.documentElement.style.setProperty("--accent",accent);
    const layout=["classic","showcase","compact","decor"].includes(cfg.layout)?cfg.layout:"classic";
    const decorCategory=/home\s*(?:&|and)\s*decor|decors?|furnish|interior|homeware|furniture/i.test([business.category,business.name].filter(Boolean).join(" "));
-   const isDecor=layout==="decor"||(decorCategory&&layout==="classic");
+   const isLocalServices=window.StoreNestCategoryId(business.category)==="local-services";
+   const isDecor=layout==="decor"||((decorCategory||isLocalServices)&&layout==="classic");
    document.body.dataset.storeType=isDecor?"decor":"standard";
-   if(isDecor&&(!cfg.accent||/^#60d6bd$/i.test(cfg.accent)))document.documentElement.style.setProperty("--accent","#98836a");
+   document.body.dataset.localServicesLayout=String(isDecor&&isLocalServices);
+   if(isDecor&&(!cfg.accent||/^#60d6bd$/i.test(cfg.accent)))document.documentElement.style.setProperty("--accent",isLocalServices?"#27856d":"#98836a");
    const contacts=[];
    if(business.location)contacts.push('<span>⌖ '+esc(business.location)+'</span>');
    if(business.phone)contacts.push('<a href="tel:'+esc(business.phone)+'">☎ '+esc(business.phone)+'</a>');

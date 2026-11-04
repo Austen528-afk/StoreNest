@@ -101,3 +101,33 @@ html[data-theme="dark"] body[data-page-kind="storefront"][data-store-type="decor
 @media(max-width:460px){
  body[data-page-kind="storefront"] .theme-switch-header .theme-switch-label{display:none}
 }
+
+/* Local Services has the same split storefront structure as decor, but its own
+   dark-mode service palette. These selectors come after the general decor theme. */
+html[data-theme="dark"] body[data-page-kind="storefront"][data-local-services-layout="true"]{
+ --canvas:#13221f;--ink:#eaf8f0;--surface:#1e3630;--accent:#65cfac;
+}
+html[data-theme="dark"] body[data-local-services-layout="true"] .decor-hero{
+ background:#20392f;color:#eaf8f0;
+}
+html[data-theme="dark"] body[data-local-services-layout="true"] .decor-visual{
+ background:linear-gradient(135deg,#2a5145,#18312a);
+}
+html[data-theme="dark"] body[data-local-services-layout="true"] .decor-eyebrow{
+ color:#91debd;
+}
+html[data-theme="dark"] body[data-local-services-layout="true"] .decor-copy :is(.decor-tag,.decor-summary){
+ color:#bad5c7;
+}
+html[data-theme="dark"] body[data-local-services-layout="true"] :is(.decor-cta,.add){
+ background:#53b995;color:#10271f;
+}
+html[data-theme="dark"] body[data-local-services-layout="true"] .card{
+ background:#20362f;
+}
+html[data-theme="dark"] body[data-local-services-layout="true"] .art{
+ background:#243f35;
+}
+html[data-theme="dark"] body[data-local-services-layout="true"] .item-body p{
+ color:#b2cabd;
+}
