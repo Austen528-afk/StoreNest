@@ -10,7 +10,8 @@ function apply(value,persist=false){
  root.style.colorScheme=theme;
  if(persist){try{localStorage.setItem(KEY,theme)}catch(_){}}
  const meta=document.querySelector('meta[name="theme-color"]');
- if(meta)meta.content=theme==="dark"?"#111b1e":"#f8faf9";
+ // Keep the native/PWA system status bar opaque and dark in both appearance modes.
+ if(meta)meta.content="#10171d";
  document.querySelectorAll("[data-theme-toggle]").forEach(button=>{
   const dark=theme==="dark";
   const label=button.querySelector(".theme-switch-label");
