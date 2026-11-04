@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#10171d">
+<link rel="preconnect" href="https://cypbjzbagezdelmemuhb.supabase.co" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -292,38 +294,102 @@ function marketplaceBusinessCard(b,items){
  const header='<a class="result-card" data-business-slug="'+esc(b.slug)+'" href="'+href+'"><span class="result-avatar">'+(b.logo_url?'<img src="'+esc(b.logo_url)+'" alt="">':esc(b.name.slice(0,1).toUpperCase()))+'</span><span class="result-content"><strong>'+esc(b.name)+'</strong><span>'+esc([b.category,b.location].filter(Boolean).join(" · "))+'</span></span><span class="result-arrow">→</span></a>';
  if(!items.length)return '<div class="market-business">'+header+'</div>';
  return '<div class="market-business">'+header+'<div class="market-latest-title">Latest updates</div><div class="market-items" aria-label="Latest offerings from '+esc(b.name)+'">'+items.map(item=>{
-  const media=item.image_url||"";const image=/^https:\/\//i.test(media)?(/\.(mp4|webm)(?:[?#]|$)/i.test(media)?'<video src="'+esc(media)+'" muted loop playsinline autoplay preload="metadata" aria-label="Video preview"></video>':'<img src="'+esc(media)+'" alt="" loading="lazy">'):'<span class="market-no-photo">▧</span>';
+  const media=item.image_url||"";const image=/^https:\/\//i.test(media)?(/\.(mp4|webm)(?:[?#]|$)/i.test(media)?'<video data-market-preview data-src="'+esc(media)+'" muted loop playsinline preload="none" aria-label="Video preview"></video>':'<img src="'+esc(media)+'" alt="" loading="lazy">'):'<span class="market-no-photo">▧</span>';
   return '<a class="market-item" href="'+marketplaceItemHref(b,item)+'"><span class="market-item-image">'+image+'</span><span class="market-item-name">'+esc(item.name)+'</span></a>';
  }).join("")+'</div></div>';
+}
+
+const CATEGORY_CACHE_PREFIX="storenest:market-category:v2:";
+const CATEGORY_CACHE_MAX_AGE=90*1000;
+const categoryMemoryCache=new Map();
+const categoryRequests=new Map();
+let marketPreviewObserver=null;
+function readCategorySnapshot(id){
+ let snapshot=categoryMemoryCache.get(id);
+ if(!snapshot)try{snapshot=JSON.parse(sessionStorage.getItem(CATEGORY_CACHE_PREFIX+id)||"null")}catch{}
+ if(!snapshot||!Array.isArray(snapshot.rows)||!Array.isArray(snapshot.items)||Date.now()-snapshot.savedAt>CATEGORY_CACHE_MAX_AGE)return null;
+ categoryMemoryCache.set(id,snapshot);
+ return snapshot;
+}
+function saveCategorySnapshot(id,rows,items){
+ const snapshot={savedAt:Date.now(),rows,items};
+ categoryMemoryCache.set(id,snapshot);
+ try{sessionStorage.setItem(CATEGORY_CACHE_PREFIX+id,JSON.stringify(snapshot))}catch{}
+ return snapshot;
+}
+function loadCategorySnapshot(id){
+ if(categoryRequests.has(id))return categoryRequests.get(id);
+ const request=(async()=>{
+  const client=await getSearchClient();
+  const [businessResult,itemsResult]=await Promise.all([
+   client.rpc("browse_storenest_category",{category_slug:id}),
+   client.rpc("latest_storenest_category_items",{category_slug:id,max_per_business:5})
+  ]);
+  if(businessResult.error)throw businessResult.error;
+  if(itemsResult.error)throw itemsResult.error;
+  const rows=(businessResult.data||[]).map(r=>({...safeBusiness(r),id:r.id,section_id:r.section_id})).filter(r=>r.slug);
+  return saveCategorySnapshot(id,rows,itemsResult.data||[]);
+ })();
+ categoryRequests.set(id,request);
+ request.finally(()=>{if(categoryRequests.get(id)===request)categoryRequests.delete(id)}).catch(()=>{});
+ return request;
+}
+function activateMarketplacePreviews(){
+ marketPreviewObserver?.disconnect();
+ const videos=[...resultRoot.querySelectorAll("video[data-market-preview]")];
+ const activate=video=>{
+  if(!video.src)video.src=video.dataset.src;
+  const playing=video.play();
+  if(playing?.catch)playing.catch(()=>{});
+ };
+ if(!("IntersectionObserver" in window)){videos.forEach(activate);return}
+ marketPreviewObserver=new IntersectionObserver(entries=>{
+  entries.forEach(({target, isIntersecting})=>{
+   if(isIntersecting)activate(target);
+   else target.pause();
+  });
+ },{root:resultRoot,rootMargin:"140px 0px"});
+ videos.forEach(video=>marketPreviewObserver.observe(video));
+}
+function renderCategorySnapshot(id,category,snapshot){
+ const {rows,items}=snapshot;
+ lastSearchResults=rows;
+ const byBusiness=new Map();
+ for(const item of items){
+  if(!byBusiness.has(item.business_id))byBusiness.set(item.business_id,[]);
+  byBusiness.get(item.business_id).push(item);
+ }
+ resultRoot.innerHTML=marketplaceCategoryControls(id)+'<p class="results-head">'+escapeResult(category[1])+' · '+rows.length+' business'+(rows.length===1?'':'es')+'</p>'+
+  (rows.length?rows.map(b=>marketplaceBusinessCard(b,byBusiness.get(b.id)||[])).join(""):'<p class="results-head">No businesses listed here yet.</p>');
+ activateMarketplacePreviews();
 }
 async function browseMarketplaceCategory(id){
  const category=MARKETPLACE_CATEGORIES.find(row=>row[0]===id);if(!category)return;
  const seq=++searchCounter;activeMarketplaceCategory=id;categoryDescriptionExpanded=false;renderMarketplaceCategories();storeSearchInput.value="";categorySection.hidden=true;setSearchActive(true);
- resultRoot.innerHTML=marketplaceCategoryControls(id)+'<p class="results-head">Loading '+escapeResult(category[1])+'…</p>';
+ const cached=readCategorySnapshot(id);
+ if(cached)renderCategorySnapshot(id,category,cached);
+ else resultRoot.innerHTML=marketplaceCategoryControls(id)+'<p class="results-head">Loading '+escapeResult(category[1])+'…</p>';
  try{
-  const client=await getSearchClient();
-  const [businessResult,itemsResult]=await Promise.all([
-    client.rpc("browse_storenest_category",{category_slug:id}),
-    client.rpc("latest_storenest_category_items",{category_slug:id,max_per_business:5})
-  ]);
-  if(businessResult.error)throw businessResult.error;
-  if(itemsResult.error)throw itemsResult.error;
+  const snapshot=await loadCategorySnapshot(id);
   if(seq!==searchCounter)return;
-  const rows=(businessResult.data||[]).map(r=>({...safeBusiness(r),id:r.id,section_id:r.section_id})).filter(r=>r.slug);
-  lastSearchResults=rows;
-  const byBusiness=new Map();
-  for(const item of itemsResult.data||[]){
-    if(!byBusiness.has(item.business_id))byBusiness.set(item.business_id,[]);
-    byBusiness.get(item.business_id).push(item);
-  }
-  resultRoot.innerHTML=marketplaceCategoryControls(id)+'<p class="results-head">'+escapeResult(category[1])+' · '+rows.length+' business'+(rows.length===1?'':'es')+'</p>'+
-   (rows.length?rows.map(b=>marketplaceBusinessCard(b,byBusiness.get(b.id)||[])).join(""):'<p class="results-head">No businesses listed here yet.</p>');
+  if(!cached||JSON.stringify(cached.rows)!==JSON.stringify(snapshot.rows)||JSON.stringify(cached.items)!==JSON.stringify(snapshot.items))renderCategorySnapshot(id,category,snapshot);
  }catch(error){
   if(seq!==searchCounter)return;
-  resultRoot.innerHTML=marketplaceCategoryControls(id)+'<p class="results-head">Unable to load this category. Please retry.</p>';
+  if(!cached)resultRoot.innerHTML=marketplaceCategoryControls(id)+'<p class="results-head">Unable to load this category. Please retry.</p>';
   console.error("Marketplace browse failed",error);
  }
 }
+// Start the next likely category request before a click, without fetching all categories.
+function prefetchMarketplaceCategory(event){
+ const button=event.target.closest?.("[data-market-category]");
+ if(!button)return;
+ if(readCategorySnapshot(button.dataset.marketCategory))return;
+ loadCategorySnapshot(button.dataset.marketCategory).catch(()=>{});
+}
+categoryGrid.addEventListener("pointerover",prefetchMarketplaceCategory,{passive:true});
+categoryGrid.addEventListener("focusin",prefetchMarketplaceCategory);
+categoryGrid.addEventListener("touchstart",prefetchMarketplaceCategory,{passive:true});
+
 resultRoot.addEventListener("click",e=>{
  if(e.target.closest("#backToCategories")){resetMarketplaceBrowse();return}
  const button=e.target.closest("#categoryDescriptionToggle");
@@ -416,6 +482,11 @@ async function getSearchClient(){
  })().catch(error=>{searchClientPromise=null;throw error});
  return searchClientPromise;
 }
+// Download and initialize the public database client before the first interaction.
+const warmMarketplaceClient=()=>getSearchClient().catch(()=>{});
+if("requestIdleCallback" in window)requestIdleCallback(warmMarketplaceClient,{timeout:1300});
+else setTimeout(warmMarketplaceClient,300);
+
 // Keep remembered businesses even when they are temporarily unpublished or unavailable.
 // A business is removed from this device history only by the visitor's remove button.
 async function findBusinesses(query){
