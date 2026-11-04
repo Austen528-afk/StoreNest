@@ -213,6 +213,30 @@ html[data-theme="dark"] .page-refresh-button:hover{background:#2d4540;border-col
 @media(max-width:410px){.page-refresh-button{width:42px;height:40px}}
 
 .market-item-image video{display:block;width:100%;height:100%;object-fit:cover}
+
+/* Visual iPhone install guide replaces the blocking Safari alert. */
+.ios-install-overlay[hidden]{display:none!important}
+.ios-install-overlay{
+ position:fixed;inset:0;z-index:1000;display:flex;justify-content:center;align-items:center;
+ background:rgba(9,15,22,.8);padding:max(12px,env(safe-area-inset-top,0px)) 12px max(12px,env(safe-area-inset-bottom,0px));
+}
+.ios-install-dialog{width:min(510px,100%);max-height:100%;display:flex;flex-direction:column;background:#fff;color:#211b32;border-radius:20px;box-shadow:0 28px 80px #0007;overflow:hidden}
+.ios-install-head{display:flex;align-items:flex-start;gap:12px;padding:19px 20px 13px;border-bottom:1px solid #ede8f6;flex-shrink:0}
+.ios-install-head h2{font-size:21px;line-height:1.16;margin:0;color:#211b32;letter-spacing:-.035em}
+.ios-install-head p{font-size:12px;line-height:1.4;color:#6e697c;margin:5px 0 0}
+.ios-install-close{border:0;border-radius:10px;background:#f3effa;color:#493d67;width:34px;height:34px;font-size:23px;flex-shrink:0;margin-left:auto}
+.ios-install-steps{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:14px 18px 12px;display:grid;gap:15px;align-content:start}
+.ios-install-step{margin:0;border:1px solid #e5ddf3;border-radius:16px;background:#faf8ff;padding:11px}
+.ios-install-step h3{display:flex;align-items:center;gap:10px;margin:0 0 8px;font-size:14px;color:#271b40;line-height:1.3}
+.ios-install-step h3 span{font-size:11px;color:#fff;background:#793de1;border-radius:8px;padding:6px 8px;white-space:nowrap}
+.ios-install-step img{display:block;width:100%;height:auto;border-radius:12px;aspect-ratio:3/2;object-fit:contain}
+.ios-install-step p{color:#574e69;font-size:12px;line-height:1.48;margin:9px 2px 0}
+.ios-install-foot{padding:11px 18px 15px;border-top:1px solid #ede8f6;background:#fff;flex-shrink:0}
+.ios-install-foot p{font-size:11px;line-height:1.4;color:#6e697c;margin:0 0 10px;max-width:none}
+.ios-install-continue{border:0;width:100%;background:#5ed4b6;color:#11291f;border-radius:12px;font-weight:800;font-size:13px;padding:13px 16px;min-height:43px}
+.ios-install-close:focus-visible,.ios-install-continue:focus-visible{outline:3px solid #793de1;outline-offset:2px}
+@media(max-width:500px){.ios-install-overlay{padding:8px 10px max(8px,env(safe-area-inset-bottom,0px))}.ios-install-dialog{border-radius:16px}.ios-install-head{padding:15px 15px 12px}.ios-install-head h2{font-size:19px}.ios-install-steps{padding:12px;gap:12px}.ios-install-foot{padding:10px 12px 12px}}
+
 </style>
 <link rel="stylesheet" href="/theme.css">
 <script src="/theme.js"></script>
@@ -221,6 +245,7 @@ html[data-theme="dark"] .page-refresh-button:hover{background:#2d4540;border-col
 <body data-page-kind="marketplace">
 <div class="wrap">
 <header class="top"><div class="logo">store<span>nest.</span></div><div class="top-actions"><button class="install-btn" id="installBtn" type="button">Install app</button><button class="page-refresh-button" id="pageRefreshButton" type="button" aria-label="Refresh page" title="Refresh page"><svg aria-hidden="true" viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.4 6.3"/><path d="M20 4v7h-7"/></svg></button><div class="menu-container" id="menuContainer"><button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="siteMenu"><span></span><span></span><span></span></button><nav class="site-menu" id="siteMenu" aria-label="StoreNest menu" hidden><a class="menu-register" href="/business-owner.html">Register as business owner <span aria-hidden="true">→</span></a><button class="theme-switch" data-theme-toggle type="button" aria-label="Switch to dark mode" aria-pressed="false"><span class="theme-switch-icon" aria-hidden="true">☾</span><span class="theme-switch-label">Dark mode</span></button></nav></div></div></header>
+<div id="installHint" class="install-hint" role="status" aria-live="polite"></div>
 <section class="search-row" role="search" aria-label="Search StoreNest">
   <form class="search-form" id="storeSearchForm">
     <input class="search-input" id="storeSearchInput" type="search" name="q" placeholder="Search stores, products or services" aria-label="Search stores, products or services" autocomplete="off">
@@ -242,15 +267,85 @@ html[data-theme="dark"] .page-refresh-button:hover{background:#2d4540;border-col
     <div id="recentBusinessGrid" class="recent-grid"></div>
   </section>
 </main>
-</div><script>
+</div>
+<div id="iosInstallOverlay" class="ios-install-overlay" hidden>
+  <section class="ios-install-dialog" role="dialog" aria-modal="true" aria-labelledby="iosInstallTitle" aria-describedby="iosInstallSubtitle">
+    <div class="ios-install-head">
+      <div><h2 id="iosInstallTitle">Install StoreNest on iPhone</h2><p id="iosInstallSubtitle">Follow the highlighted buttons in Safari.</p></div>
+      <button class="ios-install-close" type="button" id="iosInstallClose" aria-label="Close installation guide">×</button>
+    </div>
+    <div class="ios-install-steps">
+      <article class="ios-install-step">
+        <h3><span>Step 1</span> Tap the Safari Share icon</h3>
+        <img src="/assets/install-iphone-share.svg" alt="Safari bottom toolbar with the Share icon, a square and upward arrow, highlighted in purple." width="360" height="240">
+        <p>At the bottom of Safari, tap the square with the arrow pointing up.</p>
+      </article>
+      <article class="ios-install-step">
+        <h3><span>Step 2</span> Choose Add to Home Screen</h3>
+        <img src="/assets/install-iphone-home-screen.svg" alt="iPhone Share menu with Add to Home Screen highlighted in purple." width="360" height="240" loading="lazy">
+        <p>Scroll down in the Share menu and tap <strong>Add to Home Screen</strong>.</p>
+      </article>
+      <article class="ios-install-step">
+        <h3><span>Step 3</span> Tap Add</h3>
+        <img src="/assets/install-iphone-confirm.svg" alt="iPhone Add to Home Screen confirmation, with the Add button highlighted at the top-right." width="360" height="240" loading="lazy">
+        <p>Confirm by tapping <strong>Add</strong> in the top-right corner.</p>
+      </article>
+    </div>
+    <div class="ios-install-foot">
+      <p>Using a WhatsApp in-app browser? First open this page in Safari. You can install later at any time.</p>
+      <button class="ios-install-continue" type="button" id="iosInstallContinue">Continue to Explore Stores</button>
+    </div>
+  </section>
+</div>
+<script>
 if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("/sw.js").catch(()=>{})})}
 let installPrompt=null;const installBtn=document.getElementById("installBtn");const installHint=document.getElementById("installHint");
-function showHint(message){if(installHint){installHint.textContent=message;installHint.classList.add("visible")}else{window.alert(message)}}
+const iosInstallOverlay=document.getElementById("iosInstallOverlay");
+const iosInstallDismiss=document.getElementById("iosInstallContinue");
+const iosInstallClose=document.getElementById("iosInstallClose");
+const iosInstallSessionKey="storenest:ios-install-visual-shown:v1";
+const isiOS=/iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+const isStandalone=window.navigator.standalone===true||window.matchMedia("(display-mode: standalone)").matches;
+let iosInstallReturnFocus=null;
+function showHint(message){if(installHint){installHint.textContent=message;installHint.classList.add("visible")}}
+function openIosInstallGuide(){
+  if(!iosInstallOverlay)return;
+  iosInstallReturnFocus=document.activeElement;
+  iosInstallOverlay.hidden=false;
+  iosInstallClose.focus();
+}
+function dismissIosInstallGuide(){
+  iosInstallOverlay.hidden=true;
+  if(iosInstallReturnFocus&&iosInstallReturnFocus!==document.body)iosInstallReturnFocus.focus();
+  else installBtn.focus();
+}
+iosInstallClose.addEventListener("click",dismissIosInstallGuide);
+iosInstallDismiss.addEventListener("click",dismissIosInstallGuide);
+iosInstallOverlay.addEventListener("click",event=>{if(event.target===iosInstallOverlay)dismissIosInstallGuide()});
+document.addEventListener("keydown",event=>{
+ if(iosInstallOverlay.hidden)return;
+ if(event.key==="Escape"){event.preventDefault();dismissIosInstallGuide()}
+ if(event.key==="Tab"){
+   const interactive=[...iosInstallOverlay.querySelectorAll("button:not([disabled])")];
+   if(event.shiftKey&&document.activeElement===interactive[0]){event.preventDefault();interactive[interactive.length-1].focus()}
+   else if(!event.shiftKey&&document.activeElement===interactive[interactive.length-1]){event.preventDefault();interactive[0].focus()}
+ }
+});
 window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();installPrompt=event;installBtn.classList.add("visible")});
-installBtn.addEventListener("click",async()=>{if(!installPrompt){showHint("To install on Samsung: open this site in Samsung Internet or Chrome, tap the browser menu, then choose Add page to / Add to Home screen or Install app.");return}const prompt=installPrompt;installPrompt=null;installBtn.classList.remove("visible");await prompt.prompt();const result=await prompt.userChoice;if(result.outcome!=="accepted")showHint("You can install StoreNest later from your browser menu.")});
+installBtn.addEventListener("click",async()=>{
+ if(isiOS&&!isStandalone){openIosInstallGuide();return}
+ if(!installPrompt){showHint("On Android, open this page in Samsung Internet or Chrome, open the browser menu, then choose Install app or Add to Home screen.");return}
+ const prompt=installPrompt;installPrompt=null;installBtn.classList.remove("visible");await prompt.prompt();const result=await prompt.userChoice;if(result.outcome!=="accepted")showHint("You can install StoreNest later from your browser menu.")
+});
 window.addEventListener("appinstalled",()=>{installBtn.classList.remove("visible");showHint("StoreNest is installed.")});
 if(/Android/i.test(navigator.userAgent)){installBtn.classList.add("visible");installBtn.textContent="Install app"}
-if(/iPhone|iPad|iPod/.test(navigator.userAgent)&&!window.navigator.standalone){showHint("On iPhone: open Share, then choose Add to Home Screen to install StoreNest.")}
+if(isiOS&&!isStandalone){
+ installBtn.classList.add("visible");installBtn.textContent="Install app";
+ // Display once per browsing session, but keep the Install app button available to reopen.
+ let alreadyShown=false;
+ try{alreadyShown=sessionStorage.getItem(iosInstallSessionKey)==="1";sessionStorage.setItem(iosInstallSessionKey,"1")}catch{}
+ if(!alreadyShown)requestAnimationFrame(openIosInstallGuide);
+}
 
 const storeSearchForm=document.getElementById("storeSearchForm");
 const storeSearchInput=document.getElementById("storeSearchInput");
