@@ -1212,8 +1212,8 @@ function finishCheckoutProfile(user,profile){
  form.querySelector('[name="customer_name"]').value=profile.profile_name||"";
  const phoneField=form.querySelector('[name="contact_phone"]');
  const emailField=form.querySelector('[name="contact_email"]');
- if(!phoneField.value&&user?.phone)phoneField.value=user.phone;
- if(!emailField.value&&user?.email)emailField.value=user.email;
+ phoneField.value=profile.contact_phone??user?.phone??"";
+ emailField.value=profile.contact_email??user?.email??"";
  $("checkoutProfileGate").hidden=true;
  $("checkoutContactFields").hidden=false;
  $("checkoutProfileSummary").textContent="Profile ready · "+profile.profile_name+" · "+profile.place;
