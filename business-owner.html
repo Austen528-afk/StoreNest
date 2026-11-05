@@ -534,7 +534,7 @@ html[data-theme="dark"] #storefrontBuilder .storefront-media-card small{color:#a
 .option-group-settings .option-group-required{flex-direction:row;align-items:center;gap:7px}
 .option-group-settings .option-group-required input{width:17px;height:17px;accent-color:#43b99a}
 .option-group-settings .option-selection-label{min-width:150px;flex:1}
-.option-group-settings .option-maximum-label{width:90px}
+.option-group-settings .option-maximum-label{width:90px}.option-group-settings .option-default-label{min-width:145px;flex:1}.item-options-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .option-entry{display:grid;grid-template-columns:minmax(0,1fr) minmax(85px,.32fr) auto;gap:8px;align-items:end;margin:8px 0}
 .option-entry>button{height:38px;width:38px;border:1px solid #ecd2ce;color:#a44334;border-radius:8px;background:#fff7f5;cursor:pointer;font-size:17px}
 .option-group-editor .option-editor-actions{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:8px}
@@ -668,10 +668,10 @@ html[data-theme="dark"] #itemOptionsEditor small{color:#afc4b6}
   <div class="modal-backdrop" id="itemModal" hidden><div class="modal-card item-modal" role="dialog" aria-modal="true" aria-labelledby="itemModalTitle"><div class="modal-head"><div><span class="eyebrow">YOUR CATALOGUE</span><h3 id="itemModalTitle">Add an item</h3></div><button class="close-modal" type="button" data-close-modal aria-label="Close">×</button></div><p class="modal-subtitle">Add a product or service to your business catalogue.</p><form id="itemForm" class="business-form"><input type="hidden" id="itemId"><div class="form-grid"><div class="field"><label for="itemType">Item type <em>*</em></label><select id="itemType"><option value="product">Product</option><option value="service">Service</option></select></div><div class="field"><label for="itemName">Name <em>*</em></label><input id="itemName" maxlength="120" required placeholder="e.g. Kota combo"></div><div class="field"><label for="itemPrice">Price (ZAR) <em>*</em></label><div class="price-input"><span>R</span><input id="itemPrice" type="number" min="0" step="0.01" required placeholder="0.00"></div></div><div class="field"><label for="itemCategory">Category</label><div class="category-input"><select id="itemCategory"><option value="">No category</option></select><button type="button" id="addCategoryButton" aria-label="Add category">＋</button></div></div><div class="field full-field"><label for="itemDescription">Description</label><textarea id="itemDescription" rows="3" maxlength="500" placeholder="Describe your item"></textarea></div>
 <div class="field full-field"><label for="itemMedia">Product photos, GIFs & short videos (up to 12)</label><input id="itemMedia" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"><small>Images/GIFs: max 10 MB. MP4/WebM videos: max 20 MB and 30 seconds. First file is the cover.</small><div id="itemMediaGallery" class="owner-gallery"></div></div><div class="field"><label for="itemAvailability">Availability</label><select id="itemAvailability"><option value="true">Available</option><option value="false">Unavailable</option></select></div><div class="field"><label for="itemOrder">Display order</label><input id="itemOrder" type="number" min="0" step="1" value="0"></div></div>
 <div id="itemOptionsEditor" class="item-options-editor">
-  <div class="item-options-heading"><div><strong>Customization &amp; Extras</strong><small>Add flavours, sauces, chilli levels or paid extras customers can select.</small></div>
-  <button type="button" id="addCustomizationGroup" class="outline-button">+ Add option group</button></div>
+  <div class="item-options-heading"><div><strong>Customization &amp; Extras</strong><small>Create scales for amounts or heat levels, or choice groups for extras.</small></div>
+  <div class="item-options-actions"><button type="button" id="addScaleGroup" class="outline-button">+ Add scale</button><button type="button" id="addCustomizationGroup" class="outline-button">+ Add choice group</button></div></div>
   <div id="customizationGroupsList"></div>
-  <small class="item-options-note">Each group can require one choice or allow several. Added prices increase the product total.</small>
+  <small class="item-options-note">Scales start with None, Less, Mid and Extra, with Mid selected by default. Rename levels, set another default and add level prices.</small>
 </div>
 <div class="message" id="itemFormMessage" role="status" aria-live="polite" hidden></div><div class="modal-actions"><button class="outline-button" type="button" data-close-modal>Cancel</button><button class="primary-button" type="submit">Save item <span>→</span></button></div></form></div></div>
   <div class="modal-backdrop" id="categoryModal" hidden><div class="modal-card small-modal" role="dialog" aria-modal="true" aria-labelledby="categoryModalTitle"><div class="modal-head"><div><span class="eyebrow">CATALOGUE ORGANISATION</span><h3 id="categoryModalTitle">Add a category</h3></div><button class="close-modal" type="button" data-close-modal aria-label="Close">×</button></div><form id="categoryForm"><div class="field"><label for="categoryName">Section name</label><input id="categoryName" required maxlength="60" placeholder="e.g. Catering, Décor, Ice Cream"><label for="categoryMarketplace">Marketplace category</label><select id="categoryMarketplace"><option value="food-drink">Food & Drinks</option><option value="events-decor">Catering and Decor Services</option><option value="electronics">Electronics</option><option value="fashion">Fashion & Accessories</option><option value="beauty">Personal Care Services and Products</option><option value="home-living">Home & Living</option><option value="groceries">Groceries & Essentials</option><option value="local-services">Local Services</option><option value="gifts-occasions">Gifts &amp; Occasions</option><option value="other">Other</option></select><small>Controls where customers discover this section on StoreNest. It does not restrict what you offer.</small><label for="categoryStyle">Display style</label><select id="categoryStyle"><option value="auto">Automatic</option><option value="menu">Food menu</option><option value="showcase">Visual showcase</option><option value="portfolio">Service portfolio</option><option value="catalogue">Product catalogue</option><option value="booking">Booking / enquiry</option></select><label for="categoryDescription">Short introduction (optional)</label><textarea id="categoryDescription" maxlength="300" rows="2" placeholder="What this section offers"></textarea><input id="categoryEditId" type="hidden"></div><div class="message" id="categoryMessage" role="status" aria-live="polite" hidden></div><div class="modal-actions"><button class="outline-button" type="button" data-close-modal>Cancel</button><button class="primary-button" type="submit">Add category</button></div></form></div></div>
@@ -1076,9 +1076,10 @@ function getFormData(prefix){return{name:$(prefix+"Name").value,category:window.
 
 let editedOptionGroups=[];
 const newCustomizationId=()=>crypto.randomUUID().replace(/-/g,"");
-function createCustomizationOption(){return {id:newCustomizationId(),name:"",price:0}}
+function createCustomizationOption(name=""){return {id:newCustomizationId(),name,price:0}}
 function drawCustomizationEditor(){
  const root=$("customizationGroupsList");
+ editedOptionGroups.forEach(group=>{if(group.selection==="scale"&&!group.options.some(option=>option.id===group.defaultOptionId)){const midpoint=group.options.find(option=>/^(mid|medium|moderate|regular)$/i.test(option.name))||group.options[Math.floor(group.options.length/2)];group.defaultOptionId=midpoint?.id||""}});
  $("itemOptionsEditor").hidden=$("itemType").value!=="product";
  root.innerHTML=editedOptionGroups.map((group,gi)=>`
   <section class="option-group-editor" data-group-index="${gi}">
@@ -1088,28 +1089,55 @@ function drawCustomizationEditor(){
    </div>
    <div class="option-group-settings">
     <label class="option-selection-label">Selection type
-      <select data-group-field="selection"><option value="single" ${group.selection==="single"?"selected":""}>Choose one</option><option value="multiple" ${group.selection==="multiple"?"selected":""}>Choose multiple</option></select>
+      <select data-group-field="selection"><option value="scale" ${group.selection==="scale"?"selected":""}>Scale</option><option value="single" ${group.selection==="single"?"selected":""}>Choose one</option><option value="multiple" ${group.selection==="multiple"?"selected":""}>Choose multiple</option></select>
     </label>
     <label class="option-group-required"><input type="checkbox" data-group-field="required" ${group.required?"checked":""}> Required</label>
     ${group.selection==="multiple"?`<label class="option-maximum-label">Max choices<input type="number" min="1" max="16" data-group-field="max" value="${Number(group.max)||1}"></label>`:""}
    </div>
    <div class="option-entries">
     ${group.options.map((option,oi)=>`<div class="option-entry" data-option-index="${oi}">
-       <label>Choice<input type="text" maxlength="75" data-option-field="name" value="${escapeHtml(option.name)}" placeholder="e.g. Extra chilli"></label>
+       <label>${group.selection==="scale"?"Level":"Choice"}<input type="text" maxlength="75" data-option-field="name" value="${escapeHtml(option.name)}" placeholder="${group.selection==="scale"?"e.g. Hot or Extra-hot":"e.g. Extra chilli"}"></label>
        <label>Extra R<input type="number" min="0" max="100000" step="0.01" data-option-field="price" value="${Number(option.price)||0}"></label>
        <button type="button" data-option-action="remove-option" aria-label="Remove choice">×</button>
     </div>`).join("")}
    </div>
    <div class="option-editor-actions"><button type="button" class="outline-button" data-option-action="add-option">+ Add choice</button><small>${group.options.length}/16 choices</small></div>
   </section>`).join("");
+ editedOptionGroups.forEach((group,gi)=>{
+  if(group.selection!=="scale")return;
+  const card=root.querySelector('[data-group-index="'+gi+'"]');
+  const settings=card?.querySelector(".option-group-settings");
+  if(!settings)return;
+  const label=document.createElement("label");
+  label.className="option-default-label";
+  label.append(document.createTextNode("Default level"));
+  const select=document.createElement("select");
+  select.dataset.groupField="defaultOptionId";
+  group.options.forEach((option,oi)=>{
+   const choice=document.createElement("option");
+   choice.value=option.id;
+   choice.textContent=option.name||"Level "+(oi+1);
+   choice.selected=group.defaultOptionId===option.id;
+   select.append(choice);
+  });
+  label.append(select);
+  settings.append(label);
+ });
 }
 $("itemType").addEventListener("change",drawCustomizationEditor);
-$("addCustomizationGroup").addEventListener("click",()=>{
+function addOptionEditorGroup(group){
  if(editedOptionGroups.length>=10){showToast("Up to 10 option groups per product.",true);return}
- editedOptionGroups.push({id:newCustomizationId(),name:"",selection:"single",required:true,max:1,options:[createCustomizationOption()]});
+ editedOptionGroups.push(group);
  drawCustomizationEditor();
  const groups=$("customizationGroupsList").querySelectorAll(".option-group-editor");
  groups[groups.length-1]?.querySelector('[data-group-field="name"]')?.focus();
+}
+$("addScaleGroup").addEventListener("click",()=>{
+ const levels=["None","Less","Mid","Extra"].map(name=>createCustomizationOption(name));
+ addOptionEditorGroup({id:newCustomizationId(),name:"",selection:"scale",required:true,max:1,defaultOptionId:levels[2].id,options:levels});
+});
+$("addCustomizationGroup").addEventListener("click",()=>{
+ addOptionEditorGroup({id:newCustomizationId(),name:"",selection:"single",required:true,max:1,options:[createCustomizationOption()]});
 });
 $("customizationGroupsList").addEventListener("input",event=>{
  const field=event.target,card=field.closest("[data-group-index]");if(!card)return;
@@ -1122,6 +1150,7 @@ $("customizationGroupsList").addEventListener("input",event=>{
 $("customizationGroupsList").addEventListener("change",event=>{
  const field=event.target;
  if(field.dataset.groupField==="selection")drawCustomizationEditor();
+ if(field.dataset.groupField==="defaultOptionId"){const card=field.closest("[data-group-index]");const group=editedOptionGroups[Number(card?.dataset.groupIndex)];if(group)group.defaultOptionId=field.value;}
 });
 $("customizationGroupsList").addEventListener("click",event=>{
  const button=event.target.closest("[data-option-action]");if(!button)return;
@@ -1144,6 +1173,8 @@ function optionsForSave(){
   }
   if(group.selection==="multiple"&&(!Number.isInteger(Number(group.max))||Number(group.max)<1||Number(group.max)>group.options.length))
    throw Error("Maximum choices must be between 1 and "+group.options.length+" for "+group.name+".");
+  if(group.selection==="scale"&&group.options.length<2)throw Error("A scale needs at least two levels.");
+  if(group.selection==="scale"&&!group.options.some(option=>option.id===group.defaultOptionId))throw Error("Choose a default level for "+group.name+".");
  }
  return window.StoreNestOptions.normalize(editedOptionGroups);
 }
