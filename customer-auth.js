@@ -131,6 +131,25 @@
     return { method, destination: value };
   }
 
+  async function sendExistingAccountCode(method, value) {
+    const client = await getClient();
+    const destination = normalizeAuthDestination(method, value);
+    const result = method === "email"
+      ? await client.auth.signInWithOtp({ email: destination, options: { shouldCreateUser: false } })
+      : await client.auth.signInWithOtp({ phone: destination, options: { shouldCreateUser: false } });
+    if (result.error) throw phoneProviderError(result.error);
+    return { method, destination };
+  }
+
+  async function updatePassword(password) {
+    const client = await getClient();
+    const secret = String(password || "");
+    if (secret.length < 8) throw new Error("Choose a password with at least 8 characters.");
+    const result = await client.auth.updateUser({ password: secret });
+    if (result.error) throw result.error;
+    return result.data?.user || null;
+  }
+
   async function signInWithPassword(method, value, password) {
     const client = await getClient();
     const destination = normalizeAuthDestination(method, value);
@@ -182,5 +201,5 @@
     return data;
   }
 
-  window.StoreNestCustomerAuth = { getClient, normalizePhone, normalizeEmail, sendCode, verifyCode, createAccount, resendConfirmation, signInWithPassword, getProfile, saveProfile };
+  window.StoreNestCustomerAuth = { getClient, normalizePhone, normalizeEmail, sendCode, verifyCode, createAccount, resendConfirmation, sendExistingAccountCode, signInWithPassword, updatePassword, getProfile, saveProfile };
 })();
