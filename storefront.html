@@ -603,7 +603,7 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
 .checkout-submit-row strong{font-size:18px;color:#171717}
 .checkout-submit-row button{border:0;border-radius:100px;background:#171717;color:#fff;padding:11px 17px;font-weight:800;white-space:nowrap}
 .checkout-submit-row button:disabled{opacity:.6;cursor:wait}
-.checkout-success{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px}
+.checkout-success{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px}
 .checkout-success-mark{display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:#e8f7f0;color:#2ba783;font-size:25px;font-weight:800}
 .checkout-success h3{margin:0;font-size:20px}
 .checkout-success>strong{font-size:13px;color:#526b5d}
@@ -627,7 +627,9 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
 .order-tracking-cancelled{margin:7px 0 0;color:#a04437;font-size:11px}
 .checkout-order-progress{width:100%;text-align:left}
 .checkout-order-progress .order-tracking-card{width:100%}
-@media(max-width:480px){.basket-order-progress{max-height:32vh}.order-tracking-card{padding:9px}.order-tracking-step{font-size:9px}}
+.order-tracking-share{width:100%;min-height:40px;margin-top:9px;border:1px solid #cddfd4;border-radius:9px;background:#f4faf6;color:#2b6652;font:inherit;font-size:11px;font-weight:800;cursor:pointer}
+.order-tracking-share:hover{background:#e8f7f0}
+@media(max-width:480px){.basket-order-progress{max-height:min(45vh,400px)}.order-tracking-card{padding:9px}.order-tracking-step{font-size:9px}.checkout-success{justify-content:flex-start;padding:14px 0}.order-tracking-share{min-height:44px}}
 @media(max-width:480px){.checkout-step{gap:12px}.checkout-fields input{min-height:44px}.checkout-submit-row strong{font-size:17px}}
 </style>
 <link rel="stylesheet" href="/theme.css">
@@ -813,20 +815,24 @@ function updateCartProduct(key,item,selection,note=""){
 }
 
 const ORDER_TRACKING_STORAGE_PREFIX="storenest_order_tracking:";
-let orderTrackingPoll=null,orderTrackingRequestActive=false;
+let orderTrackingPoll=null,orderTrackingRequestActive=false,orderTrackingMemory=[];
 function orderTrackingStorageKey(){
  return activePublicBusiness?.id?ORDER_TRACKING_STORAGE_PREFIX+activePublicBusiness.id:null;
 }
 function readTrackedOrders(){
- const key=orderTrackingStorageKey();if(!key)return[];
+ const key=orderTrackingStorageKey();if(!key)return orderTrackingMemory;
  try{
-  const parsed=JSON.parse(localStorage.getItem(key)||"[]");
-  return Array.isArray(parsed)?parsed.filter(order=>order&&typeof order.id==="string"&&typeof order.token==="string").slice(0,5):[];
- }catch(_){return[]}
+  const saved=localStorage.getItem(key);
+  if(!saved)return orderTrackingMemory;
+  const parsed=JSON.parse(saved);
+  orderTrackingMemory=Array.isArray(parsed)?parsed.filter(order=>order&&typeof order.id==="string"&&typeof order.token==="string").slice(0,5):[];
+  return orderTrackingMemory;
+ }catch(_){return orderTrackingMemory}
 }
 function saveTrackedOrders(orders){
+ orderTrackingMemory=orders.slice(0,5);
  const key=orderTrackingStorageKey();if(!key)return;
- try{localStorage.setItem(key,JSON.stringify(orders.slice(0,5)))}catch(_){}
+ try{localStorage.setItem(key,JSON.stringify(orderTrackingMemory))}catch(_){}
 }
 function rememberTrackedOrder(order){
  const orders=readTrackedOrders().filter(existing=>existing.id!==order.id);
@@ -851,8 +857,41 @@ function orderProgressCard(order){
   const state=done?"Complete":active?orderTrackingLabel(order.status):"Waiting";
   return '<li class="order-tracking-step'+(done?' is-complete':active?' is-current':'')+'"><span class="order-tracking-dot" aria-hidden="true"></span><span>'+esc(stage.label)+'</span><small class="order-tracking-step-status">'+esc(state)+'</small></li>';
  }).join("");
- return '<article class="order-tracking-card"><div class="order-tracking-head"><div class="order-tracking-store"><span>'+esc(order.businessName||activePublicBusiness?.name||"Store")+'</span><small class="order-tracking-ref">Order #'+esc(reference)+'</small></div><span class="order-tracking-current">'+esc(orderTrackingLabel(order.status))+'</span></div><ol class="order-tracking-steps">'+steps+'</ol>'+(order.status==="cancelled"?'<p class="order-tracking-cancelled">This order request was cancelled.</p>':"")+'</article>';
+ return '<article class="order-tracking-card"><div class="order-tracking-head"><div class="order-tracking-store"><span>'+esc(order.businessName||activePublicBusiness?.name||"Store")+'</span><small class="order-tracking-ref">Order #'+esc(reference)+'</small></div><span class="order-tracking-current">'+esc(orderTrackingLabel(order.status))+'</span></div><ol class="order-tracking-steps">'+steps+'</ol>'+(order.status==="cancelled"?'<p class="order-tracking-cancelled">This order request was cancelled.</p>':"")+'<button type="button" class="order-tracking-share" data-share-order="'+esc(order.id)+'">Share tracking link</button></article>';
 }
+function orderTrackingUrl(order){
+ const url=new URL(location.href);
+ url.hash=new URLSearchParams({order:order.id,token:order.token}).toString();
+ return url.href;
+}
+async function shareOrderTracking(orderId){
+ const order=readTrackedOrders().find(item=>item.id===orderId);if(!order)return;
+ const url=orderTrackingUrl(order);
+ try{
+  if(typeof navigator.share==="function"){
+   await navigator.share({title:"StoreNest order status",text:"Track your order progress.",url});
+   return;
+  }
+  if(navigator.clipboard?.writeText){
+   await navigator.clipboard.writeText(url);
+   toast("Tracking link copied.");
+   return;
+  }
+ }catch(error){if(error?.name==="AbortError")return;console.warn("Order tracking link could not be shared:",error)}
+ window.prompt("Copy this order tracking link to open your order on another device:",url);
+}
+function restoreTrackedOrderFromUrl(){
+ const params=new URLSearchParams(location.hash.slice(1));
+ const id=params.get("order"),token=params.get("token");
+ if(!id||!token||!/^[0-9a-f-]{36}$/i.test(id)||!/^[0-9a-f-]{36}$/i.test(token))return false;
+ rememberTrackedOrder({id,token,status:"new",createdAt:new Date().toISOString(),businessName:activePublicBusiness?.name||"Store"});
+ try{history.replaceState(null,"",location.pathname+location.search)}catch(_){}
+ return true;
+}
+document.addEventListener("click",event=>{
+ const button=event.target.closest("[data-share-order]");
+ if(button)shareOrderTracking(button.dataset.shareOrder);
+});
 function renderBasketOrderProgress(){
  const panel=$("basketOrderProgress"),orders=readTrackedOrders();
  if(panel){panel.hidden=!orders.length;panel.innerHTML=orders.length?'<div class="basket-order-heading">Order progress</div>'+orders.map(orderProgressCard).join(""):""}
@@ -1464,6 +1503,7 @@ function renderPublishedStorefront(root,client,business,items,storefrontSections
      '<div id="catalog" class="catalog-area">'+catalogueMarkup+'</div>';
    activateBackgroundVideos(root);
    activateCatalogPreviews(root);
+   if(restoreTrackedOrderFromUrl())openCart();
 
 }
 async function load(){
