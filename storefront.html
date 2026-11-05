@@ -704,8 +704,8 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
             <button id="checkoutVerifyCode" class="checkout-profile-button" type="button">Confirm code</button>
           </div>
         </div>
-        <div id="checkoutProfileStep" hidden>
-          <p class="checkout-profile-copy">Your contact is confirmed. Add the required profile details to continue.</p>
+        <div id="checkoutProfileStep">
+          <p class="checkout-profile-copy">Enter your profile name and place here. They are saved after your email or phone is confirmed.</p>
           <label class="checkout-profile-label" for="checkoutProfileName">Profile name *<input id="checkoutProfileName" maxlength="100" autocomplete="name" placeholder="Your name"></label>
           <label class="checkout-profile-label" for="checkoutProfilePlace">Place *<input id="checkoutProfilePlace" maxlength="120" autocomplete="address-level2" placeholder="e.g. Jane Furse"></label>
           <label class="checkout-profile-label" for="checkoutProfileAddress">Exact address <small>(optional)</small><input id="checkoutProfileAddress" maxlength="280" autocomplete="street-address" placeholder="Street or collection details"></label>
@@ -714,7 +714,7 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
         <p id="checkoutProfileMessage" class="checkout-profile-message" role="status" hidden></p>
       </section>
       <div id="checkoutProfileSummary" class="checkout-profile-summary" hidden></div>
-      <div class="checkout-fields">
+      <div id="checkoutContactFields" class="checkout-fields" hidden>
         <h3>Your details</h3>
         <label>Profile name <input name="customer_name" maxlength="100" autocomplete="name" placeholder="Your profile name" readonly></label>
         <label>Phone number <em>*</em><input name="contact_phone" type="tel" maxlength="40" autocomplete="tel" placeholder="e.g. 072 123 4567"><small>Required so the store can contact you about collection.</small></label>
@@ -1028,36 +1028,53 @@ function openCheckout(){
  $("cartReviewView").hidden=true;$("checkoutSuccessView").hidden=true;$("checkoutForm").hidden=false;
  $("cartTitle").textContent="Checkout";
  resetCheckoutProfileGate();
- $("checkoutForm").querySelector('[name="customer_name"]')?.focus();
+ showCheckoutProfileGate();
+ prepareCheckoutProfileForCheckout();
 }
 function resetCheckoutProfileGate(){
  $("checkoutProfileGate").hidden=true;$("checkoutProfileSummary").hidden=true;
+ $("checkoutContactFields").hidden=true;
  $("checkoutAuthStep").hidden=false;$("checkoutProfileStep").hidden=true;$("checkoutCodeStep").hidden=true;
+ $("checkoutSaveProfile").hidden=true;
  $("checkoutProfileMessage").hidden=true;$("checkoutProfileMessage").classList.remove("error");
  $("checkoutAuthContact").disabled=false;$("checkoutAuthContact").value="";$("checkoutAuthCode").value="";
  $("checkoutProfileName").value="";$("checkoutProfilePlace").value="";$("checkoutProfileAddress").value="";
  $("checkoutSendCode").textContent="Send confirmation code";$("checkoutSendCode").disabled=false;
- $("checkoutVerifyCode").disabled=false;$("checkoutSaveProfile").disabled=false;
+ $("checkoutVerifyCode").disabled=true;$("checkoutSaveProfile").disabled=true;
  checkoutPendingCode=null;checkoutVerifiedUser=null;checkoutVerifiedProfile=null;
 }
+async function prepareCheckoutProfileForCheckout(){
+ try{
+  const {data,error}=await storefrontClient.auth.getUser();if(error)throw error;
+  const user=data?.user||null;
+  if(!user){$("checkoutAuthContact").focus();return}
+  const profile=await window.StoreNestCustomerAuth.getProfile(user.id);
+  if(profile){finishCheckoutProfile(user,profile);return}
+  showCheckoutProfileGate(user);
+ }catch(error){
+  console.error("Could not prepare checkout profile:",error);
+  showCheckoutProfileMessage("Could not check your profile. You can still enter your email or phone and try again.",true);
+  $("checkoutAuthContact").focus();
+ }
+}
 function showCheckoutProfileGate(user=null){
- $("checkoutError").hidden=true;$("checkoutProfileSummary").hidden=true;$("checkoutProfileGate").hidden=false;
+ $("checkoutError").hidden=true;$("checkoutProfileSummary").hidden=true;$("checkoutContactFields").hidden=true;$("checkoutProfileGate").hidden=false;
  checkoutVerifiedUser=user||null;
  $("checkoutAuthStep").hidden=!!user;
- $("checkoutProfileStep").hidden=!user;
+ $("checkoutProfileStep").hidden=false;
+ $("checkoutSaveProfile").hidden=!user;
+ $("checkoutSaveProfile").disabled=!user;
  $("checkoutProfileHeading").textContent=user?"Complete your customer profile":"Create your customer profile";
  if(user){
-  $("checkoutProfileName").value=user.user_metadata?.full_name||$("checkoutForm").querySelector('[name="customer_name"]')?.value||"";
-  $("checkoutProfilePlace").value="";
-  $("checkoutProfileAddress").value="";
-  showCheckoutProfileMessage("You are signed in. Add the required profile name and place to continue.",false);
+  if(!$("checkoutProfileName").value)$("checkoutProfileName").value=user.user_metadata?.full_name||"";
+  showCheckoutProfileMessage("You are signed in. Enter your required profile name and place, then save.",false);
  }else{
-  $("checkoutProfileHeading").textContent="Create your customer profile";
   $("checkoutAuthContact").disabled=false;
   $("checkoutCodeStep").hidden=true;
+  $("checkoutVerifyCode").disabled=true;
   $("checkoutAuthMethod").querySelector('input[value="email"]').checked=true;
   updateCheckoutAuthMethod();
-  showCheckoutProfileMessage("",false);
+  showCheckoutProfileMessage("Enter your profile details now. They will be saved after you confirm your email or phone.",false);
  }
  $("checkoutProfileGate").scrollIntoView({block:"nearest",behavior:"smooth"});
 }
@@ -1080,6 +1097,7 @@ async function sendCheckoutCode(){
   checkoutPendingCode=await window.StoreNestCustomerAuth.sendCode(method,$("checkoutAuthContact").value);
   $("checkoutAuthContact").value=checkoutPendingCode.destination;
   $("checkoutAuthContact").disabled=true;$("checkoutCodeStep").hidden=false;
+  $("checkoutVerifyCode").disabled=false;
   $("checkoutAuthCode").focus();button.textContent="Resend code";
   showCheckoutProfileMessage("Confirmation code sent. Check your email or SMS.",false);
  }catch(error){
@@ -1095,14 +1113,14 @@ async function verifyCheckoutCode(){
   const user=result.user;if(!user)throw new Error("The code was accepted, but sign-in did not complete.");
   checkoutVerifiedUser=user;
   const profile=await window.StoreNestCustomerAuth.getProfile(user.id);
-  if(profile)finishCheckoutProfile(user,profile);
-  else{
-   $("checkoutAuthStep").hidden=true;$("checkoutProfileStep").hidden=false;
-   $("checkoutProfileName").value=user.user_metadata?.full_name||"";
-   $("checkoutProfilePlace").value="";$("checkoutProfileAddress").value="";
-   $("checkoutProfileName").focus();
-   showCheckoutProfileMessage("Your contact is confirmed. Add your profile name and place.",false);
-  }
+  if(profile){finishCheckoutProfile(user,profile);return}
+  $("checkoutAuthStep").hidden=true;
+  $("checkoutProfileStep").hidden=false;
+  $("checkoutSaveProfile").hidden=false;
+  $("checkoutSaveProfile").disabled=false;
+  if(!$("checkoutProfileName").value)$("checkoutProfileName").value=user.user_metadata?.full_name||"";
+  showCheckoutProfileMessage("Your code is confirmed. Save your profile details to continue.",false);
+  if(!$("checkoutProfileName").value)$("checkoutProfileName").focus();
  }catch(error){
   console.error("Checkout confirmation failed:",error);
   showCheckoutProfileMessage(error.message||"That code could not be confirmed. Check it and try again.",true);
@@ -1133,6 +1151,7 @@ function finishCheckoutProfile(user,profile){
  if(!phoneField.value&&user?.phone)phoneField.value=user.phone;
  if(!emailField.value&&user?.email)emailField.value=user.email;
  $("checkoutProfileGate").hidden=true;
+ $("checkoutContactFields").hidden=false;
  $("checkoutProfileSummary").textContent="Profile ready · "+profile.profile_name+" · "+profile.place;
  $("checkoutProfileSummary").hidden=false;
  $("checkoutError").hidden=true;
@@ -1161,7 +1180,7 @@ async function submitCheckout(event){
  let user=null,profile=null;
  try{
   const {data,error}=await storefrontClient.auth.getUser();if(error)throw error;user=data?.user||null;
-  if(!user){showCheckoutProfileGate();return}
+  if(!user){if($("checkoutProfileGate").hidden)showCheckoutProfileGate();return}
   profile=await window.StoreNestCustomerAuth.getProfile(user.id);
   if(!profile){showCheckoutProfileGate(user);return}
  }catch(error){
@@ -1169,6 +1188,7 @@ async function submitCheckout(event){
   $("checkoutError").textContent="Your profile could not be checked. Refresh the page and try again.";
   $("checkoutError").hidden=false;return;
  }
+ finishCheckoutProfile(user,profile);
  checkoutVerifiedUser=user;checkoutVerifiedProfile=profile;
  form.querySelector('[name="customer_name"]').value=profile.profile_name||"";
  const phoneField=form.querySelector('[name="contact_phone"]'),emailField=form.querySelector('[name="contact_email"]');
