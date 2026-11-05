@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f7faf8">
+<title>Your profile — StoreNest</title>
+<link rel="icon" type="image/png" href="/icons/icon-192.png">
+<link rel="stylesheet" href="/theme.css">
+<style>
+:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#17231d;background:#f7faf8}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#f7faf8;color:#17231d}button,input{font:inherit}button{cursor:pointer}
+.page{width:min(920px,calc(100% - 28px));margin:auto}
+.top{height:72px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #dce7e0}
+.logo{font-size:23px;font-weight:900;letter-spacing:-.07em;color:#17231d;text-decoration:none}.logo span{color:#40b99b}
+.top a:last-child{font-size:13px;font-weight:700;color:#547067;text-decoration:none}
+main{padding:30px 0 55px}.intro{margin:0 0 18px}.intro h1{margin:0 0 8px;font-size:clamp(25px,4vw,36px);letter-spacing:-.045em}.intro p{margin:0;max-width:65ch;color:#64736b;line-height:1.55;font-size:14px}
+.panel{padding:22px;background:#fff;border:1px solid #dce8e1;border-radius:17px;box-shadow:0 8px 30px #20382a08;margin-top:15px}
+.panel h2{font-size:19px;margin:0 0 7px;letter-spacing:-.03em}.panel-copy{font-size:13px;color:#68766f;line-height:1.5;margin:0 0 17px}
+.method-row{display:flex;gap:10px;margin:0 0 14px}.method-option{flex:1;display:flex;align-items:center;gap:9px;padding:12px;border:1px solid #dce6e0;border-radius:10px;font-size:13px;font-weight:750;cursor:pointer}.method-option:has(input:checked){border-color:#39b796;background:#eef9f4}.method-option input{accent-color:#39b796}
+.field{display:grid;gap:6px;margin:0 0 13px;font-size:12px;font-weight:750;color:#29362f}.field input{width:100%;min-height:45px;border:1px solid #d6e1db;border-radius:10px;padding:11px 12px;background:#fff;color:#17231d}.field input:focus{outline:3px solid #b8ecdb;border-color:#38b492}.field small{font-weight:500;color:#738078;line-height:1.45}
+.primary,.secondary,.quiet{min-height:44px;border-radius:10px;padding:10px 15px;font-size:13px;font-weight:800}.primary{border:0;background:#171b19;color:#fff}.primary:hover{background:#293d34}.secondary{border:1px solid #cfe0d7;background:#eff9f4;color:#1d705a}.quiet{border:1px solid #dce5e0;background:#fff;color:#53645b}.primary:disabled,.secondary:disabled{opacity:.55;cursor:wait}
+.code-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:11px;margin-top:13px}.code-row .field{margin:0}
+.message{margin:12px 0 0;padding:11px 12px;border-radius:9px;background:#f0f8f4;color:#39715f;font-size:12px;line-height:1.5}.message.error{background:#fff0eb;color:#a43c2e}.message[hidden]{display:none!important}
+.profile-head{display:flex;justify-content:space-between;align-items:start;gap:12px;margin-bottom:14px}.profile-head p{margin:4px 0 0;color:#68766e;font-size:12px;line-height:1.5}
+.profile-form{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}.profile-form .wide{grid-column:1/-1}.profile-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;grid-column:1/-1;padding-top:2px}
+.order-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.order-heading h2{margin:0}
+.order-list{display:grid;gap:10px}.order-card{border:1px solid #e1eae5;border-radius:12px;padding:14px}.order-card-head{display:flex;justify-content:space-between;align-items:start;gap:10px}.order-title{font-size:13px;font-weight:850}.order-subtitle{margin-top:4px;color:#738078;font-size:11px}.status{white-space:nowrap;border-radius:99px;padding:6px 9px;background:#eaf7f0;color:#22775e;font-size:10px;font-weight:850}.order-items{margin:10px 0 0;color:#596860;font-size:12px;line-height:1.5}.order-bottom{display:flex;justify-content:space-between;gap:10px;margin-top:10px;padding-top:10px;border-top:1px solid #edf1ee;font-size:12px}.order-total{font-weight:850}.empty-orders{border:1px dashed #d9e6de;border-radius:11px;padding:20px;text-align:center;color:#728078;font-size:13px;line-height:1.55}
+@media(max-width:620px){.page{width:calc(100% - 20px)}main{padding-top:22px}.panel{padding:17px;border-radius:14px}.profile-form{grid-template-columns:1fr}.profile-form .wide,.profile-actions{grid-column:auto}.profile-actions{flex-direction:column-reverse;align-items:stretch}.profile-actions button{width:100%}.code-row{grid-template-columns:1fr}.method-row{gap:7px}.method-option{padding:10px 8px;font-size:12px}}
+</style>
+</head>
+<body data-page-kind="customer">
+<div class="page">
+<header class="top"><a class="logo" href="/">store<span>nest.</span></a><a href="/">← Explore stores</a></header>
+<main>
+<section class="intro"><h1>Your StoreNest profile</h1><p>Use a verified email or phone number to save your profile and follow your order progress from any device.</p></section>
+<section id="signInPanel" class="panel">
+  <h2>Sign in or create a profile</h2>
+  <p class="panel-copy">We’ll send a one-time confirmation code. You can use email or a mobile number.</p>
+  <div class="method-row" role="radiogroup" aria-label="Confirmation method">
+    <label class="method-option"><input type="radio" name="accountMethod" value="email" checked> Email</label>
+    <label class="method-option"><input type="radio" name="accountMethod" value="phone"> Phone</label>
+  </div>
+  <label class="field" for="accountContact"><span id="contactLabel">Email address</span><input id="accountContact" type="email" autocomplete="email" placeholder="you@example.com"><small id="contactHint">Your confirmation code will be sent to this email.</small></label>
+  <button id="sendAccountCode" class="primary" type="button">Send confirmation code</button>
+  <div id="accountCodeStep" class="code-row" hidden>
+    <label class="field" for="accountCode">Confirmation code<input id="accountCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Enter the code"></label>
+    <button id="verifyAccountCode" class="secondary" type="button">Confirm code</button>
+  </div>
+  <p id="accountAuthMessage" class="message" role="status" hidden></p>
+</section>
+<section id="profilePanel" class="panel" hidden>
+  <div class="profile-head"><div><h2 id="profileHeading">Your profile</h2><p id="profileHelp">Profile name and place are required. Exact address is optional.</p></div><button id="signOutButton" class="quiet" type="button">Sign out</button></div>
+  <form id="customerProfileForm" class="profile-form">
+    <label class="field" for="profileName">Profile name *<input id="profileName" name="profile_name" required minlength="2" maxlength="100" autocomplete="name" placeholder="Your name"></label>
+    <label class="field" for="profilePlace">Place *<input id="profilePlace" name="place" required minlength="2" maxlength="120" autocomplete="address-level2" placeholder="e.g. Jane Furse"></label>
+    <label class="field wide" for="profileAddress">Exact address <small>(optional)</small><input id="profileAddress" name="exact_address" maxlength="280" autocomplete="street-address" placeholder="Street, house number, or collection details"></label>
+    <div class="profile-actions"><span id="verifiedContact" class="panel-copy" style="margin:0"></span><button id="saveProfileButton" class="primary" type="submit">Save profile</button></div>
+  </form>
+  <p id="profileMessage" class="message" role="status" hidden></p>
+</section>
+<section id="ordersPanel" class="panel" hidden>
+  <div class="order-heading"><h2>Your orders</h2><button id="refreshOrdersButton" class="quiet" type="button">Refresh</button></div>
+  <div id="customerOrderList" class="order-list" aria-live="polite"></div>
+</section>
+</main>
+</div>
+<script src="/customer-auth.js"></script>
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const customerAuth=window.StoreNestCustomerAuth;
+let accountClient=null,currentUser=null,currentProfile=null,pendingCode=null;
+function esc(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function showMessage(node,text,isError=false){node.textContent=text;node.classList.toggle("error",isError);node.hidden=!text}
+function selectedMethod(){return document.querySelector('input[name="accountMethod"]:checked')?.value||"email"}
+function updateMethod(){const method=selectedMethod(),input=$("accountContact");input.type=method==="email"?"email":"tel";input.autocomplete=method==="email"?"email":"tel";input.placeholder=method==="email"?"you@example.com":"072 123 4567 or +27 72 123 4567";$("contactLabel").textContent=method==="email"?"Email address":"Phone number";$("contactHint").textContent=method==="email"?"Your confirmation code will be sent to this email.":"Your confirmation code will be sent by SMS."}
+function setSignedInView(user,profile){currentUser=user;currentProfile=profile;$("signInPanel").hidden=true;$("profilePanel").hidden=false;$("ordersPanel").hidden=true;$("profileHeading").textContent=profile?"Your profile":"Finish creating your profile";$("profileHelp").textContent=profile?"Profile name and place are required. Exact address is optional.":"Your confirmation is complete. Add your profile name and place to finish registration."; $("profileName").value=profile?.profile_name||user.user_metadata?.full_name||"";$("profilePlace").value=profile?.place||"";$("profileAddress").value=profile?.exact_address||"";$("verifiedContact").textContent=user.email||user.phone||"Verified account";$("saveProfileButton").textContent=profile?"Save changes":"Save profile";$("profileMessage").hidden=true;$("ordersPanel").hidden=false;loadCustomerOrders().catch(error=>{console.error("Could not load customer orders:",error);$("customerOrderList").innerHTML='<div class="empty-orders">Your orders could not be loaded. Please refresh in a moment.</div>'})}
+async function sendAccountCode(){const button=$("sendAccountCode");button.disabled=true;showMessage($("accountAuthMessage"),"");
+ try{pendingCode=await customerAuth.sendCode(selectedMethod(),$("accountContact").value);$("accountContact").value=pendingCode.destination;$("accountContact").disabled=true;$("accountCodeStep").hidden=false;$("accountCode").focus();button.textContent="Resend code";showMessage($("accountAuthMessage"),"Confirmation code sent. Check your email or SMS.");}
+ catch(error){console.error("Could not send customer confirmation:",error);showMessage($("accountAuthMessage"),error.message||"Could not send a code. Check the address or number and try again.",true);}
+ finally{button.disabled=false}}
+async function verifyAccountCode(){const button=$("verifyAccountCode");button.disabled=true;showMessage($("accountAuthMessage"),"");
+ try{if(!pendingCode)throw new Error("Send a confirmation code first.");const result=await customerAuth.verifyCode(pendingCode.method,pendingCode.destination,$("accountCode").value);const user=result.user;if(!user)throw new Error("The code was accepted, but no account session was returned.");const profile=await customerAuth.getProfile(user.id);setSignedInView(user,profile);}
+ catch(error){console.error("Customer confirmation failed:",error);showMessage($("accountAuthMessage"),error.message||"That code could not be confirmed. Check it and try again.",true);}
+ finally{button.disabled=false}}
+async function saveCustomerProfile(event){event.preventDefault();const button=$("saveProfileButton");button.disabled=true;showMessage($("profileMessage"),"");
+ try{const profile=await customerAuth.saveProfile(currentUser,{profile_name:$("profileName").value,place:$("profilePlace").value,exact_address:$("profileAddress").value});currentProfile=profile;$("profileHeading").textContent="Your profile";$("profileHelp").textContent="Profile name and place are required. Exact address is optional.";$("saveProfileButton").textContent="Save changes";showMessage($("profileMessage"),"Your profile has been saved.");loadCustomerOrders().catch(()=>{});}
+ catch(error){console.error("Could not save customer profile:",error);showMessage($("profileMessage"),error.message||"Could not save your profile. Please try again.",true);}
+ finally{button.disabled=false}}
+const orderLabels={new:"Awaiting acceptance",accepted:"Order received",preparing:"In progress",prepared:"Prepared",ready:"Ready for collection",completed:"Collected",cancelled:"Cancelled"};
+async function loadCustomerOrders(){if(!currentUser)return;const list=$("customerOrderList");list.innerHTML='<div class="empty-orders">Loading your orders…</div>';const {data,error}=await accountClient.from("storefront_orders").select("id,customer_business_name,status,created_at,subtotal,items,payment_method,payment_status").order("created_at",{ascending:false}).limit(50);if(error)throw error;const rows=data||[];if(!rows.length){list.innerHTML='<div class="empty-orders">No orders yet. Orders you place while signed in will appear here.</div>';return;}list.innerHTML=rows.map(order=>{const ref=String(order.id||"").replace(/-/g,"").slice(0,8).toUpperCase();const date=order.created_at?new Date(order.created_at).toLocaleString(undefined,{dateStyle:"medium",timeStyle:"short"}):"";const items=(Array.isArray(order.items)?order.items:[]).map(item=>String(item.quantity||1)+" × "+String(item.name||"Item")).join(", ");return '<article class="order-card"><div class="order-card-head"><div><div class="order-title">'+esc(order.customer_business_name||"Store")+'</div><div class="order-subtitle">Order #'+esc(ref)+(date?" · "+esc(date):"")+'</div></div><span class="status">'+esc(orderLabels[order.status]||"Awaiting acceptance")+'</span></div><p class="order-items">'+esc(items)+'</p><div class="order-bottom"><span>'+(order.payment_method==="card"?"Pay with card":"Pay on collection")+'</span><strong class="order-total">R'+Number(order.subtotal||0).toFixed(2)+'</strong></div></article>';}).join("")}
+document.querySelectorAll('input[name="accountMethod"]').forEach(input=>input.addEventListener("change",()=>{if(!$("accountContact").disabled)updateMethod()}));
+$("sendAccountCode").addEventListener("click",sendAccountCode);
+$("verifyAccountCode").addEventListener("click",verifyAccountCode);
+$("customerProfileForm").addEventListener("submit",saveCustomerProfile);
+$("refreshOrdersButton").addEventListener("click",()=>loadCustomerOrders().catch(error=>{console.error(error);$("customerOrderList").innerHTML='<div class="empty-orders">Could not refresh orders. Please try again.</div>'}));
+$("signOutButton").addEventListener("click",async()=>{try{await accountClient.auth.signOut();currentUser=null;currentProfile=null;$("profilePanel").hidden=true;$("ordersPanel").hidden=true;$("signInPanel").hidden=false;$("accountContact").disabled=false;$("accountCodeStep").hidden=true;$("accountCode").value="";showMessage($("accountAuthMessage"),"You have signed out.");}catch(error){showMessage($("profileMessage"),error.message||"Could not sign out.",true)}});
+async function initializeAccount(){updateMethod();accountClient=await customerAuth.getClient();const {data,error}=await accountClient.auth.getUser();if(error)throw error;if(data?.user){const profile=await customerAuth.getProfile(data.user.id);setSignedInView(data.user,profile)}}
+initializeAccount().catch(error=>{console.error("Customer profile page could not load:",error);showMessage($("accountAuthMessage"),error.message||"Could not load the profile service. Refresh and try again.",true)});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&currentUser)loadCustomerOrders().catch(()=>{})});
+setInterval(()=>{if(!document.hidden&&currentUser)loadCustomerOrders().catch(()=>{})},30000);
+</script>
+</body>
+</html>

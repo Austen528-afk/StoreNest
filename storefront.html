@@ -601,6 +601,22 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
 .checkout-preview-notice,.checkout-error{margin:0;border-radius:9px;padding:10px 12px;font-size:12px;line-height:1.45}
 .checkout-preview-notice{background:#fff8e8;border:1px solid #f1dfb0;color:#755715}
 .checkout-error{background:#fff0eb;color:#9d382a}
+.checkout-profile-gate{display:grid;gap:10px;border:1px solid #d5e5dc;border-radius:12px;background:#f6fbf8;padding:14px}
+.checkout-profile-gate h3{margin:0;font-size:15px}
+.checkout-profile-copy{margin:0;color:#65756c;font-size:12px;line-height:1.5}
+.checkout-auth-method{display:flex;align-items:center;gap:14px;margin:0;padding:0;border:0}
+.checkout-auth-method legend{font-size:12px;font-weight:800;margin-bottom:7px}
+.checkout-auth-method label{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700}
+.checkout-auth-method input{accent-color:#31aa87}
+.checkout-profile-label{display:grid;gap:5px;font-size:12px;font-weight:750;color:#333}
+.checkout-profile-label input{width:100%;min-height:42px;border:1px solid #dce4df;border-radius:9px;background:#fff;padding:10px 11px;color:#222}
+.checkout-profile-label small{color:#777;font-weight:500}
+.checkout-profile-button{border:0;border-radius:10px;background:#32ad8b;color:#fff;padding:11px 14px;font-size:12px;font-weight:800}
+.checkout-profile-button:disabled{opacity:.6;cursor:wait}
+.checkout-code-step{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:9px}
+.checkout-profile-message{margin:0;padding:9px 10px;border-radius:8px;background:#edf8f2;color:#35715d;font-size:12px;line-height:1.45}
+.checkout-profile-message.error{background:#fff0eb;color:#9d382a}
+.checkout-profile-summary{border:1px solid #d5e5dc;border-radius:10px;background:#f3faf6;padding:10px 12px;color:#3e6d5b;font-size:12px;font-weight:700;line-height:1.45}
 .checkout-submit-row{position:sticky;bottom:-1px;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding:12px 0 2px;background:#fff;border-top:1px solid #e7ebe8}
 .checkout-submit-row>span{display:flex;flex-direction:column;gap:2px;font-size:11px;color:#6d7a71;font-weight:700}
 .checkout-submit-row strong{font-size:18px;color:#171717}
@@ -672,11 +688,37 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
         <div id="checkoutSummary"></div>
         <div class="checkout-summary-total"><span>Total</span><strong id="checkoutTotal">R0.00</strong></div>
       </section>
+      <section id="checkoutProfileGate" class="checkout-profile-gate" hidden aria-labelledby="checkoutProfileHeading">
+        <h3 id="checkoutProfileHeading">Create your customer profile</h3>
+        <p class="checkout-profile-copy">A confirmed profile is needed to place an order. Use email or phone to receive a confirmation code.</p>
+        <div id="checkoutAuthStep">
+          <fieldset class="checkout-auth-method">
+            <legend>Send code by</legend>
+            <label><input type="radio" name="checkoutAuthMethod" value="email" checked> Email</label>
+            <label><input type="radio" name="checkoutAuthMethod" value="phone"> Phone</label>
+          </fieldset>
+          <label class="checkout-profile-label" for="checkoutAuthContact"><span id="checkoutAuthContactLabel">Email address</span><input id="checkoutAuthContact" type="text" inputmode="email" autocomplete="email" placeholder="you@example.com"></label>
+          <button id="checkoutSendCode" class="checkout-profile-button" type="button">Send confirmation code</button>
+          <div id="checkoutCodeStep" class="checkout-code-step" hidden>
+            <label class="checkout-profile-label" for="checkoutAuthCode">Confirmation code<input id="checkoutAuthCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Enter the code"></label>
+            <button id="checkoutVerifyCode" class="checkout-profile-button" type="button">Confirm code</button>
+          </div>
+        </div>
+        <div id="checkoutProfileStep" hidden>
+          <p class="checkout-profile-copy">Your contact is confirmed. Add the required profile details to continue.</p>
+          <label class="checkout-profile-label" for="checkoutProfileName">Profile name *<input id="checkoutProfileName" maxlength="100" autocomplete="name" placeholder="Your name"></label>
+          <label class="checkout-profile-label" for="checkoutProfilePlace">Place *<input id="checkoutProfilePlace" maxlength="120" autocomplete="address-level2" placeholder="e.g. Jane Furse"></label>
+          <label class="checkout-profile-label" for="checkoutProfileAddress">Exact address <small>(optional)</small><input id="checkoutProfileAddress" maxlength="280" autocomplete="street-address" placeholder="Street or collection details"></label>
+          <button id="checkoutSaveProfile" class="checkout-profile-button" type="button">Save profile</button>
+        </div>
+        <p id="checkoutProfileMessage" class="checkout-profile-message" role="status" hidden></p>
+      </section>
+      <div id="checkoutProfileSummary" class="checkout-profile-summary" hidden></div>
       <div class="checkout-fields">
         <h3>Your details</h3>
-        <label>Full name <em>*</em><input name="customer_name" required minlength="2" maxlength="100" autocomplete="name" placeholder="Your name"></label>
-        <label>Phone number <em>*</em><input name="contact_phone" required type="tel" minlength="7" maxlength="40" autocomplete="tel" placeholder="e.g. 072 123 4567"></label>
-        <label>Email address <small>(optional)</small><input name="contact_email" type="email" maxlength="160" autocomplete="email" placeholder="you@example.com"></label>
+        <label>Profile name <input name="customer_name" maxlength="100" autocomplete="name" placeholder="Your profile name" readonly></label>
+        <label>Phone number <em>*</em><input name="contact_phone" type="tel" maxlength="40" autocomplete="tel" placeholder="e.g. 072 123 4567"><small>Required so the store can contact you about collection.</small></label>
+        <label>Email address <small>(optional)</small><input name="contact_email" type="text" maxlength="160" autocomplete="email" placeholder="you@example.com"></label>
       </div>
       <fieldset class="checkout-payments">
         <legend>Payment method</legend>
@@ -746,11 +788,13 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
  </section>
 </div>
 <script src="/service-bookings.js"></script>
+<script src="/customer-auth.js"></script>
 <script>
 "use strict";
 const CONFIG={url:"https://cypbjzbagezdelmemuhb.supabase.co",key:"sb_publishable_8W8zyYtggQMWoFlnxrzoVA_BUKjQ9va"};
 const cart=new Map();
 let storefrontClient=null,availableItems=[],toastTimer=null,activeGalleryItem=null,galleryIndex=0,galleryReturnFocus=null,activePublicBusiness=null,galleryEditCartKey=null;
+let checkoutPendingCode=null,checkoutVerifiedUser=null,checkoutVerifiedProfile=null;
 const $=id=>document.getElementById(id);
 function esc(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function initials(name){return String(name||"SN").split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join("").toUpperCase()||"SN"}
@@ -983,27 +1027,161 @@ function openCheckout(){
  $("checkoutError").hidden=true;
  $("cartReviewView").hidden=true;$("checkoutSuccessView").hidden=true;$("checkoutForm").hidden=false;
  $("cartTitle").textContent="Checkout";
+ resetCheckoutProfileGate();
  $("checkoutForm").querySelector('[name="customer_name"]')?.focus();
+}
+function resetCheckoutProfileGate(){
+ $("checkoutProfileGate").hidden=true;$("checkoutProfileSummary").hidden=true;
+ $("checkoutAuthStep").hidden=false;$("checkoutProfileStep").hidden=true;$("checkoutCodeStep").hidden=true;
+ $("checkoutProfileMessage").hidden=true;$("checkoutProfileMessage").classList.remove("error");
+ $("checkoutAuthContact").disabled=false;$("checkoutAuthContact").value="";$("checkoutAuthCode").value="";
+ $("checkoutProfileName").value="";$("checkoutProfilePlace").value="";$("checkoutProfileAddress").value="";
+ $("checkoutSendCode").textContent="Send confirmation code";$("checkoutSendCode").disabled=false;
+ $("checkoutVerifyCode").disabled=false;$("checkoutSaveProfile").disabled=false;
+ checkoutPendingCode=null;checkoutVerifiedUser=null;checkoutVerifiedProfile=null;
+}
+function showCheckoutProfileGate(user=null){
+ $("checkoutError").hidden=true;$("checkoutProfileSummary").hidden=true;$("checkoutProfileGate").hidden=false;
+ checkoutVerifiedUser=user||null;
+ $("checkoutAuthStep").hidden=!!user;
+ $("checkoutProfileStep").hidden=!user;
+ $("checkoutProfileHeading").textContent=user?"Complete your customer profile":"Create your customer profile";
+ if(user){
+  $("checkoutProfileName").value=user.user_metadata?.full_name||$("checkoutForm").querySelector('[name="customer_name"]')?.value||"";
+  $("checkoutProfilePlace").value="";
+  $("checkoutProfileAddress").value="";
+  showCheckoutProfileMessage("You are signed in. Add the required profile name and place to continue.",false);
+ }else{
+  $("checkoutProfileHeading").textContent="Create your customer profile";
+  $("checkoutAuthContact").disabled=false;
+  $("checkoutCodeStep").hidden=true;
+  $("checkoutAuthMethod").querySelector('input[value="email"]').checked=true;
+  updateCheckoutAuthMethod();
+  showCheckoutProfileMessage("",false);
+ }
+ $("checkoutProfileGate").scrollIntoView({block:"nearest",behavior:"smooth"});
+}
+function showCheckoutProfileMessage(message,isError=false){
+ const node=$("checkoutProfileMessage");node.textContent=message;node.classList.toggle("error",isError);node.hidden=!message;
+}
+function updateCheckoutAuthMethod(){
+ const method=$("checkoutForm").querySelector('input[name="checkoutAuthMethod"]:checked')?.value||"email";
+ const input=$("checkoutAuthContact");
+ input.type="text";
+ input.inputMode=method==="email"?"email":"tel";
+ input.autocomplete=method==="email"?"email":"tel";
+ input.placeholder=method==="email"?"you@example.com":"072 123 4567 or +27 72 123 4567";
+ $("checkoutAuthContactLabel").textContent=method==="email"?"Email address":"Phone number";
+}
+async function sendCheckoutCode(){
+ const button=$("checkoutSendCode");button.disabled=true;showCheckoutProfileMessage("",false);
+ try{
+  const method=$("checkoutForm").querySelector('input[name="checkoutAuthMethod"]:checked')?.value||"email";
+  checkoutPendingCode=await window.StoreNestCustomerAuth.sendCode(method,$("checkoutAuthContact").value);
+  $("checkoutAuthContact").value=checkoutPendingCode.destination;
+  $("checkoutAuthContact").disabled=true;$("checkoutCodeStep").hidden=false;
+  $("checkoutAuthCode").focus();button.textContent="Resend code";
+  showCheckoutProfileMessage("Confirmation code sent. Check your email or SMS.",false);
+ }catch(error){
+  console.error("Could not send checkout confirmation code:",error);
+  showCheckoutProfileMessage(error.message||"Could not send a code. Check the address or number and try again.",true);
+ }finally{button.disabled=false}
+}
+async function verifyCheckoutCode(){
+ const button=$("checkoutVerifyCode");button.disabled=true;showCheckoutProfileMessage("",false);
+ try{
+  if(!checkoutPendingCode)throw new Error("Send a confirmation code first.");
+  const result=await window.StoreNestCustomerAuth.verifyCode(checkoutPendingCode.method,checkoutPendingCode.destination,$("checkoutAuthCode").value);
+  const user=result.user;if(!user)throw new Error("The code was accepted, but sign-in did not complete.");
+  checkoutVerifiedUser=user;
+  const profile=await window.StoreNestCustomerAuth.getProfile(user.id);
+  if(profile)finishCheckoutProfile(user,profile);
+  else{
+   $("checkoutAuthStep").hidden=true;$("checkoutProfileStep").hidden=false;
+   $("checkoutProfileName").value=user.user_metadata?.full_name||"";
+   $("checkoutProfilePlace").value="";$("checkoutProfileAddress").value="";
+   $("checkoutProfileName").focus();
+   showCheckoutProfileMessage("Your contact is confirmed. Add your profile name and place.",false);
+  }
+ }catch(error){
+  console.error("Checkout confirmation failed:",error);
+  showCheckoutProfileMessage(error.message||"That code could not be confirmed. Check it and try again.",true);
+ }finally{button.disabled=false}
+}
+async function saveCheckoutProfile(){
+ const button=$("checkoutSaveProfile");button.disabled=true;showCheckoutProfileMessage("",false);
+ try{
+  const client=storefrontClient||await window.StoreNestCustomerAuth.getClient();
+  if(!checkoutVerifiedUser){
+   const {data,error}=await client.auth.getUser();if(error)throw error;checkoutVerifiedUser=data?.user||null;
+  }
+  const profile=await window.StoreNestCustomerAuth.saveProfile(checkoutVerifiedUser,{
+   profile_name:$("checkoutProfileName").value,place:$("checkoutProfilePlace").value,exact_address:$("checkoutProfileAddress").value
+  });
+  finishCheckoutProfile(checkoutVerifiedUser,profile);
+ }catch(error){
+  console.error("Could not save checkout profile:",error);
+  showCheckoutProfileMessage(error.message||"Could not save your profile. Please try again.",true);
+ }finally{button.disabled=false}
+}
+function finishCheckoutProfile(user,profile){
+ checkoutVerifiedUser=user;checkoutVerifiedProfile=profile;
+ const form=$("checkoutForm");
+ form.querySelector('[name="customer_name"]').value=profile.profile_name||"";
+ const phoneField=form.querySelector('[name="contact_phone"]');
+ const emailField=form.querySelector('[name="contact_email"]');
+ if(!phoneField.value&&user?.phone)phoneField.value=user.phone;
+ if(!emailField.value&&user?.email)emailField.value=user.email;
+ $("checkoutProfileGate").hidden=true;
+ $("checkoutProfileSummary").textContent="Profile ready · "+profile.profile_name+" · "+profile.place;
+ $("checkoutProfileSummary").hidden=false;
+ $("checkoutError").hidden=true;
+ if(!phoneField.value)phoneField.focus();
 }
 function updateCheckoutPaymentNotice(){
  const method=$("checkoutForm").querySelector('[name="payment_method"]:checked')?.value;
  $("cardPreviewNotice").hidden=method!=="card";
 }
+function validateCheckoutContact(profile){
+ const form=$("checkoutForm"),name=form.querySelector('[name="customer_name"]'),phone=form.querySelector('[name="contact_phone"]'),email=form.querySelector('[name="contact_email"]');
+ name.value=profile.profile_name||"";
+ const nameValue=name.value.trim(),phoneValue=phone.value.trim(),emailValue=email.value.trim();
+ if(nameValue.length<2||nameValue.length>100){$("checkoutError").textContent="Your profile needs a valid name. Update it in your profile and try again.";$("checkoutError").hidden=false;return false}
+ if(phoneValue.length<7||phoneValue.length>40){$("checkoutError").textContent="Enter a contact phone number for the store. You can still verify your profile by email.";$("checkoutError").hidden=false;phone.focus();return false}
+ if(emailValue&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)){$("checkoutError").textContent="Enter a valid email address or leave it blank.";$("checkoutError").hidden=false;email.focus();return false}
+ return true;
+}
 async function submitCheckout(event){
  event.preventDefault();
  const form=$("checkoutForm");
- if(!form.reportValidity())return;
  if(!storefrontClient||!activePublicBusiness?.id){
   $("checkoutError").textContent="The store could not be reached. Refresh and try again.";
   $("checkoutError").hidden=false;return;
  }
+ let user=null,profile=null;
+ try{
+  const {data,error}=await storefrontClient.auth.getUser();if(error)throw error;user=data?.user||null;
+  if(!user){showCheckoutProfileGate();return}
+  profile=await window.StoreNestCustomerAuth.getProfile(user.id);
+  if(!profile){showCheckoutProfileGate(user);return}
+ }catch(error){
+  console.error("Could not check customer profile:",error);
+  $("checkoutError").textContent="Your profile could not be checked. Refresh the page and try again.";
+  $("checkoutError").hidden=false;return;
+ }
+ checkoutVerifiedUser=user;checkoutVerifiedProfile=profile;
+ form.querySelector('[name="customer_name"]').value=profile.profile_name||"";
+ const phoneField=form.querySelector('[name="contact_phone"]'),emailField=form.querySelector('[name="contact_email"]');
+ if(!phoneField.value&&user.phone)phoneField.value=user.phone;
+ if(!emailField.value&&user.email)emailField.value=user.email;
+ if(!validateCheckoutContact(profile))return;
  const values=new FormData(form),paymentMethod=String(values.get("payment_method")||"pay_on_collection");
  const orderId=crypto.randomUUID(),trackingToken=crypto.randomUUID();
  const payload={
   id:orderId,business_id:activePublicBusiness.id,tracking_token:trackingToken,
-  customer_name:String(values.get("customer_name")||"").trim(),
+  customer_name:profile.profile_name,
   contact_phone:String(values.get("contact_phone")||"").trim(),
-  contact_email:String(values.get("contact_email")||"").trim()||null,
+  contact_email:String(values.get("contact_email")||"").trim()||user.email||null,
   payment_method:paymentMethod,
   items:[...cart.values()].map(row=>({item_id:row.itemId,quantity:row.quantity,selection:row.selection||{},note:row.note||""}))
  };
@@ -1018,11 +1196,12 @@ async function submitCheckout(event){
   $("checkoutForm").hidden=true;$("cartReviewView").hidden=true;$("checkoutSuccessView").hidden=false;
   $("cartTitle").textContent="Order request sent";
   $("checkoutReference").textContent="Request #"+reference;
-  $("checkoutSuccessMessage").textContent="Your request was sent to "+(activePublicBusiness.name||"the business")+". It is waiting for the business to accept it. "+(paymentMethod==="card"?"Card payment is not connected yet, so no card was charged.":"Pay when you collect it.")+" You can follow its progress in your basket.";
+  $("checkoutSuccessMessage").textContent="Your request was sent to "+(activePublicBusiness.name||"the business")+". It is waiting for the business to accept it. "+(paymentMethod==="card"?"Card payment is not connected yet, so no card was charged.":"Pay when you collect it.")+" You can follow its progress in your basket and profile.";
   renderBasketOrderProgress();
   startOrderTrackingPolling();
   form.reset();
-  $("checkoutForm").querySelector('[name="payment_method"][value="pay_on_collection"]').checked=true;
+  resetCheckoutProfileGate();
+  form.querySelector('[name="payment_method"][value="pay_on_collection"]').checked=true;
   updateCheckoutPaymentNotice();
  }catch(error){
   console.error("StoreNest checkout failed:",error);
@@ -1048,7 +1227,10 @@ $("checkoutStart").addEventListener("click",openCheckout);
 $("checkoutBack").addEventListener("click",showBasketReview);
 $("checkoutDone").addEventListener("click",closeCart);
 $("checkoutForm").addEventListener("submit",submitCheckout);
-$("checkoutForm").addEventListener("change",event=>{if(event.target.name==="payment_method")updateCheckoutPaymentNotice()});
+$("checkoutForm").addEventListener("change",event=>{if(event.target.name==="payment_method")updateCheckoutPaymentNotice();if(event.target.name==="checkoutAuthMethod")updateCheckoutAuthMethod()});
+$("checkoutSendCode").addEventListener("click",sendCheckoutCode);
+$("checkoutVerifyCode").addEventListener("click",verifyCheckoutCode);
+$("checkoutSaveProfile").addEventListener("click",saveCheckoutProfile);
 $("clearCart").addEventListener("click",()=>{cart.clear();renderCart();showBasketReview()});
 $("cartBackdrop").addEventListener("click",e=>{if(e.target===$("cartBackdrop"))closeCart()});
 
@@ -1530,7 +1712,7 @@ async function load(){
  let renderedCache=false;
  try{
    if(!window.supabase)await new Promise((resolve,reject)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0";s.onload=resolve;s.onerror=reject;document.head.append(s)});
-   const client=storefrontClient=window.supabase.createClient(CONFIG.url,CONFIG.key,{auth:{persistSession:false,autoRefreshToken:false}});
+   const client=storefrontClient=await window.StoreNestCustomerAuth.getClient();
    // Display the last public snapshot while a fresh request runs in the background.
    const cached=readStorefrontSnapshot(slug);
    if(cached){renderPublishedStorefront(root,client,cached.business,cached.items,cached.sections);renderedCache=true}

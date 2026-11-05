@@ -1295,6 +1295,8 @@ function renderBusinessOrders(rows){
   if(phone)contacts.push('<a href="tel:'+escapeHtml(tel)+'">'+escapeHtml(phone)+'</a>');
   const email=String(order.contact_email||"");
   if(email)contacts.push('<a href="mailto:'+encodeURIComponent(email)+'">'+escapeHtml(email)+'</a>');
+  const customerPlace=[order.customer_place,order.customer_exact_address].filter(Boolean).join(" · ");
+  if(customerPlace)contacts.push('<span>'+escapeHtml(customerPlace)+'</span>');
   const lines=(Array.isArray(order.items)?order.items:[]).map(line=>{
    const options=(Array.isArray(line.customizations)?line.customizations:[]).map(choice=>String(choice.group||"")+": "+(Array.isArray(choice.values)?choice.values.join(", "):"")).join(" · ");
    const note=line.note?String(line.note):"";
@@ -1359,7 +1361,7 @@ async function loadBusinessOrders(){
  try{
   const client=await loadAuth();
   ensureOwnerOrdersRealtime(client,businessId);
-  const {data,error}=await client.from("storefront_orders").select("id,business_id,customer_name,contact_phone,contact_email,payment_method,payment_status,status,items,subtotal,created_at,updated_at,tracking_token").eq("business_id",businessId).order("created_at",{ascending:false}).limit(100);
+  const {data,error}=await client.from("storefront_orders").select("id,business_id,customer_user_id,customer_name,contact_phone,contact_email,customer_place,customer_exact_address,customer_business_name,payment_method,payment_status,status,items,subtotal,created_at,updated_at,tracking_token").eq("business_id",businessId).order("created_at",{ascending:false}).limit(100);
   if(error)throw error;
   if(currentBusiness?.id!==businessId)return;
   const fetched=data||[],fetchedIds=new Set(fetched.map(row=>row.id));

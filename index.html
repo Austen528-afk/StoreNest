@@ -287,11 +287,12 @@ html[data-theme="dark"] .overall-orders-refresh{background:#233a30;color:#b1ecd2
 <link rel="stylesheet" href="/theme.css">
 <script src="/theme.js"></script>
 <script src="/categories.js"></script>
+<script src="/customer-auth.js"></script>
 </head>
 <body data-page-kind="marketplace">
 <div class="wrap">
 <header class="top"><div class="logo">store<span>nest.</span></div><div class="top-actions"><button class="install-btn" id="installBtn" type="button">Install app</button><button class="page-refresh-button" id="pageRefreshButton" type="button" aria-label="Refresh page" title="Refresh page"><svg aria-hidden="true" viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.4 6.3"/><path d="M20 4v7h-7"/></svg></button>
-<a class="top-icon-button" href="/business-owner.html#login" aria-label="Profile and account sign in" title="Profile">
+<a class="top-icon-button" href="/customer-account.html" aria-label="Customer profile" title="Profile">
 <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20c.7-3.7 3.1-5.6 7-5.6s6.3 1.9 7 5.6"></path></svg></a>
 <button class="top-icon-button" id="overallOrdersButton" type="button" aria-label="My orders" title="My orders">
 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h8l4 4V20a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 20V5a1.5 1.5 0 0 1 1.5-1.5Z"></path><path d="M15 3.5V8h4M8.5 12h7M8.5 15.5h7"></path></svg></button>
@@ -322,7 +323,7 @@ html[data-theme="dark"] .overall-orders-refresh{background:#233a30;color:#b1ecd2
 <div class="overall-orders-overlay" id="overallOrdersOverlay" hidden>
   <section class="overall-orders-panel" role="dialog" aria-modal="true" aria-labelledby="overallOrdersTitle">
     <header class="overall-orders-head">
-      <div><h2 id="overallOrdersTitle">My orders</h2><p>Track orders you have placed on this device.</p></div>
+      <div><h2 id="overallOrdersTitle">My orders</h2><p>Track your profile orders or orders saved on this device.</p></div>
       <button class="overall-orders-close" id="overallOrdersClose" type="button" aria-label="Close my orders">×</button>
     </header>
     <div class="overall-orders-list" id="overallOrdersList" aria-live="polite"></div>
@@ -633,11 +634,7 @@ renderRecentBusinesses();
 function escapeResult(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 async function getSearchClient(){
  if(searchClient)return searchClient;
- if(!searchClientPromise)searchClientPromise=(async()=>{
-   if(!window.supabase)await new Promise((res,rej)=>{const script=document.createElement("script");script.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0";script.onload=res;script.onerror=rej;document.head.append(script)});
-   searchClient=window.supabase.createClient(STORE_SEARCH.url,STORE_SEARCH.key,{auth:{persistSession:false,autoRefreshToken:false}});
-   return searchClient;
- })().catch(error=>{searchClientPromise=null;throw error});
+ if(!searchClientPromise)searchClientPromise=window.StoreNestCustomerAuth.getClient().then(client=>{searchClient=client;return client}).catch(error=>{searchClientPromise=null;throw error});
  return searchClientPromise;
 }
 // Download and initialize the public database client before the first interaction.
@@ -726,21 +723,40 @@ function renderCustomerOrderCard(order){
 }
 function renderAllCustomerOrders(orders,note=""){
  if(!orders.length){
-  overallOrdersList.innerHTML='<p class="overall-orders-empty">Orders placed on this device will appear here. Place an order from a store to follow its progress.</p>';
+  overallOrdersList.innerHTML='<p class="overall-orders-empty">Your orders will appear here after you place an order. <a href="/customer-account.html">Sign in or create a profile</a> to see orders across devices.</p>';
   return;
  }
  overallOrdersList.innerHTML=orders.map(renderCustomerOrderCard).join("")+(note?'<p class="overall-orders-note">'+escapeResult(note)+'</p>':"");
 }
 async function refreshAllCustomerOrders(){
- const orders=readAllCustomerOrders();
- renderAllCustomerOrders(orders);
- if(!orders.length)return;
+ let orders=readAllCustomerOrders();
  overallOrdersRefresh.disabled=true;
  overallOrdersRefresh.textContent="Refreshing…";
- let refreshFailed=false;
+ let refreshFailed=false,accountLoadFailed=false;
  try{
   const client=await getSearchClient();
-  const updated=await Promise.all(orders.map(async order=>{
+  const {data:authData,error:authError}=await client.auth.getUser();
+  if(authError)throw authError;
+  if(authData?.user){
+   try{
+    const {data,error}=await client.from("storefront_orders")
+     .select("id,status,created_at,updated_at,customer_business_name,tracking_token")
+     .order("created_at",{ascending:false}).limit(50);
+    if(error)throw error;
+    const byId=new Map(orders.map(order=>[order.id,order]));
+    (data||[]).forEach(row=>{
+     const previous=byId.get(row.id)||{};
+     byId.set(row.id,{...previous,id:row.id,accountRecord:true,token:row.tracking_token||previous.token||"",status:row.status||"new",createdAt:row.created_at||previous.createdAt,updatedAt:row.updated_at||previous.updatedAt,businessName:row.customer_business_name||previous.businessName||"Store"});
+    });
+    orders=[...byId.values()].sort((x,y)=>(Date.parse(y.createdAt||"")||0)-(Date.parse(x.createdAt||"")||0));
+   }catch(error){accountLoadFailed=true;console.warn("Could not load profile orders:",error)}
+  }
+  renderAllCustomerOrders(orders,accountLoadFailed?"Profile orders could not be loaded. Device-saved tracking is still shown.":"");
+  if(!orders.length)return;
+  const accountIds=new Set(orders.filter(order=>order.accountRecord).map(order=>order.id));
+  const deviceOnly=orders.filter(order=>order.storageKey&&!accountIds.has(order.id));
+  if(!deviceOnly.length)return;
+  const updated=await Promise.all(deviceOnly.map(async order=>{
    try{
     const {data,error}=await client.rpc("get_storefront_order_progress",{p_order_id:order.id,p_tracking_token:order.token});
     if(error)throw error;
@@ -748,7 +764,10 @@ async function refreshAllCustomerOrders(){
     return row?{...order,status:row.status||order.status,updatedAt:row.updated_at||order.updatedAt}:order;
    }catch(error){refreshFailed=true;return order}
   }));
-  if(!overallOrdersOverlay.hidden)renderAllCustomerOrders(updated,refreshFailed?"Some updates could not be refreshed. Showing the latest saved status for those orders.":"");
+  const byId=new Map(orders.map(order=>[order.id,order]));
+  updated.forEach(order=>byId.set(order.id,{...byId.get(order.id),...order}));
+  orders=[...byId.values()].sort((x,y)=>(Date.parse(y.createdAt||"")||0)-(Date.parse(x.createdAt||"")||0));
+  if(!overallOrdersOverlay.hidden)renderAllCustomerOrders(orders,refreshFailed?"Some updates could not be refreshed. Showing the latest saved status for those orders.":accountLoadFailed?"Profile orders could not be loaded. Device-saved tracking is still shown.":"");
  }catch(error){
   console.warn("Could not refresh order progress:",error);
   refreshFailed=true;
