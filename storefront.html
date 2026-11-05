@@ -660,7 +660,7 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
         </label>
         <label class="checkout-payment-option">
           <input type="radio" name="payment_method" value="card">
-          <span><strong>Pay with card</strong><small>Card payment at checkout.</small></span>
+          <span><strong>Pay with card</strong><small>Secure card checkout is awaiting gateway setup.</small></span>
         </label>
       </fieldset>
       <p id="cardPreviewNotice" class="checkout-preview-notice" hidden>Card processing is not connected yet. This preview order will appear as Awaiting payment. No card will be charged.</p>
@@ -896,7 +896,7 @@ $("checkoutForm").addEventListener("submit",submitCheckout);
 $("checkoutForm").addEventListener("change",event=>{if(event.target.name==="payment_method")updateCheckoutPaymentNotice()});
 $("clearCart").addEventListener("click",()=>{cart.clear();renderCart();showBasketReview()});
 $("cartBackdrop").addEventListener("click",e=>{if(e.target===$("cartBackdrop"))closeCart()});
-$("clearCart").addEventListener("click",()=>{cart.clear();renderCart()});
+
 $("cartItems").addEventListener("click",e=>{
  const b=e.target.closest("[data-cart-action]");if(!b)return;
  const key=b.dataset.key,row=cart.get(key);if(!row)return;
