@@ -531,6 +531,17 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
 .gallery-choice-option input{accent-color:#36ab87;width:18px;height:18px;flex:none}
 .gallery-choice-option em{font-style:normal;color:#467460;font-size:12px;white-space:nowrap}
 .gallery-choice-option:has(input:checked){background:#e8f8f0;border-color:#4fb78f}
+.gallery-scale{width:100%;overflow-x:auto;padding:5px 0 3px;-webkit-overflow-scrolling:touch}
+.gallery-scale-options{position:relative;display:grid;grid-template-columns:repeat(var(--scale-count),minmax(0,1fr));align-items:start;gap:0}
+.gallery-scale-options:before{content:"";position:absolute;z-index:0;top:8px;left:var(--scale-inset);width:var(--scale-track-width);height:3px;border-radius:4px;background:linear-gradient(to right,#36ab87 var(--scale-progress),#d9e4de var(--scale-progress))}
+.gallery-scale-option{position:relative;z-index:1;display:flex;min-width:0;flex-direction:column;align-items:center;gap:5px;padding:0 3px;border:0;background:transparent;color:#34483d;text-align:center;cursor:pointer}
+.gallery-scale-option input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.gallery-scale-dot{display:block;flex:none;width:16px;height:16px;border:2px solid #aab8af;border-radius:50%;background:#fff}
+.gallery-scale-option.is-passed .gallery-scale-dot{background:#45b88f;border-color:#45b88f}
+.gallery-scale-option:has(input:checked) .gallery-scale-dot{box-shadow:0 0 0 3px #e7f8f0}
+.gallery-scale-option:focus-within .gallery-scale-dot{outline:3px solid #1f76d2;outline-offset:3px}
+.gallery-scale-label{display:block;max-width:100%;font-size:11px;line-height:1.25;overflow-wrap:anywhere}
+.gallery-scale-option small{color:#708376;font-size:10px;line-height:1.15;white-space:nowrap}
 .gallery-notes-label{display:flex;flex-direction:column;gap:8px;font-size:12px;font-weight:700;color:var(--ink,#22392d);margin-top:12px}
 .gallery-notes-label textarea{width:100%;min-height:60px;padding:10px 11px;border:1px solid #cbded1;border-radius:10px;background:#fff;color:#263c2d;font:inherit;font-weight:400;resize:vertical}
 .gallery-options-error{font-size:12px;color:#a23327;background:#fff0eb;border-radius:8px;padding:9px 11px;margin:10px 0 0}
@@ -688,6 +699,27 @@ function showGalleryImage(){
 }
 
 let galleryOptionSelections={};
+function renderGalleryScale(group){
+ const count=group.options.length;
+ const selected=group.options.find(option=>option.id===group.defaultOptionId)||group.options[Math.floor(count/2)]||null;
+ const selectedIndex=Math.max(0,selected?group.options.findIndex(option=>option.id===selected.id):0);
+ galleryOptionSelections[group.id]=selected?[selected.id]:[];
+ const inset=count?50/count:0,trackWidth=count?100-(100/count):100;
+ const progress=count>1?selectedIndex/(count-1)*100:0;
+ const groupHint=(group.required?"Required":"Optional")+" · Default: "+(selected?selected.name:"Choose a level");
+ return '<fieldset class="gallery-choice-group gallery-choice-scale" data-group-id="'+esc(group.id)+'">'+
+  '<legend>'+esc(group.name)+'<small>'+esc(groupHint)+'</small></legend>'+
+  '<div class="gallery-scale"><div class="gallery-scale-options" role="radiogroup" aria-label="'+esc(group.name)+'" style="--scale-count:'+count+';--scale-progress:'+progress+'%;--scale-inset:'+inset+'%;--scale-track-width:'+trackWidth+'%;min-width:'+Math.max(260,count*68)+'px">'+
+  group.options.map((option,index)=>
+   '<label class="gallery-scale-option '+(index<=selectedIndex?"is-passed":"")+'">'+
+    '<input type="radio" data-group-id="'+esc(group.id)+'" data-option-id="'+esc(option.id)+'" name="choice-'+esc(group.id)+'" value="'+esc(option.id)+'"'+(selected&&option.id===selected.id?" checked":"")+'>'+
+    '<span class="gallery-scale-dot" aria-hidden="true"></span>'+
+    '<span class="gallery-scale-label">'+esc(option.name)+'</span>'+
+    '<small>'+(option.price?"+"+money(option.price):"Free")+'</small>'+
+   '</label>'
+  ).join("")+
+  '</div></div></fieldset>';
+}
 function renderGalleryOptions(item){
  const container=$("galleryCustomization"),list=$("galleryChoiceGroups");
  const groups=item.item_type==="service"?[]:window.StoreNestOptions.normalize(item.customization_options);
@@ -696,14 +728,15 @@ function renderGalleryOptions(item){
  $("galleryOptionsError").hidden=true;
  $("galleryNotes").value="";
  if(!groups.length){list.replaceChildren();return}
- list.innerHTML=groups.map(group=>
-  '<fieldset class="gallery-choice-group" data-group-id="'+esc(group.id)+'">'+
-  '<legend>'+esc(group.name)+'<small>'+(group.required?"Required":"Optional")+(group.selection==="multiple"?" · choose up to "+group.max:" · choose one")+'</small></legend>'+
-  (!group.required&&group.selection==="single"?'<label class="gallery-choice-option"><span><input type="radio" data-group-id="'+esc(group.id)+'" data-option-id="" name="choice-'+esc(group.id)+'" value=""><span>No extra / None</span></span><em>Free</em></label>':"")+
-  group.options.map(option=>
-   '<label class="gallery-choice-option"><span><input type="'+(group.selection==="multiple"?"checkbox":"radio")+'" data-group-id="'+esc(group.id)+'" data-option-id="'+esc(option.id)+'" name="choice-'+esc(group.id)+'" value="'+esc(option.id)+'"><span>'+esc(option.name)+'</span></span><em>'+(option.price?"+"+money(option.price):"Free")+'</em></label>'
-  ).join("")+'</fieldset>'
- ).join("");
+ list.innerHTML=groups.map(group=>{
+  if(group.selection==="scale")return renderGalleryScale(group);
+  return '<fieldset class="gallery-choice-group" data-group-id="'+esc(group.id)+'">'+
+   '<legend>'+esc(group.name)+'<small>'+(group.required?"Required":"Optional")+(group.selection==="multiple"?" · choose up to "+group.max:" · choose one")+'</small></legend>'+
+   (!group.required&&group.selection==="single"?'<label class="gallery-choice-option"><span><input type="radio" data-group-id="'+esc(group.id)+'" data-option-id="" name="choice-'+esc(group.id)+'" value=""><span>No extra / None</span></span><em>Free</em></label>':"")+
+   group.options.map(option=>
+    '<label class="gallery-choice-option"><span><input type="'+(group.selection==="multiple"?"checkbox":"radio")+'" data-group-id="'+esc(group.id)+'" data-option-id="'+esc(option.id)+'" name="choice-'+esc(group.id)+'" value="'+esc(option.id)+'"><span>'+esc(option.name)+'</span></span><em>'+(option.price?"+"+money(option.price):"Free")+'</em></label>'
+   ).join("")+'</fieldset>';
+ }).join("");
 }
 function updateGalleryOptionsPrice(){
  if(!activeGalleryItem)return;
@@ -722,6 +755,13 @@ $("galleryChoiceGroups").addEventListener("change",event=>{
   return;
  }
  galleryOptionSelections[group.id]=chosen;
+ if(group.selection==="scale"){
+  const track=input.closest(".gallery-scale-options");
+  const radios=[...track.querySelectorAll('input[data-option-id]')];
+  const selectedIndex=radios.findIndex(radio=>radio.checked);
+  track.style.setProperty("--scale-progress",(radios.length>1?selectedIndex/(radios.length-1)*100:0)+"%");
+  radios.forEach((radio,index)=>radio.closest(".gallery-scale-option")?.classList.toggle("is-passed",index<=selectedIndex));
+ }
  $("galleryOptionsError").hidden=true;
  updateGalleryOptionsPrice();
 });
