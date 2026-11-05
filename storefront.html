@@ -609,6 +609,25 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
 .checkout-success>strong{font-size:13px;color:#526b5d}
 .checkout-success p{font-size:13px;line-height:1.55;color:#68756e}
 .checkout-success .cart-checkout-button{margin-top:8px}
+.basket-order-progress{flex:0 0 auto;max-height:min(34vh,280px);overflow:auto;margin:8px 0;border:1px solid #dce9e1;border-radius:12px;padding:10px;background:#fbfdfc}
+.basket-order-progress[hidden]{display:none!important}
+.basket-order-heading{font-size:12px;font-weight:850;margin:0 0 8px;color:#24372d}
+.order-tracking-card{border:1px solid #dce9e1;border-radius:11px;background:#fff;padding:11px;margin:0 0 8px}
+.order-tracking-card:last-child{margin-bottom:0}
+.order-tracking-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
+.order-tracking-store{display:grid;gap:3px;min-width:0;font-size:12px;font-weight:800}
+.order-tracking-ref{color:#748078;font-size:10px;font-weight:600}
+.order-tracking-current{border-radius:99px;padding:5px 8px;background:#e8f7f0;color:#27755d;font-size:10px;font-weight:850;text-align:center}
+.order-tracking-steps{list-style:none;display:grid;gap:4px;margin:0;padding:0}
+.order-tracking-step{display:grid;grid-template-columns:12px minmax(0,1fr) auto;align-items:center;gap:7px;min-height:23px;color:#929a95;font-size:10px}
+.order-tracking-dot{width:9px;height:9px;border:2px solid #c9d1cc;border-radius:50%;background:#fff}
+.order-tracking-step.is-complete .order-tracking-dot,.order-tracking-step.is-current .order-tracking-dot{border-color:#36ad8b;background:#36ad8b}
+.order-tracking-step.is-current{color:#22352c;font-weight:800}
+.order-tracking-step-status{font-size:9px;color:#77847c;white-space:nowrap}
+.order-tracking-cancelled{margin:7px 0 0;color:#a04437;font-size:11px}
+.checkout-order-progress{width:100%;text-align:left}
+.checkout-order-progress .order-tracking-card{width:100%}
+@media(max-width:480px){.basket-order-progress{max-height:32vh}.order-tracking-card{padding:9px}.order-tracking-step{font-size:9px}}
 @media(max-width:480px){.checkout-step{gap:12px}.checkout-fields input{min-height:44px}.checkout-submit-row strong{font-size:17px}}
 </style>
 <link rel="stylesheet" href="/theme.css">
@@ -630,6 +649,7 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
   <aside class="cart-panel" role="dialog" aria-modal="true" aria-label="Your basket">
     <div class="cart-head"><h2 id="cartTitle">Your basket</h2><button type="button" class="close-cart" id="closeCart" aria-label="Close basket">×</button></div>
     <div id="cartReviewView" class="cart-review-view">
+      <section id="basketOrderProgress" class="basket-order-progress" hidden aria-live="polite"></section>
       <div id="cartItems" class="cart-items"></div>
       <div class="cart-total"><span>Subtotal</span><span id="cartTotal">R0.00</span></div>
       <div class="cart-review-actions">
@@ -672,9 +692,10 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
     </form>
     <section id="checkoutSuccessView" class="checkout-success" hidden aria-live="polite">
       <span class="checkout-success-mark" aria-hidden="true">✓</span>
-      <h3>Order received</h3>
+      <h3>Order request sent</h3>
       <strong id="checkoutReference"></strong>
       <p id="checkoutSuccessMessage"></p>
+      <div id="checkoutOrderProgress" class="checkout-order-progress" aria-live="polite"></div>
       <button type="button" id="checkoutDone" class="cart-checkout-button">Back to store</button>
     </section>
   </aside>
@@ -791,6 +812,85 @@ function updateCartProduct(key,item,selection,note=""){
  return {...quote,key:nextKey};
 }
 
+const ORDER_TRACKING_STORAGE_PREFIX="storenest_order_tracking:";
+let orderTrackingPoll=null,orderTrackingRequestActive=false;
+function orderTrackingStorageKey(){
+ return activePublicBusiness?.id?ORDER_TRACKING_STORAGE_PREFIX+activePublicBusiness.id:null;
+}
+function readTrackedOrders(){
+ const key=orderTrackingStorageKey();if(!key)return[];
+ try{
+  const parsed=JSON.parse(localStorage.getItem(key)||"[]");
+  return Array.isArray(parsed)?parsed.filter(order=>order&&typeof order.id==="string"&&typeof order.token==="string").slice(0,5):[];
+ }catch(_){return[]}
+}
+function saveTrackedOrders(orders){
+ const key=orderTrackingStorageKey();if(!key)return;
+ try{localStorage.setItem(key,JSON.stringify(orders.slice(0,5)))}catch(_){}
+}
+function rememberTrackedOrder(order){
+ const orders=readTrackedOrders().filter(existing=>existing.id!==order.id);
+ orders.unshift(order);saveTrackedOrders(orders);
+}
+function orderTrackingLabel(status){
+ return ({new:"Awaiting acceptance",accepted:"Order received",preparing:"In progress",prepared:"Prepared",ready:"Ready for collection",completed:"Collected",cancelled:"Cancelled"})[status]||"Awaiting acceptance";
+}
+function orderProgressCard(order){
+ const stages=[
+  {key:"new",label:"Order request sent"},
+  {key:"accepted",label:"Order received"},
+  {key:"preparing",label:"Order is being prepared"},
+  {key:"prepared",label:"Prepared"},
+  {key:"ready",label:"Ready for collection"}
+ ];
+ const indexes={new:0,accepted:1,preparing:2,prepared:3,ready:4,completed:4,cancelled:-1};
+ const currentIndex=indexes[order.status]??0,terminal=order.status==="completed";
+ const reference=String(order.id||"").replace(/-/g,"").slice(0,8).toUpperCase();
+ const steps=stages.map((stage,index)=>{
+  const done=index<currentIndex||terminal,active=index===currentIndex&&!terminal&&order.status!=="cancelled";
+  const state=done?"Complete":active?orderTrackingLabel(order.status):"Waiting";
+  return '<li class="order-tracking-step'+(done?' is-complete':active?' is-current':'')+'"><span class="order-tracking-dot" aria-hidden="true"></span><span>'+esc(stage.label)+'</span><small class="order-tracking-step-status">'+esc(state)+'</small></li>';
+ }).join("");
+ return '<article class="order-tracking-card"><div class="order-tracking-head"><div class="order-tracking-store"><span>'+esc(order.businessName||activePublicBusiness?.name||"Store")+'</span><small class="order-tracking-ref">Order #'+esc(reference)+'</small></div><span class="order-tracking-current">'+esc(orderTrackingLabel(order.status))+'</span></div><ol class="order-tracking-steps">'+steps+'</ol>'+(order.status==="cancelled"?'<p class="order-tracking-cancelled">This order request was cancelled.</p>':"")+'</article>';
+}
+function renderBasketOrderProgress(){
+ const panel=$("basketOrderProgress"),orders=readTrackedOrders();
+ if(panel){panel.hidden=!orders.length;panel.innerHTML=orders.length?'<div class="basket-order-heading">Order progress</div>'+orders.map(orderProgressCard).join(""):""}
+ const success=$("checkoutOrderProgress");
+ if(success)success.innerHTML=orders.length?orderProgressCard(orders[0]):"";
+}
+async function refreshTrackedOrderProgress(){
+ if(orderTrackingRequestActive||!storefrontClient)return;
+ const orders=readTrackedOrders();if(!orders.length)return;
+ orderTrackingRequestActive=true;
+ try{
+  const results=await Promise.all(orders.map(order=>storefrontClient.rpc("get_storefront_order_progress",{p_order_id:order.id,p_tracking_token:order.token})));
+  let changed=false;
+  results.forEach((result,index)=>{
+   if(result.error)return;
+   const row=Array.isArray(result.data)?result.data[0]:result.data;
+   if(row&&orders[index].status!==row.status){orders[index].status=row.status;orders[index].updatedAt=row.updated_at;changed=true}
+   else if(row&&orders[index].updatedAt!==row.updated_at){orders[index].updatedAt=row.updated_at;changed=true}
+  });
+  if(changed)saveTrackedOrders(orders);
+  renderBasketOrderProgress();
+ }catch(error){console.warn("Order progress refresh failed:",error)}
+ finally{orderTrackingRequestActive=false}
+}
+function stopOrderTrackingPolling(){
+ if(orderTrackingPoll){clearInterval(orderTrackingPoll);orderTrackingPoll=null}
+}
+function startOrderTrackingPolling(){
+ stopOrderTrackingPolling();
+ refreshTrackedOrderProgress();
+ const tracked=readTrackedOrders();
+ if(tracked.some(order=>order.status!=="completed"&&order.status!=="cancelled")){
+  orderTrackingPoll=setInterval(()=>{
+   if(!$("cartBackdrop").hidden)refreshTrackedOrderProgress();
+   else stopOrderTrackingPolling();
+  },5000);
+ }
+}
 function renderCart(){
  const rows=[...cart.entries()].map(([key,row])=>({key,row,item:availableItems.find(i=>i.id===row.itemId)})).filter(entry=>entry.item);
  $("cartItems").innerHTML=rows.length?rows.map(({key,row,item})=>{
@@ -808,6 +908,7 @@ function renderCart(){
  $("checkoutStart").disabled=!rows.length;
  $("clearCart").disabled=!rows.length;
  syncCartBadge();
+ renderBasketOrderProgress();
 }
 function renderCheckoutSummary(){
  const rows=[...cart.entries()].map(([key,row])=>({key,row,item:availableItems.find(i=>i.id===row.itemId)})).filter(entry=>entry.item);
@@ -823,7 +924,8 @@ function renderCheckoutSummary(){
 }
 function showBasketReview(){
  $("cartReviewView").hidden=false;$("checkoutForm").hidden=true;$("checkoutSuccessView").hidden=true;
- $("cartTitle").textContent="Your basket";
+ $("cartTitle").textContent=cart.size?"Your basket":(readTrackedOrders().length?"Order progress":"Your basket");
+ renderCart();
 }
 function openCheckout(){
  if(!cart.size)return;
@@ -846,9 +948,9 @@ async function submitCheckout(event){
   $("checkoutError").hidden=false;return;
  }
  const values=new FormData(form),paymentMethod=String(values.get("payment_method")||"pay_on_collection");
- const orderId=crypto.randomUUID();
+ const orderId=crypto.randomUUID(),trackingToken=crypto.randomUUID();
  const payload={
-  id:orderId,business_id:activePublicBusiness.id,
+  id:orderId,business_id:activePublicBusiness.id,tracking_token:trackingToken,
   customer_name:String(values.get("customer_name")||"").trim(),
   contact_phone:String(values.get("contact_phone")||"").trim(),
   contact_email:String(values.get("contact_email")||"").trim()||null,
@@ -860,13 +962,15 @@ async function submitCheckout(event){
   const {error}=await storefrontClient.from("storefront_orders").insert(payload);
   if(error)throw error;
   const reference=orderId.replace(/-/g,"").slice(0,8).toUpperCase();
+  const trackedOrder={id:orderId,token:trackingToken,status:"new",createdAt:new Date().toISOString(),businessName:activePublicBusiness.name||"Store"};
+  rememberTrackedOrder(trackedOrder);
   cart.clear();renderCart();
   $("checkoutForm").hidden=true;$("cartReviewView").hidden=true;$("checkoutSuccessView").hidden=false;
-  $("cartTitle").textContent="Order received";
-  $("checkoutReference").textContent="Order #"+reference;
-  $("checkoutSuccessMessage").textContent=paymentMethod==="card"
-   ?"Your order was sent to "+(activePublicBusiness.name||"the business")+". Card payment is not connected yet, so it is marked Awaiting payment. No card was charged."
-   :"Your order was sent to "+(activePublicBusiness.name||"the business")+". Pay when you collect it.";
+  $("cartTitle").textContent="Order request sent";
+  $("checkoutReference").textContent="Request #"+reference;
+  $("checkoutSuccessMessage").textContent="Your request was sent to "+(activePublicBusiness.name||"the business")+". It is waiting for the business to accept it. "+(paymentMethod==="card"?"Card payment is not connected yet, so no card was charged.":"Pay when you collect it.")+" You can follow its progress in your basket.";
+  renderBasketOrderProgress();
+  startOrderTrackingPolling();
   form.reset();
   $("checkoutForm").querySelector('[name="payment_method"][value="pay_on_collection"]').checked=true;
   updateCheckoutPaymentNotice();
@@ -883,10 +987,11 @@ async function submitCheckout(event){
 }
 function openCart(){
  renderCart();
- if(!cart.size){$("checkoutForm").hidden=true;$("checkoutSuccessView").hidden=true;$("cartReviewView").hidden=false;$("cartTitle").textContent="Your basket"}
+ if(!cart.size){$("checkoutForm").hidden=true;$("checkoutSuccessView").hidden=true;$("cartReviewView").hidden=false;$("cartTitle").textContent=readTrackedOrders().length?"Order progress":"Your basket"}
  $("cartBackdrop").hidden=false;$("closeCart").focus();
+ startOrderTrackingPolling();
 }
-function closeCart(){$("cartBackdrop").hidden=true;const trigger=$("openCart");if(trigger)trigger.focus()}
+function closeCart(){$("cartBackdrop").hidden=true;stopOrderTrackingPolling();const trigger=$("openCart");if(trigger)trigger.focus()}
 
 $("closeCart").addEventListener("click",closeCart);
 $("checkoutStart").addEventListener("click",openCheckout);
