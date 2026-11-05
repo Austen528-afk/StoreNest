@@ -1236,6 +1236,28 @@ function setDashboardSection(name){
  $("mobileNavList").hidden=true;$("mobileNavToggle").setAttribute("aria-expanded","false");$("workspace").scrollTop=0;
  if(name==="orders")loadBusinessOrders();
 }
+let ownerOrdersChannel=null,ownerOrdersChannelBusinessId=null,ownerOrdersRows=[];
+function resetOwnerOrdersRealtime(client){
+ if(ownerOrdersChannel)(client||authClient)?.removeChannel(ownerOrdersChannel);
+ ownerOrdersChannel=null;ownerOrdersChannelBusinessId=null;ownerOrdersRows=[];
+}
+function ensureOwnerOrdersRealtime(client,businessId){
+ if(ownerOrdersChannel&&ownerOrdersChannelBusinessId===businessId)return;
+ resetOwnerOrdersRealtime(client);
+ ownerOrdersChannelBusinessId=businessId;
+ ownerOrdersChannel=client.channel("owner-orders-"+businessId)
+  .on("postgres_changes",{event:"INSERT",schema:"public",table:"storefront_orders",filter:"business_id=eq."+businessId},payload=>{
+   const order=payload?.new;
+   if(!order||String(order.business_id)!==String(currentBusiness?.id)||ownerOrdersChannelBusinessId!==businessId)return;
+   if(ownerOrdersRows.some(row=>row.id===order.id))return;
+   ownerOrdersRows=[order,...ownerOrdersRows].slice(0,100);
+   renderBusinessOrders(ownerOrdersRows);
+   showToast("New order received.");
+  })
+  .subscribe(status=>{
+   if(status==="CHANNEL_ERROR"||status==="TIMED_OUT")console.warn("StoreNest order updates are temporarily unavailable:",status);
+  });
+}
 function formatOrderMoney(value){return "R"+Number(value||0).toFixed(2)}
 function renderBusinessOrders(rows){
  const list=$("ownerOrdersList"),empty=$("ownerOrdersEmpty"),summary=$("ownerOrdersSummary");
@@ -1280,16 +1302,19 @@ function renderBusinessOrders(rows){
 }
 async function loadBusinessOrders(){
  const list=$("ownerOrdersList"),summary=$("ownerOrdersSummary"),empty=$("ownerOrdersEmpty");
- if(!currentBusiness){list.replaceChildren();summary.hidden=true;empty.hidden=false;return}
+ if(!currentBusiness){resetOwnerOrdersRealtime();list.replaceChildren();summary.hidden=true;empty.hidden=false;return}
  const businessId=currentBusiness.id,refresh=$("ownerOrdersRefresh");
  if(refresh)refresh.disabled=true;
  list.innerHTML='<div class="owner-orders-message">Loading orders…</div>';empty.hidden=true;
  try{
   const client=await loadAuth();
+  ensureOwnerOrdersRealtime(client,businessId);
   const {data,error}=await client.from("storefront_orders").select("id,business_id,customer_name,contact_phone,contact_email,payment_method,payment_status,status,items,subtotal,created_at").eq("business_id",businessId).order("created_at",{ascending:false}).limit(100);
   if(error)throw error;
   if(currentBusiness?.id!==businessId)return;
-  renderBusinessOrders(data||[]);
+  const fetched=data||[],fetchedIds=new Set(fetched.map(row=>row.id));
+  ownerOrdersRows=[...ownerOrdersRows.filter(row=>!fetchedIds.has(row.id)),...fetched].slice(0,100);
+  renderBusinessOrders(ownerOrdersRows);
  }catch(error){
   console.error("StoreNest orders could not be loaded:",error);
   list.innerHTML='<div class="owner-orders-message">Could not load orders. Check your connection and try refreshing.</div>';
