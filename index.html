@@ -237,6 +237,52 @@ html[data-theme="dark"] .page-refresh-button:hover{background:#2d4540;border-col
 .ios-install-close:focus-visible,.ios-install-continue:focus-visible{outline:3px solid #793de1;outline-offset:2px}
 @media(max-width:500px){.ios-install-overlay{padding:8px 10px max(8px,env(safe-area-inset-bottom,0px))}.ios-install-dialog{border-radius:16px}.ios-install-head{padding:15px 15px 12px}.ios-install-head h2{font-size:19px}.ios-install-steps{padding:12px;gap:12px}.ios-install-foot{padding:10px 12px 12px}}
 
+
+/* Marketplace account and order shortcuts in the header. */
+.top-icon-button{display:grid;place-items:center;flex:0 0 auto;width:46px;height:43px;padding:0;border:1px solid #d8e3dd;border-radius:12px;background:#fff;color:#24382f;text-decoration:none;cursor:pointer;transition:background .16s,border-color .16s}
+.top-icon-button svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.top-icon-button:hover{background:#eaf6ef;border-color:#9bcfb7}
+.top-icon-button:focus-visible{outline:2px solid #30b695;outline-offset:3px}
+html[data-theme="dark"] .top-icon-button{background:#1b292c;color:#edf6f3;border-color:#344b49}
+html[data-theme="dark"] .top-icon-button:hover{background:#2d4540;border-color:#68d6b7}
+@media(max-width:410px){.top-icon-button{width:42px;height:40px}}
+@media(max-width:350px){.top-actions{gap:2px}.top-icon-button,.page-refresh-button,.menu-toggle{width:34px;height:34px}.install-btn.visible{padding:7px;font-size:9px}}
+
+.overall-orders-overlay{position:fixed;inset:0;z-index:1100;display:flex;justify-content:flex-end;background:rgba(12,20,17,.54)}
+.overall-orders-overlay[hidden]{display:none!important}
+.overall-orders-panel{width:min(470px,100%);height:100vh;height:100dvh;min-height:0;display:flex;flex-direction:column;padding:24px;background:#fff;color:#17231e;box-shadow:-12px 0 38px #0002}
+.overall-orders-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding-bottom:17px;border-bottom:1px solid #e3eae6}
+.overall-orders-head h2{margin:0;font-size:23px;letter-spacing:-.03em}
+.overall-orders-head p{margin:6px 0 0;color:#74817b;font-size:12px;line-height:1.45}
+.overall-orders-close{flex:0 0 auto;width:40px;height:40px;border:0;border-radius:12px;background:#f1f4f2;color:#17231e;font-size:25px;line-height:1;cursor:pointer}
+.overall-orders-list{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:14px 0}
+.overall-orders-empty{margin:0;padding:30px 18px;border:1px dashed #d5e2da;border-radius:14px;color:#738078;text-align:center;font-size:13px;line-height:1.5}
+.overall-order-card{padding:14px;margin-bottom:11px;border:1px solid #dce8e1;border-radius:13px;background:#fbfdfc}
+.overall-order-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.overall-order-store{min-width:0;display:grid;gap:4px;font-size:13px;font-weight:800}
+.overall-order-store small{color:#748078;font-size:10px;font-weight:600}
+.overall-order-status{flex:0 0 auto;max-width:45%;padding:5px 8px;border-radius:99px;background:#e8f7f0;color:#27755d;font-size:10px;font-weight:850;text-align:center}
+.overall-order-steps{display:grid;gap:5px;margin:12px 0 0;padding:0;list-style:none}
+.overall-order-step{display:grid;grid-template-columns:11px minmax(0,1fr) auto;align-items:center;gap:8px;min-height:22px;color:#929a95;font-size:11px}
+.overall-order-dot{width:9px;height:9px;border:2px solid #c9d1cc;border-radius:50%;background:#fff}
+.overall-order-step.is-complete .overall-order-dot,.overall-order-step.is-current .overall-order-dot{border-color:#36ad8b;background:#36ad8b}
+.overall-order-step.is-current{color:#22352c;font-weight:800}
+.overall-order-step small{color:#77847c;font-size:9px;white-space:nowrap}
+.overall-order-cancelled{margin:10px 0 0;color:#a04437;font-size:11px}
+.overall-orders-note{margin:8px 0 0;color:#77847c;font-size:11px;line-height:1.45}
+.overall-orders-footer{padding-top:12px;border-top:1px solid #e3eae6}
+.overall-orders-refresh{width:100%;min-height:43px;border:1px solid #d0e2d7;border-radius:11px;background:#f2f9f5;color:#24664f;font:inherit;font-size:12px;font-weight:800;cursor:pointer}
+.overall-orders-refresh:disabled{opacity:.6;cursor:wait}
+html[data-theme="dark"] .overall-orders-panel{background:#15221e;color:#edf5f0}
+html[data-theme="dark"] .overall-orders-head{border-color:#33443b}
+html[data-theme="dark"] .overall-orders-head p,html[data-theme="dark"] .overall-order-step,html[data-theme="dark"] .overall-order-store small{color:#a8b9b0}
+html[data-theme="dark"] .overall-orders-close{background:#263730;color:#edf5f0}
+html[data-theme="dark"] .overall-order-card{background:#1c2b25;border-color:#34483d}
+html[data-theme="dark"] .overall-order-status{background:#244a3b;color:#a9edd1}
+html[data-theme="dark"] .overall-order-step.is-current{color:#eef8f2}
+html[data-theme="dark"] .overall-orders-footer{border-color:#33443b}
+html[data-theme="dark"] .overall-orders-refresh{background:#233a30;color:#b1ecd2;border-color:#3c5e4d}
+@media(max-width:430px){.overall-orders-panel{padding:18px}.overall-orders-head h2{font-size:21px}}
 </style>
 <link rel="stylesheet" href="/theme.css">
 <script src="/theme.js"></script>
@@ -244,7 +290,12 @@ html[data-theme="dark"] .page-refresh-button:hover{background:#2d4540;border-col
 </head>
 <body data-page-kind="marketplace">
 <div class="wrap">
-<header class="top"><div class="logo">store<span>nest.</span></div><div class="top-actions"><button class="install-btn" id="installBtn" type="button">Install app</button><button class="page-refresh-button" id="pageRefreshButton" type="button" aria-label="Refresh page" title="Refresh page"><svg aria-hidden="true" viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.4 6.3"/><path d="M20 4v7h-7"/></svg></button><div class="menu-container" id="menuContainer"><button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="siteMenu"><span></span><span></span><span></span></button><nav class="site-menu" id="siteMenu" aria-label="StoreNest menu" hidden><a class="menu-register" href="/business-owner.html">Register as business owner <span aria-hidden="true">→</span></a><button class="theme-switch" data-theme-toggle type="button" aria-label="Switch to dark mode" aria-pressed="false"><span class="theme-switch-icon" aria-hidden="true">☾</span><span class="theme-switch-label">Dark mode</span></button></nav></div></div></header>
+<header class="top"><div class="logo">store<span>nest.</span></div><div class="top-actions"><button class="install-btn" id="installBtn" type="button">Install app</button><button class="page-refresh-button" id="pageRefreshButton" type="button" aria-label="Refresh page" title="Refresh page"><svg aria-hidden="true" viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.4 6.3"/><path d="M20 4v7h-7"/></svg></button>
+<a class="top-icon-button" href="/business-owner.html#login" aria-label="Profile and account sign in" title="Profile">
+<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20c.7-3.7 3.1-5.6 7-5.6s6.3 1.9 7 5.6"></path></svg></a>
+<button class="top-icon-button" id="overallOrdersButton" type="button" aria-label="My orders" title="My orders">
+<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h8l4 4V20a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 20V5a1.5 1.5 0 0 1 1.5-1.5Z"></path><path d="M15 3.5V8h4M8.5 12h7M8.5 15.5h7"></path></svg></button>
+<div class="menu-container" id="menuContainer"><button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="siteMenu"><span></span><span></span><span></span></button><nav class="site-menu" id="siteMenu" aria-label="StoreNest menu" hidden><a class="menu-register" href="/business-owner.html">Register as business owner <span aria-hidden="true">→</span></a><button class="theme-switch" data-theme-toggle type="button" aria-label="Switch to dark mode" aria-pressed="false"><span class="theme-switch-icon" aria-hidden="true">☾</span><span class="theme-switch-label">Dark mode</span></button></nav></div></div></header>
 <div id="installHint" class="install-hint" role="status" aria-live="polite"></div>
 <section class="search-row" role="search" aria-label="Search StoreNest">
   <form class="search-form" id="storeSearchForm">
@@ -267,6 +318,18 @@ html[data-theme="dark"] .page-refresh-button:hover{background:#2d4540;border-col
     <div id="recentBusinessGrid" class="recent-grid"></div>
   </section>
 </main>
+</div>
+<div class="overall-orders-overlay" id="overallOrdersOverlay" hidden>
+  <section class="overall-orders-panel" role="dialog" aria-modal="true" aria-labelledby="overallOrdersTitle">
+    <header class="overall-orders-head">
+      <div><h2 id="overallOrdersTitle">My orders</h2><p>Track orders you have placed on this device.</p></div>
+      <button class="overall-orders-close" id="overallOrdersClose" type="button" aria-label="Close my orders">×</button>
+    </header>
+    <div class="overall-orders-list" id="overallOrdersList" aria-live="polite"></div>
+    <footer class="overall-orders-footer">
+      <button class="overall-orders-refresh" id="overallOrdersRefresh" type="button">Refresh order status</button>
+    </footer>
+  </section>
 </div>
 <div id="iosInstallOverlay" class="ios-install-overlay" hidden>
   <section class="ios-install-dialog" role="dialog" aria-modal="true" aria-labelledby="iosInstallTitle" aria-describedby="iosInstallSubtitle">
@@ -613,5 +676,103 @@ function setMenuOpen(open){siteMenu.hidden=!open;menuToggle.setAttribute("aria-e
 menuToggle.addEventListener("click",()=>setMenuOpen(siteMenu.hidden));
 document.addEventListener("click",event=>{if(!menuContainer.contains(event.target))setMenuOpen(false)});
 document.addEventListener("keydown",event=>{if(event.key==="Escape"&&!siteMenu.hidden){setMenuOpen(false);menuToggle.focus()}});
+const overallOrdersButton=document.getElementById("overallOrdersButton");
+const overallOrdersOverlay=document.getElementById("overallOrdersOverlay");
+const overallOrdersClose=document.getElementById("overallOrdersClose");
+const overallOrdersList=document.getElementById("overallOrdersList");
+const overallOrdersRefresh=document.getElementById("overallOrdersRefresh");
+const CUSTOMER_ORDER_STORAGE_PREFIX="storenest_order_tracking:";
+const CUSTOMER_ORDER_STAGES=[
+ {key:"new",label:"Order request sent"},
+ {key:"accepted",label:"Order received"},
+ {key:"preparing",label:"Order is being prepared"},
+ {key:"prepared",label:"Prepared"},
+ {key:"ready",label:"Ready for collection"}
+];
+const CUSTOMER_ORDER_STATUS_LABELS={new:"Awaiting acceptance",accepted:"Order received",preparing:"In progress",prepared:"Prepared",ready:"Ready for collection",completed:"Collected",cancelled:"Cancelled"};
+function readAllCustomerOrders(){
+ const orders=[];
+ try{
+  for(let index=0;index<localStorage.length;index++){
+   const key=localStorage.key(index);
+   if(!key||!key.startsWith(CUSTOMER_ORDER_STORAGE_PREFIX))continue;
+   const saved=JSON.parse(localStorage.getItem(key)||"[]");
+   if(!Array.isArray(saved))continue;
+   saved.forEach(order=>{
+    if(order&&typeof order.id==="string"&&typeof order.token==="string"){
+     orders.push({...order,storageKey:key});
+    }
+   });
+  }
+ }catch(error){console.warn("Could not read saved orders:",error)}
+ return orders.sort((a,b)=>(Date.parse(b.createdAt||"")||0)-(Date.parse(a.createdAt||"")||0));
+}
+function renderCustomerOrderCard(order){
+ const status=String(order.status||"new");
+ const statusLabel=CUSTOMER_ORDER_STATUS_LABELS[status]||"Awaiting acceptance";
+ const statusIndex={new:0,accepted:1,preparing:2,prepared:3,ready:4,completed:4,cancelled:-1}[status]??0;
+ const collected=status==="completed";
+ const reference=String(order.id).replace(/-/g,"").slice(0,8).toUpperCase();
+ const steps=CUSTOMER_ORDER_STAGES.map((stage,index)=>{
+  const complete=index<statusIndex||collected;
+  const current=index===statusIndex&&!collected&&status!=="cancelled";
+  const label=complete?"Complete":current?statusLabel:"Waiting";
+  return '<li class="overall-order-step'+(complete?' is-complete':current?' is-current':'')+'"><span class="overall-order-dot" aria-hidden="true"></span><span>'+escapeResult(stage.label)+'</span><small>'+escapeResult(label)+'</small></li>';
+ }).join("");
+ const createdAt=Date.parse(order.createdAt||"");
+ const dateLabel=createdAt?new Intl.DateTimeFormat(undefined,{dateStyle:"medium",timeStyle:"short"}).format(new Date(createdAt)):"";
+ return '<article class="overall-order-card"><div class="overall-order-head"><div class="overall-order-store"><span>'+escapeResult(order.businessName||"Store")+'</span><small>Order #'+escapeResult(reference)+(dateLabel?' · '+escapeResult(dateLabel):'')+'</small></div><span class="overall-order-status">'+escapeResult(statusLabel)+'</span></div>'+
+ (status==="cancelled"?'<p class="overall-order-cancelled">This order request was cancelled.</p>':'<ol class="overall-order-steps">'+steps+'</ol>')+'</article>';
+}
+function renderAllCustomerOrders(orders,note=""){
+ if(!orders.length){
+  overallOrdersList.innerHTML='<p class="overall-orders-empty">Orders placed on this device will appear here. Place an order from a store to follow its progress.</p>';
+  return;
+ }
+ overallOrdersList.innerHTML=orders.map(renderCustomerOrderCard).join("")+(note?'<p class="overall-orders-note">'+escapeResult(note)+'</p>':"");
+}
+async function refreshAllCustomerOrders(){
+ const orders=readAllCustomerOrders();
+ renderAllCustomerOrders(orders);
+ if(!orders.length)return;
+ overallOrdersRefresh.disabled=true;
+ overallOrdersRefresh.textContent="Refreshing…";
+ let refreshFailed=false;
+ try{
+  const client=await getSearchClient();
+  const updated=await Promise.all(orders.map(async order=>{
+   try{
+    const {data,error}=await client.rpc("get_storefront_order_progress",{p_order_id:order.id,p_tracking_token:order.token});
+    if(error)throw error;
+    const row=Array.isArray(data)?data[0]:data;
+    return row?{...order,status:row.status||order.status,updatedAt:row.updated_at||order.updatedAt}:order;
+   }catch(error){refreshFailed=true;return order}
+  }));
+  if(!overallOrdersOverlay.hidden)renderAllCustomerOrders(updated,refreshFailed?"Some updates could not be refreshed. Showing the latest saved status for those orders.":"");
+ }catch(error){
+  console.warn("Could not refresh order progress:",error);
+  refreshFailed=true;
+  if(!overallOrdersOverlay.hidden)renderAllCustomerOrders(orders,"Could not refresh right now. Showing the latest saved status.");
+ }finally{
+  overallOrdersRefresh.disabled=false;
+  overallOrdersRefresh.textContent="Refresh order status";
+ }
+}
+function openAllCustomerOrders(){
+ overallOrdersOverlay.hidden=false;
+ refreshAllCustomerOrders();
+ overallOrdersClose.focus();
+}
+function closeAllCustomerOrders(){
+ overallOrdersOverlay.hidden=true;
+ overallOrdersButton.focus();
+}
+overallOrdersButton.addEventListener("click",openAllCustomerOrders);
+overallOrdersClose.addEventListener("click",closeAllCustomerOrders);
+overallOrdersRefresh.addEventListener("click",refreshAllCustomerOrders);
+overallOrdersOverlay.addEventListener("click",event=>{if(event.target===overallOrdersOverlay)closeAllCustomerOrders()});
+document.addEventListener("keydown",event=>{
+ if(event.key==="Escape"&&!overallOrdersOverlay.hidden)closeAllCustomerOrders();
+});
 document.getElementById("pageRefreshButton")?.addEventListener("click",()=>window.location.reload());
 </script></body></html>
