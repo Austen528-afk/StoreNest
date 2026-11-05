@@ -72,7 +72,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-off
 .cart-head{display:flex;align-items:center;justify-content:space-between;gap:15px;border-bottom:1px solid #e9e9e9;padding-bottom:16px}
 .cart-head h2{font-size:23px;margin:0}
 .close-cart{border:0;border-radius:10px;background:#f2f2f2;width:38px;height:38px;font-size:25px}
-.cart-items{flex:1;overflow:auto;padding:12px 0}
+.cart-items{flex:0 0 auto;overflow:visible;padding:0}
 .cart-item{display:grid;grid-template-columns:64px minmax(0,1fr) auto;align-items:center;gap:10px;padding:14px 0;border-bottom:1px solid #eee}
 .cart-item-photo{width:64px;height:64px;display:flex;align-items:center;justify-content:center;padding:0;overflow:hidden;border:0;border-radius:9px;background:#f0f0f0;color:#888;font-size:22px;cursor:pointer}
 .cart-item-photo img{display:block;width:100%;height:100%;object-fit:cover}
@@ -565,7 +565,8 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
 @media(max-width:480px){.gallery-customization{padding:13px 16px 19px}.gallery-choice-group{padding-top:11px}.gallery-choice-option{padding:9px 8px;font-size:12px}}
 
 
-.cart-review-view{flex:1;min-height:0;display:flex;flex-direction:column}
+.cart-review-view{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.cart-scroll-area{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:12px 0 0}
 .cart-review-view[hidden],.checkout-step[hidden],.checkout-success[hidden]{display:none!important}
 .cart-review-actions{display:grid;gap:8px;padding-top:12px}
 .cart-checkout-button{width:100%;border:0;border-radius:12px;background:#171717;color:#fff;padding:13px 15px;font-weight:800}
@@ -611,7 +612,7 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
 .checkout-success>strong{font-size:13px;color:#526b5d}
 .checkout-success p{font-size:13px;line-height:1.55;color:#68756e}
 .checkout-success .cart-checkout-button{margin-top:8px}
-.basket-order-progress{flex:0 0 auto;max-height:min(34vh,280px);overflow:auto;margin:8px 0;border:1px solid #dce9e1;border-radius:12px;padding:10px;background:#fbfdfc}
+.basket-order-progress{flex:0 0 auto;max-height:none;overflow:visible;margin:0 0 8px;border:1px solid #dce9e1;border-radius:12px;padding:10px;background:#fbfdfc}
 .basket-order-progress[hidden]{display:none!important}
 .basket-order-heading{font-size:12px;font-weight:850;margin:0 0 8px;color:#24372d}
 .order-tracking-card{border:1px solid #dce9e1;border-radius:11px;background:#fff;padding:11px;margin:0 0 8px}
@@ -631,7 +632,7 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
 .checkout-order-progress .order-tracking-card{width:100%}
 .order-tracking-share{width:100%;min-height:40px;margin-top:9px;border:1px solid #cddfd4;border-radius:9px;background:#f4faf6;color:#2b6652;font:inherit;font-size:11px;font-weight:800;cursor:pointer}
 .order-tracking-share:hover{background:#e8f7f0}
-@media(max-width:480px){.basket-order-progress{max-height:min(45vh,400px)}.order-tracking-card{padding:9px}.order-tracking-step{font-size:9px}.checkout-success{justify-content:flex-start;padding:14px 0}.order-tracking-share{min-height:44px}}
+@media(max-width:480px){.order-tracking-card{padding:9px}.order-tracking-step{font-size:9px}.checkout-success{justify-content:flex-start;padding:14px 0}.order-tracking-share{min-height:44px}}
 @media(max-width:480px){.checkout-step{gap:12px}.checkout-fields input{min-height:44px}.checkout-submit-row strong{font-size:17px}}
 </style>
 <link rel="stylesheet" href="/theme.css">
@@ -653,8 +654,10 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
   <aside class="cart-panel" role="dialog" aria-modal="true" aria-label="Your basket">
     <div class="cart-head"><h2 id="cartTitle">Your basket</h2><button type="button" class="close-cart" id="closeCart" aria-label="Close basket">×</button></div>
     <div id="cartReviewView" class="cart-review-view">
-      <section id="basketOrderProgress" class="basket-order-progress" hidden aria-live="polite"></section>
-      <div id="cartItems" class="cart-items"></div>
+      <div class="cart-scroll-area">
+        <section id="basketOrderProgress" class="basket-order-progress" hidden aria-live="polite"></section>
+        <div id="cartItems" class="cart-items"></div>
+      </div>
       <div class="cart-total"><span>Subtotal</span><span id="cartTotal">R0.00</span></div>
       <div class="cart-review-actions">
         <button type="button" id="checkoutStart" class="cart-checkout-button">Continue to checkout</button>
