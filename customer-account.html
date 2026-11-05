@@ -24,7 +24,7 @@ main{padding:30px 0 55px}.intro{margin:0 0 18px}.intro h1{margin:0 0 8px;font-si
 .message{margin:12px 0 0;padding:11px 12px;border-radius:9px;background:#f0f8f4;color:#39715f;font-size:12px;line-height:1.5}.message.error{background:#fff0eb;color:#a43c2e}.message[hidden]{display:none!important}
 .profile-head{display:flex;justify-content:space-between;align-items:start;gap:12px;margin-bottom:14px}.profile-head p{margin:4px 0 0;color:#68766e;font-size:12px;line-height:1.5}
 .profile-form{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}.profile-form .wide{grid-column:1/-1}.profile-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;grid-column:1/-1;padding-top:2px}
-.contact-info{margin:0 0 17px;padding:14px;border:1px solid #dce8e1;border-radius:12px;background:#f8fbf9}.contact-info h3{margin:0 0 10px;font-size:14px}.contact-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.contact-info-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end}.contact-info-item .field{margin:0}.contact-info-item button{min-height:45px;white-space:nowrap}.contact-info .field input{font-size:16px}.contact-info-help{margin:10px 0 0;color:#738078;font-size:11px;line-height:1.45}.contact-verify{margin-top:13px;padding:12px;border:1px solid #dce8e1;border-radius:10px;background:#fff}.contact-verify[hidden]{display:none!important}.contact-verify h4{margin:0 0 8px;font-size:14px}.contact-verify p{margin:0 0 10px;color:#64736b;font-size:12px;line-height:1.5}.contact-verify-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}.contact-verify-actions{display:flex;flex-wrap:wrap;gap:8px}.contact-verify-actions button{min-height:40px}.contact-feedback{margin:10px 0 0}
+.contact-info{margin:0 0 17px;padding:14px;border:1px solid #dce8e1;border-radius:12px;background:#f8fbf9}.contact-info h3{margin:0 0 10px;font-size:14px}.contact-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.contact-info-item{display:grid;gap:0}.contact-info-item .field{margin:0}.contact-info .field input{font-size:16px}.contact-info-help{margin:10px 0 0;color:#738078;font-size:11px;line-height:1.45}.contact-verify{margin-top:13px;padding:12px;border:1px solid #dce8e1;border-radius:10px;background:#fff}.contact-verify[hidden]{display:none!important}.contact-verify h4{margin:0 0 8px;font-size:14px}.contact-verify p{margin:0 0 10px;color:#64736b;font-size:12px;line-height:1.5}.contact-verify-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}.contact-verify-actions{display:flex;flex-wrap:wrap;gap:8px}.contact-verify-actions button{min-height:40px}.contact-feedback{margin:10px 0 0}
 @media(max-width:620px){.page{width:calc(100% - 20px)}main{padding-top:22px}.panel{padding:17px;border-radius:14px}.profile-form{grid-template-columns:1fr}.profile-form .wide,.profile-actions{grid-column:auto}.contact-info-grid{grid-template-columns:1fr}.contact-verify-fields{grid-template-columns:1fr}.profile-actions{flex-direction:column-reverse;align-items:stretch}.profile-actions button{width:100%}.code-row{grid-template-columns:1fr}.method-row{gap:7px}.method-option{padding:10px 8px;font-size:12px}}
 </style>
 </head>
@@ -78,31 +78,14 @@ main{padding:30px 0 55px}.intro{margin:0 0 18px}.intro h1{margin:0 0 8px;font-si
     <div class="contact-info-grid">
       <div class="contact-info-item">
         <label class="field" for="profileEmailInput">Email address<input id="profileEmailInput" type="email" autocomplete="email" maxlength="160" placeholder="you@example.com"></label>
-        <button id="saveEmailButton" class="secondary" type="button">Save email</button>
+        
       </div>
       <div class="contact-info-item">
         <label class="field" for="profilePhoneInput">Phone number<input id="profilePhoneInput" type="tel" autocomplete="tel" maxlength="40" placeholder="072 123 4567 or +27 72 123 4567"></label>
-        <button id="savePhoneButton" class="secondary" type="button">Save phone</button>
+        
       </div>
     </div>
-    <p class="contact-info-help">You can save your profile and contact changes with the Save changes button. Email and phone updates need verification before they become sign-in details.</p>
-    <section id="emailChangePanel" class="contact-verify" hidden aria-labelledby="emailChangeHeading">
-      <h4 id="emailChangeHeading">Confirm email change</h4>
-      <p id="emailChangeCopy">Enter the code sent to your new email. If you also receive a code at your current email, enter that in the second box.</p>
-      <div class="contact-verify-fields">
-        <label class="field" for="emailChangeNewCode">New email code<input id="emailChangeNewCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="6-digit code"></label>
-        <label class="field" for="emailChangeOldCode">Current email code <small>(if requested)</small><input id="emailChangeOldCode" inputmode="numeric" maxlength="8" placeholder="Code from current email"></label>
-      </div>
-      <div class="contact-verify-actions"><button id="verifyEmailChange" class="primary" type="button">Confirm email</button><button id="resendEmailChange" class="quiet" type="button">Resend code</button></div>
-      <p id="emailChangeMessage" class="message contact-feedback" role="status" hidden></p>
-    </section>
-    <section id="phoneChangePanel" class="contact-verify" hidden aria-labelledby="phoneChangeHeading">
-      <h4 id="phoneChangeHeading">Confirm phone change</h4>
-      <p>Enter the code sent by SMS to your new phone number.</p>
-      <label class="field" for="phoneChangeCode">Phone confirmation code<input id="phoneChangeCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="6-digit code"></label>
-      <div class="contact-verify-actions"><button id="verifyPhoneChange" class="primary" type="button">Confirm phone</button><button id="resendPhoneChange" class="quiet" type="button">Resend code</button></div>
-      <p id="phoneChangeMessage" class="message contact-feedback" role="status" hidden></p>
-    </section>
+    <p class="contact-info-help">Email and phone are editable profile contact details. Save changes stores them with your name and place; it does not change how you sign in.</p>
   </section>
   <form id="customerProfileForm" class="profile-form">
     <label class="field" for="profileName">Profile name *<input id="profileName" name="profile_name" required minlength="2" maxlength="100" autocomplete="name" placeholder="Your name"></label>
@@ -121,7 +104,7 @@ const $=id=>document.getElementById(id);
 const customerAuth=window.StoreNestCustomerAuth;
 const accountMode=new URLSearchParams(location.search).get("mode")||"";
 let authMode=accountMode==="signup"?"signup":accountMode==="upgrade"?"upgrade":"signin";
-let accountClient=null,currentUser=null,currentProfile=null,pendingSignup=null,pendingSignupPassword="",legacyPendingCode=null,legacyVerifiedUser=null,pendingContactChange=null;
+let accountClient=null,currentUser=null,currentProfile=null,pendingSignup=null,pendingSignupPassword="",legacyPendingCode=null,legacyVerifiedUser=null;
 function applyAccountMode(){
  const heading=$("accountPageHeading"),copy=$("accountPageCopy");
  if(accountMode==="signup"){heading.textContent="Create a StoreNest profile";copy.textContent="Register once to save your profile and contact information."}
@@ -169,8 +152,8 @@ function setSignedInView(user,profile){
   :"Your account is confirmed. Add your profile name and place to finish setup.";
  $("profileName").value=profile?.profile_name||user.user_metadata?.full_name||"";
  $("profilePlace").value=profile?.place||"";$("profileAddress").value=profile?.exact_address||"";
- $("profileEmailInput").value=user.email||"";
- $("profilePhoneInput").value=user.phone||"";
+ $("profileEmailInput").value=profile?(profile.contact_email??""):(user.email||"");
+ $("profilePhoneInput").value=profile?(profile.contact_phone??""):(user.phone||"");
  $("saveProfileButton").textContent=profile?"Save changes":"Save profile";$("profileMessage").hidden=true;
 }
 async function sendAccountCode(){
@@ -264,147 +247,30 @@ async function saveUpgradePassword(){
  }finally{button.disabled=false}
 }
 
-function contactMessage(method){return $(method==="email"?"emailChangeMessage":"phoneChangeMessage")}
-function setContactButtonsDisabled(disabled){$("saveEmailButton").disabled=disabled;$("savePhoneButton").disabled=disabled}
-function finishContactChange(user,method){
- currentUser=user||currentUser;
- if(currentUser){if(method==="email")$("profileEmailInput").value=currentUser.email||"";else $("profilePhoneInput").value=currentUser.phone||"";}
- $("emailChangePanel").hidden=true;$("phoneChangePanel").hidden=true;
- $("emailChangeNewCode").value="";$("emailChangeOldCode").value="";$("phoneChangeCode").value="";
- pendingContactChange=null;setContactButtonsDisabled(false);
- showMessage(contactMessage(method),method==="email"?"Email address updated.":"Phone number updated.");
-}
-async function startContactChange(method){
- const button=$(method==="email"?"saveEmailButton":"savePhoneButton");
- button.disabled=true;showMessage(contactMessage(method),"");
- try{
-  if(!currentUser||!accountClient)throw new Error("Sign in again before changing your contact details.");
-  if(pendingContactChange)throw new Error("Finish the current contact change first.");
-  let value;
-  if(method==="email"){
-   value=customerAuth.normalizeEmail($("profileEmailInput").value);
-   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))throw new Error("Enter a valid email address.");
-   if(value.toLowerCase()===(currentUser.email||"").toLowerCase())throw new Error("This is already your current email address.");
-  }else{
-   value=customerAuth.normalizePhone($("profilePhoneInput").value);
-   if(!value)throw new Error("Enter a valid phone number, such as 072 123 4567 or +27 72 123 4567.");
-   if(value===(currentUser.phone||""))throw new Error("This is already your current phone number.");
-  }
-  const result=await accountClient.auth.updateUser(method==="email"?{email:value}:{phone:value});
-  if(result.error){
-   if(method==="phone"&&/unsupported phone provider|phone provider is not enabled/i.test(result.error.message||""))throw new Error("Phone changes need an SMS provider to send a verification code. Your current phone number has not changed.");
-   throw result.error;
-  }
-  const updated=result.data?.user;
-  const alreadyChanged=method==="email"
-   ?(updated?.email||"").toLowerCase()===value.toLowerCase()
-   :(updated?.phone||"")===value;
-  if(alreadyChanged){finishContactChange(updated,method);return true}
-  pendingContactChange={method,value,oldValue:method==="email"?currentUser.email||"":currentUser.phone||"",newCodeVerified:false};
-  $(method==="email"?"profileEmailInput":"profilePhoneInput").value=value;
-  $("emailChangePanel").hidden=method!=="email";$("phoneChangePanel").hidden=method!=="phone";
-  setContactButtonsDisabled(true);
-  const message=method==="email"
-   ?"Confirmation requested. Check your new email for a code or confirmation link. Your current email stays active until verification."
-   :"Confirmation code sent by SMS. Your current phone stays active until verification.";
-  showMessage(contactMessage(method),message);
-  $(method==="email"?"emailChangeNewCode":"phoneChangeCode").focus();
-  return true;
- }catch(error){
-  console.error("Could not update customer contact information:",error);
-  showMessage(contactMessage(method),error.message||"Could not update this contact detail.",true);
-  return false;
- }finally{button.disabled=Boolean(pendingContactChange)}
-}
-async function verifyContactChange(method){
- const button=$(method==="email"?"verifyEmailChange":"verifyPhoneChange");
- button.disabled=true;showMessage(contactMessage(method),"");
- const pending=pendingContactChange;
- try{
-  if(!pending||pending.method!==method)throw new Error("Request a contact change first.");
-  if(method==="email"){
-   if(!pending.newCodeVerified){
-    const token=$("emailChangeNewCode").value.trim().replace(/\s/g,"");
-    if(!/^\d{6,8}$/.test(token))throw new Error("Enter the code sent to your new email.");
-    const result=await accountClient.auth.verifyOtp({email:pending.value,token,type:"email_change"});
-    if(result.error)throw result.error;
-    pending.newCodeVerified=true;
-   }
-   let user=result.data?.user||(await accountClient.auth.getUser()).data?.user||null;
-   if((user?.email||"").toLowerCase()!==pending.value.toLowerCase()&&$("emailChangeOldCode").value.trim()){
-    const oldToken=$("emailChangeOldCode").value.trim().replace(/\s/g,"");
-    if(!/^\d{6,8}$/.test(oldToken))throw new Error("Enter the code sent to your current email.");
-    const result=await accountClient.auth.verifyOtp({email:pending.oldValue,token:oldToken,type:"email_change"});
-    if(result.error)throw result.error;
-    user=result.data?.user||(await accountClient.auth.getUser()).data?.user||user;
-   }
-   if((user?.email||"").toLowerCase()!==pending.value.toLowerCase()){
-    showMessage(contactMessage(method),"New email confirmed. If Supabase also sent a code to your current email, enter it above to finish the change.");
-    return;
-   }
-   finishContactChange(user,method);
-  }else{
-   const token=$("phoneChangeCode").value.trim().replace(/\s/g,"");
-   if(!/^\d{6,8}$/.test(token))throw new Error("Enter the code sent to your new phone number.");
-   const result=await accountClient.auth.verifyOtp({phone:pending.value,token,type:"phone_change"});
-   if(result.error)throw result.error;
-   const user=result.data?.user||(await accountClient.auth.getUser()).data?.user||null;
-   if((user?.phone||"")!==pending.value)throw new Error("The number is not confirmed yet. Check the code and try again.");
-   finishContactChange(user,method);
-  }
- }catch(error){
-  console.error("Could not confirm customer contact change:",error);
-  showMessage(contactMessage(method),error.message||"Could not confirm this contact change.",true);
- }finally{button.disabled=false}
-}
-async function resendContactChange(method){
- const button=$(method==="email"?"resendEmailChange":"resendPhoneChange");
- button.disabled=true;showMessage(contactMessage(method),"");
- try{
-  if(!pendingContactChange||pendingContactChange.method!==method)throw new Error("Request a contact change first.");
-  const result=method==="email"
-   ?await accountClient.auth.resend({type:"email_change",email:pendingContactChange.value})
-   :await accountClient.auth.resend({type:"phone_change",phone:pendingContactChange.value});
-  if(result.error){
-   if(method==="phone"&&/unsupported phone provider|phone provider is not enabled/i.test(result.error.message||""))throw new Error("Phone changes need an SMS provider to send a verification code.");
-   throw result.error;
-  }
-  showMessage(contactMessage(method),"A new confirmation code has been requested.");
- }catch(error){
-  console.error("Could not resend customer contact confirmation:",error);
-  showMessage(contactMessage(method),error.message||"Could not resend the confirmation code.",true);
- }finally{button.disabled=false}
-}
 async function saveCustomerProfile(event){
  event.preventDefault();const button=$("saveProfileButton");button.disabled=true;showMessage($("profileMessage"),"");
  try{
   const email=customerAuth.normalizeEmail($("profileEmailInput").value);
   const phoneText=$("profilePhoneInput").value.trim();
   const phone=phoneText?customerAuth.normalizePhone(phoneText):"";
-  if(currentUser?.email&&!email)throw new Error("Keep an email address on your profile so you can sign in.");
   if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new Error("Enter a valid email address.");
   if(phoneText&&!phone)throw new Error("Enter a valid phone number, such as 072 123 4567 or +27 72 123 4567.");
-  if(currentUser?.phone&&!phone)throw new Error("Keep a verified phone number on your profile or enter a replacement.");
-  const emailChanged=Boolean(email)&&email.toLowerCase()!==(currentUser?.email||"").toLowerCase();
-  const phoneChanged=Boolean(phone)&&phone!==(currentUser?.phone||"");
-  const profile=await customerAuth.saveProfile(currentUser,{profile_name:$("profileName").value,place:$("profilePlace").value,exact_address:$("profileAddress").value});
-  currentProfile=profile;$("profileHeading").textContent="Your profile";$("profileHelp").textContent="Profile name and place are required. Exact address is optional.";$("saveProfileButton").textContent="Save changes";
-  if(pendingContactChange){showMessage($("profileMessage"),"Your profile details are saved. Finish the current contact verification before starting another change.");return;}
-  if(emailChanged){
-   const started=await startContactChange("email");
-   if(!started){showMessage($("profileMessage"),"Your profile details are saved, but the email change could not be started. See the contact message above.",true);return;}
-   showMessage($("profileMessage"),phoneChanged?"Profile details saved. Verify the email, then press Save changes again to update the phone.":"Profile details saved. Verify the email to finish the contact change.");
-   return;
-  }
-  if(phoneChanged){
-   const started=await startContactChange("phone");
-   if(!started){showMessage($("profileMessage"),"Your profile details are saved, but the phone change could not be started. See the contact message above.",true);return;}
-   showMessage($("profileMessage"),"Profile details saved. Verify the phone to finish the contact change.");
-   return;
-  }
-  showMessage($("profileMessage"),"All profile changes saved.");
- }catch(error){console.error("Could not save customer profile:",error);showMessage($("profileMessage"),error.message||"Could not save your profile. Please try again.",true);}
- finally{button.disabled=false}
+  const profile=await customerAuth.saveProfile(currentUser,{
+   profile_name:$("profileName").value,
+   place:$("profilePlace").value,
+   exact_address:$("profileAddress").value,
+   contact_email:email,
+   contact_phone:phone
+  });
+  currentProfile=profile;
+  $("profileHeading").textContent="Your profile";
+  $("profileHelp").textContent="Profile name and place are required. Exact address is optional.";
+  $("saveProfileButton").textContent="Save changes";
+  showMessage($("profileMessage"),"All profile information saved.");
+ }catch(error){
+  console.error("Could not save customer profile:",error);
+  showMessage($("profileMessage"),error.message||"Could not save your profile. Please try again.",true);
+ }finally{button.disabled=false}
 }
 document.querySelectorAll('input[name="accountMethod"]').forEach(input=>input.addEventListener("change",()=>{if(!$("accountContact").disabled)updateMethod()}));
 $("switchAccountMode").addEventListener("click",()=>setAuthMode(authMode==="signup"?"signin":authMode==="upgrade"?"signin":"signup"));
@@ -416,14 +282,8 @@ $("sendAccountCode").addEventListener("click",sendAccountCode);
 $("signInAccountButton").addEventListener("click",signInCustomer);
 $("verifyAccountCode").addEventListener("click",verifyAccountCode);
 $("customerProfileForm").addEventListener("submit",saveCustomerProfile);
-$("saveEmailButton").addEventListener("click",()=>startContactChange("email"));
-$("savePhoneButton").addEventListener("click",()=>startContactChange("phone"));
-$("verifyEmailChange").addEventListener("click",()=>verifyContactChange("email"));
-$("verifyPhoneChange").addEventListener("click",()=>verifyContactChange("phone"));
-$("resendEmailChange").addEventListener("click",()=>resendContactChange("email"));
-$("resendPhoneChange").addEventListener("click",()=>resendContactChange("phone"));
 $("signOutButton").addEventListener("click",async()=>{try{await accountClient.auth.signOut();currentUser=null;currentProfile=null;$("profilePanel").hidden=true;$("signInPanel").hidden=false;setAuthMode("signin");showMessage($("accountAuthMessage"),"You have signed out.");}catch(error){showMessage($("profileMessage"),error.message||"Could not sign out.",true)}});
-async function initializeAccount(){updateMethod();accountClient=await customerAuth.getClient();accountClient.auth.onAuthStateChange((event,session)=>{if(!["USER_UPDATED","SIGNED_IN"].includes(event)||!session?.user||!currentUser)return;const previous=currentUser,user=session.user,pending=pendingContactChange;currentUser=user;if(pending&&((pending.method==="email"&&(user.email||"").toLowerCase()===pending.value.toLowerCase())||(pending.method==="phone"&&user.phone===pending.value))){finishContactChange(user,pending.method);return;}if(!pending){if(previous.email!==user.email)$("profileEmailInput").value=user.email||"";if(previous.phone!==user.phone)$("profilePhoneInput").value=user.phone||"";}});const {data,error}=await accountClient.auth.getUser();if(error)throw error;if(data?.user){if(accountMode==="upgrade"){setAuthMode("upgrade");legacyVerifiedUser=data.user;$("sendUpgradeCode").hidden=true;$("upgradeCodeStep").hidden=true;$("upgradePasswordStep").hidden=false;showMessage($("accountAuthMessage"),"Your existing session is confirmed. Create a password for future sign-ins.");}else{const profile=await customerAuth.getProfile(data.user.id);setSignedInView(data.user,profile)}}}
+async function initializeAccount(){updateMethod();accountClient=await customerAuth.getClient();accountClient.auth.onAuthStateChange((event,session)=>{if(["USER_UPDATED","SIGNED_IN"].includes(event)&&session?.user)currentUser=session.user;});const {data,error}=await accountClient.auth.getUser();if(error)throw error;if(data?.user){if(accountMode==="upgrade"){setAuthMode("upgrade");legacyVerifiedUser=data.user;$("sendUpgradeCode").hidden=true;$("upgradeCodeStep").hidden=true;$("upgradePasswordStep").hidden=false;showMessage($("accountAuthMessage"),"Your existing session is confirmed. Create a password for future sign-ins.");}else{const profile=await customerAuth.getProfile(data.user.id);setSignedInView(data.user,profile)}}}
 initializeAccount().catch(error=>{console.error("Customer profile page could not load:",error);showMessage($("accountAuthMessage"),error.message||"Could not load the profile service. Refresh and try again.",true)});
 </script>
 </body>
