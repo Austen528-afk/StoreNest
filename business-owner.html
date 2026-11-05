@@ -671,7 +671,7 @@ html[data-theme="dark"] #itemOptionsEditor small{color:#afc4b6}
   <div class="item-options-heading"><div><strong>Customization &amp; Extras</strong><small>Create scales for amounts or heat levels, or choice groups for extras.</small></div>
   <div class="item-options-actions"><button type="button" id="addScaleGroup" class="outline-button">+ Add scale</button><button type="button" id="addCustomizationGroup" class="outline-button">+ Add choice group</button></div></div>
   <div id="customizationGroupsList"></div>
-  <small class="item-options-note">Scales start with None, Less, Mid and Extra, with Mid selected by default. Rename levels, set another default and add level prices.</small>
+  <small class="item-options-note">Scales start with None, Less, Mid and Extra, with Mid selected by default. Groups are optional unless you mark them Required.</small>
 </div>
 <div class="message" id="itemFormMessage" role="status" aria-live="polite" hidden></div><div class="modal-actions"><button class="outline-button" type="button" data-close-modal>Cancel</button><button class="primary-button" type="submit">Save item <span>→</span></button></div></form></div></div>
   <div class="modal-backdrop" id="categoryModal" hidden><div class="modal-card small-modal" role="dialog" aria-modal="true" aria-labelledby="categoryModalTitle"><div class="modal-head"><div><span class="eyebrow">CATALOGUE ORGANISATION</span><h3 id="categoryModalTitle">Add a category</h3></div><button class="close-modal" type="button" data-close-modal aria-label="Close">×</button></div><form id="categoryForm"><div class="field"><label for="categoryName">Section name</label><input id="categoryName" required maxlength="60" placeholder="e.g. Catering, Décor, Ice Cream"><label for="categoryMarketplace">Marketplace category</label><select id="categoryMarketplace"><option value="food-drink">Food & Drinks</option><option value="events-decor">Catering and Decor Services</option><option value="electronics">Electronics</option><option value="fashion">Fashion & Accessories</option><option value="beauty">Personal Care Services and Products</option><option value="home-living">Home & Living</option><option value="groceries">Groceries & Essentials</option><option value="local-services">Local Services</option><option value="gifts-occasions">Gifts &amp; Occasions</option><option value="other">Other</option></select><small>Controls where customers discover this section on StoreNest. It does not restrict what you offer.</small><label for="categoryStyle">Display style</label><select id="categoryStyle"><option value="auto">Automatic</option><option value="menu">Food menu</option><option value="showcase">Visual showcase</option><option value="portfolio">Service portfolio</option><option value="catalogue">Product catalogue</option><option value="booking">Booking / enquiry</option></select><label for="categoryDescription">Short introduction (optional)</label><textarea id="categoryDescription" maxlength="300" rows="2" placeholder="What this section offers"></textarea><input id="categoryEditId" type="hidden"></div><div class="message" id="categoryMessage" role="status" aria-live="polite" hidden></div><div class="modal-actions"><button class="outline-button" type="button" data-close-modal>Cancel</button><button class="primary-button" type="submit">Add category</button></div></form></div></div>
@@ -1134,10 +1134,10 @@ function addOptionEditorGroup(group){
 }
 $("addScaleGroup").addEventListener("click",()=>{
  const levels=["None","Less","Mid","Extra"].map(name=>createCustomizationOption(name));
- addOptionEditorGroup({id:newCustomizationId(),name:"",selection:"scale",required:true,max:1,defaultOptionId:levels[2].id,options:levels});
+ addOptionEditorGroup({id:newCustomizationId(),name:"",selection:"scale",required:false,max:1,defaultOptionId:levels[2].id,options:levels});
 });
 $("addCustomizationGroup").addEventListener("click",()=>{
- addOptionEditorGroup({id:newCustomizationId(),name:"",selection:"single",required:true,max:1,options:[createCustomizationOption()]});
+ addOptionEditorGroup({id:newCustomizationId(),name:"",selection:"single",required:false,max:1,options:[createCustomizationOption()]});
 });
 $("customizationGroupsList").addEventListener("input",event=>{
  const field=event.target,card=field.closest("[data-group-index]");if(!card)return;
@@ -1163,9 +1163,9 @@ $("customizationGroupsList").addEventListener("click",event=>{
 });
 function optionsForSave(){
  if($("itemType").value!=="product")return [];
- for(const group of editedOptionGroups){
+ const configuredGroups=editedOptionGroups.filter(group=>group.options.some(option=>String(option.name||"").trim()));
+ for(const group of configuredGroups){
   if(!group.name.trim())throw Error("Name each customization group, or remove the empty group.");
-  if(!group.options.length)throw Error("Add at least one choice to "+group.name+".");
   for(const option of group.options){
    if(!String(option.name).trim())throw Error("Enter each choice name in "+group.name+".");
    if(!Number.isFinite(Number(option.price))||Number(option.price)<0||Number(option.price)>100000)
@@ -1176,7 +1176,7 @@ function optionsForSave(){
   if(group.selection==="scale"&&group.options.length<2)throw Error("A scale needs at least two levels.");
   if(group.selection==="scale"&&!group.options.some(option=>option.id===group.defaultOptionId))throw Error("Choose a default level for "+group.name+".");
  }
- return window.StoreNestOptions.normalize(editedOptionGroups);
+ return window.StoreNestOptions.normalize(configuredGroups);
 }
 
 function openItemModal(item){try{const form=$("itemForm");if(!form)throw new Error("Product editor is unavailable.");form.reset();$("itemId").value=item?.id||"";$("itemModalTitle").textContent=item?"Edit item":"Add an item";$("itemType").value=item?.item_type||"product";$("itemName").value=item?.name||"";$("itemPrice").value=item?.price??"";$("itemDescription").value=item?.description||"";editedOptionGroups=window.StoreNestOptions.normalize(item?.customization_options);drawCustomizationEditor();$("itemAvailability").value=String(item?.is_available??true);$("itemOrder").value=item?.display_order??businessItems.length;$("itemCategory").value=item?.category_id||"";$("itemFormMessage").hidden=true;resetItemGallery(item);openModal("itemModal");if($("itemModal")?.hidden)throw new Error("The edit form could not be opened.");}catch(error){console.error("StoreNest product edit error",error);showToast("Could not open the product editor: "+friendlyError(error),true)}}
