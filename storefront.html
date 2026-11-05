@@ -729,30 +729,39 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
   <section class="checkout-profile-dialog" role="dialog" aria-modal="true" aria-labelledby="checkoutProfileHeading" tabindex="-1">
     <div class="checkout-profile-dialog-head"><button id="checkoutProfileClose" class="checkout-profile-close" type="button" aria-label="Close profile creation">×</button></div>
     <section class="checkout-profile-gate" aria-labelledby="checkoutProfileHeading">
-        <h3 id="checkoutProfileHeading">Create your customer profile</h3>
-        <p class="checkout-profile-copy">A confirmed profile is needed to place an order. Use email or phone to receive a confirmation code.</p>
-        <div id="checkoutAuthStep">
-          <fieldset id="checkoutAuthMethod" class="checkout-auth-method">
-            <legend>Send code by</legend>
-            <label><input type="radio" name="checkoutAuthMethod" value="email" checked> Email</label>
-            <label><input type="radio" name="checkoutAuthMethod" value="phone"> Phone</label>
-          </fieldset>
-          <label class="checkout-profile-label" for="checkoutAuthContact"><span id="checkoutAuthContactLabel">Email address</span><input id="checkoutAuthContact" type="text" inputmode="email" autocomplete="email" placeholder="you@example.com"></label>
+      <h3 id="checkoutProfileHeading">Create your customer account</h3>
+      <p id="checkoutProfileCopy" class="checkout-profile-copy">Create an account to place your order. You only confirm your email or phone during registration.</p>
+      <div id="checkoutAuthStep">
+        <fieldset id="checkoutAuthMethod" class="checkout-auth-method">
+          <legend>Register or sign in with</legend>
+          <label><input type="radio" name="checkoutAuthMethod" value="email" checked> Email</label>
+          <label><input type="radio" name="checkoutAuthMethod" value="phone"> Phone</label>
+        </fieldset>
+        <label class="checkout-profile-label" for="checkoutAuthContact"><span id="checkoutAuthContactLabel">Email address</span><input id="checkoutAuthContact" type="text" inputmode="email" autocomplete="email" placeholder="you@example.com"></label>
+        <div id="checkoutSignupFields">
+          <label class="checkout-profile-label" for="checkoutSignupPassword">Password<input id="checkoutSignupPassword" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters"></label>
+          <label class="checkout-profile-label" for="checkoutSignupPasswordConfirm">Confirm password<input id="checkoutSignupPasswordConfirm" type="password" autocomplete="new-password" minlength="8" placeholder="Enter your password again"></label>
           <button id="checkoutSendCode" class="checkout-profile-button" type="button">Send confirmation code</button>
           <div id="checkoutCodeStep" class="checkout-code-step" hidden>
             <label class="checkout-profile-label" for="checkoutAuthCode">Confirmation code<input id="checkoutAuthCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Enter the code"></label>
-            <button id="checkoutVerifyCode" class="checkout-profile-button" type="button">Confirm code</button>
+            <button id="checkoutVerifyCode" class="checkout-profile-button" type="button">Confirm account</button>
           </div>
         </div>
-        <div id="checkoutProfileStep">
-          <p class="checkout-profile-copy">Enter your profile name and place here. They are saved after your email or phone is confirmed.</p>
-          <label class="checkout-profile-label" for="checkoutProfileName">Profile name *<input id="checkoutProfileName" maxlength="100" autocomplete="name" placeholder="Your name"></label>
-          <label class="checkout-profile-label" for="checkoutProfilePlace">Place *<input id="checkoutProfilePlace" maxlength="120" autocomplete="address-level2" placeholder="e.g. Jane Furse"></label>
-          <label class="checkout-profile-label" for="checkoutProfileAddress">Exact address <small>(optional)</small><input id="checkoutProfileAddress" maxlength="280" autocomplete="street-address" placeholder="Street or collection details"></label>
-          <button id="checkoutSaveProfile" class="checkout-profile-button" type="button">Save profile</button>
+        <div id="checkoutSigninFields" hidden>
+          <label class="checkout-profile-label" for="checkoutSigninPassword">Password<input id="checkoutSigninPassword" type="password" autocomplete="current-password" placeholder="Your password"></label>
+          <button id="checkoutSignIn" class="checkout-profile-button" type="button">Sign in</button>
         </div>
-        <p id="checkoutProfileMessage" class="checkout-profile-message" role="status" hidden></p>
-      </section>
+        <p class="checkout-profile-copy checkout-auth-switch"><span id="checkoutAuthSwitchText">Already have an account?</span> <button id="checkoutAuthModeToggle" type="button">Sign in</button></p>
+      </div>
+      <div id="checkoutProfileStep" hidden>
+        <p class="checkout-profile-copy">Enter your profile name and place. Exact address is optional.</p>
+        <label class="checkout-profile-label" for="checkoutProfileName">Profile name *<input id="checkoutProfileName" maxlength="100" autocomplete="name" placeholder="Your name"></label>
+        <label class="checkout-profile-label" for="checkoutProfilePlace">Place *<input id="checkoutProfilePlace" maxlength="120" autocomplete="address-level2" placeholder="e.g. Jane Furse"></label>
+        <label class="checkout-profile-label" for="checkoutProfileAddress">Exact address <small>(optional)</small><input id="checkoutProfileAddress" maxlength="280" autocomplete="street-address" placeholder="Street or collection details"></label>
+        <button id="checkoutSaveProfile" class="checkout-profile-button" type="button">Save profile</button>
+      </div>
+      <p id="checkoutProfileMessage" class="checkout-profile-message" role="status" hidden></p>
+    </section>
   </section>
 </div>
 <div id="bookingBackdrop" class="booking-backdrop" hidden>
@@ -801,7 +810,7 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
 const CONFIG={url:"https://cypbjzbagezdelmemuhb.supabase.co",key:"sb_publishable_8W8zyYtggQMWoFlnxrzoVA_BUKjQ9va"};
 const cart=new Map();
 let storefrontClient=null,availableItems=[],toastTimer=null,activeGalleryItem=null,galleryIndex=0,galleryReturnFocus=null,activePublicBusiness=null,galleryEditCartKey=null;
-let checkoutPendingCode=null,checkoutVerifiedUser=null,checkoutVerifiedProfile=null;
+let checkoutPendingCode=null,checkoutVerifiedUser=null,checkoutVerifiedProfile=null,checkoutPendingPassword="",checkoutAuthMode="signup";
 const $=id=>document.getElementById(id);
 function esc(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function initials(name){return String(name||"SN").split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join("").toUpperCase()||"SN"}
@@ -1041,14 +1050,18 @@ function openCheckout(){
 function resetCheckoutProfileGate(){
  closeCheckoutProfileGate(false);$("checkoutProfileSummary").hidden=true;
  $("checkoutContactFields").hidden=true;
- $("checkoutAuthStep").hidden=false;$("checkoutProfileStep").hidden=true;$("checkoutCodeStep").hidden=true;
- $("checkoutSaveProfile").hidden=true;
+ $("checkoutAuthStep").hidden=false;$("checkoutProfileStep").hidden=true;
+ $("checkoutSignupFields").hidden=false;$("checkoutSigninFields").hidden=true;$("checkoutCodeStep").hidden=true;
+ $("checkoutSaveProfile").hidden=true;$("checkoutAuthModeToggle").hidden=false;
  $("checkoutProfileMessage").hidden=true;$("checkoutProfileMessage").classList.remove("error");
  $("checkoutAuthContact").disabled=false;$("checkoutAuthContact").value="";$("checkoutAuthCode").value="";
+ $("checkoutSignupPassword").value="";$("checkoutSignupPasswordConfirm").value="";$("checkoutSigninPassword").value="";
  $("checkoutProfileName").value="";$("checkoutProfilePlace").value="";$("checkoutProfileAddress").value="";
  $("checkoutSendCode").textContent="Send confirmation code";$("checkoutSendCode").disabled=false;
- $("checkoutVerifyCode").disabled=true;$("checkoutSaveProfile").disabled=true;
- checkoutPendingCode=null;checkoutVerifiedUser=null;checkoutVerifiedProfile=null;
+ $("checkoutVerifyCode").disabled=false;$("checkoutSaveProfile").disabled=true;
+ checkoutPendingCode=null;checkoutVerifiedUser=null;checkoutVerifiedProfile=null;checkoutPendingPassword="";
+ checkoutAuthMode="signup";$("checkoutAuthMethod").querySelector('input[value="email"]').checked=true;
+ updateCheckoutAuthMethod();setCheckoutAuthMode("signup",false);
 }
 async function prepareCheckoutProfileForCheckout(){
  try{
@@ -1067,25 +1080,42 @@ async function prepareCheckoutProfileForCheckout(){
 function showCheckoutProfileGate(user=null){
  $("checkoutError").hidden=true;$("checkoutProfileSummary").hidden=true;$("checkoutContactFields").hidden=true;$("checkoutProfileGate").hidden=false;document.body.classList.add("profile-modal-open");
  checkoutVerifiedUser=user||null;
- $("checkoutAuthStep").hidden=!!user;
- $("checkoutProfileStep").hidden=false;
- $("checkoutSaveProfile").hidden=!user;
- $("checkoutSaveProfile").disabled=!user;
- $("checkoutProfileHeading").textContent=user?"Complete your customer profile":"Create your customer profile";
+ $("checkoutAuthStep").hidden=!!user;$("checkoutAuthModeToggle").hidden=!!user;
+ $("checkoutProfileStep").hidden=!user;$("checkoutSaveProfile").hidden=!user;$("checkoutSaveProfile").disabled=!user;
+ $("checkoutProfileHeading").textContent=user?"Complete your customer profile":"Create your customer account";
+ $("checkoutProfileCopy").textContent=user
+  ?"Your account is signed in. Add the required profile name and place to continue."
+  :"Create an account to place your order. You only confirm your email or phone during registration.";
  if(user){
+  $("checkoutAuthStep").hidden=true;$("checkoutProfileStep").hidden=false;
   if(!$("checkoutProfileName").value)$("checkoutProfileName").value=user.user_metadata?.full_name||"";
-  showCheckoutProfileMessage("You are signed in. Enter your required profile name and place, then save.",false);
+  showCheckoutProfileMessage("Enter your required profile name and place, then save.",false);
  }else{
-  $("checkoutAuthContact").disabled=false;
-  $("checkoutCodeStep").hidden=true;
-  $("checkoutVerifyCode").disabled=true;
-  $("checkoutAuthMethod").querySelector('input[value="email"]').checked=true;
-  updateCheckoutAuthMethod();
-  showCheckoutProfileMessage("Enter your profile details now. They will be saved after you confirm your email or phone.",false);
+  $("checkoutAuthStep").hidden=false;$("checkoutProfileStep").hidden=true;
+  $("checkoutAuthContact").disabled=false;$("checkoutCodeStep").hidden=true;
+  $("checkoutVerifyCode").disabled=false;$("checkoutAuthMethod").querySelector('input[value="email"]').checked=true;
+  setCheckoutAuthMode("signup");
+  showCheckoutProfileMessage("Create your account with an email or phone number and password.",false);
  }
  const dialog=$("checkoutProfileGate").querySelector(".checkout-profile-dialog");
  dialog.focus({preventScroll:true});
  (user?$("checkoutProfileName"):$("checkoutAuthContact")).focus({preventScroll:true});
+}
+function setCheckoutAuthMode(mode,clearMessage=true){
+ checkoutAuthMode=mode==="signin"?"signin":"signup";
+ $("checkoutSignupFields").hidden=checkoutAuthMode!=="signup";$("checkoutSigninFields").hidden=checkoutAuthMode!=="signin";
+ $("checkoutAuthSwitchText").textContent=checkoutAuthMode==="signup"?"Already have an account?":"New to StoreNest?";
+ $("checkoutAuthModeToggle").textContent=checkoutAuthMode==="signup"?"Sign in":"Create account";
+ $("checkoutProfileHeading").textContent=checkoutAuthMode==="signup"?"Create your customer account":"Sign in to your account";
+ $("checkoutProfileCopy").textContent=checkoutAuthMode==="signup"
+  ?"Create an account to place your order. You only confirm your email or phone during registration."
+  :"Sign in with the email or phone number and password you registered with.";
+ $("checkoutAuthContact").disabled=false;$("checkoutCodeStep").hidden=true;$("checkoutAuthCode").value="";
+ $("checkoutSendCode").textContent="Send confirmation code";$("checkoutSendCode").disabled=false;
+ $("checkoutSignupPassword").value="";$("checkoutSignupPasswordConfirm").value="";$("checkoutSigninPassword").value="";
+ checkoutPendingCode=null;checkoutPendingPassword="";
+ if(clearMessage)showCheckoutProfileMessage("",false);
+ updateCheckoutAuthMethod();
 }
 function showCheckoutProfileMessage(message,isError=false){
  const node=$("checkoutProfileMessage");node.textContent=message;node.classList.toggle("error",isError);node.hidden=!message;
@@ -1093,8 +1123,7 @@ function showCheckoutProfileMessage(message,isError=false){
 function updateCheckoutAuthMethod(){
  const method=$("checkoutProfileGate").querySelector('input[name="checkoutAuthMethod"]:checked')?.value||"email";
  const input=$("checkoutAuthContact");
- input.type="text";
- input.inputMode=method==="email"?"email":"tel";
+ input.type="text";input.inputMode=method==="email"?"email":"tel";
  input.autocomplete=method==="email"?"email":"tel";
  input.placeholder=method==="email"?"you@example.com":"072 123 4567 or +27 72 123 4567";
  $("checkoutAuthContactLabel").textContent=method==="email"?"Email address":"Phone number";
@@ -1103,36 +1132,60 @@ async function sendCheckoutCode(){
  const button=$("checkoutSendCode");button.disabled=true;showCheckoutProfileMessage("",false);
  try{
   const method=$("checkoutProfileGate").querySelector('input[name="checkoutAuthMethod"]:checked')?.value||"email";
-  checkoutPendingCode=await window.StoreNestCustomerAuth.sendCode(method,$("checkoutAuthContact").value);
-  $("checkoutAuthContact").value=checkoutPendingCode.destination;
+  const password=$("checkoutSignupPassword").value;
+  if(password!==$("checkoutSignupPasswordConfirm").value)throw new Error("The passwords do not match.");
+  if(checkoutPendingCode){
+   await window.StoreNestCustomerAuth.resendConfirmation(checkoutPendingCode.method,checkoutPendingCode.destination);
+  }else{
+   checkoutPendingCode=await window.StoreNestCustomerAuth.createAccount(method,$("checkoutAuthContact").value,password);
+   checkoutPendingPassword=password;
+  }$("checkoutAuthContact").value=checkoutPendingCode.destination;
+  if(checkoutPendingCode.session&&checkoutPendingCode.user){await continueCheckoutProfileSetup(checkoutPendingCode.user);return}
   $("checkoutAuthContact").disabled=true;$("checkoutCodeStep").hidden=false;
-  $("checkoutVerifyCode").disabled=false;
-  $("checkoutAuthCode").focus();button.textContent="Resend code";
-  showCheckoutProfileMessage("Confirmation code sent. Check your email or SMS.",false);
+  $("checkoutAuthCode").focus();button.textContent="Resend confirmation code";
+  showCheckoutProfileMessage("Confirmation code sent. Enter it once to confirm your account.",false);
  }catch(error){
-  console.error("Could not send checkout confirmation code:",error);
-  showCheckoutProfileMessage(error.message||"Could not send a code. Check the address or number and try again.",true);
+  console.error("Could not create checkout customer account:",error);
+  showCheckoutProfileMessage(error.message||"Could not create your account. Check your details and try again.",true);
  }finally{button.disabled=false}
+}
+async function continueCheckoutProfileSetup(user){
+ checkoutVerifiedUser=user;
+ const profile=await window.StoreNestCustomerAuth.getProfile(user.id);
+ if(profile){finishCheckoutProfile(user,profile);return}
+ $("checkoutAuthStep").hidden=true;$("checkoutProfileStep").hidden=false;
+ $("checkoutSaveProfile").hidden=false;$("checkoutSaveProfile").disabled=false;
+ $("checkoutProfileHeading").textContent="Complete your customer profile";
+ if(!$("checkoutProfileName").value)$("checkoutProfileName").value=user.user_metadata?.full_name||"";
+ showCheckoutProfileMessage("Your account is confirmed. Add your required profile name and place.",false);
+ if(!$("checkoutProfileName").value)$("checkoutProfileName").focus();
 }
 async function verifyCheckoutCode(){
  const button=$("checkoutVerifyCode");button.disabled=true;showCheckoutProfileMessage("",false);
  try{
   if(!checkoutPendingCode)throw new Error("Send a confirmation code first.");
   const result=await window.StoreNestCustomerAuth.verifyCode(checkoutPendingCode.method,checkoutPendingCode.destination,$("checkoutAuthCode").value);
-  const user=result.user;if(!user)throw new Error("The code was accepted, but sign-in did not complete.");
-  checkoutVerifiedUser=user;
-  const profile=await window.StoreNestCustomerAuth.getProfile(user.id);
-  if(profile){finishCheckoutProfile(user,profile);return}
-  $("checkoutAuthStep").hidden=true;
-  $("checkoutProfileStep").hidden=false;
-  $("checkoutSaveProfile").hidden=false;
-  $("checkoutSaveProfile").disabled=false;
-  if(!$("checkoutProfileName").value)$("checkoutProfileName").value=user.user_metadata?.full_name||"";
-  showCheckoutProfileMessage("Your code is confirmed. Save your profile details to continue.",false);
-  if(!$("checkoutProfileName").value)$("checkoutProfileName").focus();
+  let user=result.user;if(!user)throw new Error("The code was accepted, but sign-in did not complete.");
+  if(!result.session){
+   const signedIn=await window.StoreNestCustomerAuth.signInWithPassword(checkoutPendingCode.method,checkoutPendingCode.destination,checkoutPendingPassword);
+   user=signedIn.user||user;
+  }
+  await continueCheckoutProfileSetup(user);
  }catch(error){
-  console.error("Checkout confirmation failed:",error);
+  console.error("Checkout account confirmation failed:",error);
   showCheckoutProfileMessage(error.message||"That code could not be confirmed. Check it and try again.",true);
+ }finally{button.disabled=false}
+}
+async function signInCheckoutAccount(){
+ const button=$("checkoutSignIn");button.disabled=true;showCheckoutProfileMessage("",false);
+ try{
+  const method=$("checkoutProfileGate").querySelector('input[name="checkoutAuthMethod"]:checked')?.value||"email";
+  const result=await window.StoreNestCustomerAuth.signInWithPassword(method,$("checkoutAuthContact").value,$("checkoutSigninPassword").value);
+  const user=result.user;if(!user)throw new Error("Sign-in did not return an account. Check your details and try again.");
+  await continueCheckoutProfileSetup(user);
+ }catch(error){
+  console.error("Checkout customer sign-in failed:",error);
+  showCheckoutProfileMessage(error.message||"Could not sign in. Check your email or phone number and password.",true);
  }finally{button.disabled=false}
 }
 async function saveCheckoutProfile(){
@@ -1266,7 +1319,9 @@ $("checkoutForm").addEventListener("change",event=>{if(event.target.name==="paym
 $("checkoutAuthMethod").addEventListener("change",updateCheckoutAuthMethod);
 $("checkoutProfileClose").addEventListener("click",()=>closeCheckoutProfileGate());
 $("checkoutProfileGate").addEventListener("click",event=>{if(event.target===$("checkoutProfileGate"))closeCheckoutProfileGate()});
+$("checkoutAuthModeToggle").addEventListener("click",()=>setCheckoutAuthMode(checkoutAuthMode==="signup"?"signin":"signup"));
 $("checkoutSendCode").addEventListener("click",sendCheckoutCode);
+$("checkoutSignIn").addEventListener("click",signInCheckoutAccount);
 $("checkoutVerifyCode").addEventListener("click",verifyCheckoutCode);
 $("checkoutSaveProfile").addEventListener("click",saveCheckoutProfile);
 $("clearCart").addEventListener("click",()=>{cart.clear();renderCart();showBasketReview()});
