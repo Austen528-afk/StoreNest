@@ -17,13 +17,21 @@
     name:clean(item?.name,75),
     price:price(item?.price)
    })).filter(option=>option.name):[];
-   const multiple=group?.selection==="multiple";
+   const selection=group?.selection==="scale"?"scale":group?.selection==="multiple"?"multiple":"single";
+   const max=selection==="multiple"?Math.min(Math.max(1,Number(group?.max)||options.length||1),options.length||1):1;
+   let defaultOptionId="";
+   if(selection==="scale"&&options.length){
+    const requested=options.find(option=>option.id===safeId(group?.defaultOptionId));
+    const namedMidpoint=options.find(option=>/^(mid|medium|moderate|regular)$/i.test(option.name));
+    defaultOptionId=(requested||namedMidpoint||options[Math.floor(options.length/2)]).id;
+   }
    return {
     id:safeId(group?.id)||"group-"+gIndex,
     name:clean(group?.name,75),
-    selection:multiple?"multiple":"single",
+    selection,
     required:Boolean(group?.required),
-    max:multiple?Math.min(Math.max(1,Number(group?.max)||options.length||1),options.length||1):1,
+    max,
+    defaultOptionId,
     options
    };
   }).filter(group=>group.name&&group.options.length);
@@ -38,9 +46,8 @@
    const unique=[...new Set(ids)];
    const found=unique.map(id=>group.options.find(o=>o.id===id)).filter(Boolean);
    if(group.required&&!found.length&&!error)error={id:group.id,message:"Choose an option for "+group.name+"."};
-   if((group.selection==="single"&&unique.length>1)||(group.selection==="multiple"&&unique.length>group.max)){
-    if(!error)error={id:group.id,message:"Too many selections for "+group.name+"."};
-   }
+   const tooMany=group.selection==="multiple"?unique.length>group.max:unique.length>1;
+   if(tooMany&&!error)error={id:group.id,message:"Too many selections for "+group.name+"."};
    if(found.length){
     total+=found.reduce((sum,o)=>sum+o.price,0);
     summary.push({group:group.name,values:found.map(o=>o.name),price:found.reduce((sum,o)=>sum+o.price,0)});
