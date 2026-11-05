@@ -601,8 +601,9 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
 .checkout-preview-notice,.checkout-error{margin:0;border-radius:9px;padding:10px 12px;font-size:12px;line-height:1.45}
 .checkout-preview-notice{background:#fff8e8;border:1px solid #f1dfb0;color:#755715}
 .checkout-error{background:#fff0eb;color:#9d382a}
+.checkout-profile-backdrop{position:fixed;inset:0;z-index:260;display:flex;align-items:center;justify-content:center;padding:calc(12px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom));background:#0009;overscroll-behavior:contain}.checkout-profile-dialog{width:min(460px,100%);max-height:calc(100dvh - 24px);overflow-y:auto;overscroll-behavior:contain;border-radius:16px;background:#fff;padding:16px;box-shadow:0 18px 60px #0005;scrollbar-gutter:stable}.checkout-profile-dialog:focus{outline:none}.checkout-profile-dialog-head{display:flex;justify-content:flex-end;margin-bottom:8px}.checkout-profile-close{display:grid;place-items:center;width:36px;height:36px;border:0;border-radius:50%;background:#f2f2f2;color:#171717;font-size:25px;line-height:1}.profile-modal-open{overflow:hidden}
 .checkout-profile-gate{display:grid;gap:10px;border:1px solid #d5e5dc;border-radius:12px;background:#f6fbf8;padding:14px}
-.checkout-profile-gate h3{margin:0;font-size:15px}
+.checkout-profile-gate h3{margin:0;font-size:19px}
 .checkout-profile-copy{margin:0;color:#65756c;font-size:12px;line-height:1.5}
 .checkout-auth-method{display:flex;align-items:center;gap:14px;margin:0;padding:0;border:0}
 .checkout-auth-method legend{font-size:12px;font-weight:800;margin-bottom:7px}
@@ -688,31 +689,7 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
         <div id="checkoutSummary"></div>
         <div class="checkout-summary-total"><span>Total</span><strong id="checkoutTotal">R0.00</strong></div>
       </section>
-      <section id="checkoutProfileGate" class="checkout-profile-gate" hidden aria-labelledby="checkoutProfileHeading">
-        <h3 id="checkoutProfileHeading">Create your customer profile</h3>
-        <p class="checkout-profile-copy">A confirmed profile is needed to place an order. Use email or phone to receive a confirmation code.</p>
-        <div id="checkoutAuthStep">
-          <fieldset id="checkoutAuthMethod" class="checkout-auth-method">
-            <legend>Send code by</legend>
-            <label><input type="radio" name="checkoutAuthMethod" value="email" checked> Email</label>
-            <label><input type="radio" name="checkoutAuthMethod" value="phone"> Phone</label>
-          </fieldset>
-          <label class="checkout-profile-label" for="checkoutAuthContact"><span id="checkoutAuthContactLabel">Email address</span><input id="checkoutAuthContact" type="text" inputmode="email" autocomplete="email" placeholder="you@example.com"></label>
-          <button id="checkoutSendCode" class="checkout-profile-button" type="button">Send confirmation code</button>
-          <div id="checkoutCodeStep" class="checkout-code-step" hidden>
-            <label class="checkout-profile-label" for="checkoutAuthCode">Confirmation code<input id="checkoutAuthCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Enter the code"></label>
-            <button id="checkoutVerifyCode" class="checkout-profile-button" type="button">Confirm code</button>
-          </div>
-        </div>
-        <div id="checkoutProfileStep">
-          <p class="checkout-profile-copy">Enter your profile name and place here. They are saved after your email or phone is confirmed.</p>
-          <label class="checkout-profile-label" for="checkoutProfileName">Profile name *<input id="checkoutProfileName" maxlength="100" autocomplete="name" placeholder="Your name"></label>
-          <label class="checkout-profile-label" for="checkoutProfilePlace">Place *<input id="checkoutProfilePlace" maxlength="120" autocomplete="address-level2" placeholder="e.g. Jane Furse"></label>
-          <label class="checkout-profile-label" for="checkoutProfileAddress">Exact address <small>(optional)</small><input id="checkoutProfileAddress" maxlength="280" autocomplete="street-address" placeholder="Street or collection details"></label>
-          <button id="checkoutSaveProfile" class="checkout-profile-button" type="button">Save profile</button>
-        </div>
-        <p id="checkoutProfileMessage" class="checkout-profile-message" role="status" hidden></p>
-      </section>
+      
       <div id="checkoutProfileSummary" class="checkout-profile-summary" hidden></div>
       <div id="checkoutContactFields" class="checkout-fields" hidden>
         <h3>Your details</h3>
@@ -747,6 +724,36 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
       <button type="button" id="checkoutDone" class="cart-checkout-button">Back to store</button>
     </section>
   </aside>
+</div>
+<div id="checkoutProfileGate" class="checkout-profile-backdrop" hidden>
+  <section class="checkout-profile-dialog" role="dialog" aria-modal="true" aria-labelledby="checkoutProfileHeading" tabindex="-1">
+    <div class="checkout-profile-dialog-head"><button id="checkoutProfileClose" class="checkout-profile-close" type="button" aria-label="Close profile creation">×</button></div>
+    <section class="checkout-profile-gate" aria-labelledby="checkoutProfileHeading">
+        <h3 id="checkoutProfileHeading">Create your customer profile</h3>
+        <p class="checkout-profile-copy">A confirmed profile is needed to place an order. Use email or phone to receive a confirmation code.</p>
+        <div id="checkoutAuthStep">
+          <fieldset id="checkoutAuthMethod" class="checkout-auth-method">
+            <legend>Send code by</legend>
+            <label><input type="radio" name="checkoutAuthMethod" value="email" checked> Email</label>
+            <label><input type="radio" name="checkoutAuthMethod" value="phone"> Phone</label>
+          </fieldset>
+          <label class="checkout-profile-label" for="checkoutAuthContact"><span id="checkoutAuthContactLabel">Email address</span><input id="checkoutAuthContact" type="text" inputmode="email" autocomplete="email" placeholder="you@example.com"></label>
+          <button id="checkoutSendCode" class="checkout-profile-button" type="button">Send confirmation code</button>
+          <div id="checkoutCodeStep" class="checkout-code-step" hidden>
+            <label class="checkout-profile-label" for="checkoutAuthCode">Confirmation code<input id="checkoutAuthCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Enter the code"></label>
+            <button id="checkoutVerifyCode" class="checkout-profile-button" type="button">Confirm code</button>
+          </div>
+        </div>
+        <div id="checkoutProfileStep">
+          <p class="checkout-profile-copy">Enter your profile name and place here. They are saved after your email or phone is confirmed.</p>
+          <label class="checkout-profile-label" for="checkoutProfileName">Profile name *<input id="checkoutProfileName" maxlength="100" autocomplete="name" placeholder="Your name"></label>
+          <label class="checkout-profile-label" for="checkoutProfilePlace">Place *<input id="checkoutProfilePlace" maxlength="120" autocomplete="address-level2" placeholder="e.g. Jane Furse"></label>
+          <label class="checkout-profile-label" for="checkoutProfileAddress">Exact address <small>(optional)</small><input id="checkoutProfileAddress" maxlength="280" autocomplete="street-address" placeholder="Street or collection details"></label>
+          <button id="checkoutSaveProfile" class="checkout-profile-button" type="button">Save profile</button>
+        </div>
+        <p id="checkoutProfileMessage" class="checkout-profile-message" role="status" hidden></p>
+      </section>
+  </section>
 </div>
 <div id="bookingBackdrop" class="booking-backdrop" hidden>
  <section class="booking-panel" role="dialog" aria-modal="true" aria-labelledby="bookingTitle">
@@ -1032,7 +1039,7 @@ function openCheckout(){
  prepareCheckoutProfileForCheckout();
 }
 function resetCheckoutProfileGate(){
- $("checkoutProfileGate").hidden=true;$("checkoutProfileSummary").hidden=true;
+ closeCheckoutProfileGate(false);$("checkoutProfileSummary").hidden=true;
  $("checkoutContactFields").hidden=true;
  $("checkoutAuthStep").hidden=false;$("checkoutProfileStep").hidden=true;$("checkoutCodeStep").hidden=true;
  $("checkoutSaveProfile").hidden=true;
@@ -1058,7 +1065,7 @@ async function prepareCheckoutProfileForCheckout(){
  }
 }
 function showCheckoutProfileGate(user=null){
- $("checkoutError").hidden=true;$("checkoutProfileSummary").hidden=true;$("checkoutContactFields").hidden=true;$("checkoutProfileGate").hidden=false;
+ $("checkoutError").hidden=true;$("checkoutProfileSummary").hidden=true;$("checkoutContactFields").hidden=true;$("checkoutProfileGate").hidden=false;document.body.classList.add("profile-modal-open");
  checkoutVerifiedUser=user||null;
  $("checkoutAuthStep").hidden=!!user;
  $("checkoutProfileStep").hidden=false;
@@ -1076,13 +1083,15 @@ function showCheckoutProfileGate(user=null){
   updateCheckoutAuthMethod();
   showCheckoutProfileMessage("Enter your profile details now. They will be saved after you confirm your email or phone.",false);
  }
- $("checkoutProfileGate").scrollIntoView({block:"nearest",behavior:"smooth"});
+ const dialog=$("checkoutProfileGate").querySelector(".checkout-profile-dialog");
+ dialog.focus({preventScroll:true});
+ (user?$("checkoutProfileName"):$("checkoutAuthContact")).focus({preventScroll:true});
 }
 function showCheckoutProfileMessage(message,isError=false){
  const node=$("checkoutProfileMessage");node.textContent=message;node.classList.toggle("error",isError);node.hidden=!message;
 }
 function updateCheckoutAuthMethod(){
- const method=$("checkoutForm").querySelector('input[name="checkoutAuthMethod"]:checked')?.value||"email";
+ const method=$("checkoutProfileGate").querySelector('input[name="checkoutAuthMethod"]:checked')?.value||"email";
  const input=$("checkoutAuthContact");
  input.type="text";
  input.inputMode=method==="email"?"email":"tel";
@@ -1093,7 +1102,7 @@ function updateCheckoutAuthMethod(){
 async function sendCheckoutCode(){
  const button=$("checkoutSendCode");button.disabled=true;showCheckoutProfileMessage("",false);
  try{
-  const method=$("checkoutForm").querySelector('input[name="checkoutAuthMethod"]:checked')?.value||"email";
+  const method=$("checkoutProfileGate").querySelector('input[name="checkoutAuthMethod"]:checked')?.value||"email";
   checkoutPendingCode=await window.StoreNestCustomerAuth.sendCode(method,$("checkoutAuthContact").value);
   $("checkoutAuthContact").value=checkoutPendingCode.destination;
   $("checkoutAuthContact").disabled=true;$("checkoutCodeStep").hidden=false;
@@ -1144,6 +1153,7 @@ async function saveCheckoutProfile(){
 }
 function finishCheckoutProfile(user,profile){
  checkoutVerifiedUser=user;checkoutVerifiedProfile=profile;
+ closeCheckoutProfileGate(false);
  const form=$("checkoutForm");
  form.querySelector('[name="customer_name"]').value=profile.profile_name||"";
  const phoneField=form.querySelector('[name="contact_phone"]');
@@ -1240,14 +1250,22 @@ function openCart(){
  $("cartBackdrop").hidden=false;$("closeCart").focus();
  startOrderTrackingPolling();
 }
-function closeCart(){$("cartBackdrop").hidden=true;stopOrderTrackingPolling();const trigger=$("openCart");if(trigger)trigger.focus()}
+function closeCheckoutProfileGate(restoreFocus=true){
+ const modal=$("checkoutProfileGate");
+ if(!modal.hidden){modal.hidden=true;document.body.classList.remove("profile-modal-open");}
+ if(restoreFocus&&!$("cartBackdrop").hidden)$("checkoutBack").focus({preventScroll:true});
+}
+function closeCart(){closeCheckoutProfileGate(false);$("cartBackdrop").hidden=true;stopOrderTrackingPolling();const trigger=$("openCart");if(trigger)trigger.focus()}
 
 $("closeCart").addEventListener("click",closeCart);
 $("checkoutStart").addEventListener("click",openCheckout);
 $("checkoutBack").addEventListener("click",showBasketReview);
 $("checkoutDone").addEventListener("click",closeCart);
 $("checkoutForm").addEventListener("submit",submitCheckout);
-$("checkoutForm").addEventListener("change",event=>{if(event.target.name==="payment_method")updateCheckoutPaymentNotice();if(event.target.name==="checkoutAuthMethod")updateCheckoutAuthMethod()});
+$("checkoutForm").addEventListener("change",event=>{if(event.target.name==="payment_method")updateCheckoutPaymentNotice()});
+$("checkoutAuthMethod").addEventListener("change",updateCheckoutAuthMethod);
+$("checkoutProfileClose").addEventListener("click",()=>closeCheckoutProfileGate());
+$("checkoutProfileGate").addEventListener("click",event=>{if(event.target===$("checkoutProfileGate"))closeCheckoutProfileGate()});
 $("checkoutSendCode").addEventListener("click",sendCheckoutCode);
 $("checkoutVerifyCode").addEventListener("click",verifyCheckoutCode);
 $("checkoutSaveProfile").addEventListener("click",saveCheckoutProfile);
@@ -1263,7 +1281,11 @@ $("cartItems").addEventListener("click",e=>{
  renderCart();
 });
 
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("cartBackdrop").hidden)closeCart()});
+document.addEventListener("keydown",e=>{
+ if(e.key!=="Escape")return;
+ if(!$("checkoutProfileGate").hidden){closeCheckoutProfileGate();return}
+ if(!$("cartBackdrop").hidden)closeCart();
+});
 
 function showGalleryImage(){
  const media=galleryPhotos(activeGalleryItem);if(!media.length)return;
