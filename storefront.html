@@ -542,11 +542,14 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
 .gallery-scale-option:focus-within .gallery-scale-dot{outline:3px solid #1f76d2;outline-offset:3px}
 .gallery-scale-label{display:block;max-width:100%;font-size:11px;line-height:1.25;overflow-wrap:anywhere}
 .gallery-scale-option small{color:#708376;font-size:10px;line-height:1.15;white-space:nowrap}
-.gallery-choice-scale{display:grid;grid-template-columns:minmax(120px,.8fr) minmax(0,2.2fr);align-items:center;column-gap:14px}
-.gallery-choice-scale>legend{grid-column:1;grid-row:1;display:block;width:auto;margin:0;padding:0;align-self:center}
-.gallery-choice-scale>legend small{display:block;margin:5px 0 0;line-height:1.35}
-.gallery-choice-scale>.gallery-scale{grid-column:2;grid-row:1;min-width:0;padding:0}
-@media(max-width:600px){.gallery-choice-scale{grid-template-columns:minmax(88px,.8fr) minmax(0,2.2fr);column-gap:8px}.gallery-choice-scale>legend{font-size:12px}.gallery-choice-scale>legend small{font-size:10px}}
+.gallery-choice-scale{display:block;position:relative}
+.gallery-choice-scale .gallery-scale-sr-only{position:absolute!important;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);clip-path:inset(50%);white-space:nowrap;border:0}
+.gallery-choice-scale-row{display:grid;grid-template-columns:minmax(120px,.8fr) minmax(0,2.2fr);align-items:start;column-gap:14px;width:100%}
+.gallery-scale-name{display:flex;min-width:0;flex-direction:column;gap:4px}
+.gallery-scale-name strong{font-size:13px;line-height:1.3;font-weight:800;color:var(--ink,#21382b);overflow-wrap:anywhere}
+.gallery-scale-name small{font-size:10px;line-height:1.35;color:#708376}
+.gallery-choice-scale .gallery-scale{min-width:0;padding-top:0}
+@media(max-width:600px){.gallery-choice-scale-row{grid-template-columns:minmax(88px,.8fr) minmax(0,2.2fr);column-gap:8px}.gallery-scale-name strong{font-size:12px}.gallery-scale-name small{font-size:9px}}
 .gallery-notes-label{display:flex;flex-direction:column;gap:8px;font-size:12px;font-weight:700;color:var(--ink,#22392d);margin-top:12px}
 .gallery-notes-label textarea{width:100%;min-height:60px;padding:10px 11px;border:1px solid #cbded1;border-radius:10px;background:#fff;color:#263c2d;font:inherit;font-weight:400;resize:vertical}
 .gallery-options-error{font-size:12px;color:#a23327;background:#fff0eb;border-radius:8px;padding:9px 11px;margin:10px 0 0}
@@ -713,17 +716,20 @@ function renderGalleryScale(group){
  const progress=count>1?selectedIndex/(count-1)*100:0;
  const groupHint=(group.required?"Required":"Optional")+" · Default: "+(selected?selected.name:"Choose a level");
  return '<fieldset class="gallery-choice-group gallery-choice-scale" data-group-id="'+esc(group.id)+'">'+
-  '<legend>'+esc(group.name)+'<small>'+esc(groupHint)+'</small></legend>'+
-  '<div class="gallery-scale"><div class="gallery-scale-options" role="radiogroup" aria-label="'+esc(group.name)+'" style="--scale-count:'+count+';--scale-progress:'+progress+'%;--scale-inset:'+inset+'%;--scale-track-width:'+trackWidth+'%;min-width:'+Math.max(224,count*56)+'px">'+
-  group.options.map((option,index)=>
-   '<label class="gallery-scale-option '+(index<=selectedIndex?"is-passed":"")+'">'+
-    '<input type="radio" data-group-id="'+esc(group.id)+'" data-option-id="'+esc(option.id)+'" name="choice-'+esc(group.id)+'" value="'+esc(option.id)+'"'+(selected&&option.id===selected.id?" checked":"")+'>'+
-    '<span class="gallery-scale-dot" aria-hidden="true"></span>'+
-    '<span class="gallery-scale-label">'+esc(option.name)+'</span>'+
-    (option.price?'<small>+'+money(option.price)+'</small>':"")+
-   '</label>'
-  ).join("")+
-  '</div></div></fieldset>';
+  '<legend class="gallery-scale-sr-only">'+esc(group.name)+'. '+esc(groupHint)+'</legend>'+
+  '<div class="gallery-choice-scale-row">'+
+   '<div class="gallery-scale-name"><strong>'+esc(group.name)+'</strong><small>'+esc(groupHint)+'</small></div>'+
+   '<div class="gallery-scale"><div class="gallery-scale-options" role="radiogroup" aria-label="'+esc(group.name)+'" style="--scale-count:'+count+';--scale-progress:'+progress+'%;--scale-inset:'+inset+'%;--scale-track-width:'+trackWidth+'%;min-width:'+Math.max(224,count*56)+'px">'+
+   group.options.map((option,index)=>
+    '<label class="gallery-scale-option '+(index<=selectedIndex?"is-passed":"")+'">'+
+     '<input type="radio" data-group-id="'+esc(group.id)+'" data-option-id="'+esc(option.id)+'" name="choice-'+esc(group.id)+'" value="'+esc(option.id)+'"'+(selected&&option.id===selected.id?" checked":"")+'>'+
+     '<span class="gallery-scale-dot" aria-hidden="true"></span>'+
+     '<span class="gallery-scale-label">'+esc(option.name)+'</span>'+
+     (option.price?'<small>+'+money(option.price)+'</small>':"")+
+    '</label>'
+   ).join("")+
+   '</div></div>'+
+  '</div></fieldset>';
 }
 function renderGalleryOptions(item){
  const container=$("galleryCustomization"),list=$("galleryChoiceGroups");
