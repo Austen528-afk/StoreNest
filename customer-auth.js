@@ -66,7 +66,12 @@
     const phone = normalizePhone(value);
     if (!phone) throw new Error("Enter a valid phone number, such as 072 123 4567 or +27 72 123 4567.");
     const result = await client.auth.signInWithOtp({ phone, options: { shouldCreateUser: true } });
-    if (result.error) throw result.error;
+    if (result.error) {
+      if (/unsupported phone provider/i.test(result.error.message || "")) {
+        throw new Error("Phone codes are not enabled yet because this project has no SMS provider configured. Choose Email to receive your confirmation code.");
+      }
+      throw result.error;
+    }
     return { method: "phone", destination: phone };
   }
 
