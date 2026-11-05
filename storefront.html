@@ -714,7 +714,7 @@ function renderGalleryScale(group){
  galleryOptionSelections[group.id]=selected?[selected.id]:[];
  const inset=count?50/count:0,trackWidth=count?100-(100/count):100;
  const progress=count>1?selectedIndex/(count-1)*100:0;
- const groupHint=(group.required?"Required":"Optional")+" · Default: "+(selected?selected.name:"Choose a level");
+ const groupHint=(group.required?"Required":"Optional")+" · Selected: "+(selected?selected.name:"Choose a level");
  return '<fieldset class="gallery-choice-group gallery-choice-scale" data-group-id="'+esc(group.id)+'" data-scale-default-id="'+esc(selected?selected.id:"")+'" data-scale-default-label="'+esc(selected?selected.name:"")+'" data-scale-required="'+(group.required?"true":"false")+'">'+
   '<legend class="gallery-scale-sr-only">'+esc(group.name)+'. '+esc(groupHint)+'</legend>'+
   '<div class="gallery-choice-scale-row">'+
@@ -791,7 +791,7 @@ $("galleryChoiceGroups").addEventListener("change",event=>{
   const status=fieldset?.querySelector("[data-scale-status]");
   if(status){
    const requirement=fieldset.dataset.scaleRequired==="true"?"Required":"Optional";
-   status.textContent=requirement+(selectedLabel===defaultLabel?" · Default: "+defaultLabel:" · Selected: "+selectedLabel+" · Default: "+defaultLabel);
+   status.textContent=requirement+" · Selected: "+(selectedLabel||"Choose a level");
    const legend=fieldset.querySelector(".gallery-scale-sr-only");
    const title=fieldset.querySelector(".gallery-scale-name strong")?.textContent||group.name;
    if(legend)legend.textContent=title+". "+status.textContent;
