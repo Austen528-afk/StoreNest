@@ -119,6 +119,14 @@ html,body{background:#f8faf9;color:#182321}
 .site-menu{background:#fff;border-color:#dbe4df;box-shadow:0 18px 45px #0002}
 .menu-register{background:#f3f7f5;color:#142822;border-color:#e0e9e4}
 .menu-register:hover{background:#e6f2ed}
+.site-menu{display:grid;gap:3px}
+.site-menu .menu-action,.site-menu .menu-register,.site-menu .theme-switch{border:0;box-shadow:none}
+.site-menu .menu-action,.site-menu .menu-register{width:100%;min-height:42px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px;text-align:left;background:transparent;border-radius:9px;color:inherit;font:inherit;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none}
+.site-menu .menu-action:hover,.site-menu .menu-register:hover,.site-menu .theme-switch:hover{background:#e6f2ed}
+.site-menu .menu-register span{color:#279b83}
+.site-menu .theme-switch{width:100%;min-height:42px;padding:12px;border-radius:9px;background:transparent;color:inherit;font-size:13px;font-weight:700}
+html[data-theme="dark"] body[data-page-kind="marketplace"] .site-menu .menu-action:hover{background:#283e39;color:var(--st-text)}
+
 .search-form{background:#fff;border-color:#d5e1db;box-shadow:0 4px 20px #192e2109}
 .search-input{color:#182321}.search-input::placeholder{color:#75857f}
 .search-status,.results-head{color:#63736d}
@@ -296,7 +304,7 @@ html[data-theme="dark"] .overall-orders-refresh{background:#233a30;color:#b1ecd2
 <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20c.7-3.7 3.1-5.6 7-5.6s6.3 1.9 7 5.6"></path></svg></a>
 <button class="top-icon-button" id="overallOrdersButton" type="button" aria-label="My orders" title="My orders">
 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h8l4 4V20a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 20V5a1.5 1.5 0 0 1 1.5-1.5Z"></path><path d="M15 3.5V8h4M8.5 12h7M8.5 15.5h7"></path></svg></button>
-<div class="menu-container" id="menuContainer"><button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="siteMenu"><span></span><span></span><span></span></button><nav class="site-menu" id="siteMenu" aria-label="StoreNest menu" hidden><a class="menu-register" href="/business-owner.html">Register as business owner <span aria-hidden="true">→</span></a><button class="theme-switch" data-theme-toggle type="button" aria-label="Switch to dark mode" aria-pressed="false"><span class="theme-switch-icon" aria-hidden="true">☾</span><span class="theme-switch-label">Dark mode</span></button></nav></div></div></header>
+<div class="menu-container" id="menuContainer"><button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="siteMenu"><span></span><span></span><span></span></button><nav class="site-menu" id="siteMenu" aria-label="StoreNest menu" hidden><a class="menu-action" href="/customer-account.html?mode=signin">Sign in</a><a class="menu-action" href="/customer-account.html?mode=signup">Sign up</a><a class="menu-action" href="/customer-account.html?mode=settings">Settings</a><a class="menu-register" href="/business-owner.html">Register as business owner <span aria-hidden="true">→</span></a><button class="theme-switch" data-theme-toggle type="button" aria-label="Switch to dark mode" aria-pressed="false"><span class="theme-switch-icon" aria-hidden="true">☾</span><span class="theme-switch-label">Dark mode</span></button></nav></div></div></header>
 <div id="installHint" class="install-hint" role="status" aria-live="polite"></div>
 <section class="search-row" role="search" aria-label="Search StoreNest">
   <form class="search-form" id="storeSearchForm">
