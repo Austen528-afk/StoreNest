@@ -169,7 +169,7 @@
     if (!id) return null;
     const { data, error } = await client
       .from("customer_profiles")
-      .select("user_id,profile_name,place,exact_address,created_at,updated_at")
+      .select("user_id,profile_name,place,exact_address,contact_email,contact_phone,created_at,updated_at")
       .eq("user_id", id)
       .maybeSingle();
     if (error) throw error;
@@ -181,6 +181,11 @@
     const profileName = String(fields?.profile_name || "").trim();
     const place = String(fields?.place || "").trim();
     const exactAddress = String(fields?.exact_address || "").trim();
+    const contactEmail = normalizeEmail(fields?.contact_email ?? user.email ?? "");
+    const rawContactPhone = String(fields?.contact_phone ?? user.phone ?? "").trim();
+    const contactPhone = rawContactPhone ? normalizePhone(rawContactPhone) : "";
+    if (contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail)) throw new Error("Enter a valid email address.");
+    if (rawContactPhone && !contactPhone) throw new Error("Enter a valid phone number, such as 072 123 4567 or +27 72 123 4567.");
     if (profileName.length < 2 || profileName.length > 100) throw new Error("Profile name must be between 2 and 100 characters.");
     if (place.length < 2 || place.length > 120) throw new Error("Place must be between 2 and 120 characters.");
     if (exactAddress.length > 280) throw new Error("Exact address must be 280 characters or fewer.");
@@ -190,12 +195,14 @@
       profile_name: profileName,
       place,
       exact_address: exactAddress || null,
+      contact_email: contactEmail,
+      contact_phone: contactPhone,
       updated_at: new Date().toISOString()
     };
     const { data, error } = await client
       .from("customer_profiles")
       .upsert(row, { onConflict: "user_id" })
-      .select("user_id,profile_name,place,exact_address,created_at,updated_at")
+      .select("user_id,profile_name,place,exact_address,contact_email,contact_phone,created_at,updated_at")
       .single();
     if (error) throw error;
     return data;
