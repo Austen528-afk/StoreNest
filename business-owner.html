@@ -563,10 +563,12 @@ html[data-theme="dark"] #itemOptionsEditor small{color:#afc4b6}
 .owner-order-badge.status-accepted,.owner-order-badge.status-preparing,.owner-order-badge.status-prepared,.owner-order-badge.status-ready{background:#e8f7f0;color:#27755d}
 .owner-order-badge.status-completed{background:#edf1ef;color:#53645a}
 .owner-order-badge.status-cancelled{background:#fff0ed;color:#a04437}
-.owner-order-actions{display:flex;justify-content:flex-end;padding-top:12px;margin-top:10px;border-top:1px solid #edf0ee}
+.owner-order-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;padding-top:12px;margin-top:10px;border-top:1px solid #edf0ee}
 .owner-order-action{border:0;border-radius:999px;background:#1a1a1a;color:#fff;padding:9px 14px;font:inherit;font-size:12px;font-weight:800;cursor:pointer}
+.owner-order-copy-link{border:1px solid #cddfd4;border-radius:999px;background:#f4faf6;color:#2b6652;padding:9px 14px;font:inherit;font-size:12px;font-weight:800;cursor:pointer}
 .owner-order-action:hover{background:#333}
-.owner-order-action:disabled{opacity:.6;cursor:wait}
+.owner-order-copy-link:hover{background:#e8f7f0}
+.owner-order-action:disabled,.owner-order-copy-link:disabled{opacity:.6;cursor:wait}
 .owner-order-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:1px solid #edf0ee;padding-bottom:10px}
 .owner-order-ref{font-size:13px;font-weight:850}
 .owner-order-date{margin-top:4px;color:#728078;font-size:11px}
@@ -1284,7 +1286,9 @@ function renderBusinessOrders(rows){
   const status=orderStatus[order.status]||"New";
   const statusClass="status-"+(order.status||"new");
   const nextAction={new:["accepted","Accept order"],accepted:["preparing","Start preparing"],preparing:["prepared","Prepared"],prepared:["ready","Ready for collection"],ready:["completed","Mark collected"]}[order.status];
-  const actionMarkup=nextAction?'<div class="owner-order-actions"><button type="button" class="owner-order-action" data-order-id="'+escapeHtml(order.id)+'" data-order-next="'+nextAction[0]+'">'+escapeHtml(nextAction[1])+'</button></div>':"";
+  const progressAction=nextAction?'<button type="button" class="owner-order-action" data-order-id="'+escapeHtml(order.id)+'" data-order-next="'+nextAction[0]+'">'+escapeHtml(nextAction[1])+'</button>':"";
+  const copyTrackingAction=order.tracking_token?'<button type="button" class="owner-order-copy-link" data-copy-tracking="'+escapeHtml(order.id)+'">Copy tracking link</button>':"";
+  const actionMarkup=progressAction||copyTrackingAction?'<div class="owner-order-actions">'+progressAction+copyTrackingAction+'</div>':"";
   const contacts=[];
   const phone=String(order.contact_phone||"");
   const tel=phone.replace(/[^0-9+]/g,"");
@@ -1310,6 +1314,19 @@ function renderBusinessOrders(rows){
    actionMarkup+
    '</article>';
  }).join("");
+}
+async function copyOrderTrackingLink(orderId){
+ const order=ownerOrdersRows.find(row=>row.id===orderId),slug=String(currentBusiness?.slug||"");
+ if(!order?.tracking_token||!slug){showToast("Tracking link is unavailable for this order.",true);return}
+ const url=new URL("/storefront.html",location.origin);
+ url.searchParams.set("slug",slug);
+ url.hash=new URLSearchParams({order:order.id,token:order.tracking_token}).toString();
+ try{
+  await navigator.clipboard.writeText(url.href);
+  showToast("Tracking link copied. Send it to the customer.");
+ }catch(error){
+  window.prompt("Copy this tracking link and send it to the customer:",url.href);
+ }
 }
 async function advanceStorefrontOrder(orderId,nextStatus,button){
  const current=ownerOrdersRows.find(row=>row.id===orderId);
@@ -1342,7 +1359,7 @@ async function loadBusinessOrders(){
  try{
   const client=await loadAuth();
   ensureOwnerOrdersRealtime(client,businessId);
-  const {data,error}=await client.from("storefront_orders").select("id,business_id,customer_name,contact_phone,contact_email,payment_method,payment_status,status,items,subtotal,created_at,updated_at").eq("business_id",businessId).order("created_at",{ascending:false}).limit(100);
+  const {data,error}=await client.from("storefront_orders").select("id,business_id,customer_name,contact_phone,contact_email,payment_method,payment_status,status,items,subtotal,created_at,updated_at,tracking_token").eq("business_id",businessId).order("created_at",{ascending:false}).limit(100);
   if(error)throw error;
   if(currentBusiness?.id!==businessId)return;
   const fetched=data||[],fetchedIds=new Set(fetched.map(row=>row.id));
@@ -1357,6 +1374,8 @@ async function loadBusinessOrders(){
 }
 $("ownerOrdersRefresh").addEventListener("click",loadBusinessOrders);
 $("ownerOrdersList").addEventListener("click",event=>{
+ const copyButton=event.target.closest("[data-copy-tracking]");
+ if(copyButton){copyOrderTrackingLink(copyButton.dataset.copyTracking);return}
  const button=event.target.closest("[data-order-id][data-order-next]");
  if(button)advanceStorefrontOrder(button.dataset.orderId,button.dataset.orderNext,button);
 });
