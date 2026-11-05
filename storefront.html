@@ -402,7 +402,7 @@ body[data-store-type="decor"] .decor-copy .brand-name{font-weight:780}
 .gallery-product-action-row[hidden]{display:none!important}
 .gallery-product-action-row .add{flex-shrink:0}
 .gallery-bottom{flex-shrink:0}
-.gallery-total-bar{position:sticky;bottom:0;z-index:3;display:flex;flex:0 0 auto;align-items:center;justify-content:flex-start;gap:12px;min-height:54px;margin-top:auto;padding:10px 18px;background:#fff;border-top:1px solid #e7ebe8;box-shadow:0 -4px 14px #00000008}
+.gallery-total-bar{position:sticky;bottom:0;z-index:3;display:flex;flex:0 0 auto;align-items:center;justify-content:space-between;gap:12px;min-height:54px;margin-top:auto;padding:10px 18px;background:#fff;border-top:1px solid #e7ebe8;box-shadow:0 -4px 14px #00000008}.gallery-total-copy{display:flex;align-items:center;gap:12px;min-width:0}.gallery-total-bar .add{flex-shrink:0}
 .gallery-total-bar[hidden]{display:none!important}
 .gallery-total-bar span{font-size:13px;font-weight:700;color:#6d7a71}
 .gallery-total-bar strong{font-size:18px;font-weight:850;color:#171717;white-space:nowrap}
@@ -610,7 +610,7 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
   <div class="gallery-top"><div><h2 id="galleryTitle">Product</h2></div><button id="galleryClose" class="gallery-close" type="button" aria-label="Close product photos">×</button></div>
   <div class="gallery-stage"><img id="galleryImage" alt="Product photo"><video id="galleryVideo" controls playsinline preload="metadata" hidden aria-label="Product video"></video></div>
   <p id="galleryDescription" class="gallery-description"></p>
-  <div id="galleryProductActionRow" class="gallery-product-action-row" hidden><strong id="galleryProductPrice" class="gallery-price"></strong><button id="galleryProductAdd" class="add" type="button">＋ Add</button></div>
+  <div id="galleryProductActionRow" class="gallery-product-action-row" hidden><strong id="galleryProductPrice" class="gallery-price"></strong></div>
   <div id="galleryCustomization" class="gallery-customization" hidden>
    <div id="galleryChoiceGroups"></div>
    <label class="gallery-notes-label">Special instructions (optional)<textarea id="galleryNotes" maxlength="200" rows="2" placeholder="e.g. No onions, less salt"></textarea></label>
@@ -618,7 +618,7 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
   </div>
   <div class="gallery-bottom"><span id="galleryPosition"></span><div id="galleryDots" class="gallery-dots"></div><div id="galleryServiceActionRow" class="gallery-action-row"><strong id="galleryServicePrice" class="gallery-price"></strong><div class="gallery-actions"><button id="galleryAdd" class="add" type="button">＋ Add</button><a id="galleryWhatsApp" class="service-whatsapp" target="_blank" rel="noopener noreferrer" hidden aria-label="Contact business on WhatsApp"><span aria-hidden="true">💬</span> WhatsApp</a></div></div></div>
   </div>
-  <div id="galleryTotalBar" class="gallery-total-bar" hidden aria-live="polite"><span>Total</span><strong id="galleryTotal">R0.00</strong></div>
+  <div id="galleryTotalBar" class="gallery-total-bar" hidden aria-live="polite"><div class="gallery-total-copy"><span>Total</span><strong id="galleryTotal">R0.00</strong></div><button id="galleryProductAdd" class="add" type="button">＋ Add</button></div>
  </section>
 </div>
 <script src="/service-bookings.js"></script>
