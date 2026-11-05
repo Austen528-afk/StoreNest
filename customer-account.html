@@ -33,10 +33,10 @@ main{padding:30px 0 55px}.intro{margin:0 0 18px}.intro h1{margin:0 0 8px;font-si
 <div class="page">
 <header class="top"><a class="logo" href="/">store<span>nest.</span></a><a href="/">← Explore stores</a></header>
 <main>
-<section class="intro"><h1>Your StoreNest profile</h1><p>Use a verified email or phone number to save your profile and follow your order progress from any device.</p></section>
+<section class="intro"><h1 id="accountPageHeading">Your StoreNest profile</h1><p id="accountPageCopy">Use a verified email or phone number to save your profile and follow your order progress from any device.</p></section>
 <section id="signInPanel" class="panel">
-  <h2>Sign in or create a profile</h2>
-  <p class="panel-copy">We’ll send a one-time confirmation code. You can use email or a mobile number.</p>
+  <h2 id="accountPanelHeading">Sign in or create a profile</h2>
+  <p id="accountPanelCopy" class="panel-copy">We’ll send a one-time confirmation code. You can use email or a mobile number.</p>
   <div class="method-row" role="radiogroup" aria-label="Confirmation method">
     <label class="method-option"><input type="radio" name="accountMethod" value="email" checked> Email</label>
     <label class="method-option"><input type="radio" name="accountMethod" value="phone"> Phone</label>
@@ -70,12 +70,20 @@ main{padding:30px 0 55px}.intro{margin:0 0 18px}.intro h1{margin:0 0 8px;font-si
 "use strict";
 const $=id=>document.getElementById(id);
 const customerAuth=window.StoreNestCustomerAuth;
+const accountMode=new URLSearchParams(location.search).get("mode")||"";
 let accountClient=null,currentUser=null,currentProfile=null,pendingCode=null;
+function applyAccountMode(){
+ const heading=$("accountPageHeading"),copy=$("accountPageCopy"),panelHeading=$("accountPanelHeading"),panelCopy=$("accountPanelCopy");
+ if(accountMode==="signin"){heading.textContent="Sign in to StoreNest";copy.textContent="Access your customer profile and order progress using your verified email or phone.";panelHeading.textContent="Sign in";panelCopy.textContent="Enter the email or mobile number linked to your profile. We’ll send a confirmation code."}
+ else if(accountMode==="signup"){heading.textContent="Create a StoreNest profile";copy.textContent="Create a customer profile to save your details and follow your order progress.";panelHeading.textContent="Sign up";panelCopy.textContent="Confirm your email or phone, then add your profile name and place."}
+ else if(accountMode==="settings"){heading.textContent="Account settings";copy.textContent="Sign in to update your customer profile and saved address.";panelHeading.textContent="Sign in to manage settings";panelCopy.textContent="Confirm the email or phone linked to your profile to access your settings."}
+}
+applyAccountMode();
 function esc(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function showMessage(node,text,isError=false){node.textContent=text;node.classList.toggle("error",isError);node.hidden=!text}
 function selectedMethod(){return document.querySelector('input[name="accountMethod"]:checked')?.value||"email"}
 function updateMethod(){const method=selectedMethod(),input=$("accountContact");input.type=method==="email"?"email":"tel";input.autocomplete=method==="email"?"email":"tel";input.placeholder=method==="email"?"you@example.com":"072 123 4567 or +27 72 123 4567";$("contactLabel").textContent=method==="email"?"Email address":"Phone number";$("contactHint").textContent=method==="email"?"Your confirmation code will be sent to this email.":"Your confirmation code will be sent by SMS."}
-function setSignedInView(user,profile){currentUser=user;currentProfile=profile;$("signInPanel").hidden=true;$("profilePanel").hidden=false;$("ordersPanel").hidden=true;$("profileHeading").textContent=profile?"Your profile":"Finish creating your profile";$("profileHelp").textContent=profile?"Profile name and place are required. Exact address is optional.":"Your confirmation is complete. Add your profile name and place to finish registration."; $("profileName").value=profile?.profile_name||user.user_metadata?.full_name||"";$("profilePlace").value=profile?.place||"";$("profileAddress").value=profile?.exact_address||"";$("verifiedContact").textContent=user.email||user.phone||"Verified account";$("saveProfileButton").textContent=profile?"Save changes":"Save profile";$("profileMessage").hidden=true;$("ordersPanel").hidden=false;loadCustomerOrders().catch(error=>{console.error("Could not load customer orders:",error);$("customerOrderList").innerHTML='<div class="empty-orders">Your orders could not be loaded. Please refresh in a moment.</div>'})}
+function setSignedInView(user,profile){currentUser=user;currentProfile=profile;$("signInPanel").hidden=true;$("profilePanel").hidden=false;$("ordersPanel").hidden=accountMode==="settings";$("accountPageHeading").textContent=accountMode==="settings"?"Account settings":"Your StoreNest profile";$("profileHeading").textContent=profile?(accountMode==="settings"?"Profile settings":"Your profile"):"Finish creating your profile";$("profileHelp").textContent=profile?"Profile name and place are required. Exact address is optional.":"Your confirmation is complete. Add your profile name and place to finish registration."; $("profileName").value=profile?.profile_name||user.user_metadata?.full_name||"";$("profilePlace").value=profile?.place||"";$("profileAddress").value=profile?.exact_address||"";$("verifiedContact").textContent=user.email||user.phone||"Verified account";$("saveProfileButton").textContent=profile?"Save changes":"Save profile";$("profileMessage").hidden=true;if(accountMode!=="settings")loadCustomerOrders().catch(error=>{console.error("Could not load customer orders:",error);$("customerOrderList").innerHTML='<div class="empty-orders">Your orders could not be loaded. Please refresh in a moment.</div>'})}
 async function sendAccountCode(){const button=$("sendAccountCode");button.disabled=true;showMessage($("accountAuthMessage"),"");
  try{pendingCode=await customerAuth.sendCode(selectedMethod(),$("accountContact").value);$("accountContact").value=pendingCode.destination;$("accountContact").disabled=true;$("accountCodeStep").hidden=false;$("accountCode").focus();button.textContent="Resend code";showMessage($("accountAuthMessage"),"Confirmation code sent. Check your email or SMS.");}
  catch(error){console.error("Could not send customer confirmation:",error);showMessage($("accountAuthMessage"),error.message||"Could not send a code. Check the address or number and try again.",true);}
