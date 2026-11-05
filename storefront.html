@@ -34,7 +34,9 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-off
 .store-logo{width:35px;height:35px;border-radius:9px;object-fit:cover}
 .brand-name{font-size:clamp(20px,2.4vw,27px);font-weight:850;letter-spacing:-.035em;overflow-wrap:anywhere}
 .brand-dot{color:var(--accent)}
-.bag{width:52px;min-height:52px;display:flex;align-items:center;justify-content:center;gap:5px;flex-shrink:0;border:0;border-radius:15px;background:#ffffff1b;color:white;font-weight:800}
+.bag{position:relative;width:52px;min-height:52px;display:flex;align-items:center;justify-content:center;gap:5px;flex-shrink:0;border:0;border-radius:15px;background:#ffffff1b;color:white;font-weight:800}
+.bag-tracking-indicator{position:absolute;top:-5px;right:-7px;border:1px solid #fff;border-radius:99px;padding:3px 6px;background:#2ba783;color:#fff;font-size:8px;line-height:1;font-weight:900;letter-spacing:.04em;box-shadow:0 2px 5px #0002}
+.bag-tracking-indicator[hidden]{display:none!important}
 .bag:hover{background:#ffffff32}.bag svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .hero-copy{margin-top:18px;max-width:740px}
 .hero h1{margin:0 0 7px;font-size:clamp(24px,3.3vw,40px);letter-spacing:-.045em;line-height:1.15}
@@ -775,7 +777,14 @@ function serviceWhatsAppAction(business,item){
 
 function toast(msg){clearTimeout(toastTimer);$("toast").textContent=msg;$("toast").hidden=false;toastTimer=setTimeout(()=>{$("toast").hidden=true},1900)}
 function cartQuantity(){return [...cart.values()].reduce((n,row)=>n+row.quantity,0)}
-function syncCartBadge(){const count=$("bagCount");if(count)count.textContent=String(cartQuantity())}
+function syncCartBadge(){
+ const count=$("bagCount");if(count)count.textContent=String(cartQuantity());
+ const hasTrackedOrders=typeof readTrackedOrders==="function"&&readTrackedOrders().length>0;
+ document.querySelectorAll(".bag").forEach(button=>{
+  button.setAttribute("aria-label",hasTrackedOrders?"Open basket with order progress":"Open basket");
+  const badge=button.querySelector(".bag-tracking-indicator");if(badge)badge.hidden=!hasTrackedOrders;
+ });
+}
 function productCartKey(itemId,selection,note){
  const unique=Object.entries(selection||{}).map(([id,values])=>[id,[...(Array.isArray(values)?values:[])].sort()]).sort(([a],[b])=>a.localeCompare(b));
  return JSON.stringify([itemId,unique,String(note||"").trim().slice(0,200)]);
@@ -1304,7 +1313,7 @@ function renderStorefrontHero(business,cfg,options={}){
      '<section class="hero layout-'+layout+'">'+(cover?(videoCover?'<video class="hero-cover-video" src="'+esc(cover)+'" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>':'<img class="hero-cover" src="'+esc(cover)+'" alt="" fetchpriority="high" decoding="async">'):'')+
      '<div class="hero-top"><div class="store-identity">'+(logo?'<img class="store-logo" src="'+esc(logo)+'" alt="">':'')+
      '<span class="brand-name">'+esc(business.name)+'<span class="brand-dot">.</span></span></div>'+
-     '<button type="button" id="openCart" class="bag" aria-label="Open basket"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 12H4L5 8ZM9 9V6a3 3 0 0 1 6 0v3"/></svg><span id="bagCount">0</span></button></div>'+
+     '<button type="button" id="openCart" class="bag" aria-label="Open basket"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 12H4L5 8ZM9 9V6a3 3 0 0 1 6 0v3"/></svg><span id="bagCount">0</span><span class="bag-tracking-indicator" hidden>Track</span></button></div>'+
      '<div class="hero-copy"><h1>'+esc(cfg.headline||"Welcome to "+business.name)+'</h1>'+
      (cfg.tagline?'<p class="hero-tag">'+esc(cfg.tagline)+'</p>':'')+
      '<p>'+esc(business.description||window.StoreNestCategoryLabel(business.category)||"Discover our products and services.")+'</p></div></section>';
@@ -1319,7 +1328,7 @@ function renderStorefrontHero(business,cfg,options={}){
      '<p class="decor-summary">'+esc(business.description||(isLocalServices?"Explore helpful services for everyday needs.":"Explore pieces for the home and everyday spaces."))+'</p></div>'+
      '<a class="decor-cta" href="#catalog">'+(isLocalServices?"Explore services":"Explore collection")+'</a></div>'+
      '<div class="decor-visual">'+(decorImage?(videoCover?'<video class="decor-cover-video" src="'+esc(decorImage)+'" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>':'<img src="'+esc(decorImage)+'" alt="'+(isLocalServices?"Featured local service":"Featured home decor")+'" fetchpriority="high" decoding="async">'):'')+
-     '<button type="button" id="openCart" class="bag" aria-label="Open basket"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 12H4L5 8ZM9 9V6a3 3 0 0 1 6 0v3"/></svg><span id="bagCount">0</span></button></div></section>';
+     '<button type="button" id="openCart" class="bag" aria-label="Open basket"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 12H4L5 8ZM9 9V6a3 3 0 0 1 6 0v3"/></svg><span id="bagCount">0</span><span class="bag-tracking-indicator" hidden>Track</span></button></div></section>';
 
  return isDecor?decorHero:standardHero;
 }
@@ -1503,6 +1512,7 @@ function renderPublishedStorefront(root,client,business,items,storefrontSections
      '<div id="catalog" class="catalog-area">'+catalogueMarkup+'</div>';
    activateBackgroundVideos(root);
    activateCatalogPreviews(root);
+   syncCartBadge();
    if(restoreTrackedOrderFromUrl())openCart();
 
 }
