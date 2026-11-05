@@ -389,7 +389,7 @@ body[data-store-type="decor"] .decor-copy .brand-name{font-weight:780}
 @media(max-width:470px){.item-body{min-height:102px}}
 
 /* Product detail: image first, description below. Use dots, keyboard/swipe for multi-media. */
-.gallery-panel{display:grid;grid-template-rows:minmax(0,1fr) auto;overflow:hidden}.gallery-scroll-area{display:flex;flex-direction:column;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+.gallery-panel{display:flex;flex-direction:column;overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}.gallery-scroll-area{display:flex;flex:1 0 auto;flex-direction:column;min-height:0;overflow:visible;touch-action:auto}
 .gallery-stage{flex:0 1 auto;min-height:0}
 .gallery-stage img,.gallery-stage video{max-height:min(58dvh,570px)}
 .gallery-description{
@@ -402,7 +402,7 @@ body[data-store-type="decor"] .decor-copy .brand-name{font-weight:780}
 .gallery-product-action-row[hidden]{display:none!important}
 .gallery-product-action-row .add{flex-shrink:0}
 .gallery-bottom{flex-shrink:0}
-.gallery-total-bar{position:relative;z-index:1;display:flex;flex:0 0 auto;align-items:center;justify-content:space-between;gap:12px;min-height:54px;padding:10px 18px;background:#fff;border-top:1px solid #e7ebe8;box-shadow:0 -4px 14px #00000008}
+.gallery-total-bar{position:sticky;bottom:0;z-index:3;display:flex;flex:0 0 auto;align-items:center;justify-content:space-between;gap:12px;min-height:54px;margin-top:auto;padding:10px 18px;background:#fff;border-top:1px solid #e7ebe8;box-shadow:0 -4px 14px #00000008}
 .gallery-total-bar[hidden]{display:none!important}
 .gallery-total-bar span{font-size:13px;font-weight:700;color:#6d7a71}
 .gallery-total-bar strong{font-size:18px;font-weight:850;color:#171717;white-space:nowrap}
@@ -542,6 +542,11 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
 .gallery-scale-option:focus-within .gallery-scale-dot{outline:3px solid #1f76d2;outline-offset:3px}
 .gallery-scale-label{display:block;max-width:100%;font-size:11px;line-height:1.25;overflow-wrap:anywhere}
 .gallery-scale-option small{color:#708376;font-size:10px;line-height:1.15;white-space:nowrap}
+.gallery-choice-scale{display:grid;grid-template-columns:minmax(120px,.8fr) minmax(0,2.2fr);align-items:center;column-gap:14px}
+.gallery-choice-scale>legend{grid-column:1;grid-row:1;display:block;width:auto;margin:0;padding:0;align-self:center}
+.gallery-choice-scale>legend small{display:block;margin:5px 0 0;line-height:1.35}
+.gallery-choice-scale>.gallery-scale{grid-column:2;grid-row:1;min-width:0;padding:0}
+@media(max-width:600px){.gallery-choice-scale{grid-template-columns:minmax(88px,.8fr) minmax(0,2.2fr);column-gap:8px}.gallery-choice-scale>legend{font-size:12px}.gallery-choice-scale>legend small{font-size:10px}}
 .gallery-notes-label{display:flex;flex-direction:column;gap:8px;font-size:12px;font-weight:700;color:var(--ink,#22392d);margin-top:12px}
 .gallery-notes-label textarea{width:100%;min-height:60px;padding:10px 11px;border:1px solid #cbded1;border-radius:10px;background:#fff;color:#263c2d;font:inherit;font-weight:400;resize:vertical}
 .gallery-options-error{font-size:12px;color:#a23327;background:#fff0eb;border-radius:8px;padding:9px 11px;margin:10px 0 0}
@@ -709,13 +714,13 @@ function renderGalleryScale(group){
  const groupHint=(group.required?"Required":"Optional")+" · Default: "+(selected?selected.name:"Choose a level");
  return '<fieldset class="gallery-choice-group gallery-choice-scale" data-group-id="'+esc(group.id)+'">'+
   '<legend>'+esc(group.name)+'<small>'+esc(groupHint)+'</small></legend>'+
-  '<div class="gallery-scale"><div class="gallery-scale-options" role="radiogroup" aria-label="'+esc(group.name)+'" style="--scale-count:'+count+';--scale-progress:'+progress+'%;--scale-inset:'+inset+'%;--scale-track-width:'+trackWidth+'%;min-width:'+Math.max(260,count*68)+'px">'+
+  '<div class="gallery-scale"><div class="gallery-scale-options" role="radiogroup" aria-label="'+esc(group.name)+'" style="--scale-count:'+count+';--scale-progress:'+progress+'%;--scale-inset:'+inset+'%;--scale-track-width:'+trackWidth+'%;min-width:'+Math.max(224,count*56)+'px">'+
   group.options.map((option,index)=>
    '<label class="gallery-scale-option '+(index<=selectedIndex?"is-passed":"")+'">'+
     '<input type="radio" data-group-id="'+esc(group.id)+'" data-option-id="'+esc(option.id)+'" name="choice-'+esc(group.id)+'" value="'+esc(option.id)+'"'+(selected&&option.id===selected.id?" checked":"")+'>'+
     '<span class="gallery-scale-dot" aria-hidden="true"></span>'+
     '<span class="gallery-scale-label">'+esc(option.name)+'</span>'+
-    '<small>'+(option.price?"+"+money(option.price):"Free")+'</small>'+
+    (option.price?'<small>+'+money(option.price)+'</small>':"")+
    '</label>'
   ).join("")+
   '</div></div></fieldset>';
