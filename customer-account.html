@@ -23,17 +23,16 @@ main{padding:30px 0 55px}.intro{margin:0 0 18px}.intro h1{margin:0 0 8px;font-si
 .code-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:11px;margin-top:13px}.code-row .field{margin:0}
 .message{margin:12px 0 0;padding:11px 12px;border-radius:9px;background:#f0f8f4;color:#39715f;font-size:12px;line-height:1.5}.message.error{background:#fff0eb;color:#a43c2e}.message[hidden]{display:none!important}
 .profile-head{display:flex;justify-content:space-between;align-items:start;gap:12px;margin-bottom:14px}.profile-head p{margin:4px 0 0;color:#68766e;font-size:12px;line-height:1.5}
-.profile-form{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}.profile-form .wide{grid-column:1/-1}.profile-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;grid-column:1/-1;padding-top:2px}
-.order-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.order-heading h2{margin:0}
-.order-list{display:grid;gap:10px}.order-card{border:1px solid #e1eae5;border-radius:12px;padding:14px}.order-card-head{display:flex;justify-content:space-between;align-items:start;gap:10px}.order-title{font-size:13px;font-weight:850}.order-subtitle{margin-top:4px;color:#738078;font-size:11px}.status{white-space:nowrap;border-radius:99px;padding:6px 9px;background:#eaf7f0;color:#22775e;font-size:10px;font-weight:850}.order-items{margin:10px 0 0;color:#596860;font-size:12px;line-height:1.5}.order-bottom{display:flex;justify-content:space-between;gap:10px;margin-top:10px;padding-top:10px;border-top:1px solid #edf1ee;font-size:12px}.order-total{font-weight:850}.empty-orders{border:1px dashed #d9e6de;border-radius:11px;padding:20px;text-align:center;color:#728078;font-size:13px;line-height:1.55}
-@media(max-width:620px){.page{width:calc(100% - 20px)}main{padding-top:22px}.panel{padding:17px;border-radius:14px}.profile-form{grid-template-columns:1fr}.profile-form .wide,.profile-actions{grid-column:auto}.profile-actions{flex-direction:column-reverse;align-items:stretch}.profile-actions button{width:100%}.code-row{grid-template-columns:1fr}.method-row{gap:7px}.method-option{padding:10px 8px;font-size:12px}}
+.profile-form{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}.profile-form .wide{grid-column:1/-1}.profile-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;grid-column:1/-1;padding-top:2px}
+.contact-info{margin:0 0 17px;padding:14px;border:1px solid #dce8e1;border-radius:12px;background:#f8fbf9}.contact-info h3{margin:0 0 10px;font-size:14px}.contact-info-list{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin:0}.contact-info-list div{min-width:0}.contact-info-list dt{margin-bottom:4px;color:#738078;font-size:11px;font-weight:700}.contact-info-list dd{margin:0;overflow-wrap:anywhere;font-size:13px;font-weight:700}.contact-info-help{margin:10px 0 0;color:#738078;font-size:11px;line-height:1.45}
+@media(max-width:620px){.page{width:calc(100% - 20px)}main{padding-top:22px}.panel{padding:17px;border-radius:14px}.profile-form{grid-template-columns:1fr}.profile-form .wide,.profile-actions{grid-column:auto}.contact-info-list{grid-template-columns:1fr}.profile-actions{flex-direction:column-reverse;align-items:stretch}.profile-actions button{width:100%}.code-row{grid-template-columns:1fr}.method-row{gap:7px}.method-option{padding:10px 8px;font-size:12px}}
 </style>
 </head>
 <body data-page-kind="customer">
 <div class="page">
 <header class="top"><a class="logo" href="/">store<span>nest.</span></a><a href="/">← Explore stores</a></header>
 <main>
-<section class="intro"><h1 id="accountPageHeading">Your StoreNest profile</h1><p id="accountPageCopy">Use a verified email or phone number to save your profile and follow your order progress from any device.</p></section>
+<section class="intro"><h1 id="accountPageHeading">Your StoreNest profile</h1><p id="accountPageCopy">Manage your profile details and the email or phone number linked to your account.</p></section>
 <section id="signInPanel" class="panel">
   <h2 id="accountPanelHeading">Sign in</h2>
   <p id="accountPanelCopy" class="panel-copy"></p>
@@ -74,17 +73,21 @@ main{padding:30px 0 55px}.intro{margin:0 0 18px}.intro h1{margin:0 0 8px;font-si
 </section>
 <section id="profilePanel" class="panel" hidden>
   <div class="profile-head"><div><h2 id="profileHeading">Your profile</h2><p id="profileHelp">Profile name and place are required. Exact address is optional.</p></div><button id="signOutButton" class="quiet" type="button">Sign out</button></div>
+  <section class="contact-info" aria-labelledby="contactInfoHeading">
+    <h3 id="contactInfoHeading">Contact information</h3>
+    <dl class="contact-info-list">
+      <div><dt>Email address</dt><dd id="profileEmail">Not linked</dd></div>
+      <div><dt>Phone number</dt><dd id="profilePhone">Not linked</dd></div>
+    </dl>
+    <p class="contact-info-help">Your verified email or phone is used to sign in and receive account confirmations.</p>
+  </section>
   <form id="customerProfileForm" class="profile-form">
     <label class="field" for="profileName">Profile name *<input id="profileName" name="profile_name" required minlength="2" maxlength="100" autocomplete="name" placeholder="Your name"></label>
     <label class="field" for="profilePlace">Place *<input id="profilePlace" name="place" required minlength="2" maxlength="120" autocomplete="address-level2" placeholder="e.g. Jane Furse"></label>
     <label class="field wide" for="profileAddress">Exact address <small>(optional)</small><input id="profileAddress" name="exact_address" maxlength="280" autocomplete="street-address" placeholder="Street, house number, or collection details"></label>
-    <div class="profile-actions"><span id="verifiedContact" class="panel-copy" style="margin:0"></span><button id="saveProfileButton" class="primary" type="submit">Save profile</button></div>
+    <div class="profile-actions"><button id="saveProfileButton" class="primary" type="submit">Save profile</button></div>
   </form>
   <p id="profileMessage" class="message" role="status" hidden></p>
-</section>
-<section id="ordersPanel" class="panel" hidden>
-  <div class="order-heading"><h2>Your orders</h2><button id="refreshOrdersButton" class="quiet" type="button">Refresh</button></div>
-  <div id="customerOrderList" class="order-list" aria-live="polite"></div>
 </section>
 </main>
 </div>
@@ -98,10 +101,10 @@ let authMode=accountMode==="signup"?"signup":accountMode==="upgrade"?"upgrade":"
 let accountClient=null,currentUser=null,currentProfile=null,pendingSignup=null,pendingSignupPassword="",legacyPendingCode=null,legacyVerifiedUser=null;
 function applyAccountMode(){
  const heading=$("accountPageHeading"),copy=$("accountPageCopy");
- if(accountMode==="signup"){heading.textContent="Create a StoreNest profile";copy.textContent="Register once to save your details and follow order progress."}
+ if(accountMode==="signup"){heading.textContent="Create a StoreNest profile";copy.textContent="Register once to save your profile and contact information."}
  else if(accountMode==="settings"){heading.textContent="Account settings";copy.textContent="Sign in to update your profile and saved address."}
  else if(accountMode==="upgrade"){heading.textContent="Set a password";copy.textContent="Keep your existing StoreNest profile and set a password for future sign-ins."}
- else{heading.textContent="Your StoreNest profile";copy.textContent="Sign in to see your profile and order progress."}
+ else{heading.textContent="Your StoreNest profile";copy.textContent="Sign in to view and update your profile information."}
  setAuthMode(authMode);
 }
 function esc(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
@@ -136,7 +139,6 @@ function setAuthMode(mode){
 applyAccountMode();
 function setSignedInView(user,profile){
  currentUser=user;currentProfile=profile;$("signInPanel").hidden=true;$("profilePanel").hidden=false;
- $("ordersPanel").hidden=accountMode==="settings";
  $("accountPageHeading").textContent=accountMode==="settings"?"Account settings":"Your StoreNest profile";
  $("profileHeading").textContent=profile?(accountMode==="settings"?"Profile settings":"Your profile"):"Finish creating your profile";
  $("profileHelp").textContent=profile
@@ -144,9 +146,9 @@ function setSignedInView(user,profile){
   :"Your account is confirmed. Add your profile name and place to finish setup.";
  $("profileName").value=profile?.profile_name||user.user_metadata?.full_name||"";
  $("profilePlace").value=profile?.place||"";$("profileAddress").value=profile?.exact_address||"";
- $("verifiedContact").textContent=user.email||user.phone||"Verified account";
+ $("profileEmail").textContent=user.email||"Not linked";
+ $("profilePhone").textContent=user.phone||"Not linked";
  $("saveProfileButton").textContent=profile?"Save changes":"Save profile";$("profileMessage").hidden=true;
- if(accountMode!=="settings")loadCustomerOrders().catch(error=>{console.error("Could not load customer orders:",error);$("customerOrderList").innerHTML='<div class="empty-orders">Your orders could not be loaded. Please refresh in a moment.</div>'});
 }
 async function sendAccountCode(){
  const button=$("sendAccountCode");button.disabled=true;showMessage($("accountAuthMessage"),"");
@@ -239,11 +241,9 @@ async function saveUpgradePassword(){
  }finally{button.disabled=false}
 }
 async function saveCustomerProfile(event){event.preventDefault();const button=$("saveProfileButton");button.disabled=true;showMessage($("profileMessage"),"");
- try{const profile=await customerAuth.saveProfile(currentUser,{profile_name:$("profileName").value,place:$("profilePlace").value,exact_address:$("profileAddress").value});currentProfile=profile;$("profileHeading").textContent="Your profile";$("profileHelp").textContent="Profile name and place are required. Exact address is optional.";$("saveProfileButton").textContent="Save changes";showMessage($("profileMessage"),"Your profile has been saved.");loadCustomerOrders().catch(()=>{});}
+ try{const profile=await customerAuth.saveProfile(currentUser,{profile_name:$("profileName").value,place:$("profilePlace").value,exact_address:$("profileAddress").value});currentProfile=profile;$("profileHeading").textContent="Your profile";$("profileHelp").textContent="Profile name and place are required. Exact address is optional.";$("saveProfileButton").textContent="Save changes";showMessage($("profileMessage"),"Your profile has been saved.");}
  catch(error){console.error("Could not save customer profile:",error);showMessage($("profileMessage"),error.message||"Could not save your profile. Please try again.",true);}
  finally{button.disabled=false}}
-const orderLabels={new:"Awaiting acceptance",accepted:"Order received",preparing:"In progress",prepared:"Prepared",ready:"Ready for collection",completed:"Collected",cancelled:"Cancelled"};
-async function loadCustomerOrders(){if(!currentUser)return;const list=$("customerOrderList");list.innerHTML='<div class="empty-orders">Loading your orders…</div>';const {data,error}=await accountClient.from("storefront_orders").select("id,customer_business_name,status,created_at,subtotal,items,payment_method,payment_status").order("created_at",{ascending:false}).limit(50);if(error)throw error;const rows=data||[];if(!rows.length){list.innerHTML='<div class="empty-orders">No orders yet. Orders you place while signed in will appear here.</div>';return;}list.innerHTML=rows.map(order=>{const ref=String(order.id||"").replace(/-/g,"").slice(0,8).toUpperCase();const date=order.created_at?new Date(order.created_at).toLocaleString(undefined,{dateStyle:"medium",timeStyle:"short"}):"";const items=(Array.isArray(order.items)?order.items:[]).map(item=>String(item.quantity||1)+" × "+String(item.name||"Item")).join(", ");return '<article class="order-card"><div class="order-card-head"><div><div class="order-title">'+esc(order.customer_business_name||"Store")+'</div><div class="order-subtitle">Order #'+esc(ref)+(date?" · "+esc(date):"")+'</div></div><span class="status">'+esc(orderLabels[order.status]||"Awaiting acceptance")+'</span></div><p class="order-items">'+esc(items)+'</p><div class="order-bottom"><span>'+(order.payment_method==="card"?"Pay with card":"Pay on collection")+'</span><strong class="order-total">R'+Number(order.subtotal||0).toFixed(2)+'</strong></div></article>';}).join("")}
 document.querySelectorAll('input[name="accountMethod"]').forEach(input=>input.addEventListener("change",()=>{if(!$("accountContact").disabled)updateMethod()}));
 $("switchAccountMode").addEventListener("click",()=>setAuthMode(authMode==="signup"?"signin":authMode==="upgrade"?"signin":"signup"));
 $("upgradePasswordLink").addEventListener("click",()=>setAuthMode("upgrade"));
@@ -254,12 +254,9 @@ $("sendAccountCode").addEventListener("click",sendAccountCode);
 $("signInAccountButton").addEventListener("click",signInCustomer);
 $("verifyAccountCode").addEventListener("click",verifyAccountCode);
 $("customerProfileForm").addEventListener("submit",saveCustomerProfile);
-$("refreshOrdersButton").addEventListener("click",()=>loadCustomerOrders().catch(error=>{console.error(error);$("customerOrderList").innerHTML='<div class="empty-orders">Could not refresh orders. Please try again.</div>'}));
-$("signOutButton").addEventListener("click",async()=>{try{await accountClient.auth.signOut();currentUser=null;currentProfile=null;$("profilePanel").hidden=true;$("ordersPanel").hidden=true;$("signInPanel").hidden=false;setAuthMode("signin");showMessage($("accountAuthMessage"),"You have signed out.");}catch(error){showMessage($("profileMessage"),error.message||"Could not sign out.",true)}});
+$("signOutButton").addEventListener("click",async()=>{try{await accountClient.auth.signOut();currentUser=null;currentProfile=null;$("profilePanel").hidden=true;$("signInPanel").hidden=false;setAuthMode("signin");showMessage($("accountAuthMessage"),"You have signed out.");}catch(error){showMessage($("profileMessage"),error.message||"Could not sign out.",true)}});
 async function initializeAccount(){updateMethod();accountClient=await customerAuth.getClient();const {data,error}=await accountClient.auth.getUser();if(error)throw error;if(data?.user){if(accountMode==="upgrade"){setAuthMode("upgrade");legacyVerifiedUser=data.user;$("sendUpgradeCode").hidden=true;$("upgradeCodeStep").hidden=true;$("upgradePasswordStep").hidden=false;showMessage($("accountAuthMessage"),"Your existing session is confirmed. Create a password for future sign-ins.");}else{const profile=await customerAuth.getProfile(data.user.id);setSignedInView(data.user,profile)}}}
 initializeAccount().catch(error=>{console.error("Customer profile page could not load:",error);showMessage($("accountAuthMessage"),error.message||"Could not load the profile service. Refresh and try again.",true)});
-document.addEventListener("visibilitychange",()=>{if(!document.hidden&&currentUser)loadCustomerOrders().catch(()=>{})});
-setInterval(()=>{if(!document.hidden&&currentUser)loadCustomerOrders().catch(()=>{})},30000);
 </script>
 </body>
 </html>
