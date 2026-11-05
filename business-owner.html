@@ -559,6 +559,14 @@ html[data-theme="dark"] #itemOptionsEditor small{color:#afc4b6}
 .owner-orders-summary{margin:0 0 12px;padding:11px 14px;border:1px solid #d8e8de;border-radius:10px;background:#f3f9f5;color:#49695a;font-size:12px;font-weight:700}
 .owner-orders-list{display:grid;gap:12px}
 .owner-order-card{border:1px solid #e0e8e3;border-radius:13px;background:#fff;color:#1b2a23;padding:14px 16px}
+.owner-order-badge.status-new{background:#fff4dc;color:#84641a}
+.owner-order-badge.status-accepted,.owner-order-badge.status-preparing,.owner-order-badge.status-prepared,.owner-order-badge.status-ready{background:#e8f7f0;color:#27755d}
+.owner-order-badge.status-completed{background:#edf1ef;color:#53645a}
+.owner-order-badge.status-cancelled{background:#fff0ed;color:#a04437}
+.owner-order-actions{display:flex;justify-content:flex-end;padding-top:12px;margin-top:10px;border-top:1px solid #edf0ee}
+.owner-order-action{border:0;border-radius:999px;background:#1a1a1a;color:#fff;padding:9px 14px;font:inherit;font-size:12px;font-weight:800;cursor:pointer}
+.owner-order-action:hover{background:#333}
+.owner-order-action:disabled{opacity:.6;cursor:wait}
 .owner-order-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:1px solid #edf0ee;padding-bottom:10px}
 .owner-order-ref{font-size:13px;font-weight:850}
 .owner-order-date{margin-top:4px;color:#728078;font-size:11px}
@@ -1246,13 +1254,13 @@ function ensureOwnerOrdersRealtime(client,businessId){
  resetOwnerOrdersRealtime(client);
  ownerOrdersChannelBusinessId=businessId;
  ownerOrdersChannel=client.channel("owner-orders-"+businessId)
-  .on("postgres_changes",{event:"INSERT",schema:"public",table:"storefront_orders",filter:"business_id=eq."+businessId},payload=>{
+  .on("postgres_changes",{event:"*",schema:"public",table:"storefront_orders",filter:"business_id=eq."+businessId},payload=>{
    const order=payload?.new;
    if(!order||String(order.business_id)!==String(currentBusiness?.id)||ownerOrdersChannelBusinessId!==businessId)return;
-   if(ownerOrdersRows.some(row=>row.id===order.id))return;
-   ownerOrdersRows=[order,...ownerOrdersRows].slice(0,100);
+   const alreadyVisible=ownerOrdersRows.some(row=>row.id===order.id);
+   ownerOrdersRows=[order,...ownerOrdersRows.filter(row=>row.id!==order.id)].slice(0,100);
    renderBusinessOrders(ownerOrdersRows);
-   showToast("New order received.");
+   if(payload.eventType==="INSERT"&&!alreadyVisible)showToast("New order request received.");
   })
   .subscribe(status=>{
    if(status==="CHANNEL_ERROR"||status==="TIMED_OUT")console.warn("StoreNest order updates are temporarily unavailable:",status);
@@ -1263,9 +1271,9 @@ function renderBusinessOrders(rows){
  const list=$("ownerOrdersList"),empty=$("ownerOrdersEmpty"),summary=$("ownerOrdersSummary");
  if(!rows.length){list.replaceChildren();summary.hidden=true;empty.hidden=false;return}
  const newCount=rows.filter(row=>row.status==="new").length;
- summary.textContent=rows.length+" order"+(rows.length===1?"":"s")+" · "+newCount+" new";
+ summary.textContent=rows.length+" order"+(rows.length===1?"":"s")+" · "+newCount+" awaiting acceptance";
  summary.hidden=false;empty.hidden=true;
- const orderStatus={new:"New",accepted:"Accepted",preparing:"Preparing",ready:"Ready for collection",completed:"Completed",cancelled:"Cancelled"};
+ const orderStatus={new:"Awaiting acceptance",accepted:"Order received",preparing:"In progress",prepared:"Prepared",ready:"Ready for collection",completed:"Collected",cancelled:"Cancelled"};
  list.innerHTML=rows.map(order=>{
   const ref=String(order.id||"").replace(/-/g,"").slice(0,8).toUpperCase();
   const created=new Date(order.created_at);
@@ -1274,7 +1282,9 @@ function renderBusinessOrders(rows){
   const payment=order.payment_status==="pending"?"Awaiting payment":order.payment_status==="paid"?"Paid":order.payment_status==="failed"?"Payment failed":order.payment_status==="refunded"?"Refunded":"Unpaid";
   const paymentClass=order.payment_status==="pending"?"payment-pending":order.payment_status==="unpaid"?"payment-unpaid":"";
   const status=orderStatus[order.status]||"New";
-  const statusClass=order.status==="cancelled"?"status-cancelled":order.status==="completed"?"status-completed":"status-new";
+  const statusClass="status-"+(order.status||"new");
+  const nextAction={new:["accepted","Accept order"],accepted:["preparing","Start preparing"],preparing:["prepared","Prepared"],prepared:["ready","Ready for collection"],ready:["completed","Mark collected"]}[order.status];
+  const actionMarkup=nextAction?'<div class="owner-order-actions"><button type="button" class="owner-order-action" data-order-id="'+escapeHtml(order.id)+'" data-order-next="'+nextAction[0]+'">'+escapeHtml(nextAction[1])+'</button></div>':"";
   const contacts=[];
   const phone=String(order.contact_phone||"");
   const tel=phone.replace(/[^0-9+]/g,"");
@@ -1297,8 +1307,31 @@ function renderBusinessOrders(rows){
    '<div class="owner-order-customer"><strong>'+escapeHtml(order.customer_name||"Customer")+'</strong>'+contacts.join("")+'</div>'+
    '<ul class="owner-order-lines">'+lines+'</ul>'+
    '<div class="owner-order-bottom"><div class="owner-order-payment"><span>'+escapeHtml(method)+'</span>'+paymentNote+'</div><strong class="owner-order-total">'+formatOrderMoney(order.subtotal)+'</strong></div>'+
+   actionMarkup+
    '</article>';
  }).join("");
+}
+async function advanceStorefrontOrder(orderId,nextStatus,button){
+ const current=ownerOrdersRows.find(row=>row.id===orderId);
+ if(!current||!currentBusiness)return;
+ const allowed={new:"accepted",accepted:"preparing",preparing:"prepared",prepared:"ready",ready:"completed"};
+ if(allowed[current.status]!==nextStatus)return;
+ if(button){button.disabled=true;button.textContent="Updating…"}
+ try{
+  const client=await loadAuth();
+  const {data,error}=await client.rpc("update_storefront_order_status",{p_order_id:orderId,p_next_status:nextStatus});
+  if(error)throw error;
+  const updated=Array.isArray(data)?data[0]:data;
+  if(!updated)throw new Error("The order did not update. Refresh and try again.");
+  ownerOrdersRows=ownerOrdersRows.map(row=>row.id===orderId?{...row,status:updated.status,updated_at:updated.updated_at}:row);
+  renderBusinessOrders(ownerOrdersRows);
+  const labels={accepted:"Order accepted.",preparing:"Preparation started.",prepared:"Order marked prepared.",ready:"Marked ready for collection.",completed:"Order marked collected."};
+  showToast(labels[nextStatus]||"Order updated.");
+ }catch(error){
+  console.error("StoreNest order status update failed:",error);
+  showToast(friendlyError(error),true);
+  if(button)button.disabled=false;
+ }
 }
 async function loadBusinessOrders(){
  const list=$("ownerOrdersList"),summary=$("ownerOrdersSummary"),empty=$("ownerOrdersEmpty");
@@ -1309,7 +1342,7 @@ async function loadBusinessOrders(){
  try{
   const client=await loadAuth();
   ensureOwnerOrdersRealtime(client,businessId);
-  const {data,error}=await client.from("storefront_orders").select("id,business_id,customer_name,contact_phone,contact_email,payment_method,payment_status,status,items,subtotal,created_at").eq("business_id",businessId).order("created_at",{ascending:false}).limit(100);
+  const {data,error}=await client.from("storefront_orders").select("id,business_id,customer_name,contact_phone,contact_email,payment_method,payment_status,status,items,subtotal,created_at,updated_at").eq("business_id",businessId).order("created_at",{ascending:false}).limit(100);
   if(error)throw error;
   if(currentBusiness?.id!==businessId)return;
   const fetched=data||[],fetchedIds=new Set(fetched.map(row=>row.id));
@@ -1323,6 +1356,10 @@ async function loadBusinessOrders(){
  }finally{if(refresh)refresh.disabled=false}
 }
 $("ownerOrdersRefresh").addEventListener("click",loadBusinessOrders);
+$("ownerOrdersList").addEventListener("click",event=>{
+ const button=event.target.closest("[data-order-id][data-order-next]");
+ if(button)advanceStorefrontOrder(button.dataset.orderId,button.dataset.orderNext,button);
+});
 
 function populateMobileNav(){const mobile=$("mobileNavList");mobile.replaceChildren();document.querySelectorAll("#dashboardSidebar .sidebar-group").forEach(group=>{const copy=group.cloneNode(true);copy.querySelectorAll(".side-link[data-section]").forEach(button=>button.addEventListener("click",()=>setDashboardSection(button.dataset.section)));mobile.append(copy)});const logout=$("logoutButton").cloneNode(true);logout.removeAttribute("id");logout.addEventListener("click",()=>{$("mobileNavList").hidden=true;$("logoutButton").click()});mobile.append(logout)}
 async function addCategory(name){const client=await loadAuth();const clean=name.trim();if(!clean)throw Error("Enter a section name.");const id=$("categoryEditId").value;const payload={name:clean,display_style:$("categoryStyle").value,marketplace_category:$("categoryMarketplace").value,description:$("categoryDescription").value.trim()};const query=id?client.from("business_categories").update(payload).eq("id",id).eq("business_id",currentBusiness.id):client.from("business_categories").insert({...payload,business_id:currentBusiness.id,display_order:businessCategories.length});const {data,error}=await query.select("*").single();if(error)throw error;await loadBusinessData();$("itemCategory").value=data.id;closeModal($("categoryModal"));showToast(id?"Section updated.":"Section created.")}
