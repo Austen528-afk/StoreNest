@@ -715,10 +715,10 @@ function renderGalleryScale(group){
  const inset=count?50/count:0,trackWidth=count?100-(100/count):100;
  const progress=count>1?selectedIndex/(count-1)*100:0;
  const groupHint=(group.required?"Required":"Optional")+" · Default: "+(selected?selected.name:"Choose a level");
- return '<fieldset class="gallery-choice-group gallery-choice-scale" data-group-id="'+esc(group.id)+'">'+
+ return '<fieldset class="gallery-choice-group gallery-choice-scale" data-group-id="'+esc(group.id)+'" data-scale-default-id="'+esc(selected?selected.id:"")+'" data-scale-default-label="'+esc(selected?selected.name:"")+'" data-scale-required="'+(group.required?"true":"false")+'">'+
   '<legend class="gallery-scale-sr-only">'+esc(group.name)+'. '+esc(groupHint)+'</legend>'+
   '<div class="gallery-choice-scale-row">'+
-   '<div class="gallery-scale-name"><strong>'+esc(group.name)+'</strong><small>'+esc(groupHint)+'</small></div>'+
+   '<div class="gallery-scale-name"><strong>'+esc(group.name)+'</strong><small data-scale-status>'+esc(groupHint)+'</small></div>'+
    '<div class="gallery-scale"><div class="gallery-scale-options" role="radiogroup" aria-label="'+esc(group.name)+'" style="--scale-count:'+count+';--scale-progress:'+progress+'%;--scale-inset:'+inset+'%;--scale-track-width:'+trackWidth+'%;min-width:'+Math.max(224,count*56)+'px">'+
    group.options.map((option,index)=>
     '<label class="gallery-scale-option '+(index<=selectedIndex?"is-passed":"")+'">'+
@@ -748,6 +748,19 @@ function renderGalleryOptions(item){
     '<label class="gallery-choice-option"><span><input type="'+(group.selection==="multiple"?"checkbox":"radio")+'" data-group-id="'+esc(group.id)+'" data-option-id="'+esc(option.id)+'" name="choice-'+esc(group.id)+'" value="'+esc(option.id)+'"><span>'+esc(option.name)+'</span></span><em>'+(option.price?"+"+money(option.price):"Free")+'</em></label>'
    ).join("")+'</fieldset>';
  }).join("");
+ list.querySelectorAll(".gallery-choice-scale").forEach(fieldset=>{
+  const radios=[...fieldset.querySelectorAll('input[type="radio"][data-option-id]')];
+  const defaultId=fieldset.dataset.scaleDefaultId||"";
+  const selected=radios.find(radio=>radio.dataset.optionId===defaultId)||radios[0];
+  if(!selected)return;
+  radios.forEach(radio=>radio.checked=radio===selected);
+  const selectedIndex=radios.indexOf(selected),track=fieldset.querySelector(".gallery-scale-options");
+  if(track){
+   track.style.setProperty("--scale-progress",(radios.length>1?selectedIndex/(radios.length-1)*100:0)+"%");
+   radios.forEach((radio,index)=>radio.closest(".gallery-scale-option")?.classList.toggle("is-passed",index<=selectedIndex));
+  }
+  galleryOptionSelections[fieldset.dataset.groupId]=[selected.dataset.optionId];
+ });
 }
 function updateGalleryOptionsPrice(){
  if(!activeGalleryItem)return;
@@ -772,6 +785,17 @@ $("galleryChoiceGroups").addEventListener("change",event=>{
   const selectedIndex=radios.findIndex(radio=>radio.checked);
   track.style.setProperty("--scale-progress",(radios.length>1?selectedIndex/(radios.length-1)*100:0)+"%");
   radios.forEach((radio,index)=>radio.closest(".gallery-scale-option")?.classList.toggle("is-passed",index<=selectedIndex));
+  const fieldset=input.closest(".gallery-choice-scale");
+  const selectedLabel=radios[selectedIndex]?.closest(".gallery-scale-option")?.querySelector(".gallery-scale-label")?.textContent?.trim()||"";
+  const defaultLabel=fieldset?.dataset.scaleDefaultLabel||"";
+  const status=fieldset?.querySelector("[data-scale-status]");
+  if(status){
+   const requirement=fieldset.dataset.scaleRequired==="true"?"Required":"Optional";
+   status.textContent=requirement+(selectedLabel===defaultLabel?" · Default: "+defaultLabel:" · Selected: "+selectedLabel+" · Default: "+defaultLabel);
+   const legend=fieldset.querySelector(".gallery-scale-sr-only");
+   const title=fieldset.querySelector(".gallery-scale-name strong")?.textContent||group.name;
+   if(legend)legend.textContent=title+". "+status.textContent;
+  }
  }
  $("galleryOptionsError").hidden=true;
  updateGalleryOptionsPrice();
