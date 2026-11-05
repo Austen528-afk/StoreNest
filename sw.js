@@ -1,5 +1,5 @@
-const CACHE_NAME="storenest-shell-v23";
-const SHELL=["/","/index.html","/business-owner.html","/storefront.html","/categories.js","/product-customization.js","/theme.css","/theme.js","/manifest.webmanifest","/icons/icon-192.png","/icons/icon-512.png","/assets/install-iphone-share.svg","/assets/install-iphone-home-screen.svg","/assets/install-iphone-confirm.svg"];
+const CACHE_NAME="storenest-shell-v24";
+const SHELL=["/","/index.html","/business-owner.html","/storefront.html","/categories.js","/product-customization.js","/theme.css","/console.css","/theme.js","/manifest.webmanifest","/icons/icon-192.png","/icons/icon-512.png","/assets/install-iphone-share.svg","/assets/install-iphone-home-screen.svg","/assets/install-iphone-confirm.svg"];
 self.addEventListener("install",event=>{
  event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(SHELL)));
  self.skipWaiting();
@@ -12,7 +12,7 @@ self.addEventListener("fetch",event=>{
  const req=event.request;
  if(req.method!=="GET"||new URL(req.url).origin!==self.location.origin)return;
  const url=new URL(req.url);
- if(req.mode==="navigate"||url.pathname==="/categories.js"||url.pathname==="/product-customization.js"||url.pathname==="/theme.js"||url.pathname==="/theme.css"||url.pathname==="/manifest.webmanifest"){
+ if(req.mode==="navigate"||url.pathname.endsWith(".css")||url.pathname==="/categories.js"||url.pathname==="/product-customization.js"||url.pathname==="/theme.js"||url.pathname==="/theme.css"||url.pathname==="/manifest.webmanifest"){
    event.respondWith(fetch(req).then(response=>{
      if(response.ok){const clone=response.clone();caches.open(CACHE_NAME).then(cache=>cache.put(req,clone)).catch(()=>{});}
      return response;
