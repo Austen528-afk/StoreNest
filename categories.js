@@ -7,6 +7,7 @@ const categories=Object.freeze([
  Object.freeze({id:"food-drink",label:"Food & Drinks",emoji:"🍔"}),
  Object.freeze({id:"events-decor",label:"Catering and Decor Services",emoji:"🎉"}),
  Object.freeze({id:"electronics",label:"Electronics",emoji:"📱"}),
+ Object.freeze({id:"study-supplies",label:"Education & Study Supplies",emoji:"📚"}),
  Object.freeze({id:"fashion",label:"Fashion & Accessories",emoji:"👕"}),
  Object.freeze({id:"beauty",label:"Personal Care Services and Products",emoji:"💈"}),
  Object.freeze({id:"home-living",label:"Home & Living",emoji:"🏠"}),
