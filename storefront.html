@@ -389,7 +389,7 @@ body[data-store-type="decor"] .decor-copy .brand-name{font-weight:780}
 @media(max-width:470px){.item-body{min-height:102px}}
 
 /* Product detail: image first, description below. Use dots, keyboard/swipe for multi-media. */
-.gallery-panel{overflow:hidden}.gallery-scroll-area{display:flex;flex:1 1 0%;flex-direction:column;height:0;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.gallery-panel{display:grid;grid-template-rows:minmax(0,1fr) auto;overflow:hidden}.gallery-scroll-area{display:flex;flex-direction:column;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
 .gallery-stage{flex:0 1 auto;min-height:0}
 .gallery-stage img,.gallery-stage video{max-height:min(58dvh,570px)}
 .gallery-description{
