@@ -54,6 +54,20 @@ main{padding:30px 0 55px}.intro{margin:0 0 18px}.intro h1{margin:0 0 8px;font-si
   <div id="signinFields" hidden>
     <label class="field" for="accountSigninPassword">Password<input id="accountSigninPassword" type="password" autocomplete="current-password" required placeholder="Your password"></label>
     <button id="signInAccountButton" class="primary" type="button">Sign in</button>
+    <button id="upgradePasswordLink" class="quiet" type="button">Existing profile? Set a password</button>
+  </div>
+  <div id="upgradeFields" hidden>
+    <p class="panel-copy">For a profile created before password sign-in, verify once to set your password. After that, sign in with your email or phone and password.</p>
+    <button id="sendUpgradeCode" class="primary" type="button">Send one-time code</button>
+    <div id="upgradeCodeStep" class="code-row" hidden>
+      <label class="field" for="upgradeCode">Confirmation code<input id="upgradeCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Enter the code"></label>
+      <button id="verifyUpgradeCode" class="secondary" type="button">Confirm once</button>
+    </div>
+    <div id="upgradePasswordStep" hidden>
+      <label class="field" for="upgradePassword">New password<input id="upgradePassword" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters"></label>
+      <label class="field" for="upgradePasswordConfirm">Confirm password<input id="upgradePasswordConfirm" type="password" autocomplete="new-password" minlength="8" placeholder="Enter your password again"></label>
+      <button id="saveUpgradePassword" class="primary" type="button">Save password</button>
+    </div>
   </div>
   <p id="accountAuthMessage" class="message" role="status" hidden></p>
   <p class="panel-copy auth-switch"><span id="accountSwitchText"></span> <button id="switchAccountMode" class="quiet" type="button"></button></p>
@@ -80,12 +94,13 @@ main{padding:30px 0 55px}.intro{margin:0 0 18px}.intro h1{margin:0 0 8px;font-si
 const $=id=>document.getElementById(id);
 const customerAuth=window.StoreNestCustomerAuth;
 const accountMode=new URLSearchParams(location.search).get("mode")||"";
-let authMode=accountMode==="signup"?"signup":"signin";
-let accountClient=null,currentUser=null,currentProfile=null,pendingSignup=null,pendingSignupPassword="";
+let authMode=accountMode==="signup"?"signup":accountMode==="upgrade"?"upgrade":"signin";
+let accountClient=null,currentUser=null,currentProfile=null,pendingSignup=null,pendingSignupPassword="",legacyPendingCode=null,legacyVerifiedUser=null;
 function applyAccountMode(){
  const heading=$("accountPageHeading"),copy=$("accountPageCopy");
  if(accountMode==="signup"){heading.textContent="Create a StoreNest profile";copy.textContent="Register once to save your details and follow order progress."}
  else if(accountMode==="settings"){heading.textContent="Account settings";copy.textContent="Sign in to update your profile and saved address."}
+ else if(accountMode==="upgrade"){heading.textContent="Set a password";copy.textContent="Keep your existing StoreNest profile and set a password for future sign-ins."}
  else{heading.textContent="Your StoreNest profile";copy.textContent="Sign in to see your profile and order progress."}
  setAuthMode(authMode);
 }
@@ -102,18 +117,20 @@ function updateMethod(){
   :(method==="email"?"Use the email linked to your account.":"Use the phone number linked to your account.");
 }
 function setAuthMode(mode){
- authMode=mode==="signup"?"signup":"signin";
- $("signupFields").hidden=authMode!=="signup";$("signinFields").hidden=authMode!=="signin";
- $("accountPanelHeading").textContent=authMode==="signup"?"Sign up":"Sign in";
+ authMode=["signup","upgrade"].includes(mode)?mode:"signin";
+ $("signupFields").hidden=authMode!=="signup";$("signinFields").hidden=authMode!=="signin";$("upgradeFields").hidden=authMode!=="upgrade";
+ $("accountPanelHeading").textContent=authMode==="signup"?"Sign up":authMode==="upgrade"?"Set a password":"Sign in";
  $("accountPanelCopy").textContent=authMode==="signup"
   ?"Create a password, confirm your email or phone once, then finish your profile."
+  :authMode==="upgrade"?"Verify once to set a password on an existing profile."
   :"Sign in with the email or phone number and password you registered with.";
- $("accountSwitchText").textContent=authMode==="signup"?"Already have an account?":"New to StoreNest?";
- $("switchAccountMode").textContent=authMode==="signup"?"Sign in":"Create account";
- $("accountContact").disabled=false;$("accountCodeStep").hidden=true;
+ $("accountSwitchText").textContent=authMode==="signup"?"Already have an account?":authMode==="upgrade"?"Returning to sign-in?":"New to StoreNest?";
+ $("switchAccountMode").textContent=authMode==="signup"?"Sign in":authMode==="upgrade"?"Back to sign in":"Create account";
+ $("accountContact").disabled=false;$("accountCodeStep").hidden=true;$("upgradeCodeStep").hidden=true;$("upgradePasswordStep").hidden=true;
  $("sendAccountCode").textContent="Send confirmation code";$("sendAccountCode").disabled=false;
- $("accountCode").value="";$("accountSignupPassword").value="";$("accountSignupPasswordConfirm").value="";
- $("accountSigninPassword").value="";pendingSignup=null;pendingSignupPassword="";
+ $("accountCode").value="";$("upgradeCode").value="";$("upgradePassword").value="";$("upgradePasswordConfirm").value="";
+ $("accountSignupPassword").value="";$("accountSignupPasswordConfirm").value="";$("accountSigninPassword").value="";
+ $("sendUpgradeCode").hidden=false;$("sendUpgradeCode").disabled=false;pendingSignup=null;pendingSignupPassword="";legacyPendingCode=null;legacyVerifiedUser=null;
  showMessage($("accountAuthMessage"),"");updateMethod();
 }
 applyAccountMode();
@@ -181,6 +198,46 @@ async function signInCustomer(){
   showMessage($("accountAuthMessage"),error.message||"Could not sign in. Check your email or phone number and password.",true);
  }finally{button.disabled=false}
 }
+async function sendUpgradeCode(){
+ const button=$("sendUpgradeCode");button.disabled=true;showMessage($("accountAuthMessage"),"");
+ try{
+  legacyPendingCode=await customerAuth.sendExistingAccountCode(selectedMethod(),$("accountContact").value);
+  $("accountContact").value=legacyPendingCode.destination;$("accountContact").disabled=true;
+  $("upgradeCodeStep").hidden=false;$("upgradeCode").focus();
+  showMessage($("accountAuthMessage"),"If that existing profile can be verified, a one-time code has been sent.",false);
+ }catch(error){
+  console.error("Could not send existing-profile confirmation:",error);
+  showMessage($("accountAuthMessage"),error.message||"Could not send a code. Check the email or phone number and try again.",true);
+ }finally{button.disabled=false}
+}
+async function verifyUpgradeCode(){
+ const button=$("verifyUpgradeCode");button.disabled=true;showMessage($("accountAuthMessage"),"");
+ try{
+  if(!legacyPendingCode)throw new Error("Send a one-time code first.");
+  const result=await customerAuth.verifyCode(legacyPendingCode.method,legacyPendingCode.destination,$("upgradeCode").value);
+  legacyVerifiedUser=result.user||null;
+  if(!legacyVerifiedUser||!result.session)throw new Error("The code was not accepted. Try again or use the original sign-in method.");
+  $("upgradeCodeStep").hidden=true;$("upgradePasswordStep").hidden=false;$("upgradePassword").focus();
+  showMessage($("accountAuthMessage"),"Confirmed once. Create a password for future sign-ins.",false);
+ }catch(error){
+  console.error("Existing-profile confirmation failed:",error);
+  showMessage($("accountAuthMessage"),error.message||"That code could not be confirmed. Check it and try again.",true);
+ }finally{button.disabled=false}
+}
+async function saveUpgradePassword(){
+ const button=$("saveUpgradePassword");button.disabled=true;showMessage($("accountAuthMessage"),"");
+ try{
+  if(!$("upgradePassword").value||$("upgradePassword").value.length<8)throw new Error("Choose a password with at least 8 characters.");
+  if($("upgradePassword").value!==$("upgradePasswordConfirm").value)throw new Error("The passwords do not match.");
+  if(!legacyVerifiedUser)throw new Error("Confirm your existing profile first.");
+  const user=await customerAuth.updatePassword($("upgradePassword").value);
+  const profile=await customerAuth.getProfile((user||legacyVerifiedUser).id);
+  setSignedInView(user||legacyVerifiedUser,profile);
+ }catch(error){
+  console.error("Could not set the account password:",error);
+  showMessage($("accountAuthMessage"),error.message||"Could not save the password. Please try again.",true);
+ }finally{button.disabled=false}
+}
 async function saveCustomerProfile(event){event.preventDefault();const button=$("saveProfileButton");button.disabled=true;showMessage($("profileMessage"),"");
  try{const profile=await customerAuth.saveProfile(currentUser,{profile_name:$("profileName").value,place:$("profilePlace").value,exact_address:$("profileAddress").value});currentProfile=profile;$("profileHeading").textContent="Your profile";$("profileHelp").textContent="Profile name and place are required. Exact address is optional.";$("saveProfileButton").textContent="Save changes";showMessage($("profileMessage"),"Your profile has been saved.");loadCustomerOrders().catch(()=>{});}
  catch(error){console.error("Could not save customer profile:",error);showMessage($("profileMessage"),error.message||"Could not save your profile. Please try again.",true);}
@@ -188,14 +245,18 @@ async function saveCustomerProfile(event){event.preventDefault();const button=$(
 const orderLabels={new:"Awaiting acceptance",accepted:"Order received",preparing:"In progress",prepared:"Prepared",ready:"Ready for collection",completed:"Collected",cancelled:"Cancelled"};
 async function loadCustomerOrders(){if(!currentUser)return;const list=$("customerOrderList");list.innerHTML='<div class="empty-orders">Loading your orders…</div>';const {data,error}=await accountClient.from("storefront_orders").select("id,customer_business_name,status,created_at,subtotal,items,payment_method,payment_status").order("created_at",{ascending:false}).limit(50);if(error)throw error;const rows=data||[];if(!rows.length){list.innerHTML='<div class="empty-orders">No orders yet. Orders you place while signed in will appear here.</div>';return;}list.innerHTML=rows.map(order=>{const ref=String(order.id||"").replace(/-/g,"").slice(0,8).toUpperCase();const date=order.created_at?new Date(order.created_at).toLocaleString(undefined,{dateStyle:"medium",timeStyle:"short"}):"";const items=(Array.isArray(order.items)?order.items:[]).map(item=>String(item.quantity||1)+" × "+String(item.name||"Item")).join(", ");return '<article class="order-card"><div class="order-card-head"><div><div class="order-title">'+esc(order.customer_business_name||"Store")+'</div><div class="order-subtitle">Order #'+esc(ref)+(date?" · "+esc(date):"")+'</div></div><span class="status">'+esc(orderLabels[order.status]||"Awaiting acceptance")+'</span></div><p class="order-items">'+esc(items)+'</p><div class="order-bottom"><span>'+(order.payment_method==="card"?"Pay with card":"Pay on collection")+'</span><strong class="order-total">R'+Number(order.subtotal||0).toFixed(2)+'</strong></div></article>';}).join("")}
 document.querySelectorAll('input[name="accountMethod"]').forEach(input=>input.addEventListener("change",()=>{if(!$("accountContact").disabled)updateMethod()}));
-$("switchAccountMode").addEventListener("click",()=>setAuthMode(authMode==="signup"?"signin":"signup"));
+$("switchAccountMode").addEventListener("click",()=>setAuthMode(authMode==="signup"?"signin":authMode==="upgrade"?"signin":"signup"));
+$("upgradePasswordLink").addEventListener("click",()=>setAuthMode("upgrade"));
+$("sendUpgradeCode").addEventListener("click",sendUpgradeCode);
+$("verifyUpgradeCode").addEventListener("click",verifyUpgradeCode);
+$("saveUpgradePassword").addEventListener("click",saveUpgradePassword);
 $("sendAccountCode").addEventListener("click",sendAccountCode);
 $("signInAccountButton").addEventListener("click",signInCustomer);
 $("verifyAccountCode").addEventListener("click",verifyAccountCode);
 $("customerProfileForm").addEventListener("submit",saveCustomerProfile);
 $("refreshOrdersButton").addEventListener("click",()=>loadCustomerOrders().catch(error=>{console.error(error);$("customerOrderList").innerHTML='<div class="empty-orders">Could not refresh orders. Please try again.</div>'}));
 $("signOutButton").addEventListener("click",async()=>{try{await accountClient.auth.signOut();currentUser=null;currentProfile=null;$("profilePanel").hidden=true;$("ordersPanel").hidden=true;$("signInPanel").hidden=false;setAuthMode("signin");showMessage($("accountAuthMessage"),"You have signed out.");}catch(error){showMessage($("profileMessage"),error.message||"Could not sign out.",true)}});
-async function initializeAccount(){updateMethod();accountClient=await customerAuth.getClient();const {data,error}=await accountClient.auth.getUser();if(error)throw error;if(data?.user){const profile=await customerAuth.getProfile(data.user.id);setSignedInView(data.user,profile)}}
+async function initializeAccount(){updateMethod();accountClient=await customerAuth.getClient();const {data,error}=await accountClient.auth.getUser();if(error)throw error;if(data?.user){if(accountMode==="upgrade"){setAuthMode("upgrade");legacyVerifiedUser=data.user;$("sendUpgradeCode").hidden=true;$("upgradeCodeStep").hidden=true;$("upgradePasswordStep").hidden=false;showMessage($("accountAuthMessage"),"Your existing session is confirmed. Create a password for future sign-ins.");}else{const profile=await customerAuth.getProfile(data.user.id);setSignedInView(data.user,profile)}}}
 initializeAccount().catch(error=>{console.error("Customer profile page could not load:",error);showMessage($("accountAuthMessage"),error.message||"Could not load the profile service. Refresh and try again.",true)});
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&currentUser)loadCustomerOrders().catch(()=>{})});
 setInterval(()=>{if(!document.hidden&&currentUser)loadCustomerOrders().catch(()=>{})},30000);
