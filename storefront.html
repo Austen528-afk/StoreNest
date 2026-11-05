@@ -1100,7 +1100,7 @@ function showCheckoutProfileGate(user=null){
  }
  const dialog=$("checkoutProfileGate").querySelector(".checkout-profile-dialog");
  dialog.focus({preventScroll:true});
- (user?$("checkoutProfileName"):$("checkoutAuthContact")).focus({preventScroll:true});
+ if(!window.matchMedia("(max-width: 768px)").matches)(user?$("checkoutProfileName"):$("checkoutAuthContact")).focus({preventScroll:true});
 }
 function setCheckoutAuthMode(mode,clearMessage=true){
  checkoutAuthMode=mode==="signin"?"signin":"signup";
