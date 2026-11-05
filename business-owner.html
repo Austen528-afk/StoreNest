@@ -764,7 +764,7 @@ function busy(form,state){const button=form.querySelector('button[type="submit"]
 function showToast(message,error=false){const el=$("dashboardToast");if(!el)return;el.textContent=message;el.classList.toggle("error",error);el.classList.toggle("success",!error);el.hidden=false;clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>el.hidden=true,3600)}
 function slugify(value){return String(value||"").normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,70)||"my-business"}
 function isProfileComplete(b=currentBusiness){return Boolean(b&&b.name?.trim()&&b.category?.trim())}
-function openModal(id){const el=$(id);if(el){el.hidden=false;document.body.style.overflow="hidden";const field=el.querySelector("input:not([type=hidden]),select,textarea");setTimeout(()=>field?.focus(),30)}}
+function openModal(id){const el=$(id);if(el){el.hidden=false;document.body.style.overflow="hidden";const field=el.querySelector("input:not([type=hidden]),select,textarea");if(!window.matchMedia("(max-width: 768px)").matches)setTimeout(()=>field?.focus(),30)}}
 function closeModal(el){if(!el)return;el.hidden=true;if(!document.querySelector(".modal-backdrop:not([hidden])"))document.body.style.overflow=""}
 function profileToForm(prefix,b){const map={Name:"name",Category:"category",Description:"description",Location:"location",Phone:"phone",Email:"email",Website:"website",Hours:"hours"};for(const [suffix,key] of Object.entries(map)){const field=$(prefix+suffix);if(field)field.value=key==="hours"?(b?.operating_hours?.summary||""):(key==="category"?window.StoreNestCategoryId(b?.category):(b?.[key]||""))}}
 function el(id){return $(id)}
