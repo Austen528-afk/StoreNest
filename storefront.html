@@ -562,6 +562,54 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
 .cart-item .cart-customization{color:#53695d;display:block;font-size:11px;line-height:1.55;margin-top:3px}
 @media(max-width:480px){.gallery-customization{padding:13px 16px 19px}.gallery-choice-group{padding-top:11px}.gallery-choice-option{padding:9px 8px;font-size:12px}}
 
+
+.cart-review-view{flex:1;min-height:0;display:flex;flex-direction:column}
+.cart-review-view[hidden],.checkout-step[hidden],.checkout-success[hidden]{display:none!important}
+.cart-review-actions{display:grid;gap:8px;padding-top:12px}
+.cart-checkout-button{width:100%;border:0;border-radius:12px;background:#171717;color:#fff;padding:13px 15px;font-weight:800}
+.cart-checkout-button:disabled{opacity:.5;cursor:not-allowed}
+.cart-clear{width:100%;padding:11px;border-radius:12px;border:1px solid #e1e1e1;background:#fff;color:#333;font-weight:700}
+.cart-clear:disabled{opacity:.5;cursor:not-allowed}
+.checkout-step{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:14px;padding-top:12px}
+.checkout-back{align-self:flex-start;border:0;background:transparent;padding:3px 0;color:#53695d;font-size:13px;font-weight:750}
+.checkout-collection{display:grid;gap:4px;padding:12px;border-radius:11px;background:#f4f8f5}
+.checkout-collection strong{font-size:14px}.checkout-collection span{font-size:12px;color:#68756e;line-height:1.45}
+.checkout-summary{border:1px solid #e5e9e6;border-radius:12px;padding:12px}
+.checkout-summary h3,.checkout-fields h3{margin:0 0 10px;font-size:15px}
+.checkout-summary-row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:12px}
+.checkout-summary-row:last-child{border-bottom:0}
+.checkout-summary-row span:first-child{min-width:0;overflow-wrap:anywhere;color:#4d5851}
+.checkout-summary-row strong{white-space:nowrap}
+.checkout-summary-total{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #e5e9e6;margin-top:6px;padding-top:10px;font-weight:800}
+.checkout-fields{display:grid;gap:10px}
+.checkout-fields h3{margin:0}
+.checkout-fields label{display:grid;gap:5px;font-size:12px;font-weight:700;color:#333}
+.checkout-fields label em{font-style:normal;color:#bd5848}
+.checkout-fields label small{font-size:11px;font-weight:500;color:#777}
+.checkout-fields input{width:100%;min-height:42px;border:1px solid #dce4df;border-radius:9px;background:#fff;padding:10px 11px;color:#222}
+.checkout-payments{display:grid;gap:8px;margin:0;padding:0;border:0}
+.checkout-payments legend{font-size:14px;font-weight:800;margin-bottom:8px}
+.checkout-payment-option{display:flex;align-items:flex-start;gap:10px;border:1px solid #dfe7e2;border-radius:11px;padding:12px;cursor:pointer}
+.checkout-payment-option:has(input:checked){border-color:#36ad8b;background:#effaf5}
+.checkout-payment-option input{margin:3px 0 0;accent-color:#30a987}
+.checkout-payment-option span{display:grid;gap:3px}
+.checkout-payment-option strong{font-size:13px}
+.checkout-payment-option small{font-size:11px;color:#6b776f;line-height:1.4}
+.checkout-preview-notice,.checkout-error{margin:0;border-radius:9px;padding:10px 12px;font-size:12px;line-height:1.45}
+.checkout-preview-notice{background:#fff8e8;border:1px solid #f1dfb0;color:#755715}
+.checkout-error{background:#fff0eb;color:#9d382a}
+.checkout-submit-row{position:sticky;bottom:-1px;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding:12px 0 2px;background:#fff;border-top:1px solid #e7ebe8}
+.checkout-submit-row>span{display:flex;flex-direction:column;gap:2px;font-size:11px;color:#6d7a71;font-weight:700}
+.checkout-submit-row strong{font-size:18px;color:#171717}
+.checkout-submit-row button{border:0;border-radius:100px;background:#171717;color:#fff;padding:11px 17px;font-weight:800;white-space:nowrap}
+.checkout-submit-row button:disabled{opacity:.6;cursor:wait}
+.checkout-success{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px}
+.checkout-success-mark{display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:#e8f7f0;color:#2ba783;font-size:25px;font-weight:800}
+.checkout-success h3{margin:0;font-size:20px}
+.checkout-success>strong{font-size:13px;color:#526b5d}
+.checkout-success p{font-size:13px;line-height:1.55;color:#68756e}
+.checkout-success .cart-checkout-button{margin-top:8px}
+@media(max-width:480px){.checkout-step{gap:12px}.checkout-fields input{min-height:44px}.checkout-submit-row strong{font-size:17px}}
 </style>
 <link rel="stylesheet" href="/theme.css">
 <link rel="stylesheet" href="/service-bookings.css">
@@ -580,11 +628,55 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
 </div>
 <div class="cart-backdrop" id="cartBackdrop" hidden>
   <aside class="cart-panel" role="dialog" aria-modal="true" aria-label="Your basket">
-    <div class="cart-head"><h2>Your basket</h2><button type="button" class="close-cart" id="closeCart" aria-label="Close basket">×</button></div>
-    <div id="cartItems" class="cart-items"></div>
-    <div class="cart-total"><span>Subtotal</span><span id="cartTotal">R0.00</span></div>
-    <button type="button" id="clearCart" class="cart-clear">Clear basket</button>
-    <p class="cart-note">Basket preview only. Orders and checkout are not enabled yet.</p>
+    <div class="cart-head"><h2 id="cartTitle">Your basket</h2><button type="button" class="close-cart" id="closeCart" aria-label="Close basket">×</button></div>
+    <div id="cartReviewView" class="cart-review-view">
+      <div id="cartItems" class="cart-items"></div>
+      <div class="cart-total"><span>Subtotal</span><span id="cartTotal">R0.00</span></div>
+      <div class="cart-review-actions">
+        <button type="button" id="checkoutStart" class="cart-checkout-button">Continue to checkout</button>
+        <button type="button" id="clearCart" class="cart-clear">Clear basket</button>
+      </div>
+      <p class="cart-note">Review your items, then enter your contact details and payment choice.</p>
+    </div>
+    <form id="checkoutForm" class="checkout-step" hidden>
+      <button type="button" id="checkoutBack" class="checkout-back">← Back to basket</button>
+      <div class="checkout-collection"><strong id="checkoutStoreName">Collection</strong><span id="checkoutStoreLocation">Collection details provided by the business.</span></div>
+      <section class="checkout-summary" aria-labelledby="checkoutSummaryHeading">
+        <h3 id="checkoutSummaryHeading">Order summary</h3>
+        <div id="checkoutSummary"></div>
+        <div class="checkout-summary-total"><span>Total</span><strong id="checkoutTotal">R0.00</strong></div>
+      </section>
+      <div class="checkout-fields">
+        <h3>Your details</h3>
+        <label>Full name <em>*</em><input name="customer_name" required minlength="2" maxlength="100" autocomplete="name" placeholder="Your name"></label>
+        <label>Phone number <em>*</em><input name="contact_phone" required type="tel" minlength="7" maxlength="40" autocomplete="tel" placeholder="e.g. 072 123 4567"></label>
+        <label>Email address <small>(optional)</small><input name="contact_email" type="email" maxlength="160" autocomplete="email" placeholder="you@example.com"></label>
+      </div>
+      <fieldset class="checkout-payments">
+        <legend>Payment method</legend>
+        <label class="checkout-payment-option">
+          <input type="radio" name="payment_method" value="pay_on_collection" checked>
+          <span><strong>Pay on collection</strong><small>Pay when you collect your order.</small></span>
+        </label>
+        <label class="checkout-payment-option">
+          <input type="radio" name="payment_method" value="card">
+          <span><strong>Pay with card</strong><small>Card payment at checkout.</small></span>
+        </label>
+      </fieldset>
+      <p id="cardPreviewNotice" class="checkout-preview-notice" hidden>Card processing is not connected yet. This preview order will appear as Awaiting payment. No card will be charged.</p>
+      <p id="checkoutError" class="checkout-error" role="alert" hidden></p>
+      <div class="checkout-submit-row">
+        <span>Total <strong id="checkoutSubmitTotal">R0.00</strong></span>
+        <button id="placeOrderButton" type="submit">Place order</button>
+      </div>
+    </form>
+    <section id="checkoutSuccessView" class="checkout-success" hidden aria-live="polite">
+      <span class="checkout-success-mark" aria-hidden="true">✓</span>
+      <h3>Order received</h3>
+      <strong id="checkoutReference"></strong>
+      <p id="checkoutSuccessMessage"></p>
+      <button type="button" id="checkoutDone" class="cart-checkout-button">Back to store</button>
+    </section>
   </aside>
 </div>
 <div id="bookingBackdrop" class="booking-backdrop" hidden>
@@ -631,7 +723,7 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
 "use strict";
 const CONFIG={url:"https://cypbjzbagezdelmemuhb.supabase.co",key:"sb_publishable_8W8zyYtggQMWoFlnxrzoVA_BUKjQ9va"};
 const cart=new Map();
-let availableItems=[],toastTimer=null,activeGalleryItem=null,galleryIndex=0,galleryReturnFocus=null,activePublicBusiness=null,galleryEditCartKey=null;
+let storefrontClient=null,availableItems=[],toastTimer=null,activeGalleryItem=null,galleryIndex=0,galleryReturnFocus=null,activePublicBusiness=null,galleryEditCartKey=null;
 const $=id=>document.getElementById(id);
 function esc(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function initials(name){return String(name||"SN").split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join("").toUpperCase()||"SN"}
@@ -711,13 +803,98 @@ function renderCart(){
    (row.note?'<span class="cart-customization">Note: '+esc(row.note)+'</span>':"")+
    '</div><div class="cart-controls"><button type="button" data-cart-action="minus" data-key="'+esc(key)+'" aria-label="Remove one '+esc(item.name)+'">−</button><span>'+row.quantity+'</span><button type="button" data-cart-action="plus" data-key="'+esc(key)+'" aria-label="Add one '+esc(item.name)+'">+</button></div></div>';
  }).join(""):'<p class="empty">Your basket is empty. Add something from the menu.</p>';
- $("cartTotal").textContent=money(rows.reduce((sum,{row})=>sum+row.unitPrice*row.quantity,0));
+ const total=rows.reduce((sum,{row})=>sum+row.unitPrice*row.quantity,0);
+ $("cartTotal").textContent=money(total);
+ $("checkoutStart").disabled=!rows.length;
+ $("clearCart").disabled=!rows.length;
  syncCartBadge();
 }
-
-function openCart(){renderCart();$("cartBackdrop").hidden=false;$("closeCart").focus()}
+function renderCheckoutSummary(){
+ const rows=[...cart.entries()].map(([key,row])=>({key,row,item:availableItems.find(i=>i.id===row.itemId)})).filter(entry=>entry.item);
+ $("checkoutSummary").innerHTML=rows.map(({row,item})=>
+  '<div class="checkout-summary-row"><span>'+esc(row.quantity+' × '+item.name)+'</span><strong>'+money(row.unitPrice*row.quantity)+'</strong></div>'+
+  row.summary.map(option=>'<div class="checkout-summary-row"><span>↳ '+esc(option.group)+': '+esc(option.values.join(", "))+'</span><span></span></div>').join("")
+ ).join("");
+ const total=rows.reduce((sum,{row})=>sum+row.unitPrice*row.quantity,0);
+ $("checkoutTotal").textContent=money(total);
+ $("checkoutSubmitTotal").textContent=money(total);
+ $("checkoutStoreName").textContent=activePublicBusiness?.name?"Collection from "+activePublicBusiness.name:"Collection";
+ $("checkoutStoreLocation").textContent=activePublicBusiness?.location||"Collection details provided by the business.";
+}
+function showBasketReview(){
+ $("cartReviewView").hidden=false;$("checkoutForm").hidden=true;$("checkoutSuccessView").hidden=true;
+ $("cartTitle").textContent="Your basket";
+}
+function openCheckout(){
+ if(!cart.size)return;
+ renderCheckoutSummary();
+ $("checkoutError").hidden=true;
+ $("cartReviewView").hidden=true;$("checkoutSuccessView").hidden=true;$("checkoutForm").hidden=false;
+ $("cartTitle").textContent="Checkout";
+ $("checkoutForm").querySelector('[name="customer_name"]')?.focus();
+}
+function updateCheckoutPaymentNotice(){
+ const method=$("checkoutForm").querySelector('[name="payment_method"]:checked')?.value;
+ $("cardPreviewNotice").hidden=method!=="card";
+}
+async function submitCheckout(event){
+ event.preventDefault();
+ const form=$("checkoutForm");
+ if(!form.reportValidity())return;
+ if(!storefrontClient||!activePublicBusiness?.id){
+  $("checkoutError").textContent="The store could not be reached. Refresh and try again.";
+  $("checkoutError").hidden=false;return;
+ }
+ const values=new FormData(form),paymentMethod=String(values.get("payment_method")||"pay_on_collection");
+ const orderId=crypto.randomUUID();
+ const payload={
+  id:orderId,business_id:activePublicBusiness.id,
+  customer_name:String(values.get("customer_name")||"").trim(),
+  contact_phone:String(values.get("contact_phone")||"").trim(),
+  contact_email:String(values.get("contact_email")||"").trim()||null,
+  payment_method:paymentMethod,
+  items:[...cart.values()].map(row=>({item_id:row.itemId,quantity:row.quantity,selection:row.selection||{},note:row.note||""}))
+ };
+ const button=$("placeOrderButton");button.disabled=true;button.textContent="Sending order…";
+ try{
+  const {error}=await storefrontClient.from("storefront_orders").insert(payload);
+  if(error)throw error;
+  const reference=orderId.replace(/-/g,"").slice(0,8).toUpperCase();
+  cart.clear();renderCart();
+  $("checkoutForm").hidden=true;$("cartReviewView").hidden=true;$("checkoutSuccessView").hidden=false;
+  $("cartTitle").textContent="Order received";
+  $("checkoutReference").textContent="Order #"+reference;
+  $("checkoutSuccessMessage").textContent=paymentMethod==="card"
+   ?"Your order was sent to "+(activePublicBusiness.name||"the business")+". Card payment is not connected yet, so it is marked Awaiting payment. No card was charged."
+   :"Your order was sent to "+(activePublicBusiness.name||"the business")+". Pay when you collect it.";
+  form.reset();
+  $("checkoutForm").querySelector('[name="payment_method"][value="pay_on_collection"]').checked=true;
+  updateCheckoutPaymentNotice();
+ }catch(error){
+  console.error("StoreNest checkout failed:",error);
+  const changed=/no longer available|choice|option|quantity|empty/i.test(String(error?.message||""));
+  $("checkoutError").textContent=changed
+   ?"An item or option in your basket changed. Go back, review your basket, and try again."
+   :"We couldn't submit your order. Please check your connection and try again.";
+  $("checkoutError").hidden=false;
+ }finally{
+  button.disabled=false;button.textContent="Place order";
+ }
+}
+function openCart(){
+ renderCart();
+ if(!cart.size){$("checkoutForm").hidden=true;$("checkoutSuccessView").hidden=true;$("cartReviewView").hidden=false;$("cartTitle").textContent="Your basket"}
+ $("cartBackdrop").hidden=false;$("closeCart").focus();
+}
 function closeCart(){$("cartBackdrop").hidden=true;const trigger=$("openCart");if(trigger)trigger.focus()}
+
 $("closeCart").addEventListener("click",closeCart);
+$("checkoutStart").addEventListener("click",openCheckout);
+$("checkoutBack").addEventListener("click",showBasketReview);
+$("checkoutDone").addEventListener("click",closeCart);
+$("checkoutForm").addEventListener("submit",submitCheckout);
+$("checkoutForm").addEventListener("change",event=>{if(event.target.name==="payment_method")updateCheckoutPaymentNotice()});
+$("clearCart").addEventListener("click",()=>{cart.clear();renderCart();showBasketReview()});
 $("cartBackdrop").addEventListener("click",e=>{if(e.target===$("cartBackdrop"))closeCart()});
 $("clearCart").addEventListener("click",()=>{cart.clear();renderCart()});
 $("cartItems").addEventListener("click",e=>{
@@ -1196,7 +1373,7 @@ async function load(){
  let renderedCache=false;
  try{
    if(!window.supabase)await new Promise((resolve,reject)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0";s.onload=resolve;s.onerror=reject;document.head.append(s)});
-   const client=window.supabase.createClient(CONFIG.url,CONFIG.key,{auth:{persistSession:false,autoRefreshToken:false}});
+   const client=storefrontClient=window.supabase.createClient(CONFIG.url,CONFIG.key,{auth:{persistSession:false,autoRefreshToken:false}});
    // Display the last public snapshot while a fresh request runs in the background.
    const cached=readStorefrontSnapshot(slug);
    if(cached){renderPublishedStorefront(root,client,cached.business,cached.items,cached.sections);renderedCache=true}
