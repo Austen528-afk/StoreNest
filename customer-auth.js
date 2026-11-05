@@ -87,6 +87,63 @@
     return result.data;
   }
 
+  function normalizeAuthDestination(method, value) {
+    if (method === "email") {
+      const email = normalizeEmail(value);
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Enter a valid email address.");
+      return email;
+    }
+    const phone = normalizePhone(value);
+    if (!phone) throw new Error("Enter a valid phone number, such as 072 123 4567 or +27 72 123 4567.");
+    return phone;
+  }
+
+  function phoneProviderError(error) {
+    if (/unsupported phone provider|phone provider is not enabled/i.test(error?.message || "")) {
+      return new Error("Phone confirmation codes are not enabled yet because this project has no SMS provider configured. Choose Email or ask the store owner to enable an SMS provider.");
+    }
+    return error;
+  }
+
+  async function createAccount(method, value, password, metadata = {}) {
+    const client = await getClient();
+    const destination = normalizeAuthDestination(method, value);
+    const secret = String(password || "");
+    if (secret.length < 8) throw new Error("Choose a password with at least 8 characters.");
+    const options = { data: metadata && typeof metadata === "object" ? metadata : {} };
+    if (method === "phone") options.channel = "sms";
+    const credentials = method === "email"
+      ? { email: destination, password: secret, options }
+      : { phone: destination, password: secret, options };
+    const result = await client.auth.signUp(credentials);
+    if (result.error) throw phoneProviderError(result.error);
+    return { method, destination, user: result.data?.user || null, session: result.data?.session || null };
+  }
+
+  async function resendConfirmation(method, destination) {
+    const client = await getClient();
+    const value = normalizeAuthDestination(method, destination);
+    const input = method === "email"
+      ? { type: "signup", email: value }
+      : { type: "sms", phone: value };
+    const result = await client.auth.resend(input);
+    if (result.error) throw phoneProviderError(result.error);
+    return { method, destination: value };
+  }
+
+  async function signInWithPassword(method, value, password) {
+    const client = await getClient();
+    const destination = normalizeAuthDestination(method, value);
+    const secret = String(password || "");
+    if (!secret) throw new Error("Enter your password.");
+    const credentials = method === "email"
+      ? { email: destination, password: secret }
+      : { phone: destination, password: secret };
+    const result = await client.auth.signInWithPassword(credentials);
+    if (result.error) throw phoneProviderError(result.error);
+    return result.data;
+  }
+
   async function getProfile(userId) {
     const client = await getClient();
     const id = userId || (await client.auth.getUser()).data?.user?.id;
@@ -125,5 +182,5 @@
     return data;
   }
 
-  window.StoreNestCustomerAuth = { getClient, normalizePhone, normalizeEmail, sendCode, verifyCode, getProfile, saveProfile };
+  window.StoreNestCustomerAuth = { getClient, normalizePhone, normalizeEmail, sendCode, verifyCode, createAccount, resendConfirmation, signInWithPassword, getProfile, saveProfile };
 })();
