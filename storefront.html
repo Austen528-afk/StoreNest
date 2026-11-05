@@ -398,13 +398,23 @@ body[data-store-type="decor"] .decor-copy .brand-name{font-weight:780}
   white-space:pre-line;overflow-wrap:anywhere;
 }
 .gallery-description:empty{display:none}
+.gallery-product-action-row{display:flex;flex:0 0 auto;align-items:center;justify-content:space-between;gap:12px;padding:11px 16px 13px;border-bottom:1px solid #e7ebe8;background:var(--canvas,#fff)}
+.gallery-product-action-row[hidden]{display:none!important}
+.gallery-product-action-row .add{flex-shrink:0}
 .gallery-bottom{flex-shrink:0}
+.gallery-total-bar{position:sticky;bottom:0;z-index:5;display:flex;flex:0 0 auto;align-items:center;justify-content:space-between;gap:12px;min-height:54px;padding:10px 18px;background:#fff;border-top:1px solid #e7ebe8;box-shadow:0 -4px 14px #00000008}
+.gallery-total-bar[hidden]{display:none!important}
+.gallery-total-bar span{font-size:13px;font-weight:700;color:#6d7a71}
+.gallery-total-bar strong{font-size:18px;font-weight:850;color:#171717;white-space:nowrap}
 .gallery-dots[hidden]{display:none!important}
 @media(max-width:480px){
  .gallery-stage img,.gallery-stage video{max-height:56dvh}
  .gallery-description{padding:13px 16px 3px;font-size:13px}
+ .gallery-product-action-row{padding:10px 16px 12px}
  .gallery-price{font-size:17px}
  .gallery-action-row,.gallery-actions{gap:7px}
+ .gallery-total-bar{min-height:52px;padding:10px 16px}
+ .gallery-total-bar strong{font-size:17px}
 }
 
 
@@ -476,7 +486,7 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
 }
 
 
-/* Product options are displayed directly below the gallery description. */
+/* Product options sit below the original price/Add row, with the running total in the fixed footer. */
 #galleryCustomization[hidden]{display:none!important}
 .gallery-customization{padding:16px 20px 21px;border-top:1px solid #e7ebe8;background:var(--canvas,#fff)}
 .gallery-customization h3{font-size:17px;letter-spacing:-.025em;margin:0 0 4px;color:var(--ink,#1d2d26)}
@@ -543,14 +553,22 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
  </section>
 </div>
 <div id="toast" class="toast" role="status" hidden></div>
-<div id="galleryDialog" class="gallery-backdrop" hidden><section class="gallery-panel" role="dialog" aria-modal="true" aria-labelledby="galleryTitle"><div class="gallery-top"><div><h2 id="galleryTitle">Product</h2></div><button id="galleryClose" class="gallery-close" type="button" aria-label="Close product photos">×</button></div><div class="gallery-stage"><img id="galleryImage" alt="Product photo"><video id="galleryVideo" controls playsinline preload="metadata" hidden aria-label="Product video"></video></div><p id="galleryDescription" class="gallery-description"></p>
-<div id="galleryCustomization" class="gallery-customization" hidden>
- <h3>Customize your order</h3><p class="gallery-customize-help">Choose your preferences before adding this item.</p>
- <div id="galleryChoiceGroups"></div>
- <label class="gallery-notes-label">Special instructions (optional)<textarea id="galleryNotes" maxlength="200" rows="2" placeholder="e.g. No onions, less salt"></textarea></label>
- <p id="galleryOptionsError" class="gallery-options-error" role="alert" hidden></p>
+<div id="galleryDialog" class="gallery-backdrop" hidden>
+ <section class="gallery-panel" role="dialog" aria-modal="true" aria-labelledby="galleryTitle">
+  <div class="gallery-top"><div><h2 id="galleryTitle">Product</h2></div><button id="galleryClose" class="gallery-close" type="button" aria-label="Close product photos">×</button></div>
+  <div class="gallery-stage"><img id="galleryImage" alt="Product photo"><video id="galleryVideo" controls playsinline preload="metadata" hidden aria-label="Product video"></video></div>
+  <p id="galleryDescription" class="gallery-description"></p>
+  <div id="galleryProductActionRow" class="gallery-product-action-row" hidden><strong id="galleryProductPrice" class="gallery-price"></strong><button id="galleryProductAdd" class="add" type="button">＋ Add</button></div>
+  <div id="galleryCustomization" class="gallery-customization" hidden>
+   <h3>Customize your order</h3><p class="gallery-customize-help">Choose your preferences before adding this item.</p>
+   <div id="galleryChoiceGroups"></div>
+   <label class="gallery-notes-label">Special instructions (optional)<textarea id="galleryNotes" maxlength="200" rows="2" placeholder="e.g. No onions, less salt"></textarea></label>
+   <p id="galleryOptionsError" class="gallery-options-error" role="alert" hidden></p>
+  </div>
+  <div class="gallery-bottom"><span id="galleryPosition"></span><div id="galleryDots" class="gallery-dots"></div><div id="galleryServiceActionRow" class="gallery-action-row"><strong id="galleryServicePrice" class="gallery-price"></strong><div class="gallery-actions"><button id="galleryAdd" class="add" type="button">＋ Add</button><a id="galleryWhatsApp" class="service-whatsapp" target="_blank" rel="noopener noreferrer" hidden aria-label="Contact business on WhatsApp"><span aria-hidden="true">💬</span> WhatsApp</a></div></div></div>
+  <div id="galleryTotalBar" class="gallery-total-bar" hidden aria-live="polite"><span>Total</span><strong id="galleryTotal">R0.00</strong></div>
+ </section>
 </div>
-<div class="gallery-bottom"><span id="galleryPosition"></span><div id="galleryDots" class="gallery-dots"></div><div class="gallery-action-row"><strong id="galleryPrice" class="gallery-price"></strong><div class="gallery-actions"><button id="galleryAdd" class="add" type="button">＋ Add</button><a id="galleryWhatsApp" class="service-whatsapp" target="_blank" rel="noopener noreferrer" hidden aria-label="Contact business on WhatsApp"><span aria-hidden="true">💬</span> WhatsApp</a></div></div></div></section></div>
 <script src="/service-bookings.js"></script>
 <script>
 "use strict";
@@ -657,8 +675,7 @@ function renderGalleryOptions(item){
 function updateGalleryOptionsPrice(){
  if(!activeGalleryItem)return;
  const quote=window.StoreNestOptions.quote(activeGalleryItem,galleryOptionSelections);
- $("galleryPrice").textContent=money(quote.total);
- $("galleryAdd").textContent="＋ Add · "+money(quote.total);
+ $("galleryTotal").textContent=money(quote.total);
 }
 $("galleryChoiceGroups").addEventListener("change",event=>{
  const input=event.target.closest("[data-option-id]");if(!input||!activeGalleryItem)return;
@@ -678,14 +695,20 @@ $("galleryChoiceGroups").addEventListener("change",event=>{
 
 function openProductGallery(id,trigger){
  const item=availableItems.find(row=>row.id===id);if(!item)return;
+ const isService=window.StoreNestBookings.isService(item);
  activeGalleryItem=item;galleryReturnFocus=trigger;galleryIndex=0;
  $("galleryTitle").textContent=item.name;$("galleryDescription").textContent=item.description||"";
+ $("galleryProductActionRow").hidden=isService;
+ $("galleryServiceActionRow").hidden=!isService;
+ $("galleryTotalBar").hidden=isService;
+ $("galleryProductAdd").dataset.addItem=id;
  $("galleryAdd").dataset.addItem=id;
- $("galleryPrice").textContent=money(item.price);
- $("galleryAdd").textContent=window.StoreNestBookings.isService(item)?"Request booking":"＋ Add";
+ $("galleryProductPrice").textContent=money(item.price);
+ $("galleryServicePrice").textContent=money(item.price);
+ $("galleryAdd").textContent=isService?"Request booking":"＋ Add";
  renderGalleryOptions(item);
- if(!window.StoreNestBookings.isService(item)&&!$("galleryCustomization").hidden)updateGalleryOptionsPrice();
- const wa=$("galleryWhatsApp"),waUrl=window.StoreNestBookings.isService(item)?serviceWhatsAppUrl(activePublicBusiness,item):"";
+ if(!isService)updateGalleryOptionsPrice();
+ const wa=$("galleryWhatsApp"),waUrl=isService?serviceWhatsAppUrl(activePublicBusiness,item):"";
  wa.hidden=!waUrl;
  if(waUrl){wa.href=waUrl;wa.setAttribute("aria-label","Contact "+activePublicBusiness.name+" on WhatsApp about "+item.name)}else wa.removeAttribute("href");
  const photos=galleryPhotos(item);
@@ -696,7 +719,7 @@ function openProductGallery(id,trigger){
 function closeProductGallery(){$("galleryVideo").pause();$("galleryVideo").removeAttribute("src");$("galleryDialog").hidden=true;document.body.style.overflow="";activeGalleryItem=null;galleryReturnFocus?.focus()}
 $("galleryClose").addEventListener("click",closeProductGallery);
 $("galleryDialog").addEventListener("click",event=>{if(event.target===$("galleryDialog"))closeProductGallery()});
-$("galleryAdd").addEventListener("click",()=>{
+function handleGalleryAdd(){
  const item=activeGalleryItem;if(!item)return;
  const trigger=galleryReturnFocus;
  if(window.StoreNestBookings.isService(item)){closeProductGallery();window.StoreNestBookings.open(item,trigger);return}
@@ -708,7 +731,9 @@ $("galleryAdd").addEventListener("click",()=>{
   return;
  }
  closeProductGallery();
-});
+}
+$("galleryProductAdd").addEventListener("click",handleGalleryAdd);
+$("galleryAdd").addEventListener("click",handleGalleryAdd);
 document.addEventListener("keydown",event=>{
  if($("galleryDialog").hidden)return;
  if(event.key==="Escape")closeProductGallery();
