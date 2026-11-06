@@ -816,6 +816,7 @@ function serviceWhatsAppAction(business,item){
 
 function toast(msg){clearTimeout(toastTimer);$("toast").textContent=msg;$("toast").hidden=false;toastTimer=setTimeout(()=>{$("toast").hidden=true},1900)}
 function cartQuantity(){return [...cart.values()].reduce((n,row)=>n+row.quantity,0)}
+function syncCartBadge(){const count=$("bagCount");if(count)count.textContent=String(cartQuantity())}
 function productCartKey(itemId,selection,note){
  const unique=Object.entries(selection||{}).map(([id,values])=>[id,[...(Array.isArray(values)?values:[])].sort()]).sort(([a],[b])=>a.localeCompare(b));
  return JSON.stringify([itemId,unique,String(note||"").trim().slice(0,200)]);
