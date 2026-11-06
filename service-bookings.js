@@ -14,13 +14,17 @@ function usesOptionalBookingPricing(item,context=business){return window.StoreNe
 function priceLabel(item,context=business){
  if(!isBookingOffer(item,context))return money(item?.price);
  if(!usesOptionalBookingPricing(item,context))return "From "+money(item?.price);
- const min=item.price_range_min??(Number(item.price)>0?item.price:null),max=item.price_range_max;
- if(min!==null&&min!==undefined)return max!==null&&max!==undefined?money(min)+" – "+money(max):"From "+money(min);
- return Number(item.price)>0?"From "+money(item.price):"Request a quote";
+ const min=item.price_range_min,max=item.price_range_max;
+ if(min!=null&&max!=null&&Number(min)!==Number(max))return money(min)+" – "+money(max);
+ const single=min??max??(Number(item.price)>0?item.price:null);
+ return single!=null?money(single):"Request a quote";
 }
 function bookingFeeLabel(item,context=business){
- if(!usesOptionalBookingPricing(item,context)||item.booking_fee==null||Number(item.booking_fee)<=0)return "";
- return "Booking fee: "+money(item.booking_fee);
+ if(!usesOptionalBookingPricing(item,context))return "";
+ const min=item.booking_fee_min??item.booking_fee??null,max=item.booking_fee_max??null;
+ if(min==null&&max==null)return "";
+ if(min!=null&&max!=null&&Number(min)!==Number(max))return "Booking fee: "+money(min)+" – "+money(max);
+ return "Booking fee: "+money(min??max);
 }
 function setContext(nextClient,nextBusiness,items){
  client=nextClient;business=nextBusiness;
