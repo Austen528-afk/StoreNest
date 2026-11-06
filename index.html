@@ -840,7 +840,7 @@ function renderCustomerOrderCard(order){
  const statusIndex={new:0,accepted:1,preparing:2,prepared:3,ready:4,completed:4,cancelled:-1}[status]??0;
  const collected=status==="completed";
  const reference=String(order.id).replace(/-/g,"").slice(0,8).toUpperCase();
- const collectionPin=/^\\d{6}$/.test(String(order.collectionPin||""))?String(order.collectionPin):"";
+ const collectionPin=/^[0-9]{6}$/.test(String(order.collectionPin||""))?String(order.collectionPin):"";
  const steps=CUSTOMER_ORDER_STAGES.map((stage,index)=>{
   const complete=index<statusIndex||collected;
   const current=index===statusIndex&&!collected&&status!=="cancelled";
@@ -941,7 +941,7 @@ async function attachCustomerOrderCollectionPins(client,orders,userId){
    const {data,error}=await client.rpc("get_storefront_order_collection_pin",{p_order_id:order.id});
    if(error)throw error;
    const pin=String(data||"");
-   if(!/^\\d{6}$/.test(pin))return;
+   if(!/^[0-9]{6}$/.test(pin))return;
    order.collectionPin=pin;
    if(order.token)rememberTrackedOrder({id:order.id,token:order.token,customerUserId:userId,status:order.status,createdAt:order.createdAt,businessName:order.businessName,collectionPin:pin});
   }catch(error){console.warn("Could not load this order's collection PIN:",error)}
