@@ -1291,7 +1291,7 @@ function openItemModal(item){
   $("itemPriceRangeMin").value=item?.price_range_min??legacyStart;
   $("itemPriceRangeMax").value=item?.price_range_max??"";
   const hasSavedBookingFeeRange=item?.booking_fee_min!=null||item?.booking_fee_max!=null;
-  const hasLegacyZeroFeeStart=hasSavedBookingFeeRange&&Number(item?.booking_fee_min)===0&&item?.booking_fee_max!=null&&Number(item?.booking_fee_max)>0&&Number(item?.booking_fee)===0;
+  const hasLegacyZeroFeeStart=hasSavedBookingFeeRange&&Number(item?.booking_fee_min)===0&&item?.booking_fee_max!=null&&Number(item?.booking_fee_max)>0&&item?.booking_fee!=null&&Number(item.booking_fee)===0;
   const savedBookingFeeMin=hasLegacyZeroFeeStart?null:item?.booking_fee_min;
   const legacyBookingFee=!hasSavedBookingFeeRange&&Number(item?.booking_fee)>0?item.booking_fee:"";
   $("itemBookingFeeMin").value=savedBookingFeeMin??(hasSavedBookingFeeRange?"":legacyBookingFee);
