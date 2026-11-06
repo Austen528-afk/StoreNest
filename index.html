@@ -283,8 +283,14 @@ html[data-theme="dark"] .order-notification-badge{border-color:#1b292c}
 .overall-order-step.is-current{color:#22352c;font-weight:800}
 .overall-order-step small{color:#77847c;font-size:9px;white-space:nowrap}
 .overall-order-cancelled{margin:10px 0 0;color:#a04437;font-size:11px}
-.overall-order-share{width:100%;min-height:39px;margin-top:10px;border:1px solid #d0e2d7;border-radius:10px;background:#f2f9f5;color:#24664f;font:inherit;font-size:11px;font-weight:800;cursor:pointer}
-.overall-order-share:hover{background:#e8f7ef}
+.overall-order-pin{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px;padding:11px 12px;border:1px solid #d0e2d7;border-radius:10px;background:#f2f9f5}
+.overall-order-pin>div{display:grid;gap:3px;min-width:0}
+.overall-order-pin>div span{font-size:11px;font-weight:850;color:#24664f}
+.overall-order-pin small{font-size:10px;line-height:1.4;color:#6d7d74}
+.overall-order-pin>strong{flex:0 0 auto;font-size:20px;letter-spacing:.14em;color:#19362b;font-variant-numeric:tabular-nums}
+html[data-theme="dark"] .overall-order-pin{background:#20312b;border-color:#38584a}
+html[data-theme="dark"] .overall-order-pin>div span,html[data-theme="dark"] .overall-order-pin>strong{color:#d8f6e8}
+html[data-theme="dark"] .overall-order-pin small{color:#a7bdb1}
 .overall-orders-note{margin:8px 0 0;color:#77847c;font-size:11px;line-height:1.45}
 .overall-orders-footer{padding-top:12px;border-top:1px solid #e3eae6}
 .overall-orders-refresh{width:100%;min-height:43px;border:1px solid #d0e2d7;border-radius:11px;background:#f2f9f5;color:#24664f;font:inherit;font-size:12px;font-weight:800;cursor:pointer}
@@ -828,37 +834,13 @@ function persistCustomerOrderStatuses(orders){
   }catch(error){console.warn("Could not update saved order statuses:",error)}
  });
 }
-function customerOrderTrackingUrl(order){
- try{
-  const url=new URL(String(order.trackingUrl||""),location.origin);
-  if(url.origin!==location.origin)return "";
-  url.hash=new URLSearchParams({order:order.id,token:order.token}).toString();
-  return url.href;
- }catch(_){return ""}
-}
-async function shareCustomerOrderTracking(orderId){
- const order=readAllCustomerOrders().find(item=>item.id===orderId);
- if(!order||!order.token)return;
- const url=customerOrderTrackingUrl(order);
- if(!url)return;
- try{
-  if(typeof navigator.share==="function"){
-   await navigator.share({title:"StoreNest order status",text:"Track your order progress.",url});
-   return;
-  }
-  if(navigator.clipboard?.writeText){
-   await navigator.clipboard.writeText(url);
-   return;
-  }
- }catch(error){if(error?.name==="AbortError")return;console.warn("Order tracking link could not be shared:",error)}
- window.prompt("Copy this order tracking link to open your order on another device:",url);
-}
 function renderCustomerOrderCard(order){
  const status=String(order.status||"new");
  const statusLabel=CUSTOMER_ORDER_STATUS_LABELS[status]||"Awaiting acceptance";
  const statusIndex={new:0,accepted:1,preparing:2,prepared:3,ready:4,completed:4,cancelled:-1}[status]??0;
  const collected=status==="completed";
  const reference=String(order.id).replace(/-/g,"").slice(0,8).toUpperCase();
+ const collectionPin=/^\\d{6}$/.test(String(order.collectionPin||""))?String(order.collectionPin):"";
  const steps=CUSTOMER_ORDER_STAGES.map((stage,index)=>{
   const complete=index<statusIndex||collected;
   const current=index===statusIndex&&!collected&&status!=="cancelled";
@@ -867,10 +849,10 @@ function renderCustomerOrderCard(order){
  }).join("");
  const createdAt=Date.parse(order.createdAt||"");
  const dateLabel=createdAt?new Intl.DateTimeFormat(undefined,{dateStyle:"medium",timeStyle:"short"}).format(new Date(createdAt)):"";
- const trackingUrl=order.token&&order.trackingUrl?customerOrderTrackingUrl(order):"";
+ const pinPanel=status==="cancelled"||collected?"":'<div class="overall-order-pin"><div><span>Collection PIN</span><small>Keep it private and show it to the business when you collect.</small></div><strong>'+escapeResult(collectionPin||"Unavailable")+'</strong></div>';
  return '<article class="overall-order-card"><div class="overall-order-head"><div class="overall-order-store"><span>'+escapeResult(order.businessName||"Store")+'</span><small>Order #'+escapeResult(reference)+(dateLabel?' · '+escapeResult(dateLabel):'')+'</small></div><span class="overall-order-status">'+escapeResult(statusLabel)+'</span></div>'+
  (status==="cancelled"?'<p class="overall-order-cancelled">This order request was cancelled.</p>':'<ol class="overall-order-steps">'+steps+'</ol>')+
- (trackingUrl?'<button class="overall-order-share" type="button" data-share-order="'+escapeResult(order.id)+'">Share tracking link</button>':"")+'</article>';
+ pinPanel+'</article>';
 }
 function renderAllCustomerOrders(orders,note=""){
  const current=orders||[];
@@ -952,6 +934,19 @@ async function refreshDeviceOnlyCustomerOrders(){
  }catch(error){console.warn("Could not refresh guest order progress:",error)}
  finally{customerOrdersGuestRefreshActive=false}
 }
+async function attachCustomerOrderCollectionPins(client,orders,userId){
+ const needingPin=(orders||[]).filter(order=>order.accountRecord&&order.customerUserId===userId&&!order.collectionPin&&isActiveCustomerOrder(order));
+ await Promise.all(needingPin.map(async order=>{
+  try{
+   const {data,error}=await client.rpc("get_storefront_order_collection_pin",{p_order_id:order.id});
+   if(error)throw error;
+   const pin=String(data||"");
+   if(!/^\\d{6}$/.test(pin))return;
+   order.collectionPin=pin;
+   if(order.token)rememberTrackedOrder({id:order.id,token:order.token,customerUserId:userId,status:order.status,createdAt:order.createdAt,businessName:order.businessName,collectionPin:pin});
+  }catch(error){console.warn("Could not load this order's collection PIN:",error)}
+ }));
+}
 async function refreshAllCustomerOrders({showBusy=true}={}){
  if(customerOrdersRefreshActive){customerOrdersRefreshQueued=true;return}
  customerOrdersRefreshActive=true;
@@ -986,6 +981,7 @@ async function refreshAllCustomerOrders({showBusy=true}={}){
      byId.set(row.id,{...previous,id:row.id,customerUserId:userId,accountRecord:true,token:row.tracking_token||previous.token||"",status:row.status||"new",createdAt:row.created_at||previous.createdAt,updatedAt:row.updated_at||previous.updatedAt,businessName:row.customer_business_name||previous.businessName||"Store"});
     });
     orders=[...byId.values()].sort((a,b)=>(Date.parse(b.createdAt||"")||0)-(Date.parse(a.createdAt||"")||0));
+    await attachCustomerOrderCollectionPins(client,orders,userId);
     persistCustomerOrderStatuses(orders);
     syncOverallOrdersBadge(orders);
    }catch(error){
@@ -1047,7 +1043,6 @@ overallOrdersButton.addEventListener("click",openAllCustomerOrders);
 overallOrdersClose.addEventListener("click",closeAllCustomerOrders);
 overallOrdersRefresh.addEventListener("click",refreshAllCustomerOrders);
 overallOrdersOverlay.addEventListener("click",event=>{if(event.target===overallOrdersOverlay)closeAllCustomerOrders()});
-overallOrdersList.addEventListener("click",event=>{const button=event.target.closest("[data-share-order]");if(button)shareCustomerOrderTracking(button.dataset.shareOrder)});
 window.addEventListener("storage",event=>{if(!event.key||event.key.startsWith(CUSTOMER_ORDER_STORAGE_PREFIX))syncOverallOrdersBadge()});
 syncOverallOrdersBadge();
 refreshAllCustomerOrders({showBusy:false});
