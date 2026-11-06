@@ -1161,7 +1161,7 @@ async function submitCheckout(event){
    const {data:pinData,error:pinError}=await storefrontClient.rpc("get_storefront_order_collection_pin",{p_order_id:orderId});
    if(pinError)throw pinError;
    const candidate=String(pinData||"");
-   if(/^\\d{6}$/.test(candidate))collectionPin=candidate;
+   if(/^[0-9]{6}$/.test(candidate))collectionPin=candidate;
   }catch(pinError){console.warn("The order was submitted, but its collection PIN could not be loaded yet:",pinError)}
   const reference=orderId.replace(/-/g,"").slice(0,8).toUpperCase();
   const trackedOrder={id:orderId,token:trackingToken,customerUserId:user.id,status:"new",createdAt:new Date().toISOString(),businessName:activePublicBusiness.name||"Store",collectionPin};
