@@ -555,6 +555,23 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
 .gallery-scale-name small{font-size:10px;line-height:1.35;color:#708376}
 .gallery-choice-scale .gallery-scale{min-width:0;padding-top:0}
 @media(max-width:600px){.gallery-choice-scale-row{grid-template-columns:minmax(88px,.8fr) minmax(0,2.2fr);column-gap:8px}.gallery-scale-name strong{font-size:12px}.gallery-scale-name small{font-size:9px}}
+/* Compact pill layout applies only to scale groups whose name identifies a sauce. */
+.gallery-choice-sauce-scale .gallery-choice-scale-row{grid-template-columns:minmax(130px,.8fr) minmax(0,2.2fr);align-items:center;column-gap:14px}
+.gallery-choice-sauce-scale .gallery-scale-name small{display:none}
+.gallery-choice-sauce-scale .gallery-scale{min-width:0;overflow:visible;padding:0}
+.gallery-choice-sauce-scale .gallery-scale-options{display:flex;align-items:center;gap:6px;width:100%;min-width:0!important}
+.gallery-choice-sauce-scale .gallery-scale-options:before{display:none}
+.gallery-choice-sauce-scale .gallery-scale-option{flex:1 1 0;min-width:0;flex-direction:row;justify-content:center;gap:4px;padding:6px 9px;border:1px solid #dce8df;border-radius:8px;background:#fff;color:#405849;font-size:12px;font-weight:700;white-space:nowrap}
+.gallery-choice-sauce-scale .gallery-scale-dot{display:none}
+.gallery-choice-sauce-scale .gallery-scale-option.is-passed .gallery-scale-dot{display:none}
+.gallery-choice-sauce-scale .gallery-scale-option:has(input:checked){background:#e5f6ed;border-color:#61b891;color:#1e654a}
+.gallery-choice-sauce-scale .gallery-scale-option:focus-within{outline:2px solid #2f8a66;outline-offset:2px}
+.gallery-choice-sauce-scale .gallery-scale-label{font-size:12px;line-height:1.25;overflow-wrap:normal}
+@media(max-width:600px){
+ .gallery-choice-sauce-scale .gallery-choice-scale-row{grid-template-columns:minmax(0,1fr);align-items:start;row-gap:7px}
+ .gallery-choice-sauce-scale .gallery-scale-options{flex-wrap:wrap;gap:5px}
+ .gallery-choice-sauce-scale .gallery-scale-option{flex:1 1 calc(25% - 5px);padding:6px 7px}
+}
 .gallery-notes-label{display:flex;flex-direction:column;gap:8px;font-size:12px;font-weight:700;color:var(--ink,#22392d);margin-top:12px}
 .gallery-notes-label textarea{width:100%;min-height:60px;padding:10px 11px;border:1px solid #cbded1;border-radius:10px;background:#fff;color:#263c2d;font:inherit;font-weight:400;resize:vertical}
 .gallery-options-error{font-size:12px;color:#a23327;background:#fff0eb;border-radius:8px;padding:9px 11px;margin:10px 0 0}
@@ -1255,13 +1272,14 @@ function showGalleryImage(){
 let galleryOptionSelections={};
 function renderGalleryScale(group){
  const count=group.options.length;
+ const sauceGroup=/\bsauce\b/i.test(group.name);
  const selected=group.options.find(option=>option.id===group.defaultOptionId)||group.options[Math.floor(count/2)]||null;
  const selectedIndex=Math.max(0,selected?group.options.findIndex(option=>option.id===selected.id):0);
  galleryOptionSelections[group.id]=selected?[selected.id]:[];
  const inset=count?50/count:0,trackWidth=count?100-(100/count):100;
  const progress=count>1?selectedIndex/(count-1)*100:0;
  const groupHint=(group.required?"Required":"Optional")+" · Selected: "+(selected?selected.name:"Choose a level");
- return '<fieldset class="gallery-choice-group gallery-choice-scale" data-group-id="'+esc(group.id)+'" data-scale-default-id="'+esc(selected?selected.id:"")+'" data-scale-default-label="'+esc(selected?selected.name:"")+'" data-scale-required="'+(group.required?"true":"false")+'">'+
+ return '<fieldset class="gallery-choice-group gallery-choice-scale'+(sauceGroup?' gallery-choice-sauce-scale':'')+'" data-group-id="'+esc(group.id)+'" data-scale-default-id="'+esc(selected?selected.id:"")+'" data-scale-default-label="'+esc(selected?selected.name:"")+'" data-scale-required="'+(group.required?"true":"false")+'">'+
   '<legend class="gallery-scale-sr-only">'+esc(group.name)+'. '+esc(groupHint)+'</legend>'+
   '<div class="gallery-choice-scale-row">'+
    '<div class="gallery-scale-name"><strong>'+esc(group.name)+'</strong><small data-scale-status>'+esc(groupHint)+'</small></div>'+
