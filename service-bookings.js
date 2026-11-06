@@ -28,7 +28,7 @@ function bookingFeeAmounts(item){
  let min=item.booking_fee_min??null,max=item.booking_fee_max??null;
  // Older edits copied the legacy R0 default into the new lower-bound field.
  // Treat it as empty when a real upper amount was entered.
- if(min!=null&&Number(min)===0&&max!=null&&Number(max)>0&&Number(item.booking_fee)===0)min=null;
+ if(min!=null&&Number(min)===0&&max!=null&&Number(max)>0&&item.booking_fee!=null&&Number(item.booking_fee)===0)min=null;
  return {min,max};
 }
 function bookingFeeLabel(item,context=business){
