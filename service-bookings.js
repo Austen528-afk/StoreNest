@@ -9,6 +9,18 @@ function todayLocalDate(){
  const d=new Date(),pad=n=>String(n).padStart(2,"0");
  return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
 }
+function usesOptionalBookingPricing(item,context=business){return isService(item)&&window.StoreNestCategoryId?.(context?.category)==="events-decor"}
+function priceLabel(item,context=business){
+ if(!isService(item))return money(item?.price);
+ if(!usesOptionalBookingPricing(item,context))return "From "+money(item?.price);
+ const min=item.price_range_min??(Number(item.price)>0?item.price:null),max=item.price_range_max;
+ if(min!==null&&min!==undefined)return max!==null&&max!==undefined?money(min)+" – "+money(max):"From "+money(min);
+ return Number(item.price)>0?"From "+money(item.price):"Request a quote";
+}
+function bookingFeeLabel(item,context=business){
+ if(!usesOptionalBookingPricing(item,context)||item.booking_fee==null||Number(item.booking_fee)<=0)return "";
+ return "Booking fee: "+money(item.booking_fee);
+}
 function setContext(nextClient,nextBusiness,items){
  client=nextClient;business=nextBusiness;
  const serviceOnly=items.length>0&&items.every(isService);
@@ -24,7 +36,8 @@ function open(item,trigger){
  const form=$("bookingRequestForm");form.reset();form.hidden=false;
  $("bookingSuccess").hidden=true;$("bookingFormError").hidden=true;
  $("bookingPackageName").textContent=item.name;
- $("bookingPackagePrice").textContent="From "+money(item.price);
+ $("bookingPackagePrice").textContent=priceLabel(item);
+ const feeText=bookingFeeLabel(item),fee=$("bookingPackageFee");fee.textContent=feeText;fee.hidden=!feeText;
  const date=form.elements.namedItem("event_date");
  date.min=todayLocalDate();date.value="";
  $("bookingBackdrop").hidden=false;document.body.style.overflow="hidden";
@@ -64,5 +77,5 @@ $("bookingRequestForm").addEventListener("submit",async e=>{
   errorBox.hidden=false;console.warn("Service booking request:",err);
  }finally{submit.disabled=false;submit.textContent="Send request →"}
 });
-window.StoreNestBookings={isService,setContext,open};
+window.StoreNestBookings={isService,usesOptionalBookingPricing,priceLabel,bookingFeeLabel,setContext,open};
 })();
