@@ -1736,7 +1736,7 @@ async function load(){
    }
    // Catalogue and category metadata are independent once the business ID is known.
    const [catalog,sectionResult]=await Promise.all([
-     client.from("business_items").select("id,name,item_type,description,price,price_range_min,price_range_max,booking_fee,image_url,media_urls,category_id,customization_options").eq("business_id",business.id).eq("is_available",true).order("display_order").order("created_at",{ascending:false}),
+     client.from("business_items").select("id,name,item_type,description,price,price_range_min,price_range_max,booking_fee,booking_fee_min,booking_fee_max,image_url,media_urls,category_id,customization_options").eq("business_id",business.id).eq("is_available",true).order("display_order").order("created_at",{ascending:false}),
      client.from("business_categories").select("id,name,description,display_style,display_order").eq("business_id",business.id).order("display_order").order("name")
    ]);
    if(catalog.error)throw catalog.error;

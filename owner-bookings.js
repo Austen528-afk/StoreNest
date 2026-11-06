@@ -19,9 +19,12 @@ function render(){
   const itemName=product?.name||"Service package";
   const pricing=[];
   if(product&&window.StoreNestCategoryId?.(activeBusiness?.category)==="events-decor"){
-   const min=product.price_range_min??(Number(product.price)>0?product.price:null),max=product.price_range_max;
-   pricing.push(min==null?"Price on request":max==null?"From "+money(min):money(min)+" – "+money(max));
-   if(product.booking_fee!=null&&Number(product.booking_fee)>0)pricing.push("Booking fee: "+money(product.booking_fee));
+   const min=product.price_range_min,max=product.price_range_max;
+   if(min!=null&&max!=null&&Number(min)!==Number(max))pricing.push(money(min)+" – "+money(max));
+   else{const single=min??max??(Number(product.price)>0?product.price:null);pricing.push(single==null?"Price on request":money(single))}
+   const feeMin=product.booking_fee_min??product.booking_fee??null,feeMax=product.booking_fee_max??null;
+   if(feeMin!=null&&feeMax!=null&&Number(feeMin)!==Number(feeMax))pricing.push("Booking fee: "+money(feeMin)+" – "+money(feeMax));
+   else if(feeMin!=null||feeMax!=null)pricing.push("Booking fee: "+money(feeMin??feeMax));
   }
   const status=labels[r.status]||"Pending";
   const created=new Date(r.created_at);
