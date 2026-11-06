@@ -678,6 +678,33 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
  #galleryDialog.gallery-booking-style .gallery-actions{width:100%;margin-left:0;justify-content:stretch}
  #galleryDialog.gallery-booking-style .gallery-actions :is(.add,.service-whatsapp){flex:1 1 0;min-width:0;text-align:center}
 }
+
+/* Catering & Decor storefront cards use a title-photo-details feed arrangement. */
+.grid.decor-booking-feed-grid{grid-template-columns:repeat(2,minmax(0,430px));justify-content:center;gap:24px}
+.decor-service-feed-card{background:var(--canvas,#f8f6f1);border:1px solid var(--border,#e8e1d6);border-radius:16px}
+.decor-service-feed-title{padding:15px 18px 14px;background:var(--canvas,#f8f6f1)}
+.decor-service-feed-title h3{margin:0;min-width:0}
+.decor-service-feed-title .item-title-open{font-size:20px;line-height:1.3;font-weight:760;white-space:normal;text-overflow:clip}
+.decor-service-feed-card .decor-service-feed-open{flex:none;overflow:hidden}
+.decor-service-feed-card .art{aspect-ratio:4/5;border-radius:0;background:var(--surface,#eeeae3)}
+.decor-service-feed-card .art img{object-fit:cover}
+.decor-service-feed-card .art .decor-photo-count{top:13px;right:13px;bottom:auto;border-radius:999px;padding:5px 10px;background:#171a18c9}
+.decor-service-feed-details{display:grid;gap:12px;padding:16px 18px 18px;background:var(--canvas,#f8f6f1)}
+.decor-service-description{margin:0;color:var(--ink,#342e27);font-size:14px;line-height:1.65;white-space:pre-line;overflow-wrap:anywhere}
+.decor-service-prices{display:grid;gap:4px}
+.decor-service-price{color:var(--ink,#342e27);font-size:20px;line-height:1.25;font-weight:780}
+.decor-service-fee{color:var(--muted,#6d6157);font-size:13px;line-height:1.5;font-weight:650}
+.decor-service-feed-card .service-action-row{display:flex;align-items:center;gap:10px;min-width:0}
+.decor-service-feed-card .service-action-row :is(.add,.service-whatsapp){flex:1 1 0;min-width:0;white-space:normal;text-align:center}
+.decor-service-feed-card .service-action-row .add{background:#205f50}
+.decor-service-feed-card .service-disclaimer{margin:0;color:var(--muted,#6d6157);font-size:12px;line-height:1.5}
+@media(max-width:700px){
+ .grid.decor-booking-feed-grid{grid-template-columns:minmax(0,1fr);max-width:500px;margin-left:auto;margin-right:auto;gap:18px}
+ .decor-service-feed-title{padding:14px 16px 13px}
+ .decor-service-feed-title .item-title-open{font-size:19px}
+ .decor-service-feed-details{padding:14px 16px 16px}
+ .decor-service-feed-card .service-action-row{gap:8px}
+}
 </style>
 <link rel="stylesheet" href="/theme.css">
 <link rel="stylesheet" href="/service-bookings.css">
@@ -1681,11 +1708,19 @@ function renderPublishedStorefront(root,client,business,items,storefrontSections
    const cardForItem=item=>{
      const media=galleryPhotos(item),first=media[0],count=media.length;
      const service=window.StoreNestBookings.isBookingOffer(item,business);
+     const decorBooking=service&&window.StoreNestCategoryId(business.category)==="events-decor";
      const bookingFee=service?window.StoreNestBookings.bookingFeeLabel(item,business):"";
      const action=service?"Request booking":"Add";
      const whatsapp=service?serviceWhatsAppAction(business,item):"";
-     return '<article class="card"><button type="button" class="item-open" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos, videos and details"><div class="art">'+(first?(isProductVideo(first)?'<video data-catalog-preview data-src="'+esc(first)+'" muted loop playsinline preload="none" aria-label="'+esc(item.name)+' video"></video>':'<img src="'+esc(first)+'" alt="'+esc(item.name)+'" loading="lazy" decoding="async">'):service?"✦":"▧")+(count>1?'<span class="photo-count">▧ '+count+' media</span>':'')+'</div></button><div class="item-body"><h3><button class="item-title-open" type="button" data-open-product="'+esc(item.id)+'" title="'+esc(item.name)+'" aria-label="View details for '+esc(item.name)+'">'+esc(item.name)+'</button></h3><div class="item-bottom"><span class="price">'+esc(service?window.StoreNestBookings.priceLabel(item,business):money(item.price))+'</span>'+(service?'<div class="service-action-row">':'')+'<button class="add" type="button" data-add-item="'+esc(item.id)+'" aria-label="'+(service?"Request booking for ":"Add ")+esc(item.name)+(service?"":" to basket")+'">'+(service?"":'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>')+action+'</button>'+(service?whatsapp+'</div>':"")+'</div>'+(service?'<div class="service-disclaimer">'+(bookingFee?'<strong>'+esc(bookingFee)+'</strong><br>':'')+'Date and final quotation confirmed by the business</div>':'')+'</div></article>';
+     const titleButton='<button class="item-title-open" type="button" data-open-product="'+esc(item.id)+'" title="'+esc(item.name)+'" aria-label="View details for '+esc(item.name)+'">'+esc(item.name)+'</button>';
+     const artwork=(first?(isProductVideo(first)?'<video data-catalog-preview data-src="'+esc(first)+'" muted loop playsinline preload="none" aria-label="'+esc(item.name)+' video"></video>':'<img src="'+esc(first)+'" alt="'+esc(item.name)+'" loading="lazy" decoding="async">'):service?"✦":"▧")+(count>1?'<span class="photo-count'+(decorBooking?' decor-photo-count':'')+'">'+(decorBooking?'1 / '+count:'▧ '+count+' media')+'</span>':'');
+     const actionButton='<button class="add" type="button" data-add-item="'+esc(item.id)+'" aria-label="'+(service?"Request booking for ":"Add ")+esc(item.name)+(service?"":" to basket")+'">'+(service?"":'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>')+action+'</button>';
+     if(decorBooking){
+       return '<article class="card decor-service-feed-card"><div class="decor-service-feed-title"><h3>'+titleButton+'</h3></div><button type="button" class="item-open decor-service-feed-open" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos, description and booking details"><div class="art">'+artwork+'</div></button><div class="decor-service-feed-details">'+(item.description?'<p class="decor-service-description">'+esc(item.description)+'</p>':'')+'<div class="decor-service-prices"><strong class="decor-service-price">'+esc(window.StoreNestBookings.priceLabel(item,business))+'</strong>'+(bookingFee?'<span class="decor-service-fee">'+esc(bookingFee)+'</span>':'')+'</div><div class="service-action-row">'+actionButton+whatsapp+'</div><p class="service-disclaimer">Date and final quotation confirmed by the business.</p></div></article>';
+     }
+     return '<article class="card"><button type="button" class="item-open" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos, videos and details"><div class="art">'+artwork+'</div></button><div class="item-body"><h3>'+titleButton+'</h3><div class="item-bottom"><span class="price">'+esc(service?window.StoreNestBookings.priceLabel(item,business):money(item.price))+'</span>'+(service?'<div class="service-action-row">':'')+actionButton+(service?whatsapp+'</div>':"")+'</div>'+(service?'<div class="service-disclaimer">'+(bookingFee?'<strong>'+esc(bookingFee)+'</strong><br>':'')+'Date and final quotation confirmed by the business</div>':'')+'</div></article>';
    };
+   const cardGridClass=items=>items.some(item=>window.StoreNestCategoryId(business.category)==="events-decor"&&window.StoreNestBookings.isBookingOffer(item,business))?"grid decor-booking-feed-grid":"grid";
    const hasProducts=availableItems.some(item=>item.item_type==="product");
    const hasServices=availableItems.some(item=>item.item_type==="service");
    const catalogueLabel=window.StoreNestCategoryId(business.category)==="events-decor"||hasServices?"Services":"Products";
@@ -1712,7 +1747,7 @@ function renderPublishedStorefront(root,client,business,items,storefrontSections
      catalogueMarkup='<section class="offering-section storefront-uncategorized">'+
        '<div class="offering-heading"><span class="offering-label">OUR OFFERINGS</span><h2>'+esc(catalogueLabel)+'</h2></div>'+
        (availableItems.length?
-         '<div class="grid">'+availableItems.map(cardForItem).join("")+'</div>':
+         '<div class="'+cardGridClass(availableItems)+'">'+availableItems.map(cardForItem).join("")+'</div>':
          '<div class="empty"><strong>No offerings yet</strong>This store has not added any offerings yet.</div>')+
        '</section>';
    }else{
@@ -1737,7 +1772,7 @@ function renderPublishedStorefront(root,client,business,items,storefrontSections
          return '<section class="offering-section section-style-'+esc(group.style)+'" role="tabpanel" id="category-panel-'+esc(group.id)+'" data-category-panel="'+esc(group.id)+'" aria-labelledby="category-tab-'+esc(group.id)+'"'+(selected?'':' hidden')+'>'+
            '<div class="offering-heading"><span class="offering-label">OUR OFFERINGS</span><h2>'+esc(group.name)+'</h2>'+
            (group.description?'<p>'+esc(group.description)+'</p>':'')+'</div>'+
-           (cards?'<div class="grid">'+cards+'</div>':'<div class="empty"><strong>No offerings yet</strong>This category is ready for new offerings.</div>')+'</section>';
+           (cards?'<div class="'+cardGridClass(group.items)+'">'+cards+'</div>':'<div class="empty"><strong>No offerings yet</strong>This category is ready for new offerings.</div>')+'</section>';
        }).join('')+'</div>';
    }
    const renderedHero=renderStorefrontHero(business,cfg,{featuredImage:galleryPhotos(availableItems.find(item=>galleryPhotos(item).length)||availableItems[0])[0]||""});
