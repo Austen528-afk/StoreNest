@@ -19,9 +19,21 @@ function priceLabel(item,context=business){
  const single=min??max??(Number(item.price)>0?item.price:null);
  return single!=null?money(single):"Request a quote";
 }
+function bookingFeeAmounts(item){
+ const hasRange=item.booking_fee_min!=null||item.booking_fee_max!=null;
+ if(!hasRange){
+  const legacy=item.booking_fee;
+  return {min:legacy!=null&&Number(legacy)>0?legacy:null,max:null};
+ }
+ let min=item.booking_fee_min??null,max=item.booking_fee_max??null;
+ // Older edits copied the legacy R0 default into the new lower-bound field.
+ // Treat it as empty when a real upper amount was entered.
+ if(min!=null&&Number(min)===0&&max!=null&&Number(max)>0&&item.booking_fee!=null&&Number(item.booking_fee)===0)min=null;
+ return {min,max};
+}
 function bookingFeeLabel(item,context=business){
  if(!usesOptionalBookingPricing(item,context))return "";
- const min=item.booking_fee_min??item.booking_fee??null,max=item.booking_fee_max??null;
+ const {min,max}=bookingFeeAmounts(item);
  if(min==null&&max==null)return "";
  if(min!=null&&max!=null&&Number(min)!==Number(max))return "Booking fee: "+money(min)+" – "+money(max);
  return "Booking fee: "+money(min??max);

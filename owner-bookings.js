@@ -22,7 +22,10 @@ function render(){
    const min=product.price_range_min,max=product.price_range_max;
    if(min!=null&&max!=null&&Number(min)!==Number(max))pricing.push(money(min)+" – "+money(max));
    else{const single=min??max??(Number(product.price)>0?product.price:null);pricing.push(single==null?"Price on request":money(single))}
-   const feeMin=product.booking_fee_min??product.booking_fee??null,feeMax=product.booking_fee_max??null;
+   const hasFeeRange=product.booking_fee_min!=null||product.booking_fee_max!=null;
+   let feeMin=hasFeeRange?product.booking_fee_min??null:(product.booking_fee!=null&&Number(product.booking_fee)>0?product.booking_fee:null);
+   const feeMax=hasFeeRange?product.booking_fee_max??null:null;
+   if(feeMin!=null&&Number(feeMin)===0&&feeMax!=null&&Number(feeMax)>0&&product.booking_fee!=null&&Number(product.booking_fee)===0)feeMin=null;
    if(feeMin!=null&&feeMax!=null&&Number(feeMin)!==Number(feeMax))pricing.push("Booking fee: "+money(feeMin)+" – "+money(feeMax));
    else if(feeMin!=null||feeMax!=null)pricing.push("Booking fee: "+money(feeMin??feeMax));
   }

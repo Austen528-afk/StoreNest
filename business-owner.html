@@ -1291,7 +1291,10 @@ function openItemModal(item){
   $("itemPriceRangeMin").value=item?.price_range_min??legacyStart;
   $("itemPriceRangeMax").value=item?.price_range_max??"";
   const hasSavedBookingFeeRange=item?.booking_fee_min!=null||item?.booking_fee_max!=null;
-  $("itemBookingFeeMin").value=item?.booking_fee_min??(hasSavedBookingFeeRange?"":item?.booking_fee??"");
+  const hasLegacyZeroFeeStart=hasSavedBookingFeeRange&&Number(item?.booking_fee_min)===0&&item?.booking_fee_max!=null&&Number(item?.booking_fee_max)>0&&item?.booking_fee!=null&&Number(item.booking_fee)===0;
+  const savedBookingFeeMin=hasLegacyZeroFeeStart?null:item?.booking_fee_min;
+  const legacyBookingFee=!hasSavedBookingFeeRange&&Number(item?.booking_fee)>0?item.booking_fee:"";
+  $("itemBookingFeeMin").value=savedBookingFeeMin??(hasSavedBookingFeeRange?"":legacyBookingFee);
   $("itemBookingFeeMax").value=item?.booking_fee_max??"";
   syncItemPricingFields();$("itemDescription").value=item?.description||"";
   editedOptionGroups=window.StoreNestOptions.normalize(item?.customization_options);drawCustomizationEditor();
@@ -1588,7 +1591,7 @@ $("itemForm").addEventListener("submit",async event=>{
   }
   const primaryImage=entries.find(url=>!isProductVideo(url))||null;
   const prior=businessItems.find(item=>item.id===itemId);
-  const row={image_url:primaryImage,media_urls:entries,customization_options:optionsForSave(),business_id:currentBusiness.id,item_type:$("itemType").value,name:$("itemName").value.trim(),description:$("itemDescription").value.trim(),price:bookingPricing?(priceRangeMin??priceRangeMax??0):Number($("itemPrice").value),price_range_min:bookingPricing?priceRangeMin:(prior?.price_range_min??null),price_range_max:bookingPricing?priceRangeMax:(prior?.price_range_max??null),booking_fee:bookingPricing?(bookingFeeMin??bookingFeeMax):(prior?.booking_fee??null),booking_fee_min:bookingPricing?bookingFeeMin:(prior?.booking_fee_min??prior?.booking_fee??null),booking_fee_max:bookingPricing?bookingFeeMax:(prior?.booking_fee_max??null),category_id:$("itemCategory").value||null,is_available:$("itemAvailability").value==="true",display_order:Number($("itemOrder").value)||0,updated_at:new Date().toISOString()};
+  const row={image_url:primaryImage,media_urls:entries,customization_options:optionsForSave(),business_id:currentBusiness.id,item_type:$("itemType").value,name:$("itemName").value.trim(),description:$("itemDescription").value.trim(),price:bookingPricing?(priceRangeMin??priceRangeMax??0):Number($("itemPrice").value),price_range_min:bookingPricing?priceRangeMin:(prior?.price_range_min??null),price_range_max:bookingPricing?priceRangeMax:(prior?.price_range_max??null),booking_fee:bookingPricing?((bookingFeeMin===null)!==(bookingFeeMax===null)?(bookingFeeMin??bookingFeeMax):null):(prior?.booking_fee??null),booking_fee_min:bookingPricing?bookingFeeMin:(prior?.booking_fee_min??prior?.booking_fee??null),booking_fee_max:bookingPricing?bookingFeeMax:(prior?.booking_fee_max??null),category_id:$("itemCategory").value||null,is_available:$("itemAvailability").value==="true",display_order:Number($("itemOrder").value)||0,updated_at:new Date().toISOString()};
   const query=itemId?client.from("business_items").update(row).eq("id",itemId).eq("business_id",currentBusiness.id):client.from("business_items").insert(row);
   const {data,error}=await query.select("id");
   if(error)throw error;if(!data?.length)throw Error("The product could not be saved. Please retry.");
