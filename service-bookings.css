@@ -11,8 +11,8 @@ body[data-catalog-mode="services"] .decor-visual .bag{display:none!important}
 .booking-top h2{font-size:24px;letter-spacing:-.035em;line-height:1.2;margin:7px 0}
 .booking-top p{font-size:12px;color:#708079;margin:0}
 .booking-close{width:35px;height:35px;flex:none;border:0;border-radius:10px;background:#f0f4f0;font-size:23px;color:#243d33}
-.booking-package{padding:13px 15px;border:1px solid #d9e8de;border-radius:12px;background:#f5faf7;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;gap:10px}
-.booking-package strong{font-size:14px}.booking-package span{font-size:12px;font-weight:750;color:#356955;white-space:nowrap}
+.booking-package{padding:13px 15px;border:1px solid #d9e8de;border-radius:12px;background:#f5faf7;margin-bottom:18px;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px}
+.booking-package strong{font-size:14px;min-width:0}.booking-package-values{display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:0}.booking-package span{font-size:12px;font-weight:750;color:#356955;white-space:normal;text-align:right}.booking-package #bookingPackageFee{font-size:10px;font-weight:650;color:#708079}
 .booking-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .booking-form-grid label{display:flex;flex-direction:column;gap:6px;font-size:11px;font-weight:750;min-width:0}
 .booking-form-grid label em{color:#bd4c43;font-style:normal}

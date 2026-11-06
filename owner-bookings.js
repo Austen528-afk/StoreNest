@@ -5,6 +5,7 @@ const $=id=>document.getElementById(id);
 let activeClient=null,activeBusiness=null,items=[],requests=[];
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const labels={pending:"Pending",accepted:"Accepted",declined:"Declined",completed:"Completed"};
+const money=value=>"R"+Number(value||0).toFixed(2);
 function render(){
  const list=$("ownerBookingsList"),empty=$("ownerBookingsEmpty"),summary=$("ownerBookingsSummary");
  list.replaceChildren();
@@ -16,6 +17,12 @@ function render(){
  for(const r of requests){
   const product=items.find(i=>i.id===r.item_id);
   const itemName=product?.name||"Service package";
+  const pricing=[];
+  if(product?.item_type==="service"&&window.StoreNestCategoryId?.(activeBusiness?.category)==="events-decor"){
+   const min=product.price_range_min??(Number(product.price)>0?product.price:null),max=product.price_range_max;
+   pricing.push(min==null?"Price on request":max==null?"From "+money(min):money(min)+" – "+money(max));
+   if(product.booking_fee!=null&&Number(product.booking_fee)>0)pricing.push("Booking fee: "+money(product.booking_fee));
+  }
   const status=labels[r.status]||"Pending";
   const created=new Date(r.created_at);
   const submitted=Number.isNaN(created.getTime())?"":created.toLocaleDateString("en-ZA",{year:"numeric",month:"short",day:"numeric"});
@@ -34,6 +41,7 @@ function render(){
    '<div><small>Venue / location</small><strong>'+esc(r.event_location)+'</strong></div>'+
    '<div><small>Customer</small><strong>'+esc(r.customer_name)+'</strong></div>'+
    '<div><small>Contact</small><strong>'+contact.join(" · ")+'</strong></div>'+
+   (pricing.length?'<div><small>Booking pricing</small><strong>'+esc(pricing.join(" · "))+'</strong></div>':'')+
    (r.guest_count?'<div><small>Estimated guests</small><strong>'+esc(r.guest_count)+'</strong></div>':'')+
    '</div>'+
    (r.notes?'<div class="booking-request-notes"><small>Special requirements</small><p>'+esc(r.notes)+'</p></div>':'')+
