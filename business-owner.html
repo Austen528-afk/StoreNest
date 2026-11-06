@@ -569,10 +569,14 @@ html[data-theme="dark"] #itemOptionsEditor small{color:#afc4b6}
 .owner-order-badge.status-cancelled{background:#fff0ed;color:#a04437}
 .owner-order-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;padding-top:12px;margin-top:10px;border-top:1px solid #edf0ee}
 .owner-order-action{border:0;border-radius:999px;background:#1a1a1a;color:#fff;padding:9px 14px;font:inherit;font-size:12px;font-weight:800;cursor:pointer}
-.owner-order-copy-link{border:1px solid #cddfd4;border-radius:999px;background:#f4faf6;color:#2b6652;padding:9px 14px;font:inherit;font-size:12px;font-weight:800;cursor:pointer}
 .owner-order-action:hover{background:#333}
-.owner-order-copy-link:hover{background:#e8f7f0}
-.owner-order-action:disabled,.owner-order-copy-link:disabled{opacity:.6;cursor:wait}
+.owner-order-action:disabled{opacity:.6;cursor:wait}
+.owner-order-pin-check{display:grid;grid-template-columns:minmax(140px,1fr) auto;align-items:end;gap:8px;width:100%;padding:11px;border:1px solid #dce8e0;border-radius:11px;background:#f7faf8}
+.owner-order-pin-check label{display:flex;flex-direction:column;gap:5px;color:#52645a;font-size:10px;font-weight:800}
+.owner-order-pin-check input{width:100%;min-width:0;height:38px;padding:8px 10px;border:1px solid #cad9d0;border-radius:9px;background:#fff;color:#1b2520;font:inherit;font-size:15px;letter-spacing:.12em}
+.owner-order-pin-check input:focus{outline:2px solid #5ed4b6;outline-offset:1px}
+.owner-order-pin-check small{grid-column:1/-1;color:#738179;font-size:10px}
+@media(max-width:540px){.owner-order-pin-check{grid-template-columns:1fr}.owner-order-pin-check small{grid-column:auto}.owner-order-pin-check button{width:100%}}
 .owner-order-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:1px solid #edf0ee;padding-bottom:10px}
 .owner-order-ref{font-size:13px;font-weight:850}
 .owner-order-date{margin-top:4px;color:#728078;font-size:11px}
@@ -604,6 +608,9 @@ html[data-theme="dark"] #itemOptionsEditor small{color:#afc4b6}
 }
 html[data-theme="dark"] body[data-page-kind="owner"] .owner-orders-summary{background:var(--st-panel2);border-color:var(--st-border);color:var(--st-muted)}
 html[data-theme="dark"] body[data-page-kind="owner"] .owner-order-card{background:var(--st-panel);border-color:var(--st-border);color:var(--st-text)}
+html[data-theme="dark"] body[data-page-kind="owner"] .owner-order-pin-check{background:var(--st-panel2);border-color:var(--st-border)}
+html[data-theme="dark"] body[data-page-kind="owner"] .owner-order-pin-check label,html[data-theme="dark"] body[data-page-kind="owner"] .owner-order-pin-check small{color:var(--st-muted)}
+html[data-theme="dark"] body[data-page-kind="owner"] .owner-order-pin-check input{background:#152327;color:var(--st-text);border-color:#3a5653}
 html[data-theme="dark"] body[data-page-kind="owner"] :is(.owner-order-header,.owner-order-lines,.owner-order-lines li){border-color:var(--st-border)}
 html[data-theme="dark"] body[data-page-kind="owner"] :is(.owner-order-ref,.owner-order-customer strong,.owner-order-payment strong,.owner-order-total){color:var(--st-text)}
 html[data-theme="dark"] body[data-page-kind="owner"] :is(.owner-order-date,.owner-order-customer,.owner-order-lines small,.owner-order-payment){color:var(--st-muted)}
@@ -1301,10 +1308,12 @@ function renderBusinessOrders(rows){
   const paymentClass=order.payment_status==="pending"?"payment-pending":order.payment_status==="unpaid"?"payment-unpaid":"";
   const status=orderStatus[order.status]||"New";
   const statusClass="status-"+(order.status||"new");
-  const nextAction={new:["accepted","Accept order"],accepted:["preparing","Start preparing"],preparing:["prepared","Prepared"],prepared:["ready","Ready for collection"],ready:["completed","Mark collected"]}[order.status];
+  const nextAction={new:["accepted","Accept order"],accepted:["preparing","Start preparing"],preparing:["prepared","Prepared"],prepared:["ready","Ready for collection"]}[order.status];
   const progressAction=nextAction?'<button type="button" class="owner-order-action" data-order-id="'+escapeHtml(order.id)+'" data-order-next="'+nextAction[0]+'">'+escapeHtml(nextAction[1])+'</button>':"";
-  const copyTrackingAction=order.tracking_token?'<button type="button" class="owner-order-copy-link" data-copy-tracking="'+escapeHtml(order.id)+'">Copy tracking link</button>':"";
-  const actionMarkup=progressAction||copyTrackingAction?'<div class="owner-order-actions">'+progressAction+copyTrackingAction+'</div>':"";
+  const collectionPinAction=order.status==="ready"
+   ?'<div class="owner-order-pin-check"><label>Customer collection PIN<input type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" data-collection-pin placeholder="6 digits"></label><button type="button" class="owner-order-action" data-verify-collection-pin data-order-id="'+escapeHtml(order.id)+'">Verify PIN &amp; mark collected</button><small>Ask the customer for the PIN when they arrive.</small></div>'
+   :"";
+  const actionMarkup=progressAction||collectionPinAction?'<div class="owner-order-actions">'+progressAction+collectionPinAction+'</div>':"";
   const contacts=[];
   const phone=String(order.contact_phone||"");
   const tel=phone.replace(/[^0-9+]/g,"");
@@ -1333,23 +1342,10 @@ function renderBusinessOrders(rows){
    '</article>';
  }).join("");
 }
-async function copyOrderTrackingLink(orderId){
- const order=ownerOrdersRows.find(row=>row.id===orderId),slug=String(currentBusiness?.slug||"");
- if(!order?.tracking_token||!slug){showToast("Tracking link is unavailable for this order.",true);return}
- const url=new URL("/storefront.html",location.origin);
- url.searchParams.set("slug",slug);
- url.hash=new URLSearchParams({order:order.id,token:order.tracking_token}).toString();
- try{
-  await navigator.clipboard.writeText(url.href);
-  showToast("Tracking link copied. Send it to the customer.");
- }catch(error){
-  window.prompt("Copy this tracking link and send it to the customer:",url.href);
- }
-}
 async function advanceStorefrontOrder(orderId,nextStatus,button){
  const current=ownerOrdersRows.find(row=>row.id===orderId);
  if(!current||!currentBusiness)return;
- const allowed={new:"accepted",accepted:"preparing",preparing:"prepared",prepared:"ready",ready:"completed"};
+ const allowed={new:"accepted",accepted:"preparing",preparing:"prepared",prepared:"ready"};
  if(allowed[current.status]!==nextStatus)return;
  if(button){button.disabled=true;button.textContent="Updating…"}
  try{
@@ -1360,12 +1356,38 @@ async function advanceStorefrontOrder(orderId,nextStatus,button){
   if(!updated)throw new Error("The order did not update. Refresh and try again.");
   ownerOrdersRows=ownerOrdersRows.map(row=>row.id===orderId?{...row,status:updated.status,updated_at:updated.updated_at}:row);
   renderBusinessOrders(ownerOrdersRows);
-  const labels={accepted:"Order accepted.",preparing:"Preparation started.",prepared:"Order marked prepared.",ready:"Marked ready for collection.",completed:"Order marked collected."};
+  const labels={accepted:"Order accepted.",preparing:"Preparation started.",prepared:"Order marked prepared.",ready:"Marked ready for collection."};
   showToast(labels[nextStatus]||"Order updated.");
  }catch(error){
   console.error("StoreNest order status update failed:",error);
   showToast(friendlyError(error),true);
   if(button)button.disabled=false;
+ }
+}
+async function verifyStorefrontOrderCollectionPin(orderId,button){
+ const current=ownerOrdersRows.find(row=>row.id===orderId);
+ const card=button?.closest(".owner-order-card");
+ const input=card?.querySelector("[data-collection-pin]");
+ if(!current||current.status!=="ready"||!currentBusiness||!input)return;
+ const pin=String(input.value||"").trim();
+ if(!/^\\d{6}$/.test(pin)){showToast("Enter the customer's 6-digit collection PIN.",true);input.focus();return}
+ button.disabled=true;button.textContent="Checking PIN…";
+ try{
+  const client=await loadAuth();
+  const {data,error}=await client.rpc("verify_storefront_order_collection_pin",{p_order_id:orderId,p_pin:pin});
+  if(error)throw error;
+  const result=Array.isArray(data)?data[0]:data;
+  if(!result?.verified){
+   showToast(result?.locked?"Too many incorrect attempts. Try again in 15 minutes.":"That PIN is incorrect. Check with the customer and try again.",true);
+   input.value="";input.focus();button.disabled=false;button.textContent="Verify PIN & mark collected";return;
+  }
+  ownerOrdersRows=ownerOrdersRows.map(row=>row.id===orderId?{...row,status:result.status||"completed",updated_at:result.updated_at||new Date().toISOString()}:row);
+  renderBusinessOrders(ownerOrdersRows);
+  showToast("PIN verified. Order marked collected.");
+ }catch(error){
+  console.error("StoreNest collection PIN verification failed:",error);
+  showToast(friendlyError(error),true);
+  if(button){button.disabled=false;button.textContent="Verify PIN & mark collected"}
  }
 }
 async function loadBusinessOrders(){
@@ -1380,7 +1402,7 @@ async function loadBusinessOrders(){
   const fetched=[],pageSize=500;
   for(let offset=0;;offset+=pageSize){
    const {data,error}=await client.from("storefront_orders")
-    .select("id,business_id,customer_user_id,customer_name,contact_phone,contact_email,customer_place,customer_exact_address,customer_business_name,payment_method,payment_status,status,items,subtotal,created_at,updated_at,tracking_token")
+    .select("id,business_id,customer_user_id,customer_name,contact_phone,contact_email,customer_place,customer_exact_address,customer_business_name,payment_method,payment_status,status,items,subtotal,created_at,updated_at")
     .eq("business_id",businessId).order("created_at",{ascending:false}).order("id",{ascending:false})
     .range(offset,offset+pageSize-1);
    if(error)throw error;
@@ -1402,8 +1424,8 @@ async function loadBusinessOrders(){
 $("ownerOrdersRefresh").addEventListener("click",loadBusinessOrders);
 $("ownerOrdersHistory").addEventListener("click",()=>{ownerOrdersHistoryMode=!ownerOrdersHistoryMode;renderBusinessOrders(ownerOrdersRows)});
 $("ownerOrdersList").addEventListener("click",event=>{
- const copyButton=event.target.closest("[data-copy-tracking]");
- if(copyButton){copyOrderTrackingLink(copyButton.dataset.copyTracking);return}
+ const verifyButton=event.target.closest("[data-verify-collection-pin]");
+ if(verifyButton){verifyStorefrontOrderCollectionPin(verifyButton.dataset.orderId,verifyButton);return}
  const button=event.target.closest("[data-order-id][data-order-next]");
  if(button)advanceStorefrontOrder(button.dataset.orderId,button.dataset.orderNext,button);
 });
