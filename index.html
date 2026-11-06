@@ -860,16 +860,79 @@ function renderCustomerOrderCard(order){
  (trackingUrl?'<button class="overall-order-share" type="button" data-share-order="'+escapeResult(order.id)+'">Share tracking link</button>':"")+'</article>';
 }
 function renderAllCustomerOrders(orders,note=""){
- syncOverallOrdersBadge(orders);
- if(!orders.length){
-  overallOrdersList.innerHTML='<p class="overall-orders-empty">Your orders will appear here after you place an order. <a href="/customer-account.html">Sign in or create a profile</a> to see orders across devices.</p>';
-  return;
- }
- overallOrdersList.innerHTML=orders.map(renderCustomerOrderCard).join("")+(note?'<p class="overall-orders-note">'+escapeResult(note)+'</p>':"");
+ const current=orders||[];
+ displayedCustomerOrders=current;
+ syncOverallOrdersBadge(current);
+ const html=current.length?current.map(renderCustomerOrderCard).join("")+(note?'<p class="overall-orders-note">'+escapeResult(note)+'</p>':""):'<p class="overall-orders-empty">Your orders will appear here after you place an order. <a href="/customer-account.html">Sign in or create a profile</a> to see orders across devices.</p>';
+ if(overallOrdersList.innerHTML!==html)overallOrdersList.innerHTML=html;
+ syncCustomerOrdersGuestPolling(current);
 }
-let customerOrdersRefreshActive=false;
+let customerOrdersRefreshActive=false,customerOrdersRefreshQueued=false,customerOrdersRealtimeChannel=null,customerOrdersRealtimeClient=null,customerOrdersRealtimeUserId="",customerOrdersLiveRefreshTimer=null,customerOrdersGuestPollingTimer=null,customerOrdersGuestRefreshActive=false,displayedCustomerOrders=[];
+function stopCustomerOrdersRealtime(){
+ if(customerOrdersLiveRefreshTimer){clearTimeout(customerOrdersLiveRefreshTimer);customerOrdersLiveRefreshTimer=null}
+ if(customerOrdersRealtimeChannel&&customerOrdersRealtimeClient){
+  customerOrdersRealtimeClient.removeChannel(customerOrdersRealtimeChannel).catch(error=>console.warn("Could not stop live order updates:",error));
+ }
+ customerOrdersRealtimeChannel=null;customerOrdersRealtimeClient=null;customerOrdersRealtimeUserId="";
+}
+function ensureCustomerOrdersRealtime(client,userId){
+ if(!userId||overallOrdersOverlay.hidden){stopCustomerOrdersRealtime();return}
+ if(customerOrdersRealtimeChannel&&customerOrdersRealtimeUserId===userId&&customerOrdersRealtimeClient===client)return;
+ stopCustomerOrdersRealtime();
+ customerOrdersRealtimeClient=client;customerOrdersRealtimeUserId=userId;
+ customerOrdersRealtimeChannel=client.channel("customer-orders-status-"+userId)
+  .on("postgres_changes",{event:"UPDATE",schema:"public",table:"storefront_orders",filter:"customer_user_id=eq."+userId},()=>{
+   if(overallOrdersOverlay.hidden)return;
+   if(customerOrdersLiveRefreshTimer)clearTimeout(customerOrdersLiveRefreshTimer);
+   customerOrdersLiveRefreshTimer=setTimeout(()=>{
+    customerOrdersLiveRefreshTimer=null;
+    refreshAllCustomerOrders({showBusy:false});
+   },150);
+  })
+  .subscribe(status=>{
+   if(status==="CHANNEL_ERROR"||status==="TIMED_OUT")console.warn("Live order updates are unavailable; use Refresh order status to check again.");
+  });
+}
+function stopCustomerOrdersGuestPolling(){
+ if(customerOrdersGuestPollingTimer){clearInterval(customerOrdersGuestPollingTimer);customerOrdersGuestPollingTimer=null}
+}
+function syncCustomerOrdersGuestPolling(orders=displayedCustomerOrders){
+ const hasActiveGuestOrder=!overallOrdersOverlay.hidden&&(orders||[]).some(order=>order.storageKey&&!order.accountRecord&&isActiveCustomerOrder(order));
+ if(!hasActiveGuestOrder){stopCustomerOrdersGuestPolling();return}
+ if(!customerOrdersGuestPollingTimer)customerOrdersGuestPollingTimer=setInterval(refreshDeviceOnlyCustomerOrders,5000);
+}
+async function refreshDeviceOnlyCustomerOrders(){
+ if(customerOrdersGuestRefreshActive||customerOrdersRefreshActive||overallOrdersOverlay.hidden)return;
+ customerOrdersGuestRefreshActive=true;
+ try{
+  const byId=new Map(displayedCustomerOrders.map(order=>[order.id,order]));
+  readAllCustomerOrders().forEach(order=>{
+   const current=byId.get(order.id);
+   byId.set(order.id,current?{...order,...current,storageKey:order.storageKey}:order);
+  });
+  let orders=[...byId.values()];
+  const accountIds=new Set(orders.filter(order=>order.accountRecord).map(order=>order.id));
+  const deviceOnly=orders.filter(order=>order.storageKey&&!accountIds.has(order.id)&&isActiveCustomerOrder(order));
+  if(!deviceOnly.length){syncCustomerOrdersGuestPolling(orders);return}
+  const client=await getSearchClient();
+  const updated=await Promise.all(deviceOnly.map(async order=>{
+   try{
+    const {data,error}=await client.rpc("get_storefront_order_progress",{p_order_id:order.id,p_tracking_token:order.token});
+    if(error)throw error;
+    const row=Array.isArray(data)?data[0]:data;
+    return row?{...order,status:row.status||order.status,updatedAt:row.updated_at||order.updatedAt}:order;
+   }catch(error){console.warn("Could not check a guest order's live status:",error);return order}
+  }));
+  const merged=new Map(orders.map(order=>[order.id,order]));
+  updated.forEach(order=>merged.set(order.id,{...merged.get(order.id),...order}));
+  orders=[...merged.values()].sort((a,b)=>(Date.parse(b.createdAt||"")||0)-(Date.parse(a.createdAt||"")||0));
+  persistCustomerOrderStatuses(orders);
+  if(!overallOrdersOverlay.hidden)renderAllCustomerOrders(orders);
+ }catch(error){console.warn("Could not refresh guest order progress:",error)}
+ finally{customerOrdersGuestRefreshActive=false}
+}
 async function refreshAllCustomerOrders({showBusy=true}={}){
- if(customerOrdersRefreshActive)return;
+ if(customerOrdersRefreshActive){customerOrdersRefreshQueued=true;return}
  customerOrdersRefreshActive=true;
  let orders=readAllCustomerOrders();
  if(showBusy){overallOrdersRefresh.disabled=true;overallOrdersRefresh.textContent="Refreshing…"}
@@ -879,6 +942,7 @@ async function refreshAllCustomerOrders({showBusy=true}={}){
   const {data:authData,error:authError}=await client.auth.getUser();
   if(authError)throw authError;
   if(authData?.user){
+   ensureCustomerOrdersRealtime(client,authData.user.id);
    try{
     const {data,error}=await client.from("storefront_orders")
      .select("id,status,created_at,updated_at,customer_business_name,tracking_token")
@@ -893,11 +957,11 @@ async function refreshAllCustomerOrders({showBusy=true}={}){
     persistCustomerOrderStatuses(orders);
     syncOverallOrdersBadge(orders);
    }catch(error){accountLoadFailed=true;console.warn("Could not load profile orders:",error)}
-  }
+  }else stopCustomerOrdersRealtime();
   renderAllCustomerOrders(orders,accountLoadFailed?"Profile orders could not be loaded. Device-saved tracking is still shown.":"");
   if(!orders.length)return;
   const accountIds=new Set(orders.filter(order=>order.accountRecord).map(order=>order.id));
-  const deviceOnly=orders.filter(order=>order.storageKey&&!accountIds.has(order.id));
+  const deviceOnly=orders.filter(order=>order.storageKey&&!accountIds.has(order.id)&&isActiveCustomerOrder(order));
   if(!deviceOnly.length)return;
   const updated=await Promise.all(deviceOnly.map(async order=>{
    try{
@@ -921,6 +985,10 @@ async function refreshAllCustomerOrders({showBusy=true}={}){
  }finally{
   if(showBusy){overallOrdersRefresh.disabled=false;overallOrdersRefresh.textContent="Refresh order status"}
   customerOrdersRefreshActive=false;
+  if(customerOrdersRefreshQueued){
+   customerOrdersRefreshQueued=false;
+   if(!overallOrdersOverlay.hidden)setTimeout(()=>refreshAllCustomerOrders({showBusy:false}),0);
+  }
  }
 }
 function openAllCustomerOrders(){
@@ -930,6 +998,8 @@ function openAllCustomerOrders(){
 }
 function closeAllCustomerOrders(){
  overallOrdersOverlay.hidden=true;
+ stopCustomerOrdersRealtime();
+ stopCustomerOrdersGuestPolling();
  overallOrdersButton.focus();
 }
 overallOrdersButton.addEventListener("click",openAllCustomerOrders);
