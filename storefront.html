@@ -35,8 +35,6 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-off
 .brand-name{font-size:clamp(20px,2.4vw,27px);font-weight:850;letter-spacing:-.035em;overflow-wrap:anywhere}
 .brand-dot{color:var(--accent)}
 .bag{position:relative;width:52px;min-height:52px;display:flex;align-items:center;justify-content:center;gap:5px;flex-shrink:0;border:0;border-radius:15px;background:#ffffff1b;color:white;font-weight:800}
-.bag-tracking-indicator{position:absolute;top:-5px;right:-7px;border:1px solid #fff;border-radius:99px;padding:3px 6px;background:#2ba783;color:#fff;font-size:8px;line-height:1;font-weight:900;letter-spacing:.04em;box-shadow:0 2px 5px #0002}
-.bag-tracking-indicator[hidden]{display:none!important}
 .bag:hover{background:#ffffff32}.bag svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .hero-copy{margin-top:18px;max-width:740px}
 .hero h1{margin:0 0 7px;font-size:clamp(24px,3.3vw,40px);letter-spacing:-.045em;line-height:1.15}
@@ -629,26 +627,6 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
 .checkout-success>strong{font-size:13px;color:#526b5d}
 .checkout-success p{font-size:13px;line-height:1.55;color:#68756e}
 .checkout-success .cart-checkout-button{margin-top:8px}
-.basket-order-progress{flex:0 0 auto;max-height:none;overflow:visible;margin:0 0 8px;border:1px solid #dce9e1;border-radius:12px;padding:10px;background:#fbfdfc}
-.basket-order-progress[hidden]{display:none!important}
-.basket-order-heading{font-size:12px;font-weight:850;margin:0 0 8px;color:#24372d}
-.order-tracking-card{border:1px solid #dce9e1;border-radius:11px;background:#fff;padding:11px;margin:0 0 8px}
-.order-tracking-card:last-child{margin-bottom:0}
-.order-tracking-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
-.order-tracking-store{display:grid;gap:3px;min-width:0;font-size:12px;font-weight:800}
-.order-tracking-ref{color:#748078;font-size:10px;font-weight:600}
-.order-tracking-current{border-radius:99px;padding:5px 8px;background:#e8f7f0;color:#27755d;font-size:10px;font-weight:850;text-align:center}
-.order-tracking-steps{list-style:none;display:grid;gap:4px;margin:0;padding:0}
-.order-tracking-step{display:grid;grid-template-columns:12px minmax(0,1fr) auto;align-items:center;gap:7px;min-height:23px;color:#929a95;font-size:10px}
-.order-tracking-dot{width:9px;height:9px;border:2px solid #c9d1cc;border-radius:50%;background:#fff}
-.order-tracking-step.is-complete .order-tracking-dot,.order-tracking-step.is-current .order-tracking-dot{border-color:#36ad8b;background:#36ad8b}
-.order-tracking-step.is-current{color:#22352c;font-weight:800}
-.order-tracking-step-status{font-size:9px;color:#77847c;white-space:nowrap}
-.order-tracking-cancelled{margin:7px 0 0;color:#a04437;font-size:11px}
-.checkout-order-progress{width:100%;text-align:left}
-.checkout-order-progress .order-tracking-card{width:100%}
-.order-tracking-share{width:100%;min-height:40px;margin-top:9px;border:1px solid #cddfd4;border-radius:9px;background:#f4faf6;color:#2b6652;font:inherit;font-size:11px;font-weight:800;cursor:pointer}
-.order-tracking-share:hover{background:#e8f7f0}
 @media(max-width:480px){.order-tracking-card{padding:9px}.order-tracking-step{font-size:9px}.checkout-success{justify-content:flex-start;padding:14px 0}.order-tracking-share{min-height:44px}}
 @media(max-width:480px){.checkout-step{gap:12px}.checkout-fields input{min-height:44px}.checkout-submit-row strong{font-size:17px}}
 </style>
@@ -672,7 +650,6 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
     <div class="cart-head"><h2 id="cartTitle">Your basket</h2><button type="button" class="close-cart" id="closeCart" aria-label="Close basket">×</button></div>
     <div id="cartReviewView" class="cart-review-view">
       <div class="cart-scroll-area">
-        <section id="basketOrderProgress" class="basket-order-progress" hidden aria-live="polite"></section>
         <div id="cartItems" class="cart-items"></div>
       </div>
       <div class="cart-total"><span>Subtotal</span><span id="cartTotal">R0.00</span></div>
@@ -720,7 +697,6 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
       <h3>Order request sent</h3>
       <strong id="checkoutReference"></strong>
       <p id="checkoutSuccessMessage"></p>
-      <div id="checkoutOrderProgress" class="checkout-order-progress" aria-live="polite"></div>
       <button type="button" id="checkoutDone" class="cart-checkout-button">Back to store</button>
     </section>
   </aside>
@@ -840,14 +816,6 @@ function serviceWhatsAppAction(business,item){
 
 function toast(msg){clearTimeout(toastTimer);$("toast").textContent=msg;$("toast").hidden=false;toastTimer=setTimeout(()=>{$("toast").hidden=true},1900)}
 function cartQuantity(){return [...cart.values()].reduce((n,row)=>n+row.quantity,0)}
-function syncCartBadge(){
- const count=$("bagCount");if(count)count.textContent=String(cartQuantity());
- const hasTrackedOrders=typeof readTrackedOrders==="function"&&readTrackedOrders().length>0;
- document.querySelectorAll(".bag").forEach(button=>{
-  button.setAttribute("aria-label",hasTrackedOrders?"Open basket with order progress":"Open basket");
-  const badge=button.querySelector(".bag-tracking-indicator");if(badge)badge.hidden=!hasTrackedOrders;
- });
-}
 function productCartKey(itemId,selection,note){
  const unique=Object.entries(selection||{}).map(([id,values])=>[id,[...(Array.isArray(values)?values:[])].sort()]).sort(([a],[b])=>a.localeCompare(b));
  return JSON.stringify([itemId,unique,String(note||"").trim().slice(0,200)]);
@@ -887,7 +855,7 @@ function updateCartProduct(key,item,selection,note=""){
 }
 
 const ORDER_TRACKING_STORAGE_PREFIX="storenest_order_tracking:";
-let orderTrackingPoll=null,orderTrackingRequestActive=false,orderTrackingMemory=[];
+let orderTrackingMemory=[];
 function orderTrackingStorageKey(){
  return activePublicBusiness?.id?ORDER_TRACKING_STORAGE_PREFIX+activePublicBusiness.id:null;
 }
@@ -910,48 +878,6 @@ function rememberTrackedOrder(order){
  const orders=readTrackedOrders().filter(existing=>existing.id!==order.id);
  orders.unshift(order);saveTrackedOrders(orders);
 }
-function orderTrackingLabel(status){
- return ({new:"Awaiting acceptance",accepted:"Order received",preparing:"In progress",prepared:"Prepared",ready:"Ready for collection",completed:"Collected",cancelled:"Cancelled"})[status]||"Awaiting acceptance";
-}
-function orderProgressCard(order){
- const stages=[
-  {key:"new",label:"Order request sent"},
-  {key:"accepted",label:"Order received"},
-  {key:"preparing",label:"Order is being prepared"},
-  {key:"prepared",label:"Prepared"},
-  {key:"ready",label:"Ready for collection"}
- ];
- const indexes={new:0,accepted:1,preparing:2,prepared:3,ready:4,completed:4,cancelled:-1};
- const currentIndex=indexes[order.status]??0,terminal=order.status==="completed";
- const reference=String(order.id||"").replace(/-/g,"").slice(0,8).toUpperCase();
- const steps=stages.map((stage,index)=>{
-  const done=index<currentIndex||terminal,active=index===currentIndex&&!terminal&&order.status!=="cancelled";
-  const state=done?"Complete":active?orderTrackingLabel(order.status):"Waiting";
-  return '<li class="order-tracking-step'+(done?' is-complete':active?' is-current':'')+'"><span class="order-tracking-dot" aria-hidden="true"></span><span>'+esc(stage.label)+'</span><small class="order-tracking-step-status">'+esc(state)+'</small></li>';
- }).join("");
- return '<article class="order-tracking-card"><div class="order-tracking-head"><div class="order-tracking-store"><span>'+esc(order.businessName||activePublicBusiness?.name||"Store")+'</span><small class="order-tracking-ref">Order #'+esc(reference)+'</small></div><span class="order-tracking-current">'+esc(orderTrackingLabel(order.status))+'</span></div><ol class="order-tracking-steps">'+steps+'</ol>'+(order.status==="cancelled"?'<p class="order-tracking-cancelled">This order request was cancelled.</p>':"")+'<button type="button" class="order-tracking-share" data-share-order="'+esc(order.id)+'">Share tracking link</button></article>';
-}
-function orderTrackingUrl(order){
- const url=new URL(location.href);
- url.hash=new URLSearchParams({order:order.id,token:order.token}).toString();
- return url.href;
-}
-async function shareOrderTracking(orderId){
- const order=readTrackedOrders().find(item=>item.id===orderId);if(!order)return;
- const url=orderTrackingUrl(order);
- try{
-  if(typeof navigator.share==="function"){
-   await navigator.share({title:"StoreNest order status",text:"Track your order progress.",url});
-   return;
-  }
-  if(navigator.clipboard?.writeText){
-   await navigator.clipboard.writeText(url);
-   toast("Tracking link copied.");
-   return;
-  }
- }catch(error){if(error?.name==="AbortError")return;console.warn("Order tracking link could not be shared:",error)}
- window.prompt("Copy this order tracking link to open your order on another device:",url);
-}
 function restoreTrackedOrderFromUrl(){
  const params=new URLSearchParams(location.hash.slice(1));
  const id=params.get("order"),token=params.get("token");
@@ -959,48 +885,6 @@ function restoreTrackedOrderFromUrl(){
  rememberTrackedOrder({id,token,status:"new",createdAt:new Date().toISOString(),businessName:activePublicBusiness?.name||"Store"});
  try{history.replaceState(null,"",location.pathname+location.search)}catch(_){}
  return true;
-}
-document.addEventListener("click",event=>{
- const button=event.target.closest("[data-share-order]");
- if(button)shareOrderTracking(button.dataset.shareOrder);
-});
-function renderBasketOrderProgress(){
- const panel=$("basketOrderProgress"),orders=readTrackedOrders();
- if(panel){panel.hidden=!orders.length;panel.innerHTML=orders.length?'<div class="basket-order-heading">Order progress</div>'+orders.map(orderProgressCard).join(""):""}
- const success=$("checkoutOrderProgress");
- if(success)success.innerHTML=orders.length?orderProgressCard(orders[0]):"";
-}
-async function refreshTrackedOrderProgress(){
- if(orderTrackingRequestActive||!storefrontClient)return;
- const orders=readTrackedOrders();if(!orders.length)return;
- orderTrackingRequestActive=true;
- try{
-  const results=await Promise.all(orders.map(order=>storefrontClient.rpc("get_storefront_order_progress",{p_order_id:order.id,p_tracking_token:order.token})));
-  let changed=false;
-  results.forEach((result,index)=>{
-   if(result.error)return;
-   const row=Array.isArray(result.data)?result.data[0]:result.data;
-   if(row&&orders[index].status!==row.status){orders[index].status=row.status;orders[index].updatedAt=row.updated_at;changed=true}
-   else if(row&&orders[index].updatedAt!==row.updated_at){orders[index].updatedAt=row.updated_at;changed=true}
-  });
-  if(changed)saveTrackedOrders(orders);
-  renderBasketOrderProgress();
- }catch(error){console.warn("Order progress refresh failed:",error)}
- finally{orderTrackingRequestActive=false}
-}
-function stopOrderTrackingPolling(){
- if(orderTrackingPoll){clearInterval(orderTrackingPoll);orderTrackingPoll=null}
-}
-function startOrderTrackingPolling(){
- stopOrderTrackingPolling();
- refreshTrackedOrderProgress();
- const tracked=readTrackedOrders();
- if(tracked.some(order=>order.status!=="completed"&&order.status!=="cancelled")){
-  orderTrackingPoll=setInterval(()=>{
-   if(!$("cartBackdrop").hidden)refreshTrackedOrderProgress();
-   else stopOrderTrackingPolling();
-  },5000);
- }
 }
 function renderCart(){
  const rows=[...cart.entries()].map(([key,row])=>({key,row,item:availableItems.find(i=>i.id===row.itemId)})).filter(entry=>entry.item);
@@ -1019,7 +903,7 @@ function renderCart(){
  $("checkoutStart").disabled=!rows.length;
  $("clearCart").disabled=!rows.length;
  syncCartBadge();
- renderBasketOrderProgress();
+ 
 }
 function renderCheckoutSummary(){
  const rows=[...cart.entries()].map(([key,row])=>({key,row,item:availableItems.find(i=>i.id===row.itemId)})).filter(entry=>entry.item);
@@ -1035,7 +919,7 @@ function renderCheckoutSummary(){
 }
 function showBasketReview(){
  $("cartReviewView").hidden=false;$("checkoutForm").hidden=true;$("checkoutSuccessView").hidden=true;
- $("cartTitle").textContent=cart.size?"Your basket":(readTrackedOrders().length?"Order progress":"Your basket");
+ $("cartTitle").textContent="Your basket";
  renderCart();
 }
 function openCheckout(){
@@ -1274,15 +1158,15 @@ async function submitCheckout(event){
   const {error}=await storefrontClient.from("storefront_orders").insert(payload);
   if(error)throw error;
   const reference=orderId.replace(/-/g,"").slice(0,8).toUpperCase();
-  const trackedOrder={id:orderId,token:trackingToken,status:"new",createdAt:new Date().toISOString(),businessName:activePublicBusiness.name||"Store"};
+  const trackedOrder={id:orderId,token:trackingToken,status:"new",createdAt:new Date().toISOString(),businessName:activePublicBusiness.name||"Store",trackingUrl:location.href};
   rememberTrackedOrder(trackedOrder);
   cart.clear();renderCart();
   $("checkoutForm").hidden=true;$("cartReviewView").hidden=true;$("checkoutSuccessView").hidden=false;
   $("cartTitle").textContent="Order request sent";
   $("checkoutReference").textContent="Request #"+reference;
-  $("checkoutSuccessMessage").textContent="Your request was sent to "+(activePublicBusiness.name||"the business")+". It is waiting for the business to accept it. "+(paymentMethod==="card"?"Card payment is not connected yet, so no card was charged.":"Pay when you collect it.")+" You can follow its progress in your basket and profile.";
-  renderBasketOrderProgress();
-  startOrderTrackingPolling();
+  $("checkoutSuccessMessage").textContent="Your request was sent to "+(activePublicBusiness.name||"the business")+". It is waiting for the business to accept it. "+(paymentMethod==="card"?"Card payment is not connected yet, so no card was charged.":"Pay when you collect it.")+" You can track its progress from My Orders on the StoreNest home page.";
+  
+  
   form.reset();
   resetCheckoutProfileGate();
   form.querySelector('[name="payment_method"][value="pay_on_collection"]').checked=true;
@@ -1300,9 +1184,9 @@ async function submitCheckout(event){
 }
 function openCart(){
  renderCart();
- if(!cart.size){$("checkoutForm").hidden=true;$("checkoutSuccessView").hidden=true;$("cartReviewView").hidden=false;$("cartTitle").textContent=readTrackedOrders().length?"Order progress":"Your basket"}
+ if(!cart.size){$("checkoutForm").hidden=true;$("checkoutSuccessView").hidden=true;$("cartReviewView").hidden=false;$("cartTitle").textContent="Your basket"}
  $("cartBackdrop").hidden=false;$("closeCart").focus();
- startOrderTrackingPolling();
+ 
 }
 function closeCheckoutProfileGate(restoreFocus=true){
  const modal=$("checkoutProfileGate");
@@ -1595,7 +1479,7 @@ function renderStorefrontHero(business,cfg,options={}){
      '<section class="hero layout-'+layout+'">'+(cover?(videoCover?'<video class="hero-cover-video" src="'+esc(cover)+'" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>':'<img class="hero-cover" src="'+esc(cover)+'" alt="" fetchpriority="high" decoding="async">'):'')+
      '<div class="hero-top"><div class="store-identity">'+(logo?'<img class="store-logo" src="'+esc(logo)+'" alt="">':'')+
      '<span class="brand-name">'+esc(business.name)+'<span class="brand-dot">.</span></span></div>'+
-     '<button type="button" id="openCart" class="bag" aria-label="Open basket"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 12H4L5 8ZM9 9V6a3 3 0 0 1 6 0v3"/></svg><span id="bagCount">0</span><span class="bag-tracking-indicator" hidden>Track</span></button></div>'+
+     '<button type="button" id="openCart" class="bag" aria-label="Open basket"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 12H4L5 8ZM9 9V6a3 3 0 0 1 6 0v3"/></svg><span id="bagCount">0</span></button></div>'+
      '<div class="hero-copy"><h1>'+esc(cfg.headline||"Welcome to "+business.name)+'</h1>'+
      (cfg.tagline?'<p class="hero-tag">'+esc(cfg.tagline)+'</p>':'')+
      '<p>'+esc(business.description||window.StoreNestCategoryLabel(business.category)||"Discover our products and services.")+'</p></div></section>';
@@ -1610,7 +1494,7 @@ function renderStorefrontHero(business,cfg,options={}){
      '<p class="decor-summary">'+esc(business.description||(isLocalServices?"Explore helpful services for everyday needs.":"Explore pieces for the home and everyday spaces."))+'</p></div>'+
      '<a class="decor-cta" href="#catalog">'+(isLocalServices?"Explore services":"Explore collection")+'</a></div>'+
      '<div class="decor-visual">'+(decorImage?(videoCover?'<video class="decor-cover-video" src="'+esc(decorImage)+'" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>':'<img src="'+esc(decorImage)+'" alt="'+(isLocalServices?"Featured local service":"Featured home decor")+'" fetchpriority="high" decoding="async">'):'')+
-     '<button type="button" id="openCart" class="bag" aria-label="Open basket"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 12H4L5 8ZM9 9V6a3 3 0 0 1 6 0v3"/></svg><span id="bagCount">0</span><span class="bag-tracking-indicator" hidden>Track</span></button></div></section>';
+     '<button type="button" id="openCart" class="bag" aria-label="Open basket"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 12H4L5 8ZM9 9V6a3 3 0 0 1 6 0v3"/></svg><span id="bagCount">0</span></button></div></section>';
 
  return isDecor?decorHero:standardHero;
 }
