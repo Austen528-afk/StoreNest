@@ -760,7 +760,7 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
 <div id="bookingBackdrop" class="booking-backdrop" hidden>
  <section class="booking-panel" role="dialog" aria-modal="true" aria-labelledby="bookingTitle">
   <div class="booking-top"><div><small>BOOKING ENQUIRY</small><h2 id="bookingTitle">Request a booking</h2><p>Tell the business about your event. No payment is required.</p></div><button type="button" id="bookingClose" class="booking-close" aria-label="Close booking request">×</button></div>
-  <div class="booking-package"><strong id="bookingPackageName"></strong><span id="bookingPackagePrice"></span></div>
+  <div class="booking-package"><strong id="bookingPackageName"></strong><div class="booking-package-values"><span id="bookingPackagePrice"></span><span id="bookingPackageFee" hidden></span></div></div>
   <form id="bookingRequestForm">
    <div class="booking-form-grid">
     <label>Your name <em>*</em><input name="customer_name" required minlength="2" maxlength="100" autocomplete="name" placeholder="Full name"></label>
@@ -1397,7 +1397,7 @@ function openProductGallery(id,trigger,cartKey=null){
  $("galleryAdd").dataset.addItem=id;
  $("galleryProductAdd").textContent=editRow?"Save changes":"＋ Add";
  $("galleryProductPrice").textContent=money(item.price);
- $("galleryServicePrice").textContent=money(item.price);
+ $("galleryServicePrice").textContent=window.StoreNestBookings.priceLabel(item,activePublicBusiness);
  $("galleryAdd").textContent=isService?"Request booking":"＋ Add";
  renderGalleryOptions(item,editRow?.selection||{});
  if(editRow)$("galleryNotes").value=editRow.note||"";
@@ -1640,9 +1640,10 @@ function renderPublishedStorefront(root,client,business,items,storefrontSections
    const cardForItem=item=>{
      const media=galleryPhotos(item),first=media[0],count=media.length;
      const service=window.StoreNestBookings.isService(item);
+     const bookingFee=service?window.StoreNestBookings.bookingFeeLabel(item,business):"";
      const action=service?"Request booking":"Add";
      const whatsapp=service?serviceWhatsAppAction(business,item):"";
-     return '<article class="card"><button type="button" class="item-open" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos, videos and details"><div class="art">'+(first?(isProductVideo(first)?'<video data-catalog-preview data-src="'+esc(first)+'" muted loop playsinline preload="none" aria-label="'+esc(item.name)+' video"></video>':'<img src="'+esc(first)+'" alt="'+esc(item.name)+'" loading="lazy" decoding="async">'):service?"✦":"▧")+(count>1?'<span class="photo-count">▧ '+count+' media</span>':'')+'</div></button><div class="item-body"><h3><button class="item-title-open" type="button" data-open-product="'+esc(item.id)+'" title="'+esc(item.name)+'" aria-label="View details for '+esc(item.name)+'">'+esc(item.name)+'</button></h3><div class="item-bottom"><span class="price">'+(service?'<small style="font-size:.56em;font-weight:600">From </small>':'')+money(item.price)+'</span>'+(service?'<div class="service-action-row">':'')+'<button class="add" type="button" data-add-item="'+esc(item.id)+'" aria-label="'+(service?"Request booking for ":"Add ")+esc(item.name)+(service?"":" to basket")+'">'+(service?"":'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>')+action+'</button>'+(service?whatsapp+'</div>':"")+'</div>'+(service?'<div class="service-disclaimer">Date and final quotation confirmed by the business</div>':'')+'</div></article>';
+     return '<article class="card"><button type="button" class="item-open" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos, videos and details"><div class="art">'+(first?(isProductVideo(first)?'<video data-catalog-preview data-src="'+esc(first)+'" muted loop playsinline preload="none" aria-label="'+esc(item.name)+' video"></video>':'<img src="'+esc(first)+'" alt="'+esc(item.name)+'" loading="lazy" decoding="async">'):service?"✦":"▧")+(count>1?'<span class="photo-count">▧ '+count+' media</span>':'')+'</div></button><div class="item-body"><h3><button class="item-title-open" type="button" data-open-product="'+esc(item.id)+'" title="'+esc(item.name)+'" aria-label="View details for '+esc(item.name)+'">'+esc(item.name)+'</button></h3><div class="item-bottom"><span class="price">'+esc(service?window.StoreNestBookings.priceLabel(item,business):money(item.price))+'</span>'+(service?'<div class="service-action-row">':'')+'<button class="add" type="button" data-add-item="'+esc(item.id)+'" aria-label="'+(service?"Request booking for ":"Add ")+esc(item.name)+(service?"":" to basket")+'">'+(service?"":'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>')+action+'</button>'+(service?whatsapp+'</div>':"")+'</div>'+(service?'<div class="service-disclaimer">'+(bookingFee?'<strong>'+esc(bookingFee)+'</strong><br>':'')+'Date and final quotation confirmed by the business</div>':'')+'</div></article>';
    };
    const hasProducts=availableItems.some(item=>item.item_type==="product");
    const hasServices=availableItems.some(item=>item.item_type==="service");
@@ -1735,7 +1736,7 @@ async function load(){
    }
    // Catalogue and category metadata are independent once the business ID is known.
    const [catalog,sectionResult]=await Promise.all([
-     client.from("business_items").select("id,name,item_type,description,price,image_url,media_urls,category_id,customization_options").eq("business_id",business.id).eq("is_available",true).order("display_order").order("created_at",{ascending:false}),
+     client.from("business_items").select("id,name,item_type,description,price,price_range_min,price_range_max,booking_fee,image_url,media_urls,category_id,customization_options").eq("business_id",business.id).eq("is_available",true).order("display_order").order("created_at",{ascending:false}),
      client.from("business_categories").select("id,name,description,display_style,display_order").eq("business_id",business.id).order("display_order").order("name")
    ]);
    if(catalog.error)throw catalog.error;
