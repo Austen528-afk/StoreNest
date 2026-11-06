@@ -1156,14 +1156,25 @@ async function submitCheckout(event){
  try{
   const {error}=await storefrontClient.from("storefront_orders").insert(payload);
   if(error)throw error;
+  let collectionPin="";
+  try{
+   const {data:pinData,error:pinError}=await storefrontClient.rpc("get_storefront_order_collection_pin",{p_order_id:orderId});
+   if(pinError)throw pinError;
+   const candidate=String(pinData||"");
+   if(/^\\d{6}$/.test(candidate))collectionPin=candidate;
+  }catch(pinError){console.warn("The order was submitted, but its collection PIN could not be loaded yet:",pinError)}
   const reference=orderId.replace(/-/g,"").slice(0,8).toUpperCase();
-  const trackedOrder={id:orderId,token:trackingToken,customerUserId:user.id,status:"new",createdAt:new Date().toISOString(),businessName:activePublicBusiness.name||"Store",trackingUrl:location.href};
+  const trackedOrder={id:orderId,token:trackingToken,customerUserId:user.id,status:"new",createdAt:new Date().toISOString(),businessName:activePublicBusiness.name||"Store",collectionPin};
   rememberTrackedOrder(trackedOrder);
   cart.clear();renderCart();
   $("checkoutForm").hidden=true;$("cartReviewView").hidden=true;$("checkoutSuccessView").hidden=false;
   $("cartTitle").textContent="Order request sent";
   $("checkoutReference").textContent="Request #"+reference;
-  $("checkoutSuccessMessage").textContent="Your request was sent to "+(activePublicBusiness.name||"the business")+". It is waiting for the business to accept it. "+(paymentMethod==="card"?"Card payment is not connected yet, so no card was charged.":"Pay when you collect it.")+" You can track its progress from My Orders on the StoreNest home page.";
+  const pinMessage=collectionPin
+   ?" Your collection PIN is "+collectionPin+". Keep it private and show it to the business when you collect the order."
+   :" Your order is in My Orders. Refresh there if your collection PIN is not shown yet.";
+  const paymentMessage=paymentMethod==="card"?"Card payment is not connected yet, so no card was charged.":"Pay when you collect it.";
+  $("checkoutSuccessMessage").textContent="Your request was sent to "+(activePublicBusiness.name||"the business")+". It is waiting for the business to accept it."+pinMessage+" "+paymentMessage+" Order progress is available from My Orders on the StoreNest home page.";
   
   
   form.reset();
