@@ -881,7 +881,8 @@ function renderAllCustomerOrders(orders,note=""){
  syncCustomerOrdersGuestPolling(current);
 }
 window.addEventListener("storenest:customer-identity-change",()=>{
- syncOverallOrdersBadge();
+ displayedCustomerOrders=displayedCustomerOrders.filter(order=>order.sharedTracking===true||Boolean(marketplaceCurrentUserId&&order.customerUserId===marketplaceCurrentUserId));
+ renderAllCustomerOrders(displayedCustomerOrders);
  if(!overallOrdersOverlay.hidden)refreshAllCustomerOrders({showBusy:false});
 });
 syncOverallOrdersBadge();
@@ -920,7 +921,8 @@ function syncCustomerOrdersGuestPolling(orders=displayedCustomerOrders){
  if(!customerOrdersGuestPollingTimer)customerOrdersGuestPollingTimer=setInterval(refreshDeviceOnlyCustomerOrders,5000);
 }
 async function refreshDeviceOnlyCustomerOrders(){
- if(customerOrdersGuestRefreshActive||customerOrdersRefreshActive||overallOrdersOverlay.hidden)return;
+ if(customerOrdersGuestRefreshActive||customerOrdersRefreshActive||overallOrdersOverlay.hidden||!marketplaceIdentityReady)return;
+ const refreshUserId=marketplaceCurrentUserId;
  customerOrdersGuestRefreshActive=true;
  try{
   const byId=new Map(displayedCustomerOrders.map(order=>[order.id,order]));
@@ -944,6 +946,7 @@ async function refreshDeviceOnlyCustomerOrders(){
   const merged=new Map(orders.map(order=>[order.id,order]));
   updated.forEach(order=>merged.set(order.id,{...merged.get(order.id),...order}));
   orders=[...merged.values()].sort((a,b)=>(Date.parse(b.createdAt||"")||0)-(Date.parse(a.createdAt||"")||0));
+  if(refreshUserId!==marketplaceCurrentUserId)return;
   persistCustomerOrderStatuses(orders);
   if(!overallOrdersOverlay.hidden)renderAllCustomerOrders(orders);
  }catch(error){console.warn("Could not refresh guest order progress:",error)}
