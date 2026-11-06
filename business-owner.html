@@ -555,7 +555,11 @@ html[data-theme="dark"] #itemOptionsEditor small{color:#afc4b6}
 <script src="/product-customization.js"></script>
 
 <style>
-.owner-orders-refresh{width:auto;white-space:nowrap}
+.owner-orders-heading{align-items:center;gap:12px}
+.owner-orders-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.owner-orders-refresh,.owner-orders-history{width:auto;white-space:nowrap}
+.owner-orders-history[aria-pressed="true"]{background:#eaf7f1;color:#20745d;border-color:#b8dfcf}
+@media(max-width:560px){.owner-orders-heading{align-items:flex-start;flex-direction:column}.owner-orders-controls{width:100%;justify-content:flex-end}}
 .owner-orders-summary{margin:0 0 12px;padding:11px 14px;border:1px solid #d8e8de;border-radius:10px;background:#f3f9f5;color:#49695a;font-size:12px;font-weight:700}
 .owner-orders-list{display:grid;gap:12px}
 .owner-order-card{border:1px solid #e0e8e3;border-radius:13px;background:#fff;color:#1b2a23;padding:14px 16px}
@@ -715,7 +719,7 @@ html[data-theme="dark"] body[data-page-kind="owner"] .owner-orders-message{borde
 </form></article></section>
       <section class="dashboard-section" data-section-view="settings" hidden><div class="section-heading"><div><h3>Business Settings</h3><p>Manage your business profile and storefront details.</p></div></div><article class="panel settings-panel"><div class="settings-top"><div class="store-logo-preview" id="settingsLogoPreview">SN</div><div><strong>Business profile</strong><p>Your details appear on your public storefront.</p></div></div><form id="businessForm" class="business-form"><div class="form-grid"><div class="field"><label for="businessName">Business name <em>*</em></label><input id="businessName" maxlength="120" placeholder="e.g. Dineo’s Kitchen" required></div><div class="field"><label for="businessCategory">Business category <em>*</em></label><select id="businessCategory" required><option value="">Choose a category</option></select><small class="category-help">Choose the main category customers will find you under. You can create other offering sections within your storefront.</small></div><div class="field full-field"><label for="businessDescription">Business description</label><textarea id="businessDescription" maxlength="500" rows="3" placeholder="Tell customers what makes your business special"></textarea></div><div class="field"><label for="businessLocation">Location</label><input id="businessLocation" placeholder="Town, province"></div><div class="field"><label for="businessPhone">Contact number</label><input id="businessPhone" type="tel" placeholder="e.g. 060 000 0000"></div><div class="field"><label for="businessEmail">Contact email</label><input id="businessEmail" type="email" placeholder="business@example.com"></div><div class="field"><label for="businessWebsite">Website or social link</label><input id="businessWebsite" type="url" placeholder="https://"></div><div class="field"><label for="businessHours">Operating hours</label><input id="businessHours" placeholder="e.g. Mon–Sat, 08:00–17:00"></div><div class="field full-field"><label for="businessLogo">Business logo</label><div class="upload-box"><input id="businessLogo" type="file" accept="image/*"><span>＋</span><div><strong>Upload your logo</strong><small>Choose a photo up to 20 MB · resized automatically (GIF max 2 MB)</small></div></div><div class="upload-note" id="logoUploadNote">Select a logo and save changes to upload.</div></div></div><div class="form-actions"><span id="profileSavedNote">Changes save to your private business profile.</span><button class="primary-button" type="submit">Save changes <span>→</span></button></div><div class="message" id="businessFormMessage" role="status" aria-live="polite" hidden></div></form></article></section>
       <section class="dashboard-section" data-section-view="orders" hidden>
-  <div class="section-heading"><div><h3>Orders</h3><p>Review customer orders, item choices and payment method.</p></div><button type="button" id="ownerOrdersRefresh" class="outline-button owner-orders-refresh">↻ Refresh</button></div>
+  <div class="section-heading owner-orders-heading"><div><h3 id="ownerOrdersHeading">Orders</h3><p id="ownerOrdersDescription">Review customer orders, item choices and payment method.</p></div><div class="owner-orders-controls"><button type="button" id="ownerOrdersHistory" class="outline-button owner-orders-history" aria-pressed="false">▤ History</button><button type="button" id="ownerOrdersRefresh" class="outline-button owner-orders-refresh">↻ Refresh</button></div></div>
   <div id="ownerOrdersSummary" class="owner-orders-summary" hidden></div>
   <div id="ownerOrdersList" class="owner-orders-list"></div>
   <div id="ownerOrdersEmpty" class="empty-state" hidden><span>▤</span><strong>No orders yet</strong><p>Customer orders will appear here after checkout. Each order shows the items, selected options, customer contact and payment status.</p></div>
@@ -1246,7 +1250,7 @@ function setDashboardSection(name){
  $("mobileNavList").hidden=true;$("mobileNavToggle").setAttribute("aria-expanded","false");$("workspace").scrollTop=0;
  if(name==="orders")loadBusinessOrders();
 }
-let ownerOrdersChannel=null,ownerOrdersChannelBusinessId=null,ownerOrdersRows=[];
+let ownerOrdersChannel=null,ownerOrdersChannelBusinessId=null,ownerOrdersRows=[],ownerOrdersHistoryMode=false;
 function resetOwnerOrdersRealtime(client){
  if(ownerOrdersChannel)(client||authClient)?.removeChannel(ownerOrdersChannel);
  ownerOrdersChannel=null;ownerOrdersChannelBusinessId=null;ownerOrdersRows=[];
@@ -1260,7 +1264,7 @@ function ensureOwnerOrdersRealtime(client,businessId){
    const order=payload?.new;
    if(!order||String(order.business_id)!==String(currentBusiness?.id)||ownerOrdersChannelBusinessId!==businessId)return;
    const alreadyVisible=ownerOrdersRows.some(row=>row.id===order.id);
-   ownerOrdersRows=[order,...ownerOrdersRows.filter(row=>row.id!==order.id)].slice(0,100);
+   ownerOrdersRows=[order,...ownerOrdersRows.filter(row=>row.id!==order.id)];
    renderBusinessOrders(ownerOrdersRows);
    if(payload.eventType==="INSERT"&&!alreadyVisible)showToast("New order request received.");
   })
@@ -1271,12 +1275,24 @@ function ensureOwnerOrdersRealtime(client,businessId){
 function formatOrderMoney(value){return "R"+Number(value||0).toFixed(2)}
 function renderBusinessOrders(rows){
  const list=$("ownerOrdersList"),empty=$("ownerOrdersEmpty"),summary=$("ownerOrdersSummary");
- if(!rows.length){list.replaceChildren();summary.hidden=true;empty.hidden=false;return}
- const newCount=rows.filter(row=>row.status==="new").length;
- summary.textContent=rows.length+" order"+(rows.length===1?"":"s")+" · "+newCount+" awaiting acceptance";
+ const heading=$("ownerOrdersHeading"),description=$("ownerOrdersDescription"),historyButton=$("ownerOrdersHistory");
+ const visibleRows=(Array.isArray(rows)?rows:[]).filter(row=>ownerOrdersHistoryMode?row.status==="completed":row.status!=="completed");
+ if(heading)heading.textContent=ownerOrdersHistoryMode?"Order history":"Orders";
+ if(description)description.textContent=ownerOrdersHistoryMode?"Completed orders are kept here for your records.":"Review active customer orders, item choices and payment method.";
+ if(historyButton){historyButton.textContent=ownerOrdersHistoryMode?"← Active orders":"▤ History";historyButton.setAttribute("aria-pressed",String(ownerOrdersHistoryMode))}
+ if(!visibleRows.length){
+  list.replaceChildren();summary.hidden=true;empty.hidden=false;
+  empty.querySelector("strong").textContent=ownerOrdersHistoryMode?"No completed orders yet":"No active orders";
+  empty.querySelector("p").textContent=ownerOrdersHistoryMode?"Orders will appear here after you mark them collected.":"New customer orders will appear here after checkout. Completed orders are available in History.";
+  return;
+ }
+ const newCount=visibleRows.filter(row=>row.status==="new").length;
+ summary.textContent=ownerOrdersHistoryMode
+  ?visibleRows.length+" completed order"+(visibleRows.length===1?"":"s")
+  :visibleRows.length+" active order"+(visibleRows.length===1?"":"s")+" · "+newCount+" awaiting acceptance";
  summary.hidden=false;empty.hidden=true;
  const orderStatus={new:"Awaiting acceptance",accepted:"Order received",preparing:"In progress",prepared:"Prepared",ready:"Ready for collection",completed:"Collected",cancelled:"Cancelled"};
- list.innerHTML=rows.map(order=>{
+ list.innerHTML=visibleRows.map(order=>{
   const ref=String(order.id||"").replace(/-/g,"").slice(0,8).toUpperCase();
   const created=new Date(order.created_at);
   const submitted=Number.isNaN(created.getTime())?"":created.toLocaleString("en-ZA",{dateStyle:"medium",timeStyle:"short"});
@@ -1361,11 +1377,20 @@ async function loadBusinessOrders(){
  try{
   const client=await loadAuth();
   ensureOwnerOrdersRealtime(client,businessId);
-  const {data,error}=await client.from("storefront_orders").select("id,business_id,customer_user_id,customer_name,contact_phone,contact_email,customer_place,customer_exact_address,customer_business_name,payment_method,payment_status,status,items,subtotal,created_at,updated_at,tracking_token").eq("business_id",businessId).order("created_at",{ascending:false}).limit(100);
-  if(error)throw error;
+  const fetched=[],pageSize=500;
+  for(let offset=0;;offset+=pageSize){
+   const {data,error}=await client.from("storefront_orders")
+    .select("id,business_id,customer_user_id,customer_name,contact_phone,contact_email,customer_place,customer_exact_address,customer_business_name,payment_method,payment_status,status,items,subtotal,created_at,updated_at,tracking_token")
+    .eq("business_id",businessId).order("created_at",{ascending:false}).order("id",{ascending:false})
+    .range(offset,offset+pageSize-1);
+   if(error)throw error;
+   const page=data||[];
+   fetched.push(...page);
+   if(page.length<pageSize)break;
+  }
   if(currentBusiness?.id!==businessId)return;
-  const fetched=data||[],fetchedIds=new Set(fetched.map(row=>row.id));
-  ownerOrdersRows=[...ownerOrdersRows.filter(row=>!fetchedIds.has(row.id)),...fetched].slice(0,100);
+  const fetchedIds=new Set(fetched.map(row=>row.id));
+  ownerOrdersRows=[...ownerOrdersRows.filter(row=>!fetchedIds.has(row.id)),...fetched];
   renderBusinessOrders(ownerOrdersRows);
  }catch(error){
   console.error("StoreNest orders could not be loaded:",error);
@@ -1375,6 +1400,7 @@ async function loadBusinessOrders(){
  }finally{if(refresh)refresh.disabled=false}
 }
 $("ownerOrdersRefresh").addEventListener("click",loadBusinessOrders);
+$("ownerOrdersHistory").addEventListener("click",()=>{ownerOrdersHistoryMode=!ownerOrdersHistoryMode;renderBusinessOrders(ownerOrdersRows)});
 $("ownerOrdersList").addEventListener("click",event=>{
  const copyButton=event.target.closest("[data-copy-tracking]");
  if(copyButton){copyOrderTrackingLink(copyButton.dataset.copyTracking);return}
