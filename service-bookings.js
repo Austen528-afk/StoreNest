@@ -9,9 +9,10 @@ function todayLocalDate(){
  const d=new Date(),pad=n=>String(n).padStart(2,"0");
  return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
 }
-function usesOptionalBookingPricing(item,context=business){return isService(item)&&window.StoreNestCategoryId?.(context?.category)==="events-decor"}
+function isBookingOffer(item,context=business){return isService(item)||window.StoreNestCategoryId?.(context?.category)==="events-decor"}
+function usesOptionalBookingPricing(item,context=business){return window.StoreNestCategoryId?.(context?.category)==="events-decor"}
 function priceLabel(item,context=business){
- if(!isService(item))return money(item?.price);
+ if(!isBookingOffer(item,context))return money(item?.price);
  if(!usesOptionalBookingPricing(item,context))return "From "+money(item?.price);
  const min=item.price_range_min??(Number(item.price)>0?item.price:null),max=item.price_range_max;
  if(min!==null&&min!==undefined)return max!==null&&max!==undefined?money(min)+" – "+money(max):"From "+money(min);
@@ -23,7 +24,7 @@ function bookingFeeLabel(item,context=business){
 }
 function setContext(nextClient,nextBusiness,items){
  client=nextClient;business=nextBusiness;
- const serviceOnly=items.length>0&&items.every(isService);
+ const serviceOnly=window.StoreNestCategoryId?.(business?.category)==="events-decor"||(items.length>0&&items.every(isService));
  document.body.dataset.catalogMode=serviceOnly?"services":"mixed";
  if(serviceOnly){
   const footer=document.querySelector(".footer span:last-child");
@@ -31,7 +32,7 @@ function setContext(nextClient,nextBusiness,items){
  }
 }
 function open(item,trigger){
- if(!isService(item)||!client||!business)return;
+ if(!isBookingOffer(item,business)||!client||!business)return;
  activeItem=item;returnFocus=trigger||null;
  const form=$("bookingRequestForm");form.reset();form.hidden=false;
  $("bookingSuccess").hidden=true;$("bookingFormError").hidden=true;
@@ -77,5 +78,5 @@ $("bookingRequestForm").addEventListener("submit",async e=>{
   errorBox.hidden=false;console.warn("Service booking request:",err);
  }finally{submit.disabled=false;submit.textContent="Send request →"}
 });
-window.StoreNestBookings={isService,usesOptionalBookingPricing,priceLabel,bookingFeeLabel,setContext,open};
+window.StoreNestBookings={isService,isBookingOffer,usesOptionalBookingPricing,priceLabel,bookingFeeLabel,setContext,open};
 })();
