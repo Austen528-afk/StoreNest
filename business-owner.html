@@ -746,7 +746,7 @@ html[data-theme="dark"] body[data-page-kind="owner"] .owner-orders-message{borde
   <div class="modal-backdrop" id="profileModal" hidden><div class="modal-card profile-setup-modal" role="dialog" aria-modal="true" aria-labelledby="setupTitle"><div class="modal-head"><div><span class="eyebrow">YOUR STOREFRONT STARTS HERE</span><h3 id="setupTitle">Set up your business</h3></div><button class="close-modal" type="button" data-close-modal aria-label="Close">×</button></div><p class="modal-subtitle">Share the details customers need to recognize and contact your business.</p><form id="setupForm" class="business-form"><div class="form-grid"><div class="field"><label for="setupName">Business name <em>*</em></label><input id="setupName" maxlength="120" required placeholder="e.g. Dineo’s Kitchen"></div><div class="field"><label for="setupCategory">Business category <em>*</em></label><select id="setupCategory" required><option value="">Choose a category</option></select><small class="category-help">Choose the main StoreNest marketplace category for your business. You can still sell different products and services.</small></div><div class="field full-field"><label for="setupDescription">Business description</label><textarea id="setupDescription" maxlength="500" rows="3" placeholder="Tell customers what you offer"></textarea></div><div class="field"><label for="setupLocation">Location</label><input id="setupLocation" placeholder="Town, province"></div><div class="field"><label for="setupPhone">Contact number</label><input id="setupPhone" type="tel" placeholder="e.g. 060 000 0000"></div><div class="field"><label for="setupEmail">Contact email</label><input id="setupEmail" type="email" placeholder="Business email"></div><div class="field"><label for="setupWebsite">Website or social link</label><input id="setupWebsite" type="url" placeholder="https://"></div><div class="field"><label for="setupHours">Operating hours</label><input id="setupHours" placeholder="e.g. Mon–Sat, 08:00–17:00"></div></div><div class="message" id="setupMessage" role="status" aria-live="polite" hidden></div><div class="modal-actions"><button class="outline-button" type="button" data-close-modal>Do this later</button><button class="primary-button" type="submit">Save and continue <span>→</span></button></div></form></div></div>
   <div class="modal-backdrop" id="itemModal" hidden><div class="modal-card item-modal" role="dialog" aria-modal="true" aria-labelledby="itemModalTitle"><div class="modal-head"><div><span class="eyebrow">YOUR CATALOGUE</span><h3 id="itemModalTitle">Add an item</h3></div><button class="close-modal" type="button" data-close-modal aria-label="Close">×</button></div><p class="modal-subtitle">Add a product or service to your business catalogue.</p><form id="itemForm" class="business-form"><input type="hidden" id="itemId"><div class="form-grid"><div class="field"><label for="itemType">Item type <em>*</em></label><select id="itemType"><option value="product">Product</option><option value="service">Service</option></select></div><div class="field"><label for="itemName">Name <em>*</em></label><input id="itemName" maxlength="120" required placeholder="e.g. Kota combo"></div><div class="field" id="itemPriceField"><label for="itemPrice">Price (ZAR) <em>*</em></label><div class="price-input"><span>R</span><input id="itemPrice" type="number" min="0" step="0.01" required placeholder="0.00"></div></div>
 <div id="bookingPricingFields" class="booking-pricing-fields full-field" hidden>
- <div class="booking-pricing-heading"><strong>Booking pricing (optional)</strong><small>For Catering &amp; Decor service bookings. Leave pricing blank to quote after discussing the event.</small></div>
+ <div class="booking-pricing-heading"><strong>Booking pricing (optional)</strong><small>For Catering &amp; Decor bookings. Leave pricing blank to quote after discussing the event.</small></div>
  <div class="booking-pricing-grid">
   <div class="field"><label for="itemPriceRangeMin">Price from (ZAR)</label><div class="price-input"><span>R</span><input id="itemPriceRangeMin" type="number" min="0" step="0.01" placeholder="Optional"></div></div>
   <div class="field"><label for="itemPriceRangeMax">Price up to (ZAR)</label><div class="price-input"><span>R</span><input id="itemPriceRangeMax" type="number" min="0" step="0.01" placeholder="Optional"></div></div>
@@ -1269,11 +1269,11 @@ function optionsForSave(){
 }
 
 function isCateringDecorStore(){return window.StoreNestCategoryId?.(currentBusiness?.category)==="events-decor"}
-function usesBookingPricing(){return isCateringDecorStore()&&$("itemType").value==="service"}
+function usesBookingPricing(){return isCateringDecorStore()}
 function syncItemPricingFields(){const booking=usesBookingPricing();$("itemPriceField").hidden=booking;$("bookingPricingFields").hidden=!booking;$("itemPrice").required=!booking}
 $("itemType").addEventListener("change",syncItemPricingFields);
 function ownerItemPriceLabel(item){
- if(!isCateringDecorStore()||item.item_type!=="service")return formatOrderMoney(item.price);
+ if(!isCateringDecorStore())return formatOrderMoney(item.price);
  const min=item.price_range_min??(Number(item.price)>0?item.price:null),max=item.price_range_max;
  if(min!==null&&min!==undefined)return max!==null&&max!==undefined?formatOrderMoney(min)+" – "+formatOrderMoney(max):"From "+formatOrderMoney(min);
  return Number(item.price)>0?"From "+formatOrderMoney(item.price):"Request a quote";
@@ -1284,7 +1284,7 @@ function openItemModal(item){
   form.reset();$("itemId").value=item?.id||"";$("itemModalTitle").textContent=item?"Edit item":"Add an item";
   const itemType=item?.item_type||(isCateringDecorStore()?"service":"product");$("itemType").value=itemType;
   $("itemName").value=item?.name||"";$("itemPrice").value=item?.price??"";
-  const legacyStart=isCateringDecorStore()&&itemType==="service"&&Number(item?.price)>0?item.price:"";
+  const legacyStart=isCateringDecorStore()&&Number(item?.price)>0?item.price:"";
   $("itemPriceRangeMin").value=item?.price_range_min??legacyStart;
   $("itemPriceRangeMax").value=item?.price_range_max??"";$("itemBookingFee").value=item?.booking_fee??"";
   syncItemPricingFields();$("itemDescription").value=item?.description||"";

@@ -18,7 +18,7 @@ function render(){
   const product=items.find(i=>i.id===r.item_id);
   const itemName=product?.name||"Service package";
   const pricing=[];
-  if(product?.item_type==="service"&&window.StoreNestCategoryId?.(activeBusiness?.category)==="events-decor"){
+  if(product&&window.StoreNestCategoryId?.(activeBusiness?.category)==="events-decor"){
    const min=product.price_range_min??(Number(product.price)>0?product.price:null),max=product.price_range_max;
    pricing.push(min==null?"Price on request":max==null?"From "+money(min):money(min)+" – "+money(max));
    if(product.booking_fee!=null&&Number(product.booking_fee)>0)pricing.push("Booking fee: "+money(product.booking_fee));

@@ -1296,7 +1296,7 @@ function renderGalleryScale(group){
 }
 function renderGalleryOptions(item,initialSelection={}){
  const container=$("galleryCustomization"),list=$("galleryChoiceGroups");
- const groups=item.item_type==="service"?[]:window.StoreNestOptions.normalize(item.customization_options);
+ const groups=window.StoreNestBookings.isBookingOffer(item,activePublicBusiness)?[]:window.StoreNestOptions.normalize(item.customization_options);
  galleryOptionSelections={};
  container.hidden=!groups.length;
  $("galleryOptionsError").hidden=true;
@@ -1386,23 +1386,23 @@ $("galleryChoiceGroups").addEventListener("change",event=>{
 
 function openProductGallery(id,trigger,cartKey=null){
  const item=availableItems.find(row=>row.id===id);if(!item)return;
- const isService=window.StoreNestBookings.isService(item);
+ const isBookingOffer=window.StoreNestBookings.isBookingOffer(item,activePublicBusiness);
  const editRow=cartKey?cart.get(cartKey):null;
  activeGalleryItem=item;galleryReturnFocus=trigger;galleryIndex=0;galleryEditCartKey=editRow?cartKey:null;
  $("galleryTitle").textContent=item.name;$("galleryDescription").textContent=item.description||"";
- $("galleryProductActionRow").hidden=isService;
- $("galleryServiceActionRow").hidden=!isService;
- $("galleryTotalBar").hidden=isService;
+ $("galleryProductActionRow").hidden=isBookingOffer;
+ $("galleryServiceActionRow").hidden=!isBookingOffer;
+ $("galleryTotalBar").hidden=isBookingOffer;
  $("galleryProductAdd").dataset.addItem=id;
  $("galleryAdd").dataset.addItem=id;
  $("galleryProductAdd").textContent=editRow?"Save changes":"＋ Add";
  $("galleryProductPrice").textContent=money(item.price);
  $("galleryServicePrice").textContent=window.StoreNestBookings.priceLabel(item,activePublicBusiness);
- $("galleryAdd").textContent=isService?"Request booking":"＋ Add";
+ $("galleryAdd").textContent=isBookingOffer?"Request booking":"＋ Add";
  renderGalleryOptions(item,editRow?.selection||{});
  if(editRow)$("galleryNotes").value=editRow.note||"";
- if(!isService)updateGalleryOptionsPrice();
- const wa=$("galleryWhatsApp"),waUrl=isService?serviceWhatsAppUrl(activePublicBusiness,item):"";
+ if(!isBookingOffer)updateGalleryOptionsPrice();
+ const wa=$("galleryWhatsApp"),waUrl=isBookingOffer?serviceWhatsAppUrl(activePublicBusiness,item):"";
  wa.hidden=!waUrl;
  if(waUrl){wa.href=waUrl;wa.setAttribute("aria-label","Contact "+activePublicBusiness.name+" on WhatsApp about "+item.name)}else wa.removeAttribute("href");
  const photos=galleryPhotos(item);
@@ -1417,7 +1417,7 @@ $("galleryDialog").addEventListener("click",event=>{if(event.target===$("gallery
 function handleGalleryAdd(){
  const item=activeGalleryItem;if(!item)return;
  const trigger=galleryReturnFocus;
- if(window.StoreNestBookings.isService(item)){closeProductGallery();window.StoreNestBookings.open(item,trigger);return}
+ if(window.StoreNestBookings.isBookingOffer(item,activePublicBusiness)){closeProductGallery();window.StoreNestBookings.open(item,trigger);return}
  const editingKey=galleryEditCartKey;
  const note=editingKey!==null?$("galleryNotes").value:($("galleryCustomization").hidden?"":$("galleryNotes").value);
  const quote=editingKey?updateCartProduct(editingKey,item,galleryOptionSelections,note):addProductToCart(item,galleryOptionSelections,note);
@@ -1478,7 +1478,7 @@ $("main").addEventListener("click",e=>{
   if(category){selectStorefrontCategory(category.dataset.categoryTab);return}
 
   const add=e.target.closest("[data-add-item]");
-  if(add){const item=availableItems.find(i=>i.id===add.dataset.addItem);if(!item)return;if(window.StoreNestBookings.isService(item)){window.StoreNestBookings.open(item,add);return}if(window.StoreNestOptions.normalize(item.customization_options).length){openProductGallery(item.id,add);return}addProductToCart(item);return}
+  if(add){const item=availableItems.find(i=>i.id===add.dataset.addItem);if(!item)return;if(window.StoreNestBookings.isBookingOffer(item,activePublicBusiness)){window.StoreNestBookings.open(item,add);return}if(window.StoreNestOptions.normalize(item.customization_options).length){openProductGallery(item.id,add);return}addProductToCart(item);return}
   const open=e.target.closest("[data-open-product]");if(open){openProductGallery(open.dataset.openProduct,open);return}
   if(e.target.closest("#openCart"))openCart();
 });
@@ -1639,7 +1639,7 @@ function renderPublishedStorefront(root,client,business,items,storefrontSections
    const logo=safeUrl(business.logo_url);
    const cardForItem=item=>{
      const media=galleryPhotos(item),first=media[0],count=media.length;
-     const service=window.StoreNestBookings.isService(item);
+     const service=window.StoreNestBookings.isBookingOffer(item,business);
      const bookingFee=service?window.StoreNestBookings.bookingFeeLabel(item,business):"";
      const action=service?"Request booking":"Add";
      const whatsapp=service?serviceWhatsAppAction(business,item):"";
@@ -1647,7 +1647,7 @@ function renderPublishedStorefront(root,client,business,items,storefrontSections
    };
    const hasProducts=availableItems.some(item=>item.item_type==="product");
    const hasServices=availableItems.some(item=>item.item_type==="service");
-   const catalogueLabel=hasServices?"Services":"Products";
+   const catalogueLabel=window.StoreNestCategoryId(business.category)==="events-decor"||hasServices?"Services":"Products";
    const sectionStyles=["auto","menu","showcase","portfolio","catalogue","booking"];
    // Only owner-created sections count as categories. Never manufacture a
    // "Products & Services" category for stores with no categories.
