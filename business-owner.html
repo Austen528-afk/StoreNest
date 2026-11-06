@@ -895,6 +895,8 @@ async function chooseBusiness(id){
  const found=ownerBusinesses.find(b=>b.id===id);if(!found)return;
  switchingBusiness=true;$("businessSelect").disabled=true;$("createBusinessButton").disabled=true;$("deleteBusinessButton").disabled=true;
  try{
+  resetOwnerOrdersRealtime();
+  ownerOrdersHistoryMode=false;
   applyBusiness(found);
   businessItems=[];businessCategories=[];storefrontDraft=null;renderItems();renderCategories();updateStats();
   await loadBusinessData();await loadStorefrontDraft();
@@ -1283,7 +1285,9 @@ function formatOrderMoney(value){return "R"+Number(value||0).toFixed(2)}
 function renderBusinessOrders(rows){
  const list=$("ownerOrdersList"),empty=$("ownerOrdersEmpty"),summary=$("ownerOrdersSummary");
  const heading=$("ownerOrdersHeading"),description=$("ownerOrdersDescription"),historyButton=$("ownerOrdersHistory");
- const visibleRows=(Array.isArray(rows)?rows:[]).filter(row=>ownerOrdersHistoryMode?row.status==="completed":row.status!=="completed");
+ const businessId=String(currentBusiness?.id||"");
+ const businessRows=(Array.isArray(rows)?rows:[]).filter(row=>String(row.business_id)===businessId);
+ const visibleRows=businessRows.filter(row=>ownerOrdersHistoryMode?row.status==="completed":row.status!=="completed");
  if(heading)heading.textContent=ownerOrdersHistoryMode?"Order history":"Orders";
  if(description)description.textContent=ownerOrdersHistoryMode?"Completed orders are kept here for your records.":"Review active customer orders, item choices and payment method.";
  if(historyButton){historyButton.textContent=ownerOrdersHistoryMode?"← Active orders":"▤ History";historyButton.setAttribute("aria-pressed",String(ownerOrdersHistoryMode))}
@@ -1412,7 +1416,8 @@ async function loadBusinessOrders(){
   }
   if(currentBusiness?.id!==businessId)return;
   const fetchedIds=new Set(fetched.map(row=>row.id));
-  ownerOrdersRows=[...ownerOrdersRows.filter(row=>!fetchedIds.has(row.id)),...fetched];
+  const liveRows=ownerOrdersRows.filter(row=>String(row.business_id)===String(businessId)&&!fetchedIds.has(row.id));
+  ownerOrdersRows=[...fetched,...liveRows].sort((a,b)=>String(b.created_at||"").localeCompare(String(a.created_at||"")));
   renderBusinessOrders(ownerOrdersRows);
  }catch(error){
   console.error("StoreNest orders could not be loaded:",error);
