@@ -645,6 +645,39 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
 .checkout-success .cart-checkout-button{margin-top:8px}
 @media(max-width:480px){.order-tracking-card{padding:9px}.order-tracking-step{font-size:9px}.checkout-success{justify-content:flex-start;padding:14px 0}.order-tracking-share{min-height:44px}}
 @media(max-width:480px){.checkout-step{gap:12px}.checkout-fields input{min-height:44px}.checkout-submit-row strong{font-size:17px}}
+
+/* Catering & Decor detail view: title, full media, then one booking details area. */
+.gallery-booking-details{display:contents}
+.gallery-booking-details[hidden]{display:none!important}
+.gallery-overlay-pager{display:none}
+#galleryDialog.gallery-booking-style .gallery-panel{background:var(--canvas,#f8f6f1);color:var(--ink,#342e27)}
+#galleryDialog.gallery-booking-style .gallery-top{position:sticky;top:0;z-index:5;background:var(--surface,#fff);border-bottom:1px solid var(--border,#e8e1d6)}
+#galleryDialog.gallery-booking-style .gallery-top h2{font-size:clamp(20px,3vw,26px);line-height:1.2;font-weight:760}
+#galleryDialog.gallery-booking-style .gallery-stage{position:relative;flex:0 0 auto;height:min(62dvh,620px);min-height:240px;background:var(--surface,#eeeae3)}
+#galleryDialog.gallery-booking-style .gallery-stage img,
+#galleryDialog.gallery-booking-style .gallery-stage video{display:block;width:100%;height:100%;max-width:100%;max-height:none;object-fit:contain}
+#galleryDialog.gallery-booking-style .gallery-overlay-pager{position:absolute;inset:0;display:block;z-index:2;pointer-events:none}
+#galleryDialog.gallery-booking-style #galleryPosition{position:absolute;top:14px;right:14px;z-index:1;padding:5px 9px;border-radius:999px;background:#20231ecc;color:#fff;font-size:12px;font-weight:750}
+#galleryDialog.gallery-booking-style #galleryPosition[hidden]{display:none!important}
+#galleryDialog.gallery-booking-style .gallery-dots{position:absolute;left:0;right:0;bottom:13px;justify-content:center;pointer-events:auto}
+#galleryDialog.gallery-booking-style .gallery-dots button{background:#fffD;box-shadow:0 1px 5px #0005}
+#galleryDialog.gallery-booking-style .gallery-dots button.active{background:var(--accent,#27856d)}
+#galleryDialog.gallery-booking-style .gallery-booking-details{display:block;padding:17px 22px 0;background:var(--canvas,#f8f6f1);border-top:1px solid var(--border,#e8e1d6)}
+#galleryDialog.gallery-booking-style .gallery-description{margin:0;padding:0;font-size:15px;line-height:1.65;color:var(--ink,#342e27)}
+#galleryDialog.gallery-booking-style .gallery-description:empty{display:none}
+#galleryDialog.gallery-booking-style .gallery-service-fee{margin-top:10px;color:var(--muted,#6d6157);font-size:13px;font-weight:650;line-height:1.5}
+#galleryDialog.gallery-booking-style .gallery-service-fee[hidden]{display:none!important}
+#galleryDialog.gallery-booking-style .gallery-bottom{display:block;padding:12px 22px 20px;background:var(--canvas,#f8f6f1);border:0}
+#galleryDialog.gallery-booking-style .gallery-action-row{width:100%;min-width:0;justify-content:space-between}
+#galleryDialog.gallery-booking-style .gallery-price{font-size:clamp(19px,2.5vw,22px);color:var(--ink,#342e27)}
+@media(max-width:480px){
+ #galleryDialog.gallery-booking-style .gallery-stage{height:min(64dvh,700px);min-height:220px}
+ #galleryDialog.gallery-booking-style .gallery-booking-details{padding:14px 17px 0}
+ #galleryDialog.gallery-booking-style .gallery-bottom{padding:12px 17px max(18px,env(safe-area-inset-bottom))}
+ #galleryDialog.gallery-booking-style .gallery-action-row{align-items:flex-start;flex-direction:column;gap:12px}
+ #galleryDialog.gallery-booking-style .gallery-actions{width:100%;margin-left:0;justify-content:stretch}
+ #galleryDialog.gallery-booking-style .gallery-actions :is(.add,.service-whatsapp){flex:1 1 0;min-width:0;text-align:center}
+}
 </style>
 <link rel="stylesheet" href="/theme.css">
 <link rel="stylesheet" href="/service-bookings.css">
@@ -783,15 +816,15 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
  <section class="gallery-panel" role="dialog" aria-modal="true" aria-labelledby="galleryTitle">
   <div id="galleryScrollArea" class="gallery-scroll-area">
   <div class="gallery-top"><div><h2 id="galleryTitle">Product</h2></div><button id="galleryClose" class="gallery-close" type="button" aria-label="Close product photos">×</button></div>
-  <div class="gallery-stage"><img id="galleryImage" alt="Product photo"><video id="galleryVideo" controls playsinline preload="metadata" hidden aria-label="Product video"></video></div>
-  <p id="galleryDescription" class="gallery-description"></p>
+  <div class="gallery-stage"><img id="galleryImage" alt="Product photo"><video id="galleryVideo" controls playsinline preload="metadata" hidden aria-label="Product video"></video><div id="galleryOverlayPager" class="gallery-overlay-pager" role="group" aria-label="Media gallery navigation"></div></div>
+  <div id="galleryBookingDetails" class="gallery-booking-details"><p id="galleryDescription" class="gallery-description"></p><div id="galleryServiceFee" class="gallery-service-fee" hidden></div></div>
   <div id="galleryProductActionRow" class="gallery-product-action-row" hidden><strong id="galleryProductPrice" class="gallery-price"></strong></div>
   <div id="galleryCustomization" class="gallery-customization" hidden>
    <div id="galleryChoiceGroups"></div>
    <label class="gallery-notes-label">Special instructions (optional)<textarea id="galleryNotes" maxlength="200" rows="2" placeholder="e.g. No onions, less salt"></textarea></label>
    <p id="galleryOptionsError" class="gallery-options-error" role="alert" hidden></p>
   </div>
-  <div class="gallery-bottom"><span id="galleryPosition"></span><div id="galleryDots" class="gallery-dots"></div><div id="galleryServiceActionRow" class="gallery-action-row"><strong id="galleryServicePrice" class="gallery-price"></strong><div class="gallery-actions"><button id="galleryAdd" class="add" type="button">＋ Add</button><a id="galleryWhatsApp" class="service-whatsapp" target="_blank" rel="noopener noreferrer" hidden aria-label="Contact business on WhatsApp"><span aria-hidden="true">💬</span> WhatsApp</a></div></div></div>
+  <div class="gallery-bottom" id="galleryBottom"><span id="galleryPosition"></span><div id="galleryDots" class="gallery-dots"></div><div id="galleryServiceActionRow" class="gallery-action-row"><strong id="galleryServicePrice" class="gallery-price"></strong><div class="gallery-actions"><button id="galleryAdd" class="add" type="button">＋ Add</button><a id="galleryWhatsApp" class="service-whatsapp" target="_blank" rel="noopener noreferrer" hidden aria-label="Contact business on WhatsApp"><span aria-hidden="true">💬</span> WhatsApp</a></div></div></div>
   </div>
   <div id="galleryTotalBar" class="gallery-total-bar" hidden aria-live="polite"><div class="gallery-total-copy"><span>Total</span><strong id="galleryTotal">R0.00</strong></div><button id="galleryProductAdd" class="add" type="button">＋ Add</button></div>
  </section>
@@ -1387,9 +1420,17 @@ $("galleryChoiceGroups").addEventListener("change",event=>{
 function openProductGallery(id,trigger,cartKey=null){
  const item=availableItems.find(row=>row.id===id);if(!item)return;
  const isBookingOffer=window.StoreNestBookings.isBookingOffer(item,activePublicBusiness);
+ const isDecorBooking=isBookingOffer&&window.StoreNestCategoryId(activePublicBusiness?.category)==="events-decor";
  const editRow=cartKey?cart.get(cartKey):null;
  activeGalleryItem=item;galleryReturnFocus=trigger;galleryIndex=0;galleryEditCartKey=editRow?cartKey:null;
+ $("galleryDialog").classList.toggle("gallery-booking-style",isDecorBooking);
+ const bookingFee=isBookingOffer?window.StoreNestBookings.bookingFeeLabel(item,activePublicBusiness):"";
  $("galleryTitle").textContent=item.name;$("galleryDescription").textContent=item.description||"";
+ $("galleryServiceFee").textContent=bookingFee;$("galleryServiceFee").hidden=!bookingFee;
+ $("galleryBookingDetails").hidden=isDecorBooking&&!String(item.description||"").trim()&&!bookingFee;
+ const galleryBottom=$("galleryBottom"),overlayPager=$("galleryOverlayPager");
+ if(isDecorBooking)overlayPager.append($("galleryPosition"),$("galleryDots"));
+ else galleryBottom.prepend($("galleryPosition"),$("galleryDots"));
  $("galleryProductActionRow").hidden=isBookingOffer;
  $("galleryServiceActionRow").hidden=!isBookingOffer;
  $("galleryTotalBar").hidden=isBookingOffer;
