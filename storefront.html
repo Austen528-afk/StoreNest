@@ -856,34 +856,32 @@ function updateCartProduct(key,item,selection,note=""){
 }
 
 const ORDER_TRACKING_STORAGE_PREFIX="storenest_order_tracking:";
-let orderTrackingMemory=[];
-function orderTrackingStorageKey(){
- return activePublicBusiness?.id?ORDER_TRACKING_STORAGE_PREFIX+activePublicBusiness.id:null;
+function orderTrackingStorageKey(customerUserId="shared"){
+ return activePublicBusiness?.id?ORDER_TRACKING_STORAGE_PREFIX+activePublicBusiness.id+":"+String(customerUserId||"shared"):null;
 }
-function readTrackedOrders(){
- const key=orderTrackingStorageKey();if(!key)return orderTrackingMemory;
+function readTrackedOrders(customerUserId="shared"){
+ const key=orderTrackingStorageKey(customerUserId);if(!key)return [];
  try{
   const saved=localStorage.getItem(key);
-  if(!saved)return orderTrackingMemory;
+  if(!saved)return [];
   const parsed=JSON.parse(saved);
-  orderTrackingMemory=Array.isArray(parsed)?parsed.filter(order=>order&&typeof order.id==="string"&&typeof order.token==="string").slice(0,5):[];
-  return orderTrackingMemory;
- }catch(_){return orderTrackingMemory}
+  return Array.isArray(parsed)?parsed.filter(order=>order&&typeof order.id==="string"&&typeof order.token==="string").slice(0,5):[];
+ }catch(_){return []}
 }
-function saveTrackedOrders(orders){
- orderTrackingMemory=orders.slice(0,5);
- const key=orderTrackingStorageKey();if(!key)return;
- try{localStorage.setItem(key,JSON.stringify(orderTrackingMemory))}catch(_){}
+function saveTrackedOrders(orders,customerUserId="shared"){
+ const key=orderTrackingStorageKey(customerUserId);if(!key)return;
+ try{localStorage.setItem(key,JSON.stringify((orders||[]).slice(0,5)))}catch(_){}
 }
 function rememberTrackedOrder(order){
- const orders=readTrackedOrders().filter(existing=>existing.id!==order.id);
- orders.unshift(order);saveTrackedOrders(orders);
+ const customerUserId=order.customerUserId||"shared";
+ const orders=readTrackedOrders(customerUserId).filter(existing=>existing.id!==order.id);
+ orders.unshift(order);saveTrackedOrders(orders,customerUserId);
 }
 function restoreTrackedOrderFromUrl(){
  const params=new URLSearchParams(location.hash.slice(1));
  const id=params.get("order"),token=params.get("token");
  if(!id||!token||!/^[0-9a-f-]{36}$/i.test(id)||!/^[0-9a-f-]{36}$/i.test(token))return false;
- rememberTrackedOrder({id,token,status:"new",createdAt:new Date().toISOString(),businessName:activePublicBusiness?.name||"Store"});
+ rememberTrackedOrder({id,token,status:"new",createdAt:new Date().toISOString(),businessName:activePublicBusiness?.name||"Store",sharedTracking:true});
  try{history.replaceState(null,"",location.pathname+location.search)}catch(_){}
  return true;
 }
@@ -1159,7 +1157,7 @@ async function submitCheckout(event){
   const {error}=await storefrontClient.from("storefront_orders").insert(payload);
   if(error)throw error;
   const reference=orderId.replace(/-/g,"").slice(0,8).toUpperCase();
-  const trackedOrder={id:orderId,token:trackingToken,status:"new",createdAt:new Date().toISOString(),businessName:activePublicBusiness.name||"Store",trackingUrl:location.href};
+  const trackedOrder={id:orderId,token:trackingToken,customerUserId:user.id,status:"new",createdAt:new Date().toISOString(),businessName:activePublicBusiness.name||"Store",trackingUrl:location.href};
   rememberTrackedOrder(trackedOrder);
   cart.clear();renderCart();
   $("checkoutForm").hidden=true;$("cartReviewView").hidden=true;$("checkoutSuccessView").hidden=false;
