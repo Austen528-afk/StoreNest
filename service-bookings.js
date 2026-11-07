@@ -1,7 +1,8 @@
 /* Customer-side StoreNest service booking requests: no charges, no basket. */
 (function(){
 "use strict";
-let client=null,business=null,activeItem=null,returnFocus=null;
+let client=null,business=null,activeItem=null,returnFocus=null,bookingPrefillSequence=0;
+const bookingTouchedFields=new Set();
 const $=id=>document.getElementById(id);
 const money=value=>"R"+Number(value||0).toFixed(2);
 const isService=item=>item?.item_type==="service";
@@ -47,10 +48,36 @@ function setContext(nextClient,nextBusiness,items){
   if(footer)footer.textContent="Request a booking · No payment taken until the business confirms the details";
  }
 }
+async function prefillBookingProfile(form,item,sequence){
+ try{
+  const {data,error}=await client.auth.getUser();
+  if(error)throw error;
+  const user=data?.user;
+  if(!user)return;
+  let profile=null;
+  try{profile=await window.StoreNestCustomerAuth.getProfile(user.id)}
+  catch(error){console.warn("Could not load the booking customer profile:",error)}
+  if(sequence!==bookingPrefillSequence||activeItem?.id!==item.id||$("bookingBackdrop").hidden)return;
+  const values={
+   customer_name:profile?.profile_name||user.user_metadata?.full_name||"",
+   contact_phone:profile?.contact_phone||user.phone||"",
+   contact_email:profile?.contact_email||user.email||"",
+   event_location:profile?.exact_address||profile?.place||""
+  };
+  for(const [name,value] of Object.entries(values)){
+   const field=form.elements.namedItem(name);
+   if(field&&!bookingTouchedFields.has(name)&&!String(field.value||"").trim()&&value)field.value=String(value);
+  }
+ }catch(error){console.warn("Could not load saved booking contact details:",error)}
+}
+$("bookingRequestForm").addEventListener("input",event=>{
+ const name=event.target?.name;
+ if(name)bookingTouchedFields.add(name);
+});
 function open(item,trigger){
  if(!isBookingOffer(item,business)||!client||!business)return;
  activeItem=item;returnFocus=trigger||null;
- const form=$("bookingRequestForm");form.reset();form.hidden=false;
+ const form=$("bookingRequestForm");form.reset();bookingTouchedFields.clear();form.hidden=false;
  $("bookingSuccess").hidden=true;$("bookingFormError").hidden=true;
  $("bookingPackageName").textContent=item.name;
  $("bookingPackagePrice").textContent=priceLabel(item);
@@ -58,6 +85,8 @@ function open(item,trigger){
  const date=form.elements.namedItem("event_date");
  date.min=todayLocalDate();date.value="";
  $("bookingBackdrop").hidden=false;document.body.style.overflow="hidden";
+ const sequence=++bookingPrefillSequence;
+ void prefillBookingProfile(form,item,sequence);
  form.elements.namedItem("customer_name").focus();
 }
 function close(){
