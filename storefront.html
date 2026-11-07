@@ -1231,7 +1231,8 @@ function galleryMediaEntries(item){
 function isStorefrontDecorOffering(item){
  if(window.StoreNestCategoryId?.(activePublicBusiness?.category)!=="events-decor"||item?.item_type!=="service")return false;
  const section=activePublicSections.find(row=>row.id===item.category_id),name=String(section?.name||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
- return /decor|decoration/.test(name)&&!/cater/.test(name);
+ // Décor sets belong to event/decor services unless the owner placed the service in Catering.
+ return !/cater/.test(name);
 }
 function storefrontDecorColorSets(item){
  const entries=galleryMediaEntries(item),byUrl=new Map(entries.map(entry=>[entry.url,entry]));
