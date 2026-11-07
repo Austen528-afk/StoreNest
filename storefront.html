@@ -914,7 +914,7 @@ body[data-store-category="events-decor"] #catalog .decor-service-feed-card .serv
  min-height:0;
  flex:1 1 auto;
  overflow:hidden;
- touch-action:pan-y
+ touch-action:pan-x pan-y
 }
 #galleryDialog.gallery-photo-only .gallery-top{
  position:absolute;
@@ -966,7 +966,7 @@ body[data-store-category="events-decor"] #catalog .decor-service-feed-card .serv
  justify-content:center;
  overflow:hidden;
  background:#050606;
- touch-action:pan-y
+ touch-action:pan-x pan-y
 }
 #galleryDialog.gallery-photo-only .gallery-stage .gallery-slide img,
 #galleryDialog.gallery-photo-only .gallery-stage .gallery-slide video{
@@ -1250,9 +1250,9 @@ function storefrontDecorColorSets(item){
  return entries.length?[{id:"legacy-media",name:"Colour set",description:"",entries}]:[];
 }
 function galleryViewEntries(item){
- if(activeGalleryItem?.id===item?.id&&activeGalleryDecorSetId){
-  const set=storefrontDecorColorSets(item).find(row=>row.id===activeGalleryDecorSetId);
-  if(set?.entries.length)return set.entries;
+ if(isStorefrontDecorOffering(item)){
+  const sets=storefrontDecorColorSets(item);
+  if(sets.length)return sets.flatMap(set=>set.entries.map(entry=>({...entry,decorPhotoSetId:set.id,decorPhotoSetName:set.name,decorPhotoSetDescription:set.description})));
  }
  return galleryMediaEntries(item);
 }
@@ -1722,14 +1722,14 @@ function updateGalleryPosition(){
 }
 
 function renderGallerySlides(){
- const media=galleryPhotos(activeGalleryItem),track=$("galleryTrack"),dots=$("galleryDots");
+ const entries=galleryViewEntries(activeGalleryItem),media=entries.map(entry=>entry.url),track=$("galleryTrack"),dots=$("galleryDots");
  track.replaceChildren();dots.replaceChildren();track.scrollLeft=0;
  media.forEach((url,i)=>{
   const isVideo=isProductVideo(url),slide=document.createElement("div");
   slide.className="gallery-slide";
   slide.setAttribute("role","group");
   slide.setAttribute("aria-label",(isVideo?"Video ":"Photo ")+(i+1)+" of "+media.length);
-  const entry=galleryMediaEntry(activeGalleryItem,url);
+  const entry=entries[i]||galleryMediaEntry(activeGalleryItem,url);
   if(isVideo){
    const video=document.createElement("video");
    video.controls=true;video.playsInline=true;video.preload="metadata";
@@ -1886,6 +1886,11 @@ function openProductGallery(id,trigger,cartKey=null){
  const availableDecorSets=isStorefrontDecorOffering(item)?storefrontDecorColorSets(item):[];
  const requestedDecorSet=trigger?.dataset?.decorSetId;
  activeGalleryDecorSetId=availableDecorSets.some(set=>set.id===requestedDecorSet)?requestedDecorSet:(Array.isArray(item.decor_color_sets)&&item.decor_color_sets.length?availableDecorSets[0]?.id||null:null);
+ if(activeGalleryDecorSetId){
+  const entries=galleryViewEntries(item),requestedPhotoIndex=Number(trigger?.dataset?.decorPhotoIndex);
+  const firstSetIndex=entries.findIndex(entry=>entry.decorPhotoSetId===activeGalleryDecorSetId);
+  galleryIndex=Number.isInteger(requestedPhotoIndex)&&entries[requestedPhotoIndex]?.decorPhotoSetId===activeGalleryDecorSetId?requestedPhotoIndex:Math.max(firstSetIndex,0);
+ }
  $("galleryDialog").classList.toggle("gallery-booking-style",isDecorBooking);
  $("galleryDialog").classList.toggle("gallery-photo-only",isDecorBooking);
  const bookingFee=isBookingOffer?window.StoreNestBookings.bookingFeeLabel(item,activePublicBusiness):"";
@@ -1971,6 +1976,14 @@ $("galleryTrack").addEventListener("scroll",()=>{
   if(nextIndex!==galleryIndex){
    galleryIndex=nextIndex;
    track.querySelectorAll("video").forEach((video,i)=>{if(i!==galleryIndex)video.pause()});
+  }
+  if(isStorefrontDecorOffering(activeGalleryItem)&&Array.isArray(activeGalleryItem.decor_color_sets)&&activeGalleryItem.decor_color_sets.length){
+   const entry=galleryViewEntries(activeGalleryItem)[nextIndex];
+   const set=storefrontDecorColorSets(activeGalleryItem).find(row=>row.id===entry?.decorPhotoSetId);
+   if(set){
+    activeGalleryDecorSetId=set.id;
+    syncDecorPhotoSelection(galleryReturnFocus?.closest(".decor-service-feed-card"),activeGalleryItem,set);
+   }
   }
   updateGalleryPosition();
  });
@@ -2168,6 +2181,10 @@ function wireDecorPhotoTrack(track){
   if(countLabel)countLabel.textContent=(index+1)+" / "+slideCount;
   const setId=track.children[index]?.dataset.decorPhotoSetId;
   const set=colorSets.find(row=>row.id===setId);
+  if(openButton){
+   openButton.dataset.decorPhotoIndex=String(index);
+   if(setId)openButton.dataset.decorSetId=setId;
+  }
   if(set)syncDecorPhotoSelection(card,item,set);
  };
  const schedulePositionUpdate=()=>{
