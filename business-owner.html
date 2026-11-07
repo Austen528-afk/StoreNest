@@ -1565,7 +1565,7 @@ async function createCatalogImageVariants(file){
    canvas.width=targetWidth;canvas.height=Math.max(1,Math.round(height*targetWidth/width));
    ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(image,0,0,canvas.width,canvas.height);
    const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/webp",.9));
-   if(blob?.size&&blob.type==="image/webp")variants.push({width:canvas.width,blob});
+   if(blob?.size&&blob.size<file.size&&blob.type==="image/webp")variants.push({width:canvas.width,blob});
   }
   return {width,height,variants};
  }finally{decoded.dispose()}
