@@ -704,6 +704,10 @@ body[data-store-category="events-decor"] #catalog .decor-service-feed-card{
  border-radius:8px;
  overflow:hidden
 }
+body[data-store-category="events-decor"] #catalog .catering-service-feed-card{
+ grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);
+ min-height:460px
+}
 body[data-store-category="events-decor"] #catalog .decor-service-feed-title{
  grid-area:title;
  min-width:0;
@@ -868,6 +872,7 @@ body[data-store-category="events-decor"] #catalog .decor-service-feed-card .serv
   min-height:0;
   aspect-ratio:4/5
  }
+ body[data-store-category="events-decor"] #catalog .catering-service-feed-card .art{aspect-ratio:4/3}
  body[data-store-category="events-decor"] #catalog .decor-service-feed-details{
   align-content:start;
   gap:13px;
@@ -1240,6 +1245,11 @@ function isStorefrontDecorOffering(item){
  const section=activePublicSections.find(row=>row.id===item.category_id),name=String(section?.name||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
  // Décor sets belong to event/decor services unless the owner placed the service in Catering.
  return !/cater/.test(name);
+}
+function isStorefrontCateringOffering(item){
+ if(window.StoreNestCategoryId?.(activePublicBusiness?.category)!=="events-decor"||item?.item_type!=="service")return false;
+ const section=activePublicSections.find(row=>row.id===item.category_id),name=String(section?.name||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+ return /cater/.test(name);
 }
 function storefrontDecorColorSets(item){
  const entries=galleryMediaEntries(item),byUrl=new Map(entries.map(entry=>[entry.url,entry]));
@@ -2292,6 +2302,7 @@ function renderPublishedStorefront(root,client,business,items,storefrontSections
    const cardForItem=item=>{
      const mediaEntries=galleryMediaEntries(item),service=window.StoreNestBookings.isBookingOffer(item,business);
      const decorBooking=service&&window.StoreNestCategoryId(business.category)==="events-decor";
+     const cateringBooking=decorBooking&&isStorefrontCateringOffering(item);
      const hasDecorColorSets=decorBooking&&isStorefrontDecorOffering(item);
      const colorSets=hasDecorColorSets?storefrontDecorColorSets(item):[];
      const hasConfiguredColorSets=hasDecorColorSets&&Array.isArray(item.decor_color_sets)&&item.decor_color_sets.length>0;
@@ -2322,7 +2333,7 @@ function renderPublishedStorefront(root,client,business,items,storefrontSections
      if(decorBooking){
        const colorPicker=hasConfiguredColorSets&&colorSets.length?'<div class="decor-color-set-picker" data-decor-color-picker="'+esc(item.id)+'"><span class="decor-color-set-label">Colour theme</span><div class="decor-color-set-options" role="group" aria-label="Choose a décor colour theme">'+colorSets.map((set,index)=>'<button type="button" class="decor-color-set-option" data-decor-color-set="'+esc(set.id)+'" data-item-id="'+esc(item.id)+'" aria-pressed="'+String(index===0)+'">'+esc(set.name)+'</button>').join("")+'</div></div>':"";
        const description=hasConfiguredColorSets&&firstColorSet?.description?firstColorSet.description:(item.description||"");
-       return '<article class="card decor-service-feed-card"><div class="decor-service-feed-title"><h3>'+titleButton+'</h3></div><button type="button" class="item-open decor-service-feed-open" data-open-product="'+esc(item.id)+'"'+setAttribute+' aria-label="View '+esc(item.name)+' photos, description and booking details"><div class="art decor-photo-carousel">'+decorArtwork+'</div></button><div class="decor-service-feed-details">'+colorPicker+'<p class="decor-service-description" data-decor-color-description="'+esc(item.id)+'"'+(description?'':' hidden')+'>'+esc(description)+'</p><div class="decor-service-prices"><strong class="decor-service-price">'+esc(window.StoreNestBookings.priceLabel(item,business))+'</strong>'+(bookingFee?'<span class="decor-service-fee">'+esc(bookingFee)+'</span>':'')+'</div><div class="service-action-row">'+actionButton+whatsapp+'</div><p class="service-disclaimer">Date and final quotation confirmed by the business.</p></div></article>';
+       return '<article class="card decor-service-feed-card'+(cateringBooking?' catering-service-feed-card':'')+'"><div class="decor-service-feed-title"><h3>'+titleButton+'</h3></div><button type="button" class="item-open decor-service-feed-open" data-open-product="'+esc(item.id)+'"'+setAttribute+' aria-label="View '+esc(item.name)+' photos, description and booking details"><div class="art decor-photo-carousel">'+decorArtwork+'</div></button><div class="decor-service-feed-details">'+colorPicker+'<p class="decor-service-description" data-decor-color-description="'+esc(item.id)+'"'+(description?'':' hidden')+'>'+esc(description)+'</p><div class="decor-service-prices"><strong class="decor-service-price">'+esc(window.StoreNestBookings.priceLabel(item,business))+'</strong>'+(bookingFee?'<span class="decor-service-fee">'+esc(bookingFee)+'</span>':'')+'</div><div class="service-action-row">'+actionButton+whatsapp+'</div><p class="service-disclaimer">Date and final quotation confirmed by the business.</p></div></article>';
      }
      return '<article class="card"><button type="button" class="item-open" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos, videos and details"><div class="art">'+artwork+'</div></button><div class="item-body"><h3>'+titleButton+'</h3><div class="item-bottom"><span class="price">'+esc(service?window.StoreNestBookings.priceLabel(item,business):money(item.price))+'</span>'+(service?'<div class="service-action-row">':'')+actionButton+(service?whatsapp+'</div>':"")+'</div>'+(service?'<div class="service-disclaimer">'+(bookingFee?'<strong>'+esc(bookingFee)+'</strong><br>':"")+'Date and final quotation confirmed by the business</div>':"")+'</div></article>';
    };
