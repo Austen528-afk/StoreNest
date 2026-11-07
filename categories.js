@@ -9,7 +9,7 @@ const categories=Object.freeze([
  Object.freeze({id:"electronics",label:"Electronics",emoji:"📱"}),
  Object.freeze({id:"study-supplies",label:"Education & Study Supplies",emoji:"📚"}),
  Object.freeze({id:"fashion",label:"Fashion & Accessories",emoji:"👕"}),
- Object.freeze({id:"cosmetics",label:"Cosmetics",emoji:"💄"}),
+ Object.freeze({id:"cosmetics",label:"Cosmetics",emoji:"🧴"}),
  Object.freeze({id:"beauty",label:"Personal Services",emoji:"💇"}),
  Object.freeze({id:"home-living",label:"Home & Living",emoji:"🏠"}),
  Object.freeze({id:"groceries",label:"Groceries & Essentials",emoji:"🛒"}),
