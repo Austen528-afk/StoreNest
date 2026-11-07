@@ -1280,7 +1280,9 @@ function ownerDecorSectionName(){
 }
 function isDecorOffering(){
  const name=ownerDecorSectionName();
- return usesBookingPricing()&&$("itemType").value==="service"&&/decor|decoration/.test(name)&&!/cater/.test(name);
+ // Décor is the default for services in this combined marketplace category.
+ // Hide the colour-set editor only when the selected section explicitly identifies catering.
+ return usesBookingPricing()&&$("itemType").value==="service"&&!/cater/.test(name);
 }
 function newDecorColorSet(name){
  return {id:window.crypto?.randomUUID?.()||("decor-"+Date.now()+"-"+Math.random().toString(36).slice(2)),name:name||"",description:"",media_urls:[]};
