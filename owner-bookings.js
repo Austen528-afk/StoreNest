@@ -3,9 +3,31 @@
 "use strict";
 const $=id=>document.getElementById(id);
 let activeClient=null,activeBusiness=null,items=[],requests=[];
+let bookingChannel=null,bookingChannelClient=null,bookingChannelBusinessId=null,refreshSequence=0;
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const labels={pending:"Pending",accepted:"Accepted",declined:"Declined",completed:"Completed"};
 const money=value=>"R"+Number(value||0).toFixed(2);
+function resetRealtime(){
+ if(bookingChannel&&bookingChannelClient)bookingChannelClient.removeChannel(bookingChannel);
+ bookingChannel=null;bookingChannelClient=null;bookingChannelBusinessId=null;
+}
+function ensureRealtime(client,businessId){
+ const id=String(businessId||"");
+ if(!id)return;
+ if(bookingChannel&&bookingChannelClient===client&&bookingChannelBusinessId===id)return;
+ resetRealtime();
+ bookingChannelClient=client;bookingChannelBusinessId=id;
+ bookingChannel=client.channel("owner-bookings-"+id)
+  .on("postgres_changes",{event:"*",schema:"public",table:"service_booking_requests",filter:"business_id=eq."+id},payload=>{
+   if(String(activeBusiness?.id||"")!==id||!activeClient)return;
+   refresh(activeClient,activeBusiness,items).catch(error=>console.warn("Unable to refresh live booking requests",error));
+  })
+  .subscribe(status=>{
+   if(status==="SUBSCRIBED"){
+    if(String(activeBusiness?.id||"")===id&&activeClient)refresh(activeClient,activeBusiness,items).catch(error=>console.warn("Unable to sync the booking inbox after reconnect",error));
+   }else if(status==="CHANNEL_ERROR"||status==="TIMED_OUT")console.warn("StoreNest booking updates are temporarily unavailable:",status);
+  });
+}
 function render(){
  const list=$("ownerBookingsList"),empty=$("ownerBookingsEmpty"),summary=$("ownerBookingsSummary");
  list.replaceChildren();
@@ -56,12 +78,18 @@ function render(){
  }
 }
 async function refresh(client,business,products){
- activeClient=client;activeBusiness=business;items=products;
- const {data,error}=await client.from("service_booking_requests").select("*").eq("business_id",business.id).order("created_at",{ascending:false});
+ activeClient=client;activeBusiness=business;items=products||[];
+ const businessId=String(business?.id||"");
+ if(!businessId)throw Error("Select a business to view its booking requests.");
+ ensureRealtime(client,businessId);
+ const sequence=++refreshSequence;
+ const {data,error}=await client.from("service_booking_requests").select("*").eq("business_id",businessId).order("created_at",{ascending:false});
  if(error)throw error;
+ if(sequence!==refreshSequence||String(activeBusiness?.id||"")!==businessId)return {count:requests.length,pending:requests.filter(x=>x.status==="pending").length};
  requests=data||[];render();
  return {count:requests.length,pending:requests.filter(x=>x.status==="pending").length};
 }
+window.addEventListener("pagehide",resetRealtime);
 $("ownerBookingsList").addEventListener("click",async e=>{
  const button=e.target.closest("[data-booking-id][data-booking-status]");
  if(!button||!activeClient||!activeBusiness)return;
