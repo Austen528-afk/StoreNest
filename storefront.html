@@ -1215,6 +1215,11 @@ const cart=new Map();
 let storefrontClient=null,availableItems=[],toastTimer=null,activeGalleryItem=null,galleryIndex=0,galleryReturnFocus=null,activePublicBusiness=null,galleryEditCartKey=null,activeGalleryDecorSetId=null,activePublicSections=[];
 let checkoutPendingCode=null,checkoutVerifiedUser=null,checkoutVerifiedProfile=null,checkoutPendingPassword="",checkoutAuthMode="signup";
 const $=id=>document.getElementById(id);
+const returnCategoryId=new URLSearchParams(location.search).get("returnCategory");
+if(returnCategoryId&&window.StoreNestCategories?.some(row=>row.id===returnCategoryId)){
+ const exploreStoresLink=document.querySelector(".back-link");
+ if(exploreStoresLink)exploreStoresLink.href="/?marketCategory="+encodeURIComponent(returnCategoryId);
+}
 function esc(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function initials(name){return String(name||"SN").split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join("").toUpperCase()||"SN"}
 function safeUrl(value){try{const u=new URL(value);return ["https:","http:"].includes(u.protocol)?u.href:""}catch{return""}}
