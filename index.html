@@ -484,10 +484,22 @@ function marketplaceCategoryControls(id){
 }
 let activeMarketplaceCategory=null;
 function renderMarketplaceCategories(){categoryGrid.innerHTML=MARKETPLACE_CATEGORIES.map(([id,label,emoji])=>'<button type="button" class="marketplace-category-button'+(activeMarketplaceCategory===id?' active':'')+'" data-market-category="'+id+'"><span class="category-icon" aria-hidden="true">'+emoji+'</span><strong>'+label+'</strong></button>').join("")}
-function resetMarketplaceBrowse(){activeMarketplaceCategory=null;categorySection.hidden=false;renderMarketplaceCategories();setSearchActive(false);renderRecentBusinesses()}
+function resetMarketplaceBrowse({updateHistory=true}={}){
+ activeMarketplaceCategory=null;categorySection.hidden=false;renderMarketplaceCategories();setSearchActive(false);renderRecentBusinesses();
+ if(updateHistory){
+  const url=new URL(location.href);
+  if(url.searchParams.has("marketCategory")){
+   url.searchParams.delete("marketCategory");
+   history.replaceState({storeNestMarketplaceCategory:null},"",url.pathname+url.search+url.hash);
+  }
+ }
+}
 categoryGrid.addEventListener("click",event=>{const btn=event.target.closest("[data-market-category]");if(btn)browseMarketplaceCategory(btn.dataset.marketCategory)});
 function marketplaceItemHref(b,item){
- return "/storefront.html?slug="+encodeURIComponent(b.slug)+(item.category_id?"&category="+encodeURIComponent(item.category_id):"")+"#catalog";
+ const params=new URLSearchParams({slug:b.slug});
+ if(item.category_id)params.set("category",item.category_id);
+ if(activeMarketplaceCategory)params.set("returnCategory",activeMarketplaceCategory);
+ return "/storefront.html?"+params.toString()+"#catalog";
 }
 function marketplaceMediaUrl(value){
  if(typeof value!=="string"||!value.trim())return "";
@@ -510,7 +522,10 @@ function marketplaceMediaEntry(value){
  return url?{url,width:Number(source.width)||0,variants}:null;
 }
 function marketplaceBusinessCard(b,items){
- const esc=escapeResult,href="/storefront.html?slug="+encodeURIComponent(b.slug)+(b.section_id?"&category="+encodeURIComponent(b.section_id):"");
+ const esc=escapeResult,params=new URLSearchParams({slug:b.slug});
+ if(b.section_id)params.set("category",b.section_id);
+ if(activeMarketplaceCategory)params.set("returnCategory",activeMarketplaceCategory);
+ const href="/storefront.html?"+params.toString();
  const header='<a class="result-card" data-business-slug="'+esc(b.slug)+'" href="'+href+'"><span class="result-avatar">'+(b.logo_url?'<img src="'+esc(b.logo_url)+'" alt="" loading="lazy" decoding="async">':esc(b.name.slice(0,1).toUpperCase()))+'</span><span class="result-content"><strong>'+esc(b.name)+'</strong><span>'+esc([b.category,b.location].filter(Boolean).join(" · "))+'</span></span><span class="result-arrow">→</span></a>';
  if(!items.length)return '<div class="market-business">'+header+'</div>';
  return '<div class="market-business">'+header+'<div class="market-latest-title">Latest updates</div><div class="market-items" aria-label="Latest offerings from '+esc(b.name)+'">'+items.map(item=>{
@@ -594,8 +609,16 @@ function renderCategorySnapshot(id,category,snapshot){
   (rows.length?rows.map(b=>marketplaceBusinessCard(b,byBusiness.get(b.id)||[])).join(""):'<p class="results-head">No businesses listed here yet.</p>');
  activateMarketplacePreviews();
 }
-async function browseMarketplaceCategory(id){
+async function browseMarketplaceCategory(id,{historyMode="push"}={}){
  const category=MARKETPLACE_CATEGORIES.find(row=>row[0]===id);if(!category)return;
+ if(historyMode!=="none"){
+  const url=new URL(location.href);
+  if(url.searchParams.get("marketCategory")!==id){
+   url.searchParams.set("marketCategory",id);
+   const method=historyMode==="replace"?"replaceState":"pushState";
+   history[method]({storeNestMarketplaceCategory:id},"",url.pathname+url.search+url.hash);
+  }
+ }
  const seq=++searchCounter;activeMarketplaceCategory=id;categoryDescriptionExpanded=false;renderMarketplaceCategories();storeSearchInput.value="";categorySection.hidden=true;setSearchActive(true);
  const cached=readCategorySnapshot(id);
  if(cached)renderCategorySnapshot(id,category,cached);
@@ -1210,4 +1233,18 @@ updateBookingsBadge();
 refreshCustomerBookings();
 
 document.getElementById("pageRefreshButton")?.addEventListener("click",()=>window.location.reload());
+
+function restoreMarketplaceCategoryFromUrl(){
+ const id=new URLSearchParams(location.search).get("marketCategory");
+ if(id&&MARKETPLACE_CATEGORIES.some(row=>row[0]===id)){
+  browseMarketplaceCategory(id,{historyMode:"none"});
+ }else{
+  resetMarketplaceBrowse({updateHistory:false});
+ }
+}
+window.addEventListener("popstate",restoreMarketplaceCategoryFromUrl);
+const initialMarketplaceCategory=new URLSearchParams(location.search).get("marketCategory");
+if(initialMarketplaceCategory&&MARKETPLACE_CATEGORIES.some(row=>row[0]===initialMarketplaceCategory)){
+ browseMarketplaceCategory(initialMarketplaceCategory,{historyMode:"none"});
+}
 </script></body></html>
