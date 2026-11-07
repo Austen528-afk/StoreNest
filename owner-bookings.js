@@ -23,7 +23,9 @@ function ensureRealtime(client,businessId){
    refresh(activeClient,activeBusiness,items).catch(error=>console.warn("Unable to refresh live booking requests",error));
   })
   .subscribe(status=>{
-   if(status==="CHANNEL_ERROR"||status==="TIMED_OUT")console.warn("StoreNest booking updates are temporarily unavailable:",status);
+   if(status==="SUBSCRIBED"){
+    if(String(activeBusiness?.id||"")===id&&activeClient)refresh(activeClient,activeBusiness,items).catch(error=>console.warn("Unable to sync the booking inbox after reconnect",error));
+   }else if(status==="CHANNEL_ERROR"||status==="TIMED_OUT")console.warn("StoreNest booking updates are temporarily unavailable:",status);
   });
 }
 function render(){
