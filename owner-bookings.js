@@ -20,13 +20,7 @@ function ensureRealtime(client,businessId){
  bookingChannel=client.channel("owner-bookings-"+id)
   .on("postgres_changes",{event:"*",schema:"public",table:"service_booking_requests",filter:"business_id=eq."+id},payload=>{
    if(String(activeBusiness?.id||"")!==id||!activeClient)return;
-   const requestId=payload?.new?.id||payload?.old?.id;
-   const wasKnown=requests.some(row=>String(row.id)===String(requestId));
-   refresh(activeClient,activeBusiness,items).then(()=>{
-    if(payload?.eventType==="INSERT"&&!wasKnown){
-     window.dispatchEvent(new CustomEvent("storenest:booking-request-received",{detail:{businessId:id}}));
-    }
-   }).catch(error=>console.warn("Unable to refresh live booking requests",error));
+   refresh(activeClient,activeBusiness,items).catch(error=>console.warn("Unable to refresh live booking requests",error));
   })
   .subscribe(status=>{
    if(status==="CHANNEL_ERROR"||status==="TIMED_OUT")console.warn("StoreNest booking updates are temporarily unavailable:",status);
