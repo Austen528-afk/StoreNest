@@ -41,7 +41,8 @@ CREATE POLICY "Customers can read their own service bookings"
 
 -- Table privileges are separate from RLS. Keep guest access insert-only.
 GRANT INSERT ON public.service_booking_requests TO anon;
-GRANT INSERT, SELECT, UPDATE ON public.service_booking_requests TO authenticated;
+GRANT INSERT, SELECT ON public.service_booking_requests TO authenticated;
+GRANT UPDATE (status, updated_at) ON public.service_booking_requests TO authenticated;
 
 -- An opaque booking id AND an independent random tracking token are required.
 -- Return status and public service labels only: never expose customer contacts,
