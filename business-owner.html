@@ -1635,6 +1635,7 @@ async function uploadCatalogMedia(client,file){
  }catch(error){
   if(uploadedPaths.length)await bucket.remove(uploadedPaths).catch(()=>{});
   throw error;
+ }
 }
 function mediaPathForUrl(url){
  if(!url)return null;
