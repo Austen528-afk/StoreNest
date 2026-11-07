@@ -177,7 +177,7 @@ html[data-theme="dark"] body[data-page-kind="marketplace"] .site-menu .menu-acti
 .marketplace-category-button{min-width:0;background:#fff;border:1px solid #dce8df;border-radius:14px;padding:19px 15px;display:flex;flex-direction:column;align-items:flex-start;gap:9px;text-align:left;color:#22382c;cursor:pointer;transition:background .15s,border-color .15s}
 .marketplace-category-button:hover{border-color:#79c6a5;background:#effaf3}
 .marketplace-category-button.active{background:#e2f7ea;border-color:#35b58b}
-.marketplace-category-button .category-icon{font-size:25px;line-height:1.2}
+.marketplace-category-button .category-icon{font-size:25px;line-height:1.2}.marketplace-category-button .category-icon svg{display:block;width:1em;height:1em}
 .marketplace-category-button strong{font-size:13px;line-height:1.35}
 .category-back{border:1px solid #d6e6dc;border-radius:9px;padding:8px 11px;font-size:12px;color:#396950;background:#fff;cursor:pointer;margin:0 0 14px}
 .category-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 14px}
@@ -458,7 +458,7 @@ const storeSearchStatus=document.getElementById("storeSearchStatus");
 const resultRoot=document.getElementById("searchResults");
 const categorySection=document.getElementById("marketplaceCategories");
 const categoryGrid=document.getElementById("marketplaceCategoryGrid");
-const MARKETPLACE_CATEGORIES=window.StoreNestCategories.map(c=>[c.id,c.label,c.emoji]);
+const MARKETPLACE_CATEGORIES=window.StoreNestCategories.map(c=>[c.id,c.label,c.iconSvg||c.emoji]);
 const MARKETPLACE_CATEGORY_DESCRIPTIONS={
  "food-drink":{overview:"Ready-to-eat food, snacks, baked goods, desserts and beverages prepared or sold by local businesses.",examples:["Kota shops","Restaurants & takeaways","Home cooks","Bakeries","Juice & drinks sellers"]},
  "events-decor":{overview:"Businesses that prepare food for gatherings, decorate venues or provide event setup and hire services.",examples:["Caterers","Party decorators","Wedding setups","Tent & chair hire","Balloon decorators"]},
@@ -484,7 +484,7 @@ function marketplaceCategoryControls(id){
  '<section class="category-description-panel" id="categoryDescriptionPanel" aria-label="About '+title+'"'+(expanded?'':' hidden')+'><strong>What belongs in '+title+'?</strong><p>'+escapeResult(details.overview)+'</p><div class="category-description-examples"><strong>Examples:</strong>'+details.examples.map(example=>'<span>'+escapeResult(example)+'</span>').join("")+'</div></section>';
 }
 let activeMarketplaceCategory=null;
-function renderMarketplaceCategories(){categoryGrid.innerHTML=MARKETPLACE_CATEGORIES.map(([id,label,emoji])=>'<button type="button" class="marketplace-category-button'+(activeMarketplaceCategory===id?' active':'')+'" data-market-category="'+id+'"><span class="category-icon" aria-hidden="true">'+emoji+'</span><strong>'+label+'</strong></button>').join("")}
+function renderMarketplaceCategories(){categoryGrid.innerHTML=MARKETPLACE_CATEGORIES.map(([id,label,iconMarkup])=>'<button type="button" class="marketplace-category-button'+(activeMarketplaceCategory===id?' active':'')+'" data-market-category="'+id+'"><span class="category-icon" aria-hidden="true">'+emoji+'</span><strong>'+label+'</strong></button>').join("")}
 function resetMarketplaceBrowse({updateHistory=true}={}){
  activeMarketplaceCategory=null;categorySection.hidden=false;renderMarketplaceCategories();setSearchActive(false);renderRecentBusinesses();
  if(updateHistory){
