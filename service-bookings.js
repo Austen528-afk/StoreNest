@@ -5,6 +5,16 @@ let client=null,business=null,activeItem=null,returnFocus=null;
 const $=id=>document.getElementById(id);
 const money=value=>"R"+Number(value||0).toFixed(2);
 const isService=item=>item?.item_type==="service";
+const BOOKING_TRACKING_PREFIX="storenest_booking_tracking:";
+function rememberCustomerBooking(request,userId){
+ const key=BOOKING_TRACKING_PREFIX+(userId||"guest");
+ try{
+  const existing=JSON.parse(localStorage.getItem(key)||"[]");
+  const rows=Array.isArray(existing)?existing.filter(row=>row?.id!==request.id):[];
+  localStorage.setItem(key,JSON.stringify([request,...rows].slice(0,50)));
+ }catch(error){console.warn("Could not save booking status on this device:",error)}
+}
+
 function todayLocalDate(){
  const d=new Date(),pad=n=>String(n).padStart(2,"0");
  return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
@@ -86,9 +96,29 @@ $("bookingRequestForm").addEventListener("submit",async e=>{
    guest_count:d.get("guest_count")?Number(d.get("guest_count")):null,
    notes:String(d.get("notes")||"").trim()
   };
+  // The account ID is verified by Supabase RLS; guests retain a private tracking token on this device.
+  let userId=null;
+  try{
+   const {data,error:authError}=await client.auth.getUser();
+   if(authError)throw authError;
+   userId=data?.user?.id||null;
+  }catch(authError){console.warn("Booking will be tracked on this device:",authError)}
+  const bookingId=crypto.randomUUID(),trackingToken=crypto.randomUUID();
+  payload.id=bookingId;
+  payload.tracking_token=trackingToken;
+  if(userId)payload.customer_user_id=userId;
   const {error}=await client.from("service_booking_requests").insert(payload);
   if(error)throw error;
-  form.hidden=true;$("bookingSuccess").hidden=false;$("bookingDone").focus();
+  rememberCustomerBooking({
+   id:bookingId,token:trackingToken,customerUserId:userId,
+   businessName:business.name||"Business",itemName:activeItem.name||"Service",
+   eventDate:payload.event_date,createdAt:new Date().toISOString(),status:"pending"
+  },userId);
+  window.dispatchEvent(new Event("storenest:booking-created"));
+  form.hidden=true;$("bookingSuccess").hidden=false;
+  const message=$("bookingSuccess").querySelector("p");
+  if(message)message.textContent="Your request was sent to the business. Track its progress under My Bookings on the StoreNest home page. A request is not a confirmed reservation.";
+  $("bookingDone").focus();
  }catch(err){
   errorBox.textContent="Unable to send this booking enquiry. Please check your details and try again.";
   errorBox.hidden=false;console.warn("Service booking request:",err);
