@@ -965,6 +965,28 @@ body[data-store-type="decor"] .decor-service-feed-card .service-disclaimer{
  }
 }
 
+
+/* Keep the Foods & Drinks basket available while customers browse on phones. */
+@media(max-width:750px){
+ body[data-store-category="food-drink"] .page .hero{z-index:91}
+ body[data-store-category="food-drink"] .page .hero .bag{
+  position:fixed;
+  z-index:92;
+  top:auto;
+  right:max(14px,env(safe-area-inset-right,0px));
+  bottom:max(18px,env(safe-area-inset-bottom,0px));
+  display:flex!important;
+  visibility:visible;
+  opacity:1;
+  width:56px;
+  min-height:56px;
+  border-radius:50%;
+  background:#205f50;
+  color:#fff;
+  box-shadow:0 8px 24px #10291f4d
+ }
+}
+
 </style>
 <link rel="stylesheet" href="/theme.css">
 <link rel="stylesheet" href="/service-bookings.css">
@@ -1957,6 +1979,7 @@ function renderPublishedStorefront(root,client,business,items,storefrontSections
    const isLocalServices=window.StoreNestCategoryId(business.category)==="local-services";
    const isDecor=layout==="decor"||((decorCategory||isLocalServices)&&layout==="classic");
    document.body.dataset.storeType=isDecor?"decor":"standard";
+   document.body.dataset.storeCategory=window.StoreNestCategoryId(business.category);
    document.body.dataset.localServicesLayout=String(isDecor&&isLocalServices);
    if(isDecor&&(!cfg.accent||/^#60d6bd$/i.test(cfg.accent)))document.documentElement.style.setProperty("--accent",isLocalServices?"#27856d":"#98836a");
    const contacts=[];
