@@ -834,6 +834,159 @@ body[data-store-type="decor"] .decor-service-feed-card .service-disclaimer{
  body[data-store-type="decor"] .decor-service-feed-card .service-action-row{flex-wrap:wrap}
  body[data-store-type="decor"] .decor-service-feed-card .service-action-row :is(.add,.service-whatsapp){flex-basis:100%}
 }
+
+/* Catering & Decor photo sets open as a clean, full-screen image viewer. */
+#galleryDialog.gallery-photo-only{
+ inset:0;
+ display:flex;
+ align-items:stretch;
+ justify-content:stretch;
+ padding:0;
+ overflow:hidden;
+ background:#050606
+}
+#galleryDialog.gallery-photo-only .gallery-panel{
+ position:relative;
+ display:flex;
+ flex-direction:column;
+ width:100%;
+ height:100dvh;
+ max-width:none;
+ max-height:none;
+ min-width:0;
+ min-height:0;
+ flex:1 1 auto;
+ overflow:hidden;
+ border-radius:0;
+ background:#050606;
+ color:#fff
+}
+#galleryDialog.gallery-photo-only .gallery-scroll-area{
+ position:relative;
+ display:block;
+ width:100%;
+ height:100%;
+ min-height:0;
+ flex:1 1 auto;
+ overflow:hidden;
+ touch-action:pan-y
+}
+#galleryDialog.gallery-photo-only .gallery-top{
+ position:absolute;
+ top:max(14px,env(safe-area-inset-top,0px));
+ right:0;
+ left:0;
+ z-index:5;
+ display:flex;
+ justify-content:flex-end;
+ padding:0 max(14px,env(safe-area-inset-right,0px)) 0 14px;
+ border:0;
+ background:transparent;
+ pointer-events:none
+}
+#galleryDialog.gallery-photo-only .gallery-top>div{
+ position:absolute!important;
+ width:1px!important;
+ height:1px!important;
+ padding:0!important;
+ margin:-1px!important;
+ overflow:hidden!important;
+ clip:rect(0,0,0,0)!important;
+ white-space:nowrap!important;
+ border:0!important
+}
+#galleryDialog.gallery-photo-only .gallery-close{
+ display:grid;
+ place-items:center;
+ width:44px;
+ height:44px;
+ padding:0;
+ border:0;
+ border-radius:50%;
+ background:#ffffffdf;
+ color:#151515;
+ font-size:28px;
+ line-height:1;
+ pointer-events:auto
+}
+#galleryDialog.gallery-photo-only .gallery-stage{
+ position:absolute;
+ inset:0;
+ display:flex;
+ width:100%;
+ height:100%;
+ min-height:0;
+ flex:none;
+ align-items:center;
+ justify-content:center;
+ overflow:hidden;
+ background:#050606;
+ touch-action:pan-y
+}
+#galleryDialog.gallery-photo-only .gallery-stage img,
+#galleryDialog.gallery-photo-only .gallery-stage video{
+ display:block;
+ width:100%;
+ height:100%;
+ max-width:100%;
+ max-height:100%;
+ object-fit:contain;
+ background:transparent
+}
+#galleryDialog.gallery-photo-only :is(#galleryOverlayPager,#galleryBookingDetails,#galleryProductActionRow,#galleryCustomization,#galleryBottom,#galleryTotalBar){
+ display:none!important
+}
+@media(max-width:820px), (pointer:coarse) and (max-width:1100px){
+ #galleryDialog.gallery-photo-only{
+  inset:0;
+  display:flex;
+  overflow:hidden;
+  padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px);
+  overscroll-behavior:none
+ }
+ #galleryDialog.gallery-photo-only .gallery-panel{
+  width:100%;
+  height:100%;
+  max-height:100%;
+  min-height:0;
+  flex:1 1 auto;
+  overflow:hidden
+ }
+ #galleryDialog.gallery-photo-only .gallery-scroll-area{
+  display:block;
+  height:100%;
+  min-height:0;
+  flex:1 1 auto;
+  overflow:hidden
+ }
+ #galleryDialog.gallery-photo-only .gallery-close{
+  width:42px;
+  height:42px
+ }
+}
+
+
+/* Keep the Foods & Drinks basket available while customers browse on phones. */
+@media(max-width:750px){
+ body[data-store-category="food-drink"] .page .hero{z-index:91}
+ body[data-store-category="food-drink"] .page .hero .bag{
+  position:fixed;
+  z-index:92;
+  top:auto;
+  right:max(14px,env(safe-area-inset-right,0px));
+  bottom:max(18px,env(safe-area-inset-bottom,0px));
+  display:flex!important;
+  visibility:visible;
+  opacity:1;
+  width:56px;
+  min-height:56px;
+  border-radius:50%;
+  background:#205f50;
+  color:#fff;
+  box-shadow:0 8px 24px #10291f4d
+ }
+}
+
 </style>
 <link rel="stylesheet" href="/theme.css">
 <link rel="stylesheet" href="/service-bookings.css">
@@ -1580,6 +1733,7 @@ function openProductGallery(id,trigger,cartKey=null){
  const editRow=cartKey?cart.get(cartKey):null;
  activeGalleryItem=item;galleryReturnFocus=trigger;galleryIndex=0;galleryEditCartKey=editRow?cartKey:null;
  $("galleryDialog").classList.toggle("gallery-booking-style",isDecorBooking);
+ $("galleryDialog").classList.toggle("gallery-photo-only",isDecorBooking);
  const bookingFee=isBookingOffer?window.StoreNestBookings.bookingFeeLabel(item,activePublicBusiness):"";
  $("galleryTitle").textContent=item.name;$("galleryDescription").textContent=item.description||"";
  $("galleryServiceFee").textContent=bookingFee;$("galleryServiceFee").hidden=!bookingFee;
@@ -1605,12 +1759,13 @@ function openProductGallery(id,trigger,cartKey=null){
  const photos=galleryPhotos(item);
  $("galleryImage").hidden=photos.length===0;$("galleryVideo").hidden=true;
  if(photos.length)showGalleryImage();else{$("galleryPosition").textContent="No pictures yet";$("galleryPosition").hidden=false;$("galleryDots").hidden=true;$("galleryDots").replaceChildren()}
- $("galleryDialog").hidden=false;const mobileGalleryViewport=window.matchMedia("(max-width:820px), (pointer:coarse) and (max-width:1100px)").matches;document.body.style.overflow=mobileGalleryViewport?"":"hidden";$("galleryClose").focus();
+ $("galleryDialog").hidden=false;const mobileGalleryViewport=window.matchMedia("(max-width:820px), (pointer:coarse) and (max-width:1100px)").matches;document.body.style.overflow=isDecorBooking?"hidden":(mobileGalleryViewport?"":"hidden");$("galleryClose").focus();
 }
 
 function closeProductGallery(){$("galleryVideo").pause();$("galleryVideo").removeAttribute("src");$("galleryDialog").hidden=true;document.body.style.overflow="";activeGalleryItem=null;galleryEditCartKey=null;galleryReturnFocus?.focus()}
 $("galleryClose").addEventListener("click",closeProductGallery);
 $("galleryDialog").addEventListener("click",event=>{if(event.target===$("galleryDialog"))closeProductGallery()});
+$("galleryDialog").addEventListener("click",event=>{if(!$("galleryDialog").classList.contains("gallery-photo-only"))return;const stage=event.target.closest(".gallery-stage");if(!stage||event.target.closest(".gallery-close"))return;const photos=galleryPhotos(activeGalleryItem);if(photos.length<2)return;const x=event.clientX-stage.getBoundingClientRect().left;if(x<stage.clientWidth*.34&&galleryIndex>0){galleryIndex--;showGalleryImage()}else if(x>stage.clientWidth*.66&&galleryIndex<photos.length-1){galleryIndex++;showGalleryImage()}});
 function handleGalleryAdd(){
  const item=activeGalleryItem;if(!item)return;
  const trigger=galleryReturnFocus;
@@ -1824,6 +1979,7 @@ function renderPublishedStorefront(root,client,business,items,storefrontSections
    const isLocalServices=window.StoreNestCategoryId(business.category)==="local-services";
    const isDecor=layout==="decor"||((decorCategory||isLocalServices)&&layout==="classic");
    document.body.dataset.storeType=isDecor?"decor":"standard";
+   document.body.dataset.storeCategory=window.StoreNestCategoryId(business.category);
    document.body.dataset.localServicesLayout=String(isDecor&&isLocalServices);
    if(isDecor&&(!cfg.accent||/^#60d6bd$/i.test(cfg.accent)))document.documentElement.style.setProperty("--accent",isLocalServices?"#27856d":"#98836a");
    const contacts=[];
