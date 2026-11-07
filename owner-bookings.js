@@ -3,7 +3,7 @@
 "use strict";
 const $=id=>document.getElementById(id);
 let activeClient=null,activeBusiness=null,items=[],requests=[];
-let bookingChannel=null,bookingChannelClient=null,bookingChannelBusinessId=null,refreshSequence=0;
+let bookingChannel=null,bookingChannelClient=null,bookingChannelBusinessId=null,refreshSequence=0,ownerBookingsHistoryMode=false;
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const labels={pending:"Pending",accepted:"Accepted",declined:"Declined",completed:"Completed"};
 const money=value=>"R"+Number(value||0).toFixed(2);
@@ -30,13 +30,32 @@ function ensureRealtime(client,businessId){
 }
 function render(){
  const list=$("ownerBookingsList"),empty=$("ownerBookingsEmpty"),summary=$("ownerBookingsSummary");
+ const heading=$("ownerBookingsHeading"),description=$("ownerBookingsDescription"),historyButton=$("ownerBookingsHistory");
  list.replaceChildren();
- const pending=requests.filter(r=>r.status==="pending").length;
- if(summary)summary.textContent=requests.length+" request"+(requests.length===1?"":"s")+" · "+pending+" awaiting response";
- empty.hidden=requests.length>0;
+ const historyRows=requests.filter(r=>r.status==="completed"||r.status==="declined");
+ const activeRows=requests.filter(r=>r.status!=="completed"&&r.status!=="declined");
+ const visibleRows=ownerBookingsHistoryMode?historyRows:activeRows;
+ const pending=activeRows.filter(r=>r.status==="pending").length;
+ if(heading)heading.textContent=ownerBookingsHistoryMode?"Booking history":"Bookings & enquiries";
+ if(description)description.textContent=ownerBookingsHistoryMode?"Completed and declined booking requests are kept here for your records.":"Review event dates, customer requirements and active service booking requests.";
+ if(historyButton){historyButton.textContent=ownerBookingsHistoryMode?"← Active bookings":"▤ History";historyButton.setAttribute("aria-pressed",String(ownerBookingsHistoryMode))}
+ if(summary){
+  summary.textContent=ownerBookingsHistoryMode
+   ?visibleRows.length+" past booking"+(visibleRows.length===1?"":"s")
+   :visibleRows.length+" active request"+(visibleRows.length===1?"":"s")+" · "+pending+" awaiting response";
+  summary.hidden=!visibleRows.length;
+ }
+ if(empty){
+  empty.hidden=visibleRows.length>0;
+  const title=empty.querySelector("strong"),copy=empty.querySelector("p");
+  if(title)title.textContent=ownerBookingsHistoryMode?"No booking history yet":"No active booking requests";
+  if(copy)copy.textContent=ownerBookingsHistoryMode
+   ?"Completed and declined booking requests will appear here."
+   :"New customer booking requests will appear here. Finished requests are available in History.";
+ }
  if($("statBookings"))$("statBookings").textContent=String(requests.length);
  if($("statBookingsHint"))$("statBookingsHint").textContent=pending?pending+" pending request"+(pending===1?"":"s"):"No pending requests";
- for(const r of requests){
+ for(const r of visibleRows){
   const product=items.find(i=>i.id===r.item_id);
   const itemName=product?.name||"Service package";
   const pricing=[];
@@ -78,8 +97,10 @@ function render(){
  }
 }
 async function refresh(client,business,products){
+ const previousBusinessId=String(activeBusiness?.id||"");
  activeClient=client;activeBusiness=business;items=products||[];
  const businessId=String(business?.id||"");
+ if(previousBusinessId&&previousBusinessId!==businessId)ownerBookingsHistoryMode=false;
  if(!businessId)throw Error("Select a business to view its booking requests.");
  ensureRealtime(client,businessId);
  const sequence=++refreshSequence;
@@ -90,6 +111,7 @@ async function refresh(client,business,products){
  return {count:requests.length,pending:requests.filter(x=>x.status==="pending").length};
 }
 window.addEventListener("pagehide",resetRealtime);
+$("ownerBookingsHistory").addEventListener("click",()=>{ownerBookingsHistoryMode=!ownerBookingsHistoryMode;render()});
 $("ownerBookingsList").addEventListener("click",async e=>{
  const button=e.target.closest("[data-booking-id][data-booking-status]");
  if(!button||!activeClient||!activeBusiness)return;
