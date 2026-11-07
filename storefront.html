@@ -679,15 +679,15 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
  #galleryDialog.gallery-booking-style .gallery-actions :is(.add,.service-whatsapp){flex:1 1 0;min-width:0;text-align:center}
 }
 
-/* Catering & Decor cards keep details beside a full-size image on desktop.
-   At phone widths, stack title, image, then all description and booking details. */
-body[data-store-type="decor"] .grid.decor-booking-feed-grid{
+/* Catering & Decor category booking cards override owner section styles.
+   On phones, stack the title, image, then description and booking details. */
+body[data-store-category="events-decor"] #catalog .grid.decor-booking-feed-grid{
  display:grid;
  grid-template-columns:minmax(0,1fr);
  justify-content:stretch;
  gap:24px
 }
-body[data-store-type="decor"] .decor-service-feed-card{
+body[data-store-category="events-decor"] #catalog .decor-service-feed-card{
  display:grid;
  grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);
  grid-template-rows:auto minmax(0,1fr);
@@ -699,21 +699,21 @@ body[data-store-type="decor"] .decor-service-feed-card{
  border-radius:8px;
  overflow:hidden
 }
-body[data-store-type="decor"] .decor-service-feed-title{
+body[data-store-category="events-decor"] #catalog .decor-service-feed-title{
  grid-area:title;
  min-width:0;
  padding:22px clamp(20px,3vw,42px) 10px;
  background:var(--canvas,#f8f6f1)
 }
-body[data-store-type="decor"] .decor-service-feed-title h3{margin:0;min-width:0}
-body[data-store-type="decor"] .decor-service-feed-title .item-title-open{
+body[data-store-category="events-decor"] #catalog .decor-service-feed-title h3{margin:0;min-width:0}
+body[data-store-category="events-decor"] #catalog .decor-service-feed-title .item-title-open{
  font-size:clamp(22px,2.5vw,34px);
  line-height:1.2;
  font-weight:760;
  white-space:normal;
  text-overflow:clip
 }
-body[data-store-type="decor"] .decor-service-feed-card .decor-service-feed-open{
+body[data-store-category="events-decor"] #catalog .decor-service-feed-card .decor-service-feed-open{
  grid-area:image;
  display:block;
  width:100%;
@@ -724,7 +724,7 @@ body[data-store-type="decor"] .decor-service-feed-card .decor-service-feed-open{
  padding:0;
  overflow:hidden
 }
-body[data-store-type="decor"] .decor-service-feed-card .art{
+body[data-store-category="events-decor"] #catalog .decor-service-feed-card .art{
  display:block;
  width:100%;
  height:100%;
@@ -734,7 +734,7 @@ body[data-store-type="decor"] .decor-service-feed-card .art{
  background:var(--surface,#eeeae3);
  overflow:hidden
 }
-body[data-store-type="decor"] .decor-service-feed-card .art :is(img,video){
+body[data-store-category="events-decor"] #catalog .decor-service-feed-card .art :is(img,video){
  display:block;
  width:100%;
  height:100%;
@@ -742,7 +742,7 @@ body[data-store-type="decor"] .decor-service-feed-card .art :is(img,video){
  max-height:none;
  object-fit:cover
 }
-body[data-store-type="decor"] .decor-service-feed-card .art .decor-photo-count{
+body[data-store-category="events-decor"] #catalog .decor-service-feed-card .art .decor-photo-count{
  top:13px;
  right:13px;
  bottom:auto;
@@ -750,7 +750,7 @@ body[data-store-type="decor"] .decor-service-feed-card .art .decor-photo-count{
  padding:5px 10px;
  background:#171a18c9
 }
-body[data-store-type="decor"] .decor-service-feed-details{
+body[data-store-category="events-decor"] #catalog .decor-service-feed-details{
  grid-area:details;
  display:grid;
  align-content:center;
@@ -759,7 +759,7 @@ body[data-store-type="decor"] .decor-service-feed-details{
  padding:10px clamp(20px,3vw,42px) 28px;
  background:var(--canvas,#f8f6f1)
 }
-body[data-store-type="decor"] .decor-service-description{
+body[data-store-category="events-decor"] #catalog .decor-service-description{
  margin:0;
  color:var(--ink,#342e27);
  font-size:15px;
@@ -767,72 +767,72 @@ body[data-store-type="decor"] .decor-service-description{
  white-space:pre-line;
  overflow-wrap:anywhere
 }
-body[data-store-type="decor"] .decor-service-prices{display:grid;gap:4px}
-body[data-store-type="decor"] .decor-service-price{
+body[data-store-category="events-decor"] #catalog .decor-service-prices{display:grid;gap:4px}
+body[data-store-category="events-decor"] #catalog .decor-service-price{
  color:var(--ink,#342e27);
  font-size:clamp(24px,2.8vw,36px);
  line-height:1.2;
  font-weight:780
 }
-body[data-store-type="decor"] .decor-service-fee{
+body[data-store-category="events-decor"] #catalog .decor-service-fee{
  color:var(--muted,#6d6157);
  font-size:13px;
  line-height:1.5;
  font-weight:650
 }
-body[data-store-type="decor"] .decor-service-feed-card .service-action-row{
+body[data-store-category="events-decor"] #catalog .decor-service-feed-card .service-action-row{
  display:flex;
  align-items:center;
  gap:10px;
  min-width:0;
  width:100%
 }
-body[data-store-type="decor"] .decor-service-feed-card .service-action-row :is(.add,.service-whatsapp){
+body[data-store-category="events-decor"] #catalog .decor-service-feed-card .service-action-row :is(.add,.service-whatsapp){
  flex:1 1 0;
  min-width:0;
  white-space:normal;
  text-align:center
 }
-body[data-store-type="decor"] .decor-service-feed-card .service-action-row .add{background:#205f50}
-body[data-store-type="decor"] .decor-service-feed-card .service-disclaimer{
+body[data-store-category="events-decor"] #catalog .decor-service-feed-card .service-action-row .add{background:#205f50}
+body[data-store-category="events-decor"] #catalog .decor-service-feed-card .service-disclaimer{
  margin:0;
  color:var(--muted,#6d6157);
  font-size:12px;
  line-height:1.5
 }
 @media(max-width:750px){
- body[data-store-type="decor"] .grid.decor-booking-feed-grid{
+ body[data-store-category="events-decor"] #catalog .grid.decor-booking-feed-grid{
   grid-template-columns:minmax(0,1fr);
   max-width:600px;
   margin-left:auto;
   margin-right:auto;
   gap:18px
  }
- body[data-store-type="decor"] .decor-service-feed-card{
+ body[data-store-category="events-decor"] #catalog .decor-service-feed-card{
   grid-template-columns:minmax(0,1fr);
   grid-template-rows:auto auto auto;
   grid-template-areas:"title" "image" "details";
   min-height:0
  }
- body[data-store-type="decor"] .decor-service-feed-title{padding:16px 18px 12px}
- body[data-store-type="decor"] .decor-service-feed-title .item-title-open{font-size:20px}
- body[data-store-type="decor"] .decor-service-feed-card .decor-service-feed-open{height:auto}
- body[data-store-type="decor"] .decor-service-feed-card .art{
+ body[data-store-category="events-decor"] #catalog .decor-service-feed-title{padding:16px 18px 12px}
+ body[data-store-category="events-decor"] #catalog .decor-service-feed-title .item-title-open{font-size:20px}
+ body[data-store-category="events-decor"] #catalog .decor-service-feed-card .decor-service-feed-open{height:auto}
+ body[data-store-category="events-decor"] #catalog .decor-service-feed-card .art{
   width:100%;
   height:auto;
   min-height:0;
   aspect-ratio:4/5
  }
- body[data-store-type="decor"] .decor-service-feed-details{
+ body[data-store-category="events-decor"] #catalog .decor-service-feed-details{
   align-content:start;
   gap:13px;
   padding:16px 18px 20px
  }
- body[data-store-type="decor"] .decor-service-feed-card .service-action-row{gap:8px}
+ body[data-store-category="events-decor"] #catalog .decor-service-feed-card .service-action-row{gap:8px}
 }
 @media(max-width:380px){
- body[data-store-type="decor"] .decor-service-feed-card .service-action-row{flex-wrap:wrap}
- body[data-store-type="decor"] .decor-service-feed-card .service-action-row :is(.add,.service-whatsapp){flex-basis:100%}
+ body[data-store-category="events-decor"] #catalog .decor-service-feed-card .service-action-row{flex-wrap:wrap}
+ body[data-store-category="events-decor"] #catalog .decor-service-feed-card .service-action-row :is(.add,.service-whatsapp){flex-basis:100%}
 }
 
 /* Catering & Decor photo sets open as a clean, full-screen image viewer. */
