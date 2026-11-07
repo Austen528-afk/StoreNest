@@ -805,6 +805,13 @@ body[data-store-category="events-decor"] #catalog .decor-service-description{
  white-space:pre-line;
  overflow-wrap:anywhere
 }
+body[data-store-category="events-decor"] #catalog .decor-color-set-picker{display:grid;gap:7px;min-width:0}
+body[data-store-category="events-decor"] #catalog .decor-color-set-label{color:var(--muted,#6d6157);font-size:11px;font-weight:750}
+body[data-store-category="events-decor"] #catalog .decor-color-set-options{display:flex;flex-wrap:wrap;gap:5px 9px}
+body[data-store-category="events-decor"] #catalog .decor-color-set-option{border:0;border-radius:8px;background:transparent;color:var(--ink,#342e27);padding:6px 9px;font:inherit;font-size:12px;font-weight:650;cursor:pointer}
+body[data-store-category="events-decor"] #catalog .decor-color-set-option[aria-pressed="true"]{background:#dff4e9;color:#205f50;font-weight:800}
+body[data-store-category="events-decor"] #catalog .decor-color-set-option:focus-visible{outline:2px solid #27856d;outline-offset:2px}
+body[data-store-category="events-decor"] #catalog .decor-service-description[hidden]{display:none!important}
 body[data-store-category="events-decor"] #catalog .decor-service-prices{display:grid;gap:4px}
 body[data-store-category="events-decor"] #catalog .decor-service-price{
  color:var(--ink,#342e27);
@@ -1203,7 +1210,7 @@ body[data-store-category="events-decor"] #catalog .decor-service-feed-card .serv
 "use strict";
 const CONFIG={url:"https://cypbjzbagezdelmemuhb.supabase.co",key:"sb_publishable_8W8zyYtggQMWoFlnxrzoVA_BUKjQ9va"};
 const cart=new Map();
-let storefrontClient=null,availableItems=[],toastTimer=null,activeGalleryItem=null,galleryIndex=0,galleryReturnFocus=null,activePublicBusiness=null,galleryEditCartKey=null;
+let storefrontClient=null,availableItems=[],toastTimer=null,activeGalleryItem=null,galleryIndex=0,galleryReturnFocus=null,activePublicBusiness=null,galleryEditCartKey=null,activeGalleryDecorSetId=null,activePublicSections=[];
 let checkoutPendingCode=null,checkoutVerifiedUser=null,checkoutVerifiedProfile=null,checkoutPendingPassword="",checkoutAuthMode="signup";
 const $=id=>document.getElementById(id);
 function esc(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
@@ -1221,8 +1228,35 @@ function galleryMediaEntries(item){
  if(entries.length)return entries;
  const fallback=normalizeStorefrontMedia(item?.image_url);return fallback?[fallback]:[];
 }
-function galleryPhotos(item){return galleryMediaEntries(item).map(entry=>entry.url)}
-function galleryMediaEntry(item,url){return galleryMediaEntries(item).find(entry=>entry.url===url)||{url,width:0,height:0,variants:[]}}
+function isStorefrontDecorOffering(item){
+ if(window.StoreNestCategoryId?.(activePublicBusiness?.category)!=="events-decor"||item?.item_type!=="service")return false;
+ const section=activePublicSections.find(row=>row.id===item.category_id),name=String(section?.name||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+ return /decor|decoration/.test(name)&&!/cater/.test(name);
+}
+function storefrontDecorColorSets(item){
+ const entries=galleryMediaEntries(item),byUrl=new Map(entries.map(entry=>[entry.url,entry]));
+ const source=Array.isArray(item?.decor_color_sets)?item.decor_color_sets:[];
+ const sets=source.map((set,index)=>{
+  const urls=(Array.isArray(set?.media_urls)?set.media_urls:[]).map(value=>typeof value==="string"?value:value?.url).filter(url=>typeof url==="string");
+  const setEntries=urls.map(url=>byUrl.get(url)).filter(Boolean);
+  return {id:String(set?.id||"colour-set-"+(index+1)),name:String(set?.name||"Colour set "+(index+1)),description:String(set?.description||""),entries:setEntries};
+ }).filter(set=>set.entries.length);
+ if(sets.length){
+  const assigned=new Set(sets.flatMap(set=>set.entries.map(entry=>entry.url)));
+  sets[0].entries.push(...entries.filter(entry=>!assigned.has(entry.url)));
+  return sets;
+ }
+ return entries.length?[{id:"legacy-media",name:"Colour set",description:"",entries}]:[];
+}
+function galleryViewEntries(item){
+ if(activeGalleryItem?.id===item?.id&&activeGalleryDecorSetId){
+  const set=storefrontDecorColorSets(item).find(row=>row.id===activeGalleryDecorSetId);
+  if(set?.entries.length)return set.entries;
+ }
+ return galleryMediaEntries(item);
+}
+function galleryPhotos(item){return galleryViewEntries(item).map(entry=>entry.url)}
+function galleryMediaEntry(item,url){return galleryViewEntries(item).find(entry=>entry.url===url)||{url,width:0,height:0,variants:[]}}
 function catalogMediaSrcset(entry){
  const candidates=(entry?.variants||[]).map(variant=>({url:safeUrl(variant.url),width:Number(variant.width)||0})).filter(candidate=>candidate.url&&candidate.width>0);
  if(entry?.width>0&&safeUrl(entry.url))candidates.push({url:safeUrl(entry.url),width:Number(entry.width)});
@@ -1848,6 +1882,9 @@ function openProductGallery(id,trigger,cartKey=null){
  const isDecorBooking=isBookingOffer&&window.StoreNestCategoryId(activePublicBusiness?.category)==="events-decor";
  const editRow=cartKey?cart.get(cartKey):null;
  activeGalleryItem=item;galleryReturnFocus=trigger;galleryIndex=0;galleryEditCartKey=editRow?cartKey:null;
+ const availableDecorSets=isStorefrontDecorOffering(item)?storefrontDecorColorSets(item):[];
+ const requestedDecorSet=trigger?.dataset?.decorSetId;
+ activeGalleryDecorSetId=availableDecorSets.some(set=>set.id===requestedDecorSet)?requestedDecorSet:(Array.isArray(item.decor_color_sets)&&item.decor_color_sets.length?availableDecorSets[0]?.id||null:null);
  $("galleryDialog").classList.toggle("gallery-booking-style",isDecorBooking);
  $("galleryDialog").classList.toggle("gallery-photo-only",isDecorBooking);
  const bookingFee=isBookingOffer?window.StoreNestBookings.bookingFeeLabel(item,activePublicBusiness):"";
@@ -1878,14 +1915,43 @@ function openProductGallery(id,trigger,cartKey=null){
  $("galleryDialog").hidden=false;const mobileGalleryViewport=window.matchMedia("(max-width:820px), (pointer:coarse) and (max-width:1100px)").matches;document.body.style.overflow=isDecorBooking?"hidden":(mobileGalleryViewport?"":"hidden");$("galleryClose").focus();if(photos.length)requestAnimationFrame(()=>{if(!$("galleryDialog").hidden&&activeGalleryItem===item)showGalleryImage("auto")});
 }
 
-function closeProductGallery(){$("galleryTrack").querySelectorAll("video").forEach(video=>{video.pause();video.removeAttribute("src");video.load()});$("galleryTrack").replaceChildren();$("galleryDialog").hidden=true;document.body.style.overflow="";activeGalleryItem=null;galleryEditCartKey=null;galleryReturnFocus?.focus()}
+function selectDecorColorSetOnCard(card,item,set){
+ const imageButton=card.querySelector(".decor-service-feed-open"),art=imageButton?.querySelector(".art");
+ if(!imageButton||!art||!set.entries.length)return;
+ imageButton.dataset.decorSetId=set.id;
+ imageButton.setAttribute("aria-label","View "+item.name+" — "+set.name+" photos");
+ card.querySelectorAll("[data-open-product]").forEach(button=>{button.dataset.decorSetId=set.id});
+ art.replaceChildren();
+ const track=document.createElement("div");track.className="decor-photo-track";track.dataset.decorPhotoTrack="";track.setAttribute("role","group");track.setAttribute("aria-roledescription","carousel");track.setAttribute("aria-label",item.name+" photo gallery");
+ set.entries.forEach((entry,index)=>{
+  const slide=document.createElement("div");slide.className="decor-photo-slide";slide.setAttribute("role","group");slide.setAttribute("aria-label","Photo "+(index+1)+" of "+set.entries.length);
+  if(isProductVideo(entry.url)){
+   const video=document.createElement("video");video.src=entry.url;video.muted=true;video.loop=true;video.playsInline=true;video.autoplay=true;video.preload="metadata";video.setAttribute("aria-label",item.name+" video "+(index+1));video.play().catch(()=>{});slide.append(video);
+  }else{
+   const image=document.createElement("img");image.alt=item.name+" — "+set.name+" photo "+(index+1);image.loading=index===0?"eager":"lazy";image.decoding="async";
+   const srcset=catalogMediaSrcset(entry);if(srcset){image.srcset=srcset;image.sizes="(max-width: 600px) 100vw, (max-width: 750px) 600px, 50vw"}
+   image.src=entry.url;slide.append(image);
+  }
+  track.append(slide);
+ });
+ art.append(track);
+ if(set.entries.length>1){const count=document.createElement("span");count.className="photo-count decor-photo-count";count.dataset.decorPhotoCount="";count.setAttribute("aria-live","polite");count.setAttribute("aria-atomic","true");count.textContent="1 / "+set.entries.length;art.append(count)}
+ wireDecorPhotoTrack(track);
+ card.querySelectorAll("[data-decor-color-set]").forEach(button=>{
+  const active=button.dataset.decorColorSet===set.id;button.setAttribute("aria-pressed",String(active));
+ });
+ const description=card.querySelector("[data-decor-color-description]"),copy=String(set.description||item.description||"");
+ if(description){description.textContent=copy;description.hidden=!copy}
+ const action=card.querySelector("[data-add-item]");if(action)action.dataset.decorColorSetName=set.name;
+}
+function closeProductGallery(){$("galleryTrack").querySelectorAll("video").forEach(video=>{video.pause();video.removeAttribute("src");video.load()});$("galleryTrack").replaceChildren();$("galleryDialog").hidden=true;document.body.style.overflow="";activeGalleryItem=null;activeGalleryDecorSetId=null;galleryEditCartKey=null;galleryReturnFocus?.focus()}
 $("galleryClose").addEventListener("click",closeProductGallery);
 $("galleryDialog").addEventListener("click",event=>{if(event.target===$("galleryDialog"))closeProductGallery()});
 
 function handleGalleryAdd(){
  const item=activeGalleryItem;if(!item)return;
  const trigger=galleryReturnFocus;
- if(window.StoreNestBookings.isBookingOffer(item,activePublicBusiness)){closeProductGallery();window.StoreNestBookings.open(item,trigger);return}
+ if(window.StoreNestBookings.isBookingOffer(item,activePublicBusiness)){const selectedSet=isStorefrontDecorOffering(item)?storefrontDecorColorSets(item).find(set=>set.id===activeGalleryDecorSetId):null;closeProductGallery();window.StoreNestBookings.open(item,trigger,{decorColorSetName:selectedSet?.name||""});return}
  const editingKey=galleryEditCartKey;
  const note=editingKey!==null?$("galleryNotes").value:($("galleryCustomization").hidden?"":$("galleryNotes").value);
  const quote=editingKey?updateCartProduct(editingKey,item,galleryOptionSelections,note):addProductToCart(item,galleryOptionSelections,note);
@@ -1957,8 +2023,15 @@ $("main").addEventListener("click",e=>{
   const category=e.target.closest("[data-category-tab]");
   if(category){selectStorefrontCategory(category.dataset.categoryTab);return}
 
+  const colorChoice=e.target.closest("[data-decor-color-set]");
+  if(colorChoice){
+   const item=availableItems.find(row=>row.id===colorChoice.dataset.itemId),card=colorChoice.closest(".decor-service-feed-card");
+   const set=item?storefrontDecorColorSets(item).find(row=>row.id===colorChoice.dataset.decorColorSet):null;
+   if(item&&set&&card)selectDecorColorSetOnCard(card,item,set);
+   return;
+  }
   const add=e.target.closest("[data-add-item]");
-  if(add){const item=availableItems.find(i=>i.id===add.dataset.addItem);if(!item)return;if(window.StoreNestBookings.isBookingOffer(item,activePublicBusiness)){window.StoreNestBookings.open(item,add);return}if(window.StoreNestOptions.normalize(item.customization_options).length){openProductGallery(item.id,add);return}addProductToCart(item);return}
+  if(add){const item=availableItems.find(i=>i.id===add.dataset.addItem);if(!item)return;if(window.StoreNestBookings.isBookingOffer(item,activePublicBusiness)){window.StoreNestBookings.open(item,add,{decorColorSetName:add.dataset.decorColorSetName||""});return}if(window.StoreNestOptions.normalize(item.customization_options).length){openProductGallery(item.id,add);return}addProductToCart(item);return}
   const open=e.target.closest("[data-open-product]");if(open){openProductGallery(open.dataset.openProduct,open);return}
   if(e.target.closest("#openCart"))openCart();
 });
@@ -2083,8 +2156,47 @@ function readStorefrontSnapshot(slug){
 function storeStorefrontSnapshot(slug,business,items,sections){
  try{sessionStorage.setItem(STOREFRONT_CACHE_PREFIX+slug,JSON.stringify({savedAt:Date.now(),business,items,sections}))}catch{}
 }
+function wireDecorPhotoTrack(track){
+ const openButton=track.closest(".decor-service-feed-open");
+ const countLabel=track.closest(".art")?.querySelector("[data-decor-photo-count]");
+ let pointerStart=null;
+ const ignoreSwipeClick=()=>{if(openButton)openButton.dataset.ignorePhotoClickUntil=String(Date.now()+800)};
+ track.addEventListener("scroll",()=>{
+  const slideCount=track.children.length,width=track.clientWidth;
+  if(!countLabel||!slideCount||!width)return;
+  const index=Math.max(0,Math.min(slideCount-1,Math.round(track.scrollLeft/width)));
+  countLabel.textContent=(index+1)+" / "+slideCount;
+ },{passive:true});
+ track.addEventListener("pointerdown",event=>{pointerStart={id:event.pointerId,x:event.clientX,y:event.clientY}},{passive:true});
+ const detectSwipe=event=>{
+  if(!pointerStart||pointerStart.id!==event.pointerId)return;
+  const dx=event.clientX-pointerStart.x,dy=event.clientY-pointerStart.y;
+  if(Math.abs(dx)>10&&Math.abs(dx)>Math.abs(dy))ignoreSwipeClick();
+ };
+ track.addEventListener("pointermove",detectSwipe,{passive:true});
+ const finishSwipe=event=>{
+  if(!pointerStart||pointerStart.id!==event.pointerId)return;
+  detectSwipe(event);pointerStart=null;
+ };
+ track.addEventListener("pointerup",finishSwipe,{passive:true});
+ track.addEventListener("pointercancel",finishSwipe,{passive:true});
+ if(openButton){
+  openButton.addEventListener("click",event=>{
+   if(Number(openButton.dataset.ignorePhotoClickUntil||0)>Date.now()){
+    event.preventDefault();event.stopImmediatePropagation();openButton.dataset.ignorePhotoClickUntil="0";
+   }
+  },true);
+  openButton.addEventListener("keydown",event=>{
+   if(!["ArrowLeft","ArrowRight"].includes(event.key)||track.children.length<2)return;
+   const current=Math.round(track.scrollLeft/Math.max(track.clientWidth,1));
+   const next=Math.max(0,Math.min(track.children.length-1,current+(event.key==="ArrowRight"?1:-1)));
+   if(next===current)return;
+   event.preventDefault();track.scrollTo({left:next*track.clientWidth,behavior:"smooth"});
+  });
+ }
+}
 function renderPublishedStorefront(root,client,business,items,storefrontSections){
-   activePublicBusiness=business;
+   activePublicBusiness=business;activePublicSections=storefrontSections||[];
    availableItems=items;
    window.StoreNestBookings.setContext(client,business,availableItems);
    // Do not add dashboard preview frames to customer browsing history.
@@ -2119,17 +2231,24 @@ function renderPublishedStorefront(root,client,business,items,storefrontSections
    const cover=safeUrl(cfg.hero);
    const logo=safeUrl(business.logo_url);
    const cardForItem=item=>{
-     const mediaEntries=galleryMediaEntries(item),media=mediaEntries.map(entry=>entry.url),firstEntry=mediaEntries[0],first=firstEntry?.url||"",count=media.length;
-     const service=window.StoreNestBookings.isBookingOffer(item,business);
+     const mediaEntries=galleryMediaEntries(item),service=window.StoreNestBookings.isBookingOffer(item,business);
      const decorBooking=service&&window.StoreNestCategoryId(business.category)==="events-decor";
+     const hasDecorColorSets=decorBooking&&isStorefrontDecorOffering(item);
+     const colorSets=hasDecorColorSets?storefrontDecorColorSets(item):[];
+     const hasConfiguredColorSets=hasDecorColorSets&&Array.isArray(item.decor_color_sets)&&item.decor_color_sets.length>0;
+     const firstColorSet=colorSets[0]||null;
+     const displayedEntries=hasDecorColorSets&&firstColorSet?firstColorSet.entries:mediaEntries;
+     const media=displayedEntries.map(entry=>entry.url),firstEntry=displayedEntries[0],first=firstEntry?.url||"",count=media.length;
      const bookingFee=service?window.StoreNestBookings.bookingFeeLabel(item,business):"";
      const action=service?"Request booking":"Add";
      const whatsapp=service?serviceWhatsAppAction(business,item):"";
-     const titleButton='<button class="item-title-open" type="button" data-open-product="'+esc(item.id)+'" title="'+esc(item.name)+'" aria-label="View details for '+esc(item.name)+'">'+esc(item.name)+'</button>';
+     const setAttribute=hasConfiguredColorSets&&firstColorSet?' data-decor-set-id="'+esc(firstColorSet.id)+'"':"";
+     const initialSetName=hasConfiguredColorSets&&firstColorSet?firstColorSet.name:"";
+     const titleButton='<button class="item-title-open" type="button" data-open-product="'+esc(item.id)+'"'+setAttribute+' title="'+esc(item.name)+'" aria-label="View details for '+esc(item.name)+'">'+esc(item.name)+'</button>';
      const artwork=(first?(isProductVideo(first)?'<video data-catalog-preview data-src="'+esc(first)+'" muted loop playsinline preload="none" aria-label="'+esc(item.name)+' video"></video>':'<img src="'+esc(first)+'"'+catalogResponsiveAttributes(firstEntry,decorBooking?"(max-width: 600px) 100vw, (max-width: 750px) 600px, 50vw":"(max-width: 750px) 50vw, (max-width: 1000px) 33vw, 25vw")+' alt="'+esc(item.name)+'" loading="lazy" decoding="async">'):service?"✦":"▧")+(count>1?'<span class="photo-count'+(decorBooking?' decor-photo-count':'')+'">'+(decorBooking?'1 / '+count:'▧ '+count+' media')+'</span>':'');
      const decorArtwork=count?(
        '<div class="decor-photo-track" data-decor-photo-track role="group" aria-roledescription="carousel" aria-label="'+esc(item.name)+' photo gallery">'+
-       mediaEntries.map((entry,index)=>{
+       displayedEntries.map((entry,index)=>{
          const url=entry.url;
          const photo=isProductVideo(url)
            ?'<video data-catalog-preview data-src="'+esc(url)+'" muted loop playsinline preload="none" aria-label="'+esc(item.name)+' video '+(index+1)+'"></video>'
@@ -2139,11 +2258,13 @@ function renderPublishedStorefront(root,client,business,items,storefrontSections
        '</div>'+
        (count>1?'<span class="photo-count decor-photo-count" data-decor-photo-count aria-live="polite" aria-atomic="true">1 / '+count+'</span>':'')
      ):'<span class="decor-photo-placeholder">✦</span>';
-     const actionButton='<button class="add" type="button" data-add-item="'+esc(item.id)+'" aria-label="'+(service?"Request booking for ":"Add ")+esc(item.name)+(service?"":" to basket")+'">'+(service?"":'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>')+action+'</button>';
+     const actionButton='<button class="add" type="button" data-add-item="'+esc(item.id)+'"'+(hasConfiguredColorSets?' data-decor-color-set-name="'+esc(initialSetName)+'"':"")+' aria-label="'+(service?"Request booking for ":"Add ")+esc(item.name)+(service?"":" to basket")+'">'+(service?"":'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>')+action+'</button>';
      if(decorBooking){
-       return '<article class="card decor-service-feed-card"><div class="decor-service-feed-title"><h3>'+titleButton+'</h3></div><button type="button" class="item-open decor-service-feed-open" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos, description and booking details"><div class="art decor-photo-carousel">'+decorArtwork+'</div></button><div class="decor-service-feed-details">'+(item.description?'<p class="decor-service-description">'+esc(item.description)+'</p>':'')+'<div class="decor-service-prices"><strong class="decor-service-price">'+esc(window.StoreNestBookings.priceLabel(item,business))+'</strong>'+(bookingFee?'<span class="decor-service-fee">'+esc(bookingFee)+'</span>':'')+'</div><div class="service-action-row">'+actionButton+whatsapp+'</div><p class="service-disclaimer">Date and final quotation confirmed by the business.</p></div></article>';
+       const colorPicker=hasConfiguredColorSets&&colorSets.length?'<div class="decor-color-set-picker" data-decor-color-picker="'+esc(item.id)+'"><span class="decor-color-set-label">Colour theme</span><div class="decor-color-set-options" role="group" aria-label="Choose a décor colour theme">'+colorSets.map((set,index)=>'<button type="button" class="decor-color-set-option" data-decor-color-set="'+esc(set.id)+'" data-item-id="'+esc(item.id)+'" aria-pressed="'+String(index===0)+'">'+esc(set.name)+'</button>').join("")+'</div></div>':"";
+       const description=hasConfiguredColorSets&&firstColorSet?.description?firstColorSet.description:(item.description||"");
+       return '<article class="card decor-service-feed-card"><div class="decor-service-feed-title"><h3>'+titleButton+'</h3></div><button type="button" class="item-open decor-service-feed-open" data-open-product="'+esc(item.id)+'"'+setAttribute+' aria-label="View '+esc(item.name)+' photos, description and booking details"><div class="art decor-photo-carousel">'+decorArtwork+'</div></button><div class="decor-service-feed-details">'+colorPicker+'<p class="decor-service-description" data-decor-color-description="'+esc(item.id)+'"'+(description?'':' hidden')+'>'+esc(description)+'</p><div class="decor-service-prices"><strong class="decor-service-price">'+esc(window.StoreNestBookings.priceLabel(item,business))+'</strong>'+(bookingFee?'<span class="decor-service-fee">'+esc(bookingFee)+'</span>':'')+'</div><div class="service-action-row">'+actionButton+whatsapp+'</div><p class="service-disclaimer">Date and final quotation confirmed by the business.</p></div></article>';
      }
-     return '<article class="card"><button type="button" class="item-open" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos, videos and details"><div class="art">'+artwork+'</div></button><div class="item-body"><h3>'+titleButton+'</h3><div class="item-bottom"><span class="price">'+esc(service?window.StoreNestBookings.priceLabel(item,business):money(item.price))+'</span>'+(service?'<div class="service-action-row">':'')+actionButton+(service?whatsapp+'</div>':"")+'</div>'+(service?'<div class="service-disclaimer">'+(bookingFee?'<strong>'+esc(bookingFee)+'</strong><br>':'')+'Date and final quotation confirmed by the business</div>':'')+'</div></article>';
+     return '<article class="card"><button type="button" class="item-open" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos, videos and details"><div class="art">'+artwork+'</div></button><div class="item-body"><h3>'+titleButton+'</h3><div class="item-bottom"><span class="price">'+esc(service?window.StoreNestBookings.priceLabel(item,business):money(item.price))+'</span>'+(service?'<div class="service-action-row">':'')+actionButton+(service?whatsapp+'</div>':"")+'</div>'+(service?'<div class="service-disclaimer">'+(bookingFee?'<strong>'+esc(bookingFee)+'</strong><br>':"")+'Date and final quotation confirmed by the business</div>':"")+'</div></article>';
    };
    const cardGridClass=items=>items.some(item=>window.StoreNestCategoryId(business.category)==="events-decor"&&window.StoreNestBookings.isBookingOffer(item,business))?"grid decor-booking-feed-grid":"grid";
    const hasProducts=availableItems.some(item=>item.item_type==="product");
@@ -2205,49 +2326,7 @@ function renderPublishedStorefront(root,client,business,items,storefrontSections
      (cfg.welcome?'<div class="welcome">'+esc(cfg.welcome)+'</div>':'')+
      '<div class="contacts">'+contacts.join("")+'</div>'+
      '<div id="catalog" class="catalog-area">'+catalogueMarkup+'</div>';
-   root.querySelectorAll("[data-decor-photo-track]").forEach(track=>{
-     const openButton=track.closest(".decor-service-feed-open");
-     const countLabel=track.closest(".art")?.querySelector("[data-decor-photo-count]");
-     let pointerStart=null;
-     const ignoreSwipeClick=()=>{if(openButton)openButton.dataset.ignorePhotoClickUntil=String(Date.now()+800)};
-     track.addEventListener("scroll",()=>{
-       const slideCount=track.children.length,width=track.clientWidth;
-       if(!countLabel||!slideCount||!width)return;
-       const index=Math.max(0,Math.min(slideCount-1,Math.round(track.scrollLeft/width)));
-       countLabel.textContent=(index+1)+" / "+slideCount;
-     },{passive:true});
-     track.addEventListener("pointerdown",event=>{
-       pointerStart={id:event.pointerId,x:event.clientX,y:event.clientY};
-     },{passive:true});
-     const detectSwipe=event=>{
-       if(!pointerStart||pointerStart.id!==event.pointerId)return;
-       const dx=event.clientX-pointerStart.x,dy=event.clientY-pointerStart.y;
-       if(Math.abs(dx)>10&&Math.abs(dx)>Math.abs(dy))ignoreSwipeClick();
-     };
-     track.addEventListener("pointermove",detectSwipe,{passive:true});
-     const finishSwipe=event=>{
-       if(!pointerStart||pointerStart.id!==event.pointerId)return;
-       detectSwipe(event);pointerStart=null;
-     };
-     track.addEventListener("pointerup",finishSwipe,{passive:true});
-     track.addEventListener("pointercancel",finishSwipe,{passive:true});
-     if(openButton){
-       openButton.addEventListener("click",event=>{
-         if(Number(openButton.dataset.ignorePhotoClickUntil||0)>Date.now()){
-           event.preventDefault();event.stopImmediatePropagation();
-           openButton.dataset.ignorePhotoClickUntil="0";
-         }
-       },true);
-       openButton.addEventListener("keydown",event=>{
-         if(!["ArrowLeft","ArrowRight"].includes(event.key)||track.children.length<2)return;
-         const current=Math.round(track.scrollLeft/Math.max(track.clientWidth,1));
-         const next=Math.max(0,Math.min(track.children.length-1,current+(event.key==="ArrowRight"?1:-1)));
-         if(next===current)return;
-         event.preventDefault();
-         track.scrollTo({left:next*track.clientWidth,behavior:"smooth"});
-       });
-     }
-   });
+   root.querySelectorAll("[data-decor-photo-track]").forEach(wireDecorPhotoTrack);
    activateBackgroundVideos(root);
    activateCatalogPreviews(root);
    syncCartBadge();
@@ -2280,7 +2359,7 @@ async function load(){
    }
    // Catalogue and category metadata are independent once the business ID is known.
    const [catalog,sectionResult]=await Promise.all([
-     client.from("business_items").select("id,name,item_type,description,price,price_range_min,price_range_max,booking_fee,booking_fee_min,booking_fee_max,image_url,media_urls,category_id,customization_options").eq("business_id",business.id).eq("is_available",true).order("display_order").order("created_at",{ascending:false}),
+     client.from("business_items").select("id,name,item_type,description,price,price_range_min,price_range_max,booking_fee,booking_fee_min,booking_fee_max,image_url,media_urls,decor_color_sets,category_id,customization_options").eq("business_id",business.id).eq("is_available",true).order("display_order").order("created_at",{ascending:false}),
      client.from("business_categories").select("id,name,description,display_style,display_order").eq("business_id",business.id).order("display_order").order("name")
    ]);
    if(catalog.error)throw catalog.error;

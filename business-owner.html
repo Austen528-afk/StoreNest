@@ -254,6 +254,7 @@ html,body{background:#f8faf9;color:#192622}
 @media(max-width:560px){.booking-pricing-grid{grid-template-columns:minmax(0,1fr)}}
 .brand-preview{display:flex;align-items:center;gap:12px;margin:9px 0;flex-wrap:wrap}.brand-preview img{width:140px;height:95px;object-fit:cover;border-radius:11px;border:1px solid #d2dfd6;background:#eef4f0}.brand-preview #builderLogoPreview{width:88px;height:88px;border-radius:50%}
 .owner-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:12px}.owner-gallery-tile{background:#eff5f1;border:1px solid #d5e1d9;border-radius:12px;overflow:hidden}.owner-gallery-tile img{height:110px;width:100%;object-fit:cover}.owner-gallery-actions{display:flex;align-items:center;justify-content:space-between;gap:3px;padding:5px}.owner-gallery-actions span{font-size:10px;color:#3d5649;font-weight:700}.owner-gallery-actions button{background:#fff;color:#19382d;border:1px solid #d6e4db;border-radius:6px;min-width:24px;height:25px;cursor:pointer}.owner-gallery-actions button:disabled{opacity:.3;cursor:default}
+.decor-color-sets-editor{grid-column:1/-1;padding:13px;border:1px solid #60d6bd42;border-radius:12px;background:#182b2b}.decor-color-sets-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.decor-color-sets-heading>div{display:grid;gap:4px}.decor-color-sets-heading strong{font-size:12px;color:#e6f2ed}.decor-color-sets-heading small,.decor-color-sets-note{color:#9db4ae;font-size:10px;line-height:1.5}.decor-color-set-card{min-width:0;margin-top:10px;padding:11px;border:1px solid #ffffff1b;border-radius:10px;background:#111e22}.decor-color-set-card:first-child{margin-top:0}.decor-color-set-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}.decor-color-set-head h4{margin:0;color:#dbe9e5;font-size:11px}.decor-color-set-remove{width:28px;height:28px;border:1px solid #ffffff24;border-radius:8px;background:#ffffff08;color:#e8c2c2;font-size:17px}.decor-color-set-fields{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:8px}.decor-color-set-fields label{display:grid;gap:5px;color:#a9beb8;font-size:9px;font-weight:750}.decor-color-set-fields input,.decor-color-set-fields textarea{width:100%;min-width:0;border:1px solid #ffffff24;border-radius:8px;background:#0f191e;color:#eff5f3;padding:8px;font:inherit;font-size:10px}.decor-color-set-fields textarea{min-height:54px;resize:vertical}.decor-color-set-upload{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:9px;padding:9px 10px;border:1px dashed #ffffff35;border-radius:8px;background:#ffffff05;color:#d4e3df;font-size:10px;font-weight:750;cursor:pointer}.decor-color-set-upload input{max-width:min(62%,280px);font:inherit;font-size:9px;color:#9cb2ad}.decor-color-set-empty{margin:8px 0 0;color:#91aaa4;font-size:9px}.decor-color-set-card .owner-gallery{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:7px}.decor-color-set-card .owner-gallery-tile img{height:82px}.decor-color-set-card .owner-gallery-actions{flex-wrap:wrap}.decor-color-set-card .owner-gallery-actions span{min-width:100%;font-size:9px}.decor-color-sets-note{display:block;margin-top:10px}@media(max-width:600px){.decor-color-sets-heading{align-items:flex-start;flex-direction:column}.decor-color-set-fields{grid-template-columns:1fr}.decor-color-set-upload{align-items:flex-start;flex-direction:column}.decor-color-set-upload input{max-width:100%;width:100%}}
 .business-switcher{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 0}.business-switcher label{color:#70877b;font-size:11px;font-weight:700}.business-switcher select{background:#fff;color:#1a3326;border:1px solid #cbdcd2;border-radius:10px;padding:10px;max-width:240px;min-width:140px}.business-switcher .outline-button{padding:10px 13px;font-size:12px;white-space:nowrap}@media(max-width:600px){.business-switcher{width:100%}.business-switcher select{flex:1;min-width:120px}}
 .owner-sections{margin:12px 0 26px;padding:20px;border-radius:15px;background:#f6faf7;border:1px solid #d9e8df}.owner-sections .section-heading{margin-bottom:14px}.section-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}.section-card{background:#fff;color:#18392c;padding:15px;border:1px solid #dbe8df;border-radius:12px;display:flex;flex-direction:column;justify-content:space-between;gap:15px}.section-card strong{font-size:15px}.section-card p{font-size:12px;color:#698176;margin:6px 0}.section-card small{font-size:11px;color:#74897e}.section-tools{display:flex;gap:5px;flex-wrap:wrap}.section-tools .outline-button{padding:6px 10px;font-size:11px}.section-empty{font-size:13px;color:#62766b}.owner-sections h3{color:#173b2c}
 
@@ -756,7 +757,7 @@ html[data-theme="dark"] #itemMediaQualityNote[data-warning="true"]{color:#f4c27e
   <div class="field"><label for="itemBookingFeeMax">Booking fee up to (ZAR)</label><div class="price-input"><span>R</span><input id="itemBookingFeeMax" type="number" min="0" step="0.01" placeholder="Optional"></div></div>
  </div>
 </div><div class="field"><label for="itemCategory">Category</label><div class="category-input"><select id="itemCategory"><option value="">No category</option></select><button type="button" id="addCategoryButton" aria-label="Add category">＋</button></div></div><div class="field full-field"><label for="itemDescription">Description</label><textarea id="itemDescription" rows="3" maxlength="500" placeholder="Describe your item"></textarea></div>
-<div class="field full-field"><label for="itemMedia">Product photos, GIFs & short videos (up to 12)</label><input id="itemMedia" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"><small>Images/GIFs: max 10 MB. MP4/WebM videos: max 20 MB and 30 seconds. First file is the cover.</small><small id="itemMediaQualityNote" class="media-quality-note" role="status" aria-live="polite">Original photos are preserved. New photos get responsive storefront sizes.</small><div id="itemMediaGallery" class="owner-gallery"></div></div><div class="field"><label for="itemAvailability">Availability</label><select id="itemAvailability"><option value="true">Available</option><option value="false">Unavailable</option></select></div><div class="field"><label for="itemOrder">Display order</label><input id="itemOrder" type="number" min="0" step="1" value="0"></div></div>
+<div id="itemMediaField" class="field full-field"><label for="itemMedia">Product photos, GIFs & short videos (up to 12)</label><input id="itemMedia" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"><small>Images/GIFs: max 10 MB. MP4/WebM videos: max 20 MB and 30 seconds. First file is the cover.</small><small id="itemMediaQualityNote" class="media-quality-note" role="status" aria-live="polite">Original photos are preserved. New photos get responsive storefront sizes.</small><div id="itemMediaGallery" class="owner-gallery"></div></div><div id="decorColorSetsEditor" class="decor-color-sets-editor full-field" hidden><div class="decor-color-sets-heading"><div><strong>Décor colour sets</strong><small>Group photos of the same setup by colour theme. Each set can have its own optional description.</small></div><button type="button" id="addDecorColorSet" class="outline-button">+ Add colour set</button></div><div id="decorColorSetsList"></div><small class="decor-color-sets-note">Upload up to 12 pictures across all colour sets. The first picture in the first set is the main storefront photo.</small></div><div class="field"><label for="itemAvailability">Availability</label><select id="itemAvailability"><option value="true">Available</option><option value="false">Unavailable</option></select></div><div class="field"><label for="itemOrder">Display order</label><input id="itemOrder" type="number" min="0" step="1" value="0"></div></div>
 <div id="itemOptionsEditor" class="item-options-editor">
   <div class="item-options-heading"><div><strong>Customization &amp; Extras</strong><small>Create scales for amounts or heat levels, or choice groups for extras.</small></div>
   <div class="item-options-actions"><button type="button" id="addScaleGroup" class="outline-button">+ Add scale</button><button type="button" id="addCustomizationGroup" class="outline-button">+ Add choice group</button></div></div>
@@ -1273,8 +1274,48 @@ function optionsForSave(){
 
 function isCateringDecorStore(){return window.StoreNestCategoryId?.(currentBusiness?.category)==="events-decor"}
 function usesBookingPricing(){return isCateringDecorStore()}
-function syncItemPricingFields(){const booking=usesBookingPricing();$("itemPriceField").hidden=booking;$("bookingPricingFields").hidden=!booking;$("itemPrice").required=!booking}
+function ownerDecorSectionName(){
+ const section=businessCategories.find(row=>row.id===$("itemCategory").value);
+ return String(section?.name||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+}
+function isDecorOffering(){
+ const name=ownerDecorSectionName();
+ // Décor is the default for services in this combined marketplace category.
+ // Hide the colour-set editor only when the selected section explicitly identifies catering.
+ return usesBookingPricing()&&$("itemType").value==="service"&&!/cater/.test(name);
+}
+function newDecorColorSet(name){
+ return {id:window.crypto?.randomUUID?.()||("decor-"+Date.now()+"-"+Math.random().toString(36).slice(2)),name:name||"",description:"",media_urls:[]};
+}
+function syncDecorColorSetEditor(){
+ const enabled=isDecorOffering(),editor=$("decorColorSetsEditor"),mediaField=$("itemMediaField");
+ if(editor)editor.hidden=!enabled;
+ if(mediaField)mediaField.hidden=enabled;
+ if(!enabled)return;
+ if(!editedDecorColorSets.length)editedDecorColorSets=[newDecorColorSet("Colour set 1")];
+ const validIds=new Set(editedDecorColorSets.map(set=>set.id)),firstSet=editedDecorColorSets[0];
+ galleryEntries.forEach(entry=>{if(!validIds.has(entry.decorSetId))entry.decorSetId=firstSet.id});
+ drawDecorColorSetEditor();drawOwnerGallery();
+}
+function loadDecorColorSets(item){
+ editedDecorColorSets=[];
+ if(!isDecorOffering())return;
+ const media=catalogMediaEntries(item),mediaByUrl=new Set(media.map(entry=>entry.url));
+ const source=Array.isArray(item?.decor_color_sets)?item.decor_color_sets:[];
+ editedDecorColorSets=source.map((set,index)=>({
+  id:String(set?.id||"").trim()||newDecorColorSet("x").id,
+  name:String(set?.name||"").trim()||("Colour set "+(index+1)),
+  description:String(set?.description||"").slice(0,500),
+  media_urls:(Array.isArray(set?.media_urls)?set.media_urls:[]).map(value=>typeof value==="string"?value:value?.url).filter(url=>typeof url==="string"&&mediaByUrl.has(url))
+ }));
+ if(!editedDecorColorSets.length)editedDecorColorSets=[newDecorColorSet(media.length?"Existing photos":"Colour set 1")];
+ const urlToSet=new Map();
+ for(const set of editedDecorColorSets)for(const url of set.media_urls)if(!urlToSet.has(url))urlToSet.set(url,set.id);
+ galleryEntries.forEach(entry=>{entry.decorSetId=urlToSet.get(entry.url)||editedDecorColorSets[0].id});
+}
+function syncItemPricingFields(){const booking=usesBookingPricing();$("itemPriceField").hidden=booking;$("bookingPricingFields").hidden=!booking;$("itemPrice").required=!booking;syncDecorColorSetEditor()}
 $("itemType").addEventListener("change",syncItemPricingFields);
+$("itemCategory").addEventListener("change",syncDecorColorSetEditor);
 function ownerItemPriceLabel(item){
  if(!isCateringDecorStore())return formatOrderMoney(item.price);
  const min=item.price_range_min,max=item.price_range_max;
@@ -1301,7 +1342,7 @@ function openItemModal(item){
   syncItemPricingFields();$("itemDescription").value=item?.description||"";
   editedOptionGroups=window.StoreNestOptions.normalize(item?.customization_options);drawCustomizationEditor();
   $("itemAvailability").value=String(item?.is_available??true);$("itemOrder").value=item?.display_order??businessItems.length;$("itemCategory").value=item?.category_id||"";
-  $("itemFormMessage").hidden=true;resetItemGallery(item);openModal("itemModal");
+  $("itemFormMessage").hidden=true;editedDecorColorSets=[];resetItemGallery(item);loadDecorColorSets(item);syncDecorColorSetEditor();openModal("itemModal");
   if($("itemModal")?.hidden)throw new Error("The edit form could not be opened.");
  }catch(error){console.error("StoreNest product edit error",error);showToast("Could not open the product editor: "+friendlyError(error),true)}
 }
@@ -1510,7 +1551,7 @@ const MEDIA_TYPES={"image/jpeg":"jpg","image/png":"png","image/webp":"webp","ima
 function isProductVideo(url){return /\.(?:mp4|webm)(?:[?#]|$)/i.test(String(url||""))}
 function validateProductMedia(file){if(!file||!file.size||!MEDIA_TYPES[file.type]||file.size>(file.type.startsWith("video/")?20:10)*1048576)throw Error("Images/GIFs must be 10 MB or smaller; MP4/WebM clips must be 20 MB or smaller.")}
 function validateProductVideo(file){return file?.type.startsWith("video/")?validateVideoDuration(file):Promise.resolve()}
-let galleryEntries=[],galleryObjectUrls=[];
+let galleryEntries=[],galleryObjectUrls=[],editedDecorColorSets=[];
 function normalizeCatalogMedia(value){
  const source=typeof value==="string"?{url:value}:value;
  if(!source||typeof source.url!=="string"||!/^https:\/\//i.test(source.url))return null;
@@ -1577,22 +1618,123 @@ function resetItemGallery(item){
  $("itemMedia").value="";
  updateCatalogMediaQualityNote();drawOwnerGallery();
 }
-function drawOwnerGallery(){
- const root=$("itemMediaGallery");root.replaceChildren();
- galleryEntries.forEach((entry,i)=>{
-  const tile=document.createElement("div");tile.className="owner-gallery-tile";
+function renderOwnerGalleryTiles(root,records,decorSetId=null){
+ root.replaceChildren();
+ records.forEach((record,localIndex)=>{
+  const {entry,index}=record,tile=document.createElement("div");tile.className="owner-gallery-tile";
   const video=entry.file?entry.file.type.startsWith("video/"):isProductVideo(entry.url);
   const image=document.createElement(video?"video":"img");image.src=entry.url;
-  if(video){image.muted=true;image.loop=true;image.playsInline=true;image.autoplay=true;image.preload="metadata";image.play().catch(()=>{});}else{image.alt="Product photo "+(i+1);image.loading="lazy";}
+  if(video){image.muted=true;image.loop=true;image.playsInline=true;image.autoplay=true;image.preload="metadata";image.play().catch(()=>{});}else{image.alt="Product photo "+(localIndex+1);image.loading="lazy";}
   const actions=document.createElement("div");actions.className="owner-gallery-actions";
-  const label=document.createElement("span");label.textContent=(i===0?"Cover":"Media "+(i+1))+(video?" · Video":"");
-  const left=document.createElement("button");left.type="button";left.textContent="←";left.disabled=i===0;left.title="Move earlier";
-  left.addEventListener("click",()=>{[galleryEntries[i-1],galleryEntries[i]]=[galleryEntries[i],galleryEntries[i-1]];drawOwnerGallery()});
-  const right=document.createElement("button");right.type="button";right.textContent="→";right.disabled=i===galleryEntries.length-1;right.title="Move later";
-  right.addEventListener("click",()=>{[galleryEntries[i+1],galleryEntries[i]]=[galleryEntries[i],galleryEntries[i+1]];drawOwnerGallery()});
-  const remove=document.createElement("button");remove.type="button";remove.textContent="×";remove.title="Remove this media";remove.setAttribute("aria-label","Remove media "+(i+1));
-  remove.addEventListener("click",()=>{galleryEntries.splice(i,1);updateCatalogMediaQualityNote();drawOwnerGallery()});
+  const label=document.createElement("span");label.textContent=(localIndex===0?"Cover":"Media "+(localIndex+1))+(video?" · Video":"");
+  const left=document.createElement("button");left.type="button";left.textContent="←";left.disabled=localIndex===0;left.title="Move earlier";
+  left.addEventListener("click",()=>{
+   const previous=records[localIndex-1]?.index;if(previous==null)return;
+   [galleryEntries[previous],galleryEntries[index]]=[galleryEntries[index],galleryEntries[previous]];drawOwnerGallery();
+  });
+  const right=document.createElement("button");right.type="button";right.textContent="→";right.disabled=localIndex===records.length-1;right.title="Move later";
+  right.addEventListener("click",()=>{
+   const next=records[localIndex+1]?.index;if(next==null)return;
+   [galleryEntries[next],galleryEntries[index]]=[galleryEntries[index],galleryEntries[next]];drawOwnerGallery();
+  });
+  const remove=document.createElement("button");remove.type="button";remove.textContent="×";remove.title="Remove this media";remove.setAttribute("aria-label","Remove media "+(localIndex+1));
+  remove.addEventListener("click",()=>{galleryEntries.splice(index,1);updateCatalogMediaQualityNote();drawOwnerGallery()});
   actions.append(label,left,right,remove);tile.append(image,actions);root.append(tile);
+ });
+}
+function drawOwnerGallery(){
+ const root=$("itemMediaGallery");
+ if(isDecorOffering()){
+  root.replaceChildren();
+  for(const set of editedDecorColorSets){
+   const gallery=[...$("decorColorSetsList").querySelectorAll("[data-decor-set-gallery]")].find(node=>node.dataset.decorSetGallery===set.id);if(!gallery)continue;
+   const records=galleryEntries.map((entry,index)=>({entry,index})).filter(record=>record.entry.decorSetId===set.id);
+   renderOwnerGalleryTiles(gallery,records,set.id);
+   if(!records.length){const empty=document.createElement("p");empty.className="decor-color-set-empty";empty.textContent="No pictures added to this colour set yet.";gallery.append(empty)}
+  }
+  return;
+ }
+ renderOwnerGalleryTiles(root,galleryEntries.map((entry,index)=>({entry,index})));
+}
+function drawDecorColorSetEditor(){
+ const root=$("decorColorSetsList");root.replaceChildren();
+ editedDecorColorSets.forEach((set,index)=>{
+  const card=document.createElement("section");card.className="decor-color-set-card";card.dataset.decorSetCard=set.id;
+  const head=document.createElement("div");head.className="decor-color-set-head";
+  const title=document.createElement("h4");title.textContent=set.name||("Colour set "+(index+1));
+  const remove=document.createElement("button");remove.type="button";remove.className="decor-color-set-remove";remove.textContent="×";remove.title="Remove this colour set";remove.setAttribute("aria-label","Remove colour set "+(index+1));remove.disabled=editedDecorColorSets.length<2;remove.dataset.removeDecorSet=set.id;
+  head.append(title,remove);
+  const fields=document.createElement("div");fields.className="decor-color-set-fields";
+  const nameLabel=document.createElement("label");nameLabel.textContent="Colour set name";
+  const nameInput=document.createElement("input");nameInput.type="text";nameInput.maxLength=80;nameInput.placeholder="e.g. Blush Pink & Gold";nameInput.value=set.name;nameInput.dataset.decorSetName=set.id;nameLabel.append(nameInput);
+  const descLabel=document.createElement("label");descLabel.textContent="Description (optional)";
+  const desc=document.createElement("textarea");desc.maxLength=500;desc.placeholder="Describe this colour combination";desc.value=set.description;desc.dataset.decorSetDescription=set.id;descLabel.append(desc);
+  fields.append(nameLabel,descLabel);
+  const uploadLabel=document.createElement("label");uploadLabel.className="decor-color-set-upload";
+  const uploadText=document.createElement("span");uploadText.textContent="Upload pictures for this colour set";
+  const upload=document.createElement("input");upload.type="file";upload.multiple=true;upload.accept="image/jpeg,image/png,image/webp,image/gif";upload.dataset.decorSetUpload=set.id;
+  uploadLabel.append(uploadText,upload);
+  const gallery=document.createElement("div");gallery.className="owner-gallery";gallery.dataset.decorSetGallery=set.id;
+  card.append(head,fields,uploadLabel,gallery);root.append(card);
+ });
+}
+$("addDecorColorSet").addEventListener("click",()=>{
+ if(!isDecorOffering())return;
+ const number=editedDecorColorSets.length+1,set=newDecorColorSet("Colour set "+number);
+ editedDecorColorSets.push(set);drawDecorColorSetEditor();drawOwnerGallery();
+});
+$("decorColorSetsList").addEventListener("input",event=>{
+ const target=event.target,card=target.closest("[data-decor-set-card]");if(!card)return;
+ const set=editedDecorColorSets.find(row=>row.id===card.dataset.decorSetCard);if(!set)return;
+ if(target.matches("[data-decor-set-name]")){set.name=target.value;card.querySelector(".decor-color-set-head h4").textContent=target.value.trim()||"Colour set"}
+ if(target.matches("[data-decor-set-description]"))set.description=target.value;
+});
+$("decorColorSetsList").addEventListener("click",event=>{
+ const button=event.target.closest("[data-remove-decor-set]");if(!button)return;
+ const id=button.dataset.removeDecorSet;if(editedDecorColorSets.length<2)return;
+ editedDecorColorSets=editedDecorColorSets.filter(set=>set.id!==id);
+ galleryEntries=galleryEntries.filter(entry=>entry.decorSetId!==id);
+ drawDecorColorSetEditor();drawOwnerGallery();updateCatalogMediaQualityNote();
+});
+$("decorColorSetsList").addEventListener("change",async event=>{
+ const input=event.target.closest("[data-decor-set-upload]");if(!input)return;
+ const setId=input.dataset.decorSetUpload,files=[...input.files];if(!files.length)return;
+ if(galleryEntries.length+files.length>12){showToast("Maximum 12 pictures across all colour sets.",true);input.value="";return}
+ try{
+  const staged=[];
+  for(const file of files){
+   if(!file.type.startsWith("image/"))throw Error("Décor colour sets accept pictures only.");
+   validateProductMedia(file);
+   staged.push({file,dimensions:await catalogImageDimensions(file)});
+  }
+  for(const {file,dimensions} of staged){
+   const url=URL.createObjectURL(file);galleryObjectUrls.push(url);
+   galleryEntries.push({url,file,width:dimensions?.width||0,height:dimensions?.height||0,variants:[],decorSetId:setId});
+  }
+  drawOwnerGallery();
+ }catch(error){showToast(error.message||"Invalid picture.",true)}
+ finally{input.value=""}
+});
+function orderedDecorGalleryEntries(){
+ if(!isDecorOffering())return galleryEntries;
+ return editedDecorColorSets.flatMap(set=>galleryEntries.filter(entry=>entry.decorSetId===set.id));
+}
+function validateDecorColorSets(){
+ if(!isDecorOffering())return;
+ if(!editedDecorColorSets.length)throw Error("Add at least one décor colour set.");
+ for(const [index,set] of editedDecorColorSets.entries()){
+  if(!String(set.name||"").trim())throw Error("Enter a name for colour set "+(index+1)+".");
+  if(!galleryEntries.some(entry=>entry.decorSetId===set.id))throw Error("Upload at least one picture for "+String(set.name||("colour set "+(index+1)))+", or remove that set.");
+ }
+}
+function serializeDecorColorSets(savedEntries){
+ if(!isDecorOffering())return [];
+ let offset=0;
+ return editedDecorColorSets.map(set=>{
+  const count=galleryEntries.filter(entry=>entry.decorSetId===set.id).length;
+  const media_urls=savedEntries.slice(offset,offset+count).map(entry=>entry.url);
+  offset+=media_urls.length;
+  return {id:set.id,name:String(set.name||"").trim().slice(0,80),description:String(set.description||"").trim().slice(0,500),media_urls};
  });
 }
 $("itemMedia").addEventListener("change",async event=>{
@@ -1668,15 +1810,17 @@ $("itemForm").addEventListener("submit",async event=>{
   if(bookingPricing&&bookingFeeMin!==null&&(!Number.isFinite(bookingFeeMin)||bookingFeeMin<0))throw Error("Enter a valid booking fee.");
   if(bookingPricing&&bookingFeeMax!==null&&(!Number.isFinite(bookingFeeMax)||bookingFeeMax<0))throw Error("Enter a valid upper booking fee.");
   if(bookingPricing&&bookingFeeMin!==null&&bookingFeeMax!==null&&bookingFeeMax<bookingFeeMin)throw Error("The upper booking fee cannot be lower than the starting booking fee.");
+  const isDecorItem=isDecorOffering();if(isDecorItem)validateDecorColorSets();
   client=await loadAuth();
-  const entries=[];
-  for(const entry of galleryEntries){
+  const entries=[],orderedEntries=isDecorItem?orderedDecorGalleryEntries():galleryEntries;
+  for(const entry of orderedEntries){
    if(entry.file){const uploaded=await uploadCatalogMedia(client,entry.file);uploads.push(uploaded);entries.push(uploaded.entry)}
    else entries.push({url:entry.url,width:entry.width||0,height:entry.height||0,variants:entry.variants||[]});
   }
   const primaryImage=entries.find(entry=>!isProductVideo(entry.url))?.url||null;
+  const decorColorSets=isDecorItem?serializeDecorColorSets(entries):[];
   const prior=businessItems.find(item=>item.id===itemId);
-  const row={image_url:primaryImage,media_urls:entries,customization_options:optionsForSave(),business_id:currentBusiness.id,item_type:$("itemType").value,name:$("itemName").value.trim(),description:$("itemDescription").value.trim(),price:bookingPricing?(priceRangeMin??priceRangeMax??0):Number($("itemPrice").value),price_range_min:bookingPricing?priceRangeMin:(prior?.price_range_min??null),price_range_max:bookingPricing?priceRangeMax:(prior?.price_range_max??null),booking_fee:bookingPricing?((bookingFeeMin===null)!==(bookingFeeMax===null)?(bookingFeeMin??bookingFeeMax):null):(prior?.booking_fee??null),booking_fee_min:bookingPricing?bookingFeeMin:(prior?.booking_fee_min??prior?.booking_fee??null),booking_fee_max:bookingPricing?bookingFeeMax:(prior?.booking_fee_max??null),category_id:$("itemCategory").value||null,is_available:$("itemAvailability").value==="true",display_order:Number($("itemOrder").value)||0,updated_at:new Date().toISOString()};
+  const row={image_url:primaryImage,media_urls:entries,decor_color_sets:decorColorSets,customization_options:optionsForSave(),business_id:currentBusiness.id,item_type:$("itemType").value,name:$("itemName").value.trim(),description:$("itemDescription").value.trim(),price:bookingPricing?(priceRangeMin??priceRangeMax??0):Number($("itemPrice").value),price_range_min:bookingPricing?priceRangeMin:(prior?.price_range_min??null),price_range_max:bookingPricing?priceRangeMax:(prior?.price_range_max??null),booking_fee:bookingPricing?((bookingFeeMin===null)!==(bookingFeeMax===null)?(bookingFeeMin??bookingFeeMax):null):(prior?.booking_fee??null),booking_fee_min:bookingPricing?bookingFeeMin:(prior?.booking_fee_min??prior?.booking_fee??null),booking_fee_max:bookingPricing?bookingFeeMax:(prior?.booking_fee_max??null),category_id:$("itemCategory").value||null,is_available:$("itemAvailability").value==="true",display_order:Number($("itemOrder").value)||0,updated_at:new Date().toISOString()};
   const query=itemId?client.from("business_items").update(row).eq("id",itemId).eq("business_id",currentBusiness.id):client.from("business_items").insert(row);
   const {data,error}=await query.select("id");
   if(error)throw error;if(!data?.length)throw Error("The product could not be saved. Please retry.");

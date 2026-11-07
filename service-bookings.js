@@ -1,7 +1,7 @@
 /* Customer-side StoreNest service booking requests: no charges, no basket. */
 (function(){
 "use strict";
-let client=null,business=null,activeItem=null,returnFocus=null;
+let client=null,business=null,activeItem=null,returnFocus=null,activeDecorColorSetName="";
 const $=id=>document.getElementById(id);
 const money=value=>"R"+Number(value||0).toFixed(2);
 const isService=item=>item?.item_type==="service";
@@ -80,9 +80,9 @@ async function prefillBookingCustomerDetails(form,requestId){
   fillIfEmpty("event_location",profile?.exact_address,profile?.place,metadata.exact_address,metadata.place);
  }catch(error){console.warn("Could not prefill booking contact details:",error)}
 }
-function open(item,trigger){
+function open(item,trigger,options={}){
  if(!isBookingOffer(item,business)||!client||!business)return;
- activeItem=item;returnFocus=trigger||null;
+ activeItem=item;returnFocus=trigger||null;activeDecorColorSetName=String(options?.decorColorSetName||"").trim().slice(0,80);
  const requestId=++bookingPrefillRequest;
  const form=$("bookingRequestForm");form.reset();form.hidden=false;
  $("bookingSuccess").hidden=true;$("bookingFormError").hidden=true;
@@ -98,7 +98,7 @@ function open(item,trigger){
 function close(){
  bookingPrefillRequest++;
  $("bookingBackdrop").hidden=true;document.body.style.overflow="";
- activeItem=null;returnFocus?.focus();returnFocus=null;
+ activeItem=null;activeDecorColorSetName="";returnFocus?.focus();returnFocus=null;
 }
 for(const id of ["bookingClose","bookingCancel","bookingDone"])$(id).addEventListener("click",close);
 $("bookingBackdrop").addEventListener("click",e=>{if(e.target===$("bookingBackdrop"))close()});
@@ -120,7 +120,7 @@ $("bookingRequestForm").addEventListener("submit",async e=>{
    event_date:String(d.get("event_date")||""),
    event_location:String(d.get("event_location")||"").trim(),
    guest_count:d.get("guest_count")?Number(d.get("guest_count")):null,
-   notes:String(d.get("notes")||"").trim()
+   notes:activeDecorColorSetName?"Selected décor colour set: "+activeDecorColorSetName+(String(d.get("notes")||"").trim()?"\n\n"+String(d.get("notes")||"").trim():""):String(d.get("notes")||"").trim()
   };
   // The account ID is verified by Supabase RLS; guests retain a private tracking token on this device.
   let userId=null;
