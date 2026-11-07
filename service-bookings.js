@@ -99,9 +99,13 @@ $("bookingRequestForm").addEventListener("submit",async e=>{
   // The account ID is verified by Supabase RLS; guests retain a private tracking token on this device.
   let userId=null;
   try{
-   const {data,error:authError}=await client.auth.getUser();
-   if(authError)throw authError;
-   userId=data?.user?.id||null;
+   const {data:sessionData,error:sessionError}=await client.auth.getSession();
+   if(sessionError)throw sessionError;
+   if(sessionData?.session){
+    const {data,error:authError}=await client.auth.getUser();
+    if(authError)throw authError;
+    userId=data?.user?.id||null;
+   }
   }catch(authError){console.warn("Booking will be tracked on this device:",authError)}
   const bookingId=crypto.randomUUID(),trackingToken=crypto.randomUUID();
   payload.id=bookingId;
