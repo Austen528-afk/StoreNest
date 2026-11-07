@@ -484,7 +484,7 @@ function marketplaceCategoryControls(id){
  '<section class="category-description-panel" id="categoryDescriptionPanel" aria-label="About '+title+'"'+(expanded?'':' hidden')+'><strong>What belongs in '+title+'?</strong><p>'+escapeResult(details.overview)+'</p><div class="category-description-examples"><strong>Examples:</strong>'+details.examples.map(example=>'<span>'+escapeResult(example)+'</span>').join("")+'</div></section>';
 }
 let activeMarketplaceCategory=null;
-function renderMarketplaceCategories(){categoryGrid.innerHTML=MARKETPLACE_CATEGORIES.map(([id,label,iconMarkup])=>'<button type="button" class="marketplace-category-button'+(activeMarketplaceCategory===id?' active':'')+'" data-market-category="'+id+'"><span class="category-icon" aria-hidden="true">'+emoji+'</span><strong>'+label+'</strong></button>').join("")}
+function renderMarketplaceCategories(){categoryGrid.innerHTML=MARKETPLACE_CATEGORIES.map(([id,label,iconMarkup])=>'<button type="button" class="marketplace-category-button'+(activeMarketplaceCategory===id?' active':'')+'" data-market-category="'+id+'"><span class="category-icon" aria-hidden="true">'+iconMarkup+'</span><strong>'+label+'</strong></button>').join("")}
 function resetMarketplaceBrowse({updateHistory=true}={}){
  activeMarketplaceCategory=null;categorySection.hidden=false;renderMarketplaceCategories();setSearchActive(false);renderRecentBusinesses();
  if(updateHistory){
