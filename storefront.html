@@ -645,6 +645,195 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
 .checkout-success .cart-checkout-button{margin-top:8px}
 @media(max-width:480px){.order-tracking-card{padding:9px}.order-tracking-step{font-size:9px}.checkout-success{justify-content:flex-start;padding:14px 0}.order-tracking-share{min-height:44px}}
 @media(max-width:480px){.checkout-step{gap:12px}.checkout-fields input{min-height:44px}.checkout-submit-row strong{font-size:17px}}
+
+/* Catering & Decor detail view: title, full media, then one booking details area. */
+.gallery-booking-details{display:contents}
+.gallery-booking-details[hidden]{display:none!important}
+.gallery-overlay-pager{display:none}
+#galleryDialog.gallery-booking-style .gallery-panel{background:var(--canvas,#f8f6f1);color:var(--ink,#342e27)}
+#galleryDialog.gallery-booking-style .gallery-top{position:sticky;top:0;z-index:5;background:var(--surface,#fff);border-bottom:1px solid var(--border,#e8e1d6)}
+#galleryDialog.gallery-booking-style .gallery-top h2{font-size:clamp(20px,3vw,26px);line-height:1.2;font-weight:760}
+#galleryDialog.gallery-booking-style .gallery-stage{position:relative;flex:0 0 auto;height:min(62dvh,620px);min-height:240px;background:var(--surface,#eeeae3)}
+#galleryDialog.gallery-booking-style .gallery-stage img,
+#galleryDialog.gallery-booking-style .gallery-stage video{display:block;width:100%;height:100%;max-width:100%;max-height:none;object-fit:contain}
+#galleryDialog.gallery-booking-style .gallery-overlay-pager{position:absolute;inset:0;display:block;z-index:2;pointer-events:none}
+#galleryDialog.gallery-booking-style #galleryPosition{position:absolute;top:14px;right:14px;z-index:1;padding:5px 9px;border-radius:999px;background:#20231ecc;color:#fff;font-size:12px;font-weight:750}
+#galleryDialog.gallery-booking-style #galleryPosition[hidden]{display:none!important}
+#galleryDialog.gallery-booking-style .gallery-dots{position:absolute;left:0;right:0;bottom:13px;justify-content:center;pointer-events:auto}
+#galleryDialog.gallery-booking-style .gallery-dots button{background:#fffD;box-shadow:0 1px 5px #0005}
+#galleryDialog.gallery-booking-style .gallery-dots button.active{background:var(--accent,#27856d)}
+#galleryDialog.gallery-booking-style .gallery-booking-details{display:block;padding:17px 22px 0;background:var(--canvas,#f8f6f1);border-top:1px solid var(--border,#e8e1d6)}
+#galleryDialog.gallery-booking-style .gallery-description{margin:0;padding:0;font-size:15px;line-height:1.65;color:var(--ink,#342e27)}
+#galleryDialog.gallery-booking-style .gallery-description:empty{display:none}
+#galleryDialog.gallery-booking-style .gallery-service-fee{margin-top:10px;color:var(--muted,#6d6157);font-size:13px;font-weight:650;line-height:1.5}
+#galleryDialog.gallery-booking-style .gallery-service-fee[hidden]{display:none!important}
+#galleryDialog.gallery-booking-style .gallery-bottom{display:block;padding:12px 22px 20px;background:var(--canvas,#f8f6f1);border:0}
+#galleryDialog.gallery-booking-style .gallery-action-row{width:100%;min-width:0;justify-content:space-between}
+#galleryDialog.gallery-booking-style .gallery-price{font-size:clamp(19px,2.5vw,22px);color:var(--ink,#342e27)}
+@media(max-width:480px){
+ #galleryDialog.gallery-booking-style .gallery-stage{height:min(64dvh,700px);min-height:220px}
+ #galleryDialog.gallery-booking-style .gallery-booking-details{padding:14px 17px 0}
+ #galleryDialog.gallery-booking-style .gallery-bottom{padding:12px 17px max(18px,env(safe-area-inset-bottom))}
+ #galleryDialog.gallery-booking-style .gallery-action-row{align-items:flex-start;flex-direction:column;gap:12px}
+ #galleryDialog.gallery-booking-style .gallery-actions{width:100%;margin-left:0;justify-content:stretch}
+ #galleryDialog.gallery-booking-style .gallery-actions :is(.add,.service-whatsapp){flex:1 1 0;min-width:0;text-align:center}
+}
+
+/* Catering & Decor cards keep details beside a full-size image on desktop.
+   At phone widths, stack title, image, then all description and booking details. */
+body[data-store-type="decor"] .grid.decor-booking-feed-grid{
+ display:grid;
+ grid-template-columns:minmax(0,1fr);
+ justify-content:stretch;
+ gap:24px
+}
+body[data-store-type="decor"] .decor-service-feed-card{
+ display:grid;
+ grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);
+ grid-template-rows:auto minmax(0,1fr);
+ grid-template-areas:"title image" "details image";
+ align-items:stretch;
+ min-height:440px;
+ background:var(--canvas,#f8f6f1);
+ border:1px solid var(--border,#e8e1d6);
+ border-radius:8px;
+ overflow:hidden
+}
+body[data-store-type="decor"] .decor-service-feed-title{
+ grid-area:title;
+ min-width:0;
+ padding:22px clamp(20px,3vw,42px) 10px;
+ background:var(--canvas,#f8f6f1)
+}
+body[data-store-type="decor"] .decor-service-feed-title h3{margin:0;min-width:0}
+body[data-store-type="decor"] .decor-service-feed-title .item-title-open{
+ font-size:clamp(22px,2.5vw,34px);
+ line-height:1.2;
+ font-weight:760;
+ white-space:normal;
+ text-overflow:clip
+}
+body[data-store-type="decor"] .decor-service-feed-card .decor-service-feed-open{
+ grid-area:image;
+ display:block;
+ width:100%;
+ height:100%;
+ min-width:0;
+ min-height:0;
+ align-self:stretch;
+ padding:0;
+ overflow:hidden
+}
+body[data-store-type="decor"] .decor-service-feed-card .art{
+ display:block;
+ width:100%;
+ height:100%;
+ min-height:440px;
+ aspect-ratio:auto;
+ border-radius:0;
+ background:var(--surface,#eeeae3);
+ overflow:hidden
+}
+body[data-store-type="decor"] .decor-service-feed-card .art :is(img,video){
+ display:block;
+ width:100%;
+ height:100%;
+ max-width:none;
+ max-height:none;
+ object-fit:cover
+}
+body[data-store-type="decor"] .decor-service-feed-card .art .decor-photo-count{
+ top:13px;
+ right:13px;
+ bottom:auto;
+ border-radius:999px;
+ padding:5px 10px;
+ background:#171a18c9
+}
+body[data-store-type="decor"] .decor-service-feed-details{
+ grid-area:details;
+ display:grid;
+ align-content:center;
+ gap:16px;
+ min-width:0;
+ padding:10px clamp(20px,3vw,42px) 28px;
+ background:var(--canvas,#f8f6f1)
+}
+body[data-store-type="decor"] .decor-service-description{
+ margin:0;
+ color:var(--ink,#342e27);
+ font-size:15px;
+ line-height:1.7;
+ white-space:pre-line;
+ overflow-wrap:anywhere
+}
+body[data-store-type="decor"] .decor-service-prices{display:grid;gap:4px}
+body[data-store-type="decor"] .decor-service-price{
+ color:var(--ink,#342e27);
+ font-size:clamp(24px,2.8vw,36px);
+ line-height:1.2;
+ font-weight:780
+}
+body[data-store-type="decor"] .decor-service-fee{
+ color:var(--muted,#6d6157);
+ font-size:13px;
+ line-height:1.5;
+ font-weight:650
+}
+body[data-store-type="decor"] .decor-service-feed-card .service-action-row{
+ display:flex;
+ align-items:center;
+ gap:10px;
+ min-width:0;
+ width:100%
+}
+body[data-store-type="decor"] .decor-service-feed-card .service-action-row :is(.add,.service-whatsapp){
+ flex:1 1 0;
+ min-width:0;
+ white-space:normal;
+ text-align:center
+}
+body[data-store-type="decor"] .decor-service-feed-card .service-action-row .add{background:#205f50}
+body[data-store-type="decor"] .decor-service-feed-card .service-disclaimer{
+ margin:0;
+ color:var(--muted,#6d6157);
+ font-size:12px;
+ line-height:1.5
+}
+@media(max-width:750px){
+ body[data-store-type="decor"] .grid.decor-booking-feed-grid{
+  grid-template-columns:minmax(0,1fr);
+  max-width:600px;
+  margin-left:auto;
+  margin-right:auto;
+  gap:18px
+ }
+ body[data-store-type="decor"] .decor-service-feed-card{
+  grid-template-columns:minmax(0,1fr);
+  grid-template-rows:auto auto auto;
+  grid-template-areas:"title" "image" "details";
+  min-height:0
+ }
+ body[data-store-type="decor"] .decor-service-feed-title{padding:16px 18px 12px}
+ body[data-store-type="decor"] .decor-service-feed-title .item-title-open{font-size:20px}
+ body[data-store-type="decor"] .decor-service-feed-card .decor-service-feed-open{height:auto}
+ body[data-store-type="decor"] .decor-service-feed-card .art{
+  width:100%;
+  height:auto;
+  min-height:0;
+  aspect-ratio:4/5
+ }
+ body[data-store-type="decor"] .decor-service-feed-details{
+  align-content:start;
+  gap:13px;
+  padding:16px 18px 20px
+ }
+ body[data-store-type="decor"] .decor-service-feed-card .service-action-row{gap:8px}
+}
+@media(max-width:380px){
+ body[data-store-type="decor"] .decor-service-feed-card .service-action-row{flex-wrap:wrap}
+ body[data-store-type="decor"] .decor-service-feed-card .service-action-row :is(.add,.service-whatsapp){flex-basis:100%}
+}
 </style>
 <link rel="stylesheet" href="/theme.css">
 <link rel="stylesheet" href="/service-bookings.css">
@@ -783,15 +972,15 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
  <section class="gallery-panel" role="dialog" aria-modal="true" aria-labelledby="galleryTitle">
   <div id="galleryScrollArea" class="gallery-scroll-area">
   <div class="gallery-top"><div><h2 id="galleryTitle">Product</h2></div><button id="galleryClose" class="gallery-close" type="button" aria-label="Close product photos">×</button></div>
-  <div class="gallery-stage"><img id="galleryImage" alt="Product photo"><video id="galleryVideo" controls playsinline preload="metadata" hidden aria-label="Product video"></video></div>
-  <p id="galleryDescription" class="gallery-description"></p>
+  <div class="gallery-stage"><img id="galleryImage" alt="Product photo"><video id="galleryVideo" controls playsinline preload="metadata" hidden aria-label="Product video"></video><div id="galleryOverlayPager" class="gallery-overlay-pager" role="group" aria-label="Media gallery navigation"></div></div>
+  <div id="galleryBookingDetails" class="gallery-booking-details"><p id="galleryDescription" class="gallery-description"></p><div id="galleryServiceFee" class="gallery-service-fee" hidden></div></div>
   <div id="galleryProductActionRow" class="gallery-product-action-row" hidden><strong id="galleryProductPrice" class="gallery-price"></strong></div>
   <div id="galleryCustomization" class="gallery-customization" hidden>
    <div id="galleryChoiceGroups"></div>
    <label class="gallery-notes-label">Special instructions (optional)<textarea id="galleryNotes" maxlength="200" rows="2" placeholder="e.g. No onions, less salt"></textarea></label>
    <p id="galleryOptionsError" class="gallery-options-error" role="alert" hidden></p>
   </div>
-  <div class="gallery-bottom"><span id="galleryPosition"></span><div id="galleryDots" class="gallery-dots"></div><div id="galleryServiceActionRow" class="gallery-action-row"><strong id="galleryServicePrice" class="gallery-price"></strong><div class="gallery-actions"><button id="galleryAdd" class="add" type="button">＋ Add</button><a id="galleryWhatsApp" class="service-whatsapp" target="_blank" rel="noopener noreferrer" hidden aria-label="Contact business on WhatsApp"><span aria-hidden="true">💬</span> WhatsApp</a></div></div></div>
+  <div class="gallery-bottom" id="galleryBottom"><span id="galleryPosition"></span><div id="galleryDots" class="gallery-dots"></div><div id="galleryServiceActionRow" class="gallery-action-row"><strong id="galleryServicePrice" class="gallery-price"></strong><div class="gallery-actions"><button id="galleryAdd" class="add" type="button">＋ Add</button><a id="galleryWhatsApp" class="service-whatsapp" target="_blank" rel="noopener noreferrer" hidden aria-label="Contact business on WhatsApp"><span aria-hidden="true">💬</span> WhatsApp</a></div></div></div>
   </div>
   <div id="galleryTotalBar" class="gallery-total-bar" hidden aria-live="polite"><div class="gallery-total-copy"><span>Total</span><strong id="galleryTotal">R0.00</strong></div><button id="galleryProductAdd" class="add" type="button">＋ Add</button></div>
  </section>
@@ -1387,9 +1576,17 @@ $("galleryChoiceGroups").addEventListener("change",event=>{
 function openProductGallery(id,trigger,cartKey=null){
  const item=availableItems.find(row=>row.id===id);if(!item)return;
  const isBookingOffer=window.StoreNestBookings.isBookingOffer(item,activePublicBusiness);
+ const isDecorBooking=isBookingOffer&&window.StoreNestCategoryId(activePublicBusiness?.category)==="events-decor";
  const editRow=cartKey?cart.get(cartKey):null;
  activeGalleryItem=item;galleryReturnFocus=trigger;galleryIndex=0;galleryEditCartKey=editRow?cartKey:null;
+ $("galleryDialog").classList.toggle("gallery-booking-style",isDecorBooking);
+ const bookingFee=isBookingOffer?window.StoreNestBookings.bookingFeeLabel(item,activePublicBusiness):"";
  $("galleryTitle").textContent=item.name;$("galleryDescription").textContent=item.description||"";
+ $("galleryServiceFee").textContent=bookingFee;$("galleryServiceFee").hidden=!bookingFee;
+ $("galleryBookingDetails").hidden=isDecorBooking&&!String(item.description||"").trim()&&!bookingFee;
+ const galleryBottom=$("galleryBottom"),overlayPager=$("galleryOverlayPager");
+ if(isDecorBooking)overlayPager.append($("galleryPosition"),$("galleryDots"));
+ else galleryBottom.prepend($("galleryPosition"),$("galleryDots"));
  $("galleryProductActionRow").hidden=isBookingOffer;
  $("galleryServiceActionRow").hidden=!isBookingOffer;
  $("galleryTotalBar").hidden=isBookingOffer;
@@ -1640,11 +1837,19 @@ function renderPublishedStorefront(root,client,business,items,storefrontSections
    const cardForItem=item=>{
      const media=galleryPhotos(item),first=media[0],count=media.length;
      const service=window.StoreNestBookings.isBookingOffer(item,business);
+     const decorBooking=service&&window.StoreNestCategoryId(business.category)==="events-decor";
      const bookingFee=service?window.StoreNestBookings.bookingFeeLabel(item,business):"";
      const action=service?"Request booking":"Add";
      const whatsapp=service?serviceWhatsAppAction(business,item):"";
-     return '<article class="card"><button type="button" class="item-open" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos, videos and details"><div class="art">'+(first?(isProductVideo(first)?'<video data-catalog-preview data-src="'+esc(first)+'" muted loop playsinline preload="none" aria-label="'+esc(item.name)+' video"></video>':'<img src="'+esc(first)+'" alt="'+esc(item.name)+'" loading="lazy" decoding="async">'):service?"✦":"▧")+(count>1?'<span class="photo-count">▧ '+count+' media</span>':'')+'</div></button><div class="item-body"><h3><button class="item-title-open" type="button" data-open-product="'+esc(item.id)+'" title="'+esc(item.name)+'" aria-label="View details for '+esc(item.name)+'">'+esc(item.name)+'</button></h3><div class="item-bottom"><span class="price">'+esc(service?window.StoreNestBookings.priceLabel(item,business):money(item.price))+'</span>'+(service?'<div class="service-action-row">':'')+'<button class="add" type="button" data-add-item="'+esc(item.id)+'" aria-label="'+(service?"Request booking for ":"Add ")+esc(item.name)+(service?"":" to basket")+'">'+(service?"":'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>')+action+'</button>'+(service?whatsapp+'</div>':"")+'</div>'+(service?'<div class="service-disclaimer">'+(bookingFee?'<strong>'+esc(bookingFee)+'</strong><br>':'')+'Date and final quotation confirmed by the business</div>':'')+'</div></article>';
+     const titleButton='<button class="item-title-open" type="button" data-open-product="'+esc(item.id)+'" title="'+esc(item.name)+'" aria-label="View details for '+esc(item.name)+'">'+esc(item.name)+'</button>';
+     const artwork=(first?(isProductVideo(first)?'<video data-catalog-preview data-src="'+esc(first)+'" muted loop playsinline preload="none" aria-label="'+esc(item.name)+' video"></video>':'<img src="'+esc(first)+'" alt="'+esc(item.name)+'" loading="lazy" decoding="async">'):service?"✦":"▧")+(count>1?'<span class="photo-count'+(decorBooking?' decor-photo-count':'')+'">'+(decorBooking?'1 / '+count:'▧ '+count+' media')+'</span>':'');
+     const actionButton='<button class="add" type="button" data-add-item="'+esc(item.id)+'" aria-label="'+(service?"Request booking for ":"Add ")+esc(item.name)+(service?"":" to basket")+'">'+(service?"":'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>')+action+'</button>';
+     if(decorBooking){
+       return '<article class="card decor-service-feed-card"><div class="decor-service-feed-title"><h3>'+titleButton+'</h3></div><button type="button" class="item-open decor-service-feed-open" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos, description and booking details"><div class="art">'+artwork+'</div></button><div class="decor-service-feed-details">'+(item.description?'<p class="decor-service-description">'+esc(item.description)+'</p>':'')+'<div class="decor-service-prices"><strong class="decor-service-price">'+esc(window.StoreNestBookings.priceLabel(item,business))+'</strong>'+(bookingFee?'<span class="decor-service-fee">'+esc(bookingFee)+'</span>':'')+'</div><div class="service-action-row">'+actionButton+whatsapp+'</div><p class="service-disclaimer">Date and final quotation confirmed by the business.</p></div></article>';
+     }
+     return '<article class="card"><button type="button" class="item-open" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos, videos and details"><div class="art">'+artwork+'</div></button><div class="item-body"><h3>'+titleButton+'</h3><div class="item-bottom"><span class="price">'+esc(service?window.StoreNestBookings.priceLabel(item,business):money(item.price))+'</span>'+(service?'<div class="service-action-row">':'')+actionButton+(service?whatsapp+'</div>':"")+'</div>'+(service?'<div class="service-disclaimer">'+(bookingFee?'<strong>'+esc(bookingFee)+'</strong><br>':'')+'Date and final quotation confirmed by the business</div>':'')+'</div></article>';
    };
+   const cardGridClass=items=>items.some(item=>window.StoreNestCategoryId(business.category)==="events-decor"&&window.StoreNestBookings.isBookingOffer(item,business))?"grid decor-booking-feed-grid":"grid";
    const hasProducts=availableItems.some(item=>item.item_type==="product");
    const hasServices=availableItems.some(item=>item.item_type==="service");
    const catalogueLabel=window.StoreNestCategoryId(business.category)==="events-decor"||hasServices?"Services":"Products";
@@ -1671,7 +1876,7 @@ function renderPublishedStorefront(root,client,business,items,storefrontSections
      catalogueMarkup='<section class="offering-section storefront-uncategorized">'+
        '<div class="offering-heading"><span class="offering-label">OUR OFFERINGS</span><h2>'+esc(catalogueLabel)+'</h2></div>'+
        (availableItems.length?
-         '<div class="grid">'+availableItems.map(cardForItem).join("")+'</div>':
+         '<div class="'+cardGridClass(availableItems)+'">'+availableItems.map(cardForItem).join("")+'</div>':
          '<div class="empty"><strong>No offerings yet</strong>This store has not added any offerings yet.</div>')+
        '</section>';
    }else{
@@ -1696,7 +1901,7 @@ function renderPublishedStorefront(root,client,business,items,storefrontSections
          return '<section class="offering-section section-style-'+esc(group.style)+'" role="tabpanel" id="category-panel-'+esc(group.id)+'" data-category-panel="'+esc(group.id)+'" aria-labelledby="category-tab-'+esc(group.id)+'"'+(selected?'':' hidden')+'>'+
            '<div class="offering-heading"><span class="offering-label">OUR OFFERINGS</span><h2>'+esc(group.name)+'</h2>'+
            (group.description?'<p>'+esc(group.description)+'</p>':'')+'</div>'+
-           (cards?'<div class="grid">'+cards+'</div>':'<div class="empty"><strong>No offerings yet</strong>This category is ready for new offerings.</div>')+'</section>';
+           (cards?'<div class="'+cardGridClass(group.items)+'">'+cards+'</div>':'<div class="empty"><strong>No offerings yet</strong>This category is ready for new offerings.</div>')+'</section>';
        }).join('')+'</div>';
    }
    const renderedHero=renderStorefrontHero(business,cfg,{featuredImage:galleryPhotos(availableItems.find(item=>galleryPhotos(item).length)||availableItems[0])[0]||""});
