@@ -978,7 +978,9 @@ body[data-store-category="events-decor"] #catalog .decor-service-feed-card .serv
  object-fit:contain;
  background:transparent
 }
-#galleryDialog.gallery-photo-only .gallery-track{height:100%;min-height:0;flex:1 1 auto}
+#galleryDialog.gallery-photo-only .gallery-track{height:100%;min-height:0;flex:1 1 auto;cursor:grab}
+#galleryDialog.gallery-photo-only .gallery-track.is-dragging{cursor:grabbing}
+#galleryDialog.gallery-photo-only .gallery-track img{-webkit-user-drag:none;user-select:none}
 #galleryDialog.gallery-photo-only .gallery-slide{height:100%;flex-basis:100%}
 #galleryDialog.gallery-photo-only :is(#galleryOverlayPager,#galleryBookingDetails,#galleryProductActionRow,#galleryCustomization,#galleryBottom,#galleryTotalBar){
  display:none!important
@@ -1760,6 +1762,30 @@ function showGalleryImage(behavior="smooth"){
  track.scrollTo({left:galleryIndex*Math.max(track.clientWidth,1),behavior});
  updateGalleryPosition();
 }
+
+let galleryMouseDrag=null;
+const galleryTrackElement=$("galleryTrack");
+galleryTrackElement.addEventListener("pointerdown",event=>{
+ if(!$("galleryDialog").classList.contains("gallery-photo-only")||event.pointerType!=="mouse"||event.button!==0||event.target.closest("video,button,a"))return;
+ galleryMouseDrag={pointerId:event.pointerId,startX:event.clientX,startScrollLeft:galleryTrackElement.scrollLeft,moved:false};
+ galleryTrackElement.classList.add("is-dragging");
+ if(galleryTrackElement.setPointerCapture)galleryTrackElement.setPointerCapture(event.pointerId);
+ event.preventDefault();
+});
+galleryTrackElement.addEventListener("pointermove",event=>{
+ if(!galleryMouseDrag||galleryMouseDrag.pointerId!==event.pointerId)return;
+ const delta=event.clientX-galleryMouseDrag.startX;
+ if(Math.abs(delta)>5)galleryMouseDrag.moved=true;
+ if(galleryMouseDrag.moved){event.preventDefault();galleryTrackElement.scrollLeft=galleryMouseDrag.startScrollLeft-delta}
+});
+const finishGalleryMouseDrag=event=>{
+ if(!galleryMouseDrag||galleryMouseDrag.pointerId!==event.pointerId)return;
+ galleryTrackElement.classList.remove("is-dragging");
+ if(galleryTrackElement.hasPointerCapture?.(event.pointerId))galleryTrackElement.releasePointerCapture(event.pointerId);
+ galleryMouseDrag=null;
+};
+galleryTrackElement.addEventListener("pointerup",finishGalleryMouseDrag);
+galleryTrackElement.addEventListener("pointercancel",finishGalleryMouseDrag);
 
 let galleryOptionSelections={};
 function renderGalleryScale(group){
