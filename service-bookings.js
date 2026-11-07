@@ -59,21 +59,31 @@ function setContext(nextClient,nextBusiness,items){
  }
 }
 async function prefillBookingCustomerDetails(form,requestId){
+ const isCurrentRequest=()=>requestId===bookingPrefillRequest&&!$("bookingBackdrop").hidden&&!!activeItem;
+ const firstText=(...values)=>values.find(value=>typeof value==="string"&&value.trim())?.trim()||"";
+ const autoFilledValues=new Map();
+ const fillIfEmpty=(fieldName,...values)=>{
+  const field=form.elements.namedItem(fieldName);
+  if(!field)return;
+  const current=String(field.value||"").trim();
+  const previousAutoFill=autoFilledValues.get(fieldName);
+  if(current&&current!==previousAutoFill)return;
+  const value=firstText(...values);
+  if(value){field.value=value;autoFilledValues.set(fieldName,value)}
+ };
  try{
-  const {data,error}=await client.auth.getUser();
+  // Read the persisted session locally so mobile doesn't wait on an Auth user
+  // round trip before it can start filling the enquiry form.
+  const {data,error}=await client.auth.getSession();
   if(error)throw error;
-  const user=data?.user;
-  if(!user)return;
-  const profile=await window.StoreNestCustomerAuth?.getProfile(user.id);
-  if(requestId!==bookingPrefillRequest||$("bookingBackdrop").hidden||!activeItem)return;
+  const user=data?.session?.user;
+  if(!user||!isCurrentRequest())return;
   const metadata=user.user_metadata||{};
-  const firstText=(...values)=>values.find(value=>typeof value==="string"&&value.trim())?.trim()||"";
-  const fillIfEmpty=(fieldName,...values)=>{
-   const field=form.elements.namedItem(fieldName);
-   if(!field||String(field.value||"").trim())return;
-   const value=firstText(...values);
-   if(value)field.value=value;
-  };
+  fillIfEmpty("customer_name",metadata.profile_name,metadata.full_name,metadata.name);
+  fillIfEmpty("contact_phone",user.phone,metadata.contact_phone,metadata.phone);
+  fillIfEmpty("contact_email",user.email,metadata.contact_email,metadata.email);
+  const profile=await window.StoreNestCustomerAuth?.getProfile(user.id);
+  if(!isCurrentRequest())return;
   fillIfEmpty("customer_name",profile?.profile_name,metadata.profile_name,metadata.full_name,metadata.name);
   fillIfEmpty("contact_phone",profile?.contact_phone,user.phone,metadata.contact_phone,metadata.phone);
   fillIfEmpty("contact_email",profile?.contact_email,user.email,metadata.contact_email,metadata.email);
@@ -93,7 +103,7 @@ function open(item,trigger,options={}){
  date.min=todayLocalDate();date.value="";
  $("bookingBackdrop").hidden=false;document.body.style.overflow="hidden";
  void prefillBookingCustomerDetails(form,requestId);
- form.elements.namedItem("customer_name").focus();
+ if(!window.matchMedia("(pointer: coarse)").matches)form.elements.namedItem("customer_name").focus();
 }
 function close(){
  bookingPrefillRequest++;
