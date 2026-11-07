@@ -1121,8 +1121,9 @@ async function refreshCustomerBookings(showBusy=false){
  const startUser=marketplaceCurrentUserId;
  try{
   const client=await getSearchClient();
-  const {data:auth,error:authError}=await client.auth.getUser();if(authError)throw authError;
-  const userId=auth?.user?.id||null;
+  const {data:sessionData,error:sessionError}=await client.auth.getSession();if(sessionError)throw sessionError;
+  let userId=null;
+  if(sessionData?.session){const {data:auth,error:authError}=await client.auth.getUser();if(authError)throw authError;userId=auth?.user?.id||null;}
   const saved=savedBookingsFor(userId);
   const combined=new Map(saved.map(x=>[x.id,x]));
   if(userId){
