@@ -966,27 +966,46 @@ body[data-store-type="decor"] .decor-service-feed-card .service-disclaimer{
 }
 
 
-/* Keep the Foods & Drinks basket available while customers browse on phones. */
+/* Keep the Foods & Drinks basket button in the hero on phones, with icon and count side by side. */
 @media(max-width:750px){
- body[data-store-category="food-drink"] .page .hero{z-index:91}
  body[data-store-category="food-drink"] .page .hero .bag{
-  position:fixed;
-  z-index:92;
-  top:auto;
-  right:max(14px,env(safe-area-inset-right,0px));
-  bottom:max(18px,env(safe-area-inset-bottom,0px));
+  position:relative!important;
+  top:auto!important;
+  right:auto!important;
+  bottom:auto!important;
+  left:auto!important;
+  z-index:2;
   display:flex!important;
-  visibility:visible;
-  opacity:1;
-  width:56px;
-  min-height:56px;
-  border-radius:50%;
-  background:#205f50;
-  color:#fff;
-  box-shadow:0 8px 24px #10291f4d
+  flex-direction:row;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  width:52px;
+  min-height:52px;
+  visibility:visible!important;
+  opacity:1!important;
+  border-radius:15px;
+  background:#ffffff1b;
+  color:#fff
+ }
+ body[data-store-category="food-drink"] .page .hero .bag svg{
+  display:inline-block!important;
+  flex:0 0 20px;
+  width:20px;
+  height:20px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round
+ }
+ body[data-store-category="food-drink"] .page .hero .bag #bagCount{
+  display:inline-block!important;
+  flex:0 0 auto;
+  color:inherit;
+  line-height:1
  }
 }
-
 </style>
 <link rel="stylesheet" href="/theme.css">
 <link rel="stylesheet" href="/service-bookings.css">
