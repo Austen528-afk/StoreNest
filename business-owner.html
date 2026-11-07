@@ -627,6 +627,7 @@ html[data-theme="dark"] body[data-page-kind="owner"] .owner-order-customer a{col
 html[data-theme="dark"] body[data-page-kind="owner"] .owner-order-lines li{border-color:var(--st-border)}
 html[data-theme="dark"] body[data-page-kind="owner"] .owner-orders-message{border-color:var(--st-border);color:var(--st-muted)}
 #itemMediaQualityNote[data-warning="true"]{color:#a15c20;font-weight:700}
+html[data-theme="dark"] #itemMediaQualityNote[data-warning="true"]{color:#f4c27e}
 </style>
 </head>
 <body data-page-kind="owner">
@@ -1526,7 +1527,7 @@ function updateCatalogMediaQualityNote(){
  const lowResolution=galleryEntries.some(entry=>entry.width>0&&entry.height>0&&(Math.max(entry.width,entry.height)<1200||Math.min(entry.width,entry.height)<640));
  note.dataset.warning=lowResolution?"true":"false";
  note.textContent=lowResolution
-  ?"Some photos are small and may look soft on high-resolution screens. For sharper results, use an original photo at least 1200 px on its long edge."
+  ?"Some photos are below 1200 px on the long edge or 640 px on the short edge and may look soft on high-resolution screens. Choose larger originals for sharper results."
   :"Original photos are preserved. New photos get responsive storefront sizes.";
 }
 async function decodeCatalogImage(file){
