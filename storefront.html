@@ -1170,7 +1170,28 @@ function esc(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;"
 function initials(name){return String(name||"SN").split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join("").toUpperCase()||"SN"}
 function safeUrl(value){try{const u=new URL(value);return ["https:","http:"].includes(u.protocol)?u.href:""}catch{return""}}
 function isProductVideo(value){return /\.(mp4|webm)(?:[?#]|$)/i.test(String(value||""))}
-function galleryPhotos(item){const imgs=Array.isArray(item?.media_urls)?item.media_urls.filter(u=>typeof u==="string"&&safeUrl(u)):[];return imgs.length?imgs:(safeUrl(item?.image_url)?[item.image_url]:[])}
+function normalizeStorefrontMedia(value){
+ const source=typeof value==="string"?{url:value}:value;
+ const url=safeUrl(source?.url);if(!url)return null;
+ const variants=Array.isArray(source.variants)?source.variants.map(variant=>({width:Number(variant?.width)||0,url:safeUrl(variant?.url)})).filter(variant=>variant.width>0&&variant.url):[];
+ return {url,width:Number(source.width)||0,height:Number(source.height)||0,variants};
+}
+function galleryMediaEntries(item){
+ const entries=Array.isArray(item?.media_urls)?item.media_urls.map(normalizeStorefrontMedia).filter(Boolean):[];
+ if(entries.length)return entries;
+ const fallback=normalizeStorefrontMedia(item?.image_url);return fallback?[fallback]:[];
+}
+function galleryPhotos(item){return galleryMediaEntries(item).map(entry=>entry.url)}
+function galleryMediaEntry(item,url){return galleryMediaEntries(item).find(entry=>entry.url===url)||{url,width:0,height:0,variants:[]}}
+function catalogMediaSrcset(entry){
+ const candidates=(entry?.variants||[]).map(variant=>({url:safeUrl(variant.url),width:Number(variant.width)||0})).filter(candidate=>candidate.url&&candidate.width>0);
+ if(entry?.width>0&&safeUrl(entry.url))candidates.push({url:safeUrl(entry.url),width:Number(entry.width)});
+ const unique=[...new Map(candidates.map(candidate=>[candidate.width,candidate])).values()];
+ return unique.sort((a,b)=>a.width-b.width).map(candidate=>candidate.url+" "+candidate.width+"w").join(", ");
+}
+function catalogResponsiveAttributes(entry,sizes){
+ const srcset=catalogMediaSrcset(entry);return srcset?' srcset="'+esc(srcset)+'" sizes="'+esc(sizes)+'"':"";
+}
 function money(v){return "R"+Number(v||0).toFixed(2)}
 /* Contact an owner directly via the phone saved in their business profile.
  * Handles local ZA 0XXXXXXXXX, +27..., 27..., and international +... formats.
@@ -1265,10 +1286,10 @@ function restoreTrackedOrderFromUrl(){
 function renderCart(){
  const rows=[...cart.entries()].map(([key,row])=>({key,row,item:availableItems.find(i=>i.id===row.itemId)})).filter(entry=>entry.item);
  $("cartItems").innerHTML=rows.length?rows.map(({key,row,item})=>{
-  const photo=galleryPhotos(item).find(url=>!isProductVideo(url))||"";
+  const photoEntry=galleryMediaEntries(item).find(entry=>!isProductVideo(entry.url)),photo=photoEntry?.url||"";
   return '<div class="cart-item">'+
    '<button type="button" class="cart-item-photo" data-cart-action="edit" data-key="'+esc(key)+'" aria-label="Edit order options for '+esc(item.name)+'">'+
-   (photo?'<img src="'+esc(photo)+'" alt="'+esc(item.name)+'" loading="lazy" decoding="async">':'<span aria-hidden="true">▧</span>')+
+   (photo?'<img src="'+esc(photo)+'"'+catalogResponsiveAttributes(photoEntry,"64px")+' alt="'+esc(item.name)+'" loading="lazy" decoding="async">':'<span aria-hidden="true">▧</span>')+
    '</button><div class="cart-item-details"><strong>'+esc(item.name)+'</strong><small>'+money(row.unitPrice)+' each</small>'+
    row.summary.map(x=>'<span class="cart-customization">'+esc(x.group)+': '+esc(x.values.join(", "))+'</span>').join("")+
    (row.note?'<span class="cart-customization">Note: '+esc(row.note)+'</span>':"")+
@@ -1620,8 +1641,14 @@ function showGalleryImage(){
  const url=media[galleryIndex],video=isProductVideo(url),image=$("galleryImage"),movie=$("galleryVideo");
  movie.pause();
  movie.hidden=!video;image.hidden=video;
- if(video){image.removeAttribute("src");movie.src=url;movie.load();}
- else{movie.removeAttribute("src");image.src=url;image.alt=activeGalleryItem.name+" photo "+(galleryIndex+1);}
+ if(video){image.removeAttribute("src");image.removeAttribute("srcset");image.removeAttribute("sizes");movie.src=url;movie.load();}
+ else{
+   movie.removeAttribute("src");
+   const entry=galleryMediaEntry(activeGalleryItem,url),srcset=catalogMediaSrcset(entry);
+   if(srcset){image.srcset=srcset;image.sizes="(max-width: 720px) 100vw, 690px"}
+   else{image.removeAttribute("srcset");image.removeAttribute("sizes")}
+   image.src=url;image.alt=activeGalleryItem.name+" photo "+(galleryIndex+1);
+  }
  $("galleryPosition").textContent=media.length>1?(galleryIndex+1)+" / "+media.length:"";
  $("galleryPosition").hidden=media.length<=1;
  $("galleryDots").hidden=media.length<=1;
@@ -2010,14 +2037,14 @@ function renderPublishedStorefront(root,client,business,items,storefrontSections
    const cover=safeUrl(cfg.hero);
    const logo=safeUrl(business.logo_url);
    const cardForItem=item=>{
-     const media=galleryPhotos(item),first=media[0],count=media.length;
+     const mediaEntries=galleryMediaEntries(item),media=mediaEntries.map(entry=>entry.url),firstEntry=mediaEntries[0],first=firstEntry?.url||"",count=media.length;
      const service=window.StoreNestBookings.isBookingOffer(item,business);
      const decorBooking=service&&window.StoreNestCategoryId(business.category)==="events-decor";
      const bookingFee=service?window.StoreNestBookings.bookingFeeLabel(item,business):"";
      const action=service?"Request booking":"Add";
      const whatsapp=service?serviceWhatsAppAction(business,item):"";
      const titleButton='<button class="item-title-open" type="button" data-open-product="'+esc(item.id)+'" title="'+esc(item.name)+'" aria-label="View details for '+esc(item.name)+'">'+esc(item.name)+'</button>';
-     const artwork=(first?(isProductVideo(first)?'<video data-catalog-preview data-src="'+esc(first)+'" muted loop playsinline preload="none" aria-label="'+esc(item.name)+' video"></video>':'<img src="'+esc(first)+'" alt="'+esc(item.name)+'" loading="lazy" decoding="async">'):service?"✦":"▧")+(count>1?'<span class="photo-count'+(decorBooking?' decor-photo-count':'')+'">'+(decorBooking?'1 / '+count:'▧ '+count+' media')+'</span>':'');
+     const artwork=(first?(isProductVideo(first)?'<video data-catalog-preview data-src="'+esc(first)+'" muted loop playsinline preload="none" aria-label="'+esc(item.name)+' video"></video>':'<img src="'+esc(first)+'"'+catalogResponsiveAttributes(firstEntry,decorBooking?"(max-width: 600px) 100vw, (max-width: 750px) 600px, 50vw":"(max-width: 750px) 50vw, (max-width: 1000px) 33vw, 25vw")+' alt="'+esc(item.name)+'" loading="lazy" decoding="async">'):service?"✦":"▧")+(count>1?'<span class="photo-count'+(decorBooking?' decor-photo-count':'')+'">'+(decorBooking?'1 / '+count:'▧ '+count+' media')+'</span>':'');
      const actionButton='<button class="add" type="button" data-add-item="'+esc(item.id)+'" aria-label="'+(service?"Request booking for ":"Add ")+esc(item.name)+(service?"":" to basket")+'">'+(service?"":'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>')+action+'</button>';
      if(decorBooking){
        return '<article class="card decor-service-feed-card"><div class="decor-service-feed-title"><h3>'+titleButton+'</h3></div><button type="button" class="item-open decor-service-feed-open" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos, description and booking details"><div class="art">'+artwork+'</div></button><div class="decor-service-feed-details">'+(item.description?'<p class="decor-service-description">'+esc(item.description)+'</p>':'')+'<div class="decor-service-prices"><strong class="decor-service-price">'+esc(window.StoreNestBookings.priceLabel(item,business))+'</strong>'+(bookingFee?'<span class="decor-service-fee">'+esc(bookingFee)+'</span>':'')+'</div><div class="service-action-row">'+actionButton+whatsapp+'</div><p class="service-disclaimer">Date and final quotation confirmed by the business.</p></div></article>';
@@ -2062,11 +2089,11 @@ function renderPublishedStorefront(root,client,business,items,storefrontSections
        '<h2>Browse by category</h2><p>Select a category to explore its offerings separately.</p></div>'+
        '<div class="category-switcher" role="tablist" aria-label="Browse business categories">'+
        groups.map(group=>{
-         const preview=group.items.find(item=>galleryPhotos(item).length);
-         const image=preview?galleryPhotos(preview)[0]:"";
+         const preview=group.items.find(item=>galleryMediaEntries(item).length);
+         const imageEntry=preview?galleryMediaEntries(preview)[0]:null,image=imageEntry?.url||"";
          const selected=group.id===selectedCategory;
          return '<button type="button" class="category-tab'+(selected?' active':'')+'" role="tab" data-category-tab="'+esc(group.id)+'" id="category-tab-'+esc(group.id)+'" aria-controls="category-panel-'+esc(group.id)+'" aria-selected="'+(selected?'true':'false')+'" tabindex="'+(selected?'0':'-1')+'">'+
-           '<span class="category-thumbnail">'+(image?'<img src="'+esc(image)+'" alt="" loading="lazy" decoding="async">':'<span class="category-placeholder">✦</span>')+'</span>'+
+           '<span class="category-thumbnail">'+(image?'<img src="'+esc(image)+'"'+catalogResponsiveAttributes(imageEntry,"160px")+' alt="" loading="lazy" decoding="async">':'<span class="category-placeholder">✦</span>')+'</span>'+
            '<span class="category-name">'+esc(group.name)+'</span>'+
            '<small>'+group.items.length+' offering'+(group.items.length===1?'':'s')+'</small></button>';
        }).join('')+'</div>'+

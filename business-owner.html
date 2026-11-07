@@ -626,6 +626,8 @@ html[data-theme="dark"] body[data-page-kind="owner"] :is(.owner-order-date,.owne
 html[data-theme="dark"] body[data-page-kind="owner"] .owner-order-customer a{color:var(--st-mint)}
 html[data-theme="dark"] body[data-page-kind="owner"] .owner-order-lines li{border-color:var(--st-border)}
 html[data-theme="dark"] body[data-page-kind="owner"] .owner-orders-message{border-color:var(--st-border);color:var(--st-muted)}
+#itemMediaQualityNote[data-warning="true"]{color:#a15c20;font-weight:700}
+html[data-theme="dark"] #itemMediaQualityNote[data-warning="true"]{color:#f4c27e}
 </style>
 </head>
 <body data-page-kind="owner">
@@ -754,7 +756,7 @@ html[data-theme="dark"] body[data-page-kind="owner"] .owner-orders-message{borde
   <div class="field"><label for="itemBookingFeeMax">Booking fee up to (ZAR)</label><div class="price-input"><span>R</span><input id="itemBookingFeeMax" type="number" min="0" step="0.01" placeholder="Optional"></div></div>
  </div>
 </div><div class="field"><label for="itemCategory">Category</label><div class="category-input"><select id="itemCategory"><option value="">No category</option></select><button type="button" id="addCategoryButton" aria-label="Add category">＋</button></div></div><div class="field full-field"><label for="itemDescription">Description</label><textarea id="itemDescription" rows="3" maxlength="500" placeholder="Describe your item"></textarea></div>
-<div class="field full-field"><label for="itemMedia">Product photos, GIFs & short videos (up to 12)</label><input id="itemMedia" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"><small>Images/GIFs: max 10 MB. MP4/WebM videos: max 20 MB and 30 seconds. First file is the cover.</small><div id="itemMediaGallery" class="owner-gallery"></div></div><div class="field"><label for="itemAvailability">Availability</label><select id="itemAvailability"><option value="true">Available</option><option value="false">Unavailable</option></select></div><div class="field"><label for="itemOrder">Display order</label><input id="itemOrder" type="number" min="0" step="1" value="0"></div></div>
+<div class="field full-field"><label for="itemMedia">Product photos, GIFs & short videos (up to 12)</label><input id="itemMedia" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"><small>Images/GIFs: max 10 MB. MP4/WebM videos: max 20 MB and 30 seconds. First file is the cover.</small><small id="itemMediaQualityNote" class="media-quality-note" role="status" aria-live="polite">Original photos are preserved. New photos get responsive storefront sizes.</small><div id="itemMediaGallery" class="owner-gallery"></div></div><div class="field"><label for="itemAvailability">Availability</label><select id="itemAvailability"><option value="true">Available</option><option value="false">Unavailable</option></select></div><div class="field"><label for="itemOrder">Display order</label><input id="itemOrder" type="number" min="0" step="1" value="0"></div></div>
 <div id="itemOptionsEditor" class="item-options-editor">
   <div class="item-options-heading"><div><strong>Customization &amp; Extras</strong><small>Create scales for amounts or heat levels, or choice groups for extras.</small></div>
   <div class="item-options-actions"><button type="button" id="addScaleGroup" class="outline-button">+ Add scale</button><button type="button" id="addCustomizationGroup" class="outline-button">+ Add choice group</button></div></div>
@@ -1509,15 +1511,71 @@ function isProductVideo(url){return /\.(?:mp4|webm)(?:[?#]|$)/i.test(String(url|
 function validateProductMedia(file){if(!file||!file.size||!MEDIA_TYPES[file.type]||file.size>(file.type.startsWith("video/")?20:10)*1048576)throw Error("Images/GIFs must be 10 MB or smaller; MP4/WebM clips must be 20 MB or smaller.")}
 function validateProductVideo(file){return file?.type.startsWith("video/")?validateVideoDuration(file):Promise.resolve()}
 let galleryEntries=[],galleryObjectUrls=[];
-function itemMediaList(item){
- const urls=Array.isArray(item?.media_urls)?item.media_urls.filter(u=>typeof u==="string"&&/^https:\/\//i.test(u)):[];
- return urls.length?urls:(item?.image_url?[item.image_url]:[]);
+function normalizeCatalogMedia(value){
+ const source=typeof value==="string"?{url:value}:value;
+ if(!source||typeof source.url!=="string"||!/^https:\/\//i.test(source.url))return null;
+ const variants=Array.isArray(source.variants)?source.variants.map(variant=>({width:Number(variant?.width)||0,url:typeof variant?.url==="string"?variant.url:""})).filter(variant=>variant.width>0&&/^https:\/\//i.test(variant.url)):[];
+ return {url:source.url,width:Number(source.width)||0,height:Number(source.height)||0,variants};
+}
+function catalogMediaEntries(item){
+ const entries=Array.isArray(item?.media_urls)?item.media_urls.map(normalizeCatalogMedia).filter(Boolean):[];
+ return entries.length?entries:(item?.image_url?[normalizeCatalogMedia(item.image_url)].filter(Boolean):[]);
+}
+function itemMediaList(item){return catalogMediaEntries(item).map(entry=>entry.url)}
+function updateCatalogMediaQualityNote(){
+ const note=$("itemMediaQualityNote");if(!note)return;
+ const lowResolution=galleryEntries.some(entry=>entry.width>0&&entry.height>0&&(Math.max(entry.width,entry.height)<1200||Math.min(entry.width,entry.height)<640));
+ note.dataset.warning=lowResolution?"true":"false";
+ note.textContent=lowResolution
+  ?"Some photos are below 1200 px on the long edge or 640 px on the short edge and may look soft on high-resolution screens. Choose larger originals for sharper results."
+  :"Original photos are preserved. New photos get responsive storefront sizes.";
+}
+async function decodeCatalogImage(file){
+ if(typeof createImageBitmap==="function"){
+  try{const image=await createImageBitmap(file,{imageOrientation:"from-image"});return {image,dispose:()=>image.close?.()}}catch{}
+ }
+ const objectUrl=URL.createObjectURL(file);
+ try{
+  const image=await new Promise((resolve,reject)=>{
+   const element=new Image();element.onload=()=>resolve(element);
+   element.onerror=()=>reject(Error("Could not read this image."));element.src=objectUrl;
+  });
+  return {image,dispose:()=>URL.revokeObjectURL(objectUrl)};
+ }catch(error){URL.revokeObjectURL(objectUrl);throw error}
+}
+async function catalogImageDimensions(file){
+ if(!file?.type.startsWith("image/")||file.type==="image/gif")return null;
+ try{
+  const decoded=await decodeCatalogImage(file);
+  try{return {width:decoded.image.width||decoded.image.naturalWidth||0,height:decoded.image.height||decoded.image.naturalHeight||0}}
+  finally{decoded.dispose()}
+ }catch{return null}
+}
+async function createCatalogImageVariants(file){
+ if(!file?.type.startsWith("image/")||file.type==="image/gif")return {width:0,height:0,variants:[]};
+ let decoded;
+ try{decoded=await decodeCatalogImage(file)}catch{return {width:0,height:0,variants:[]}}
+ try{
+  const image=decoded.image,width=image.width||image.naturalWidth||0,height=image.height||image.naturalHeight||0;
+  if(!width||!height)return {width:0,height:0,variants:[]};
+  const canvas=document.createElement("canvas"),ctx=canvas.getContext("2d"),variants=[];
+  if(!ctx)return {width,height,variants};
+  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
+  for(const targetWidth of [480,960,1600]){
+   if(targetWidth>=width)continue;
+   canvas.width=targetWidth;canvas.height=Math.max(1,Math.round(height*targetWidth/width));
+   ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(image,0,0,canvas.width,canvas.height);
+   const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/webp",.9));
+   if(blob?.size&&blob.size<file.size&&blob.type==="image/webp")variants.push({width:canvas.width,blob});
+  }
+  return {width,height,variants};
+ }finally{decoded.dispose()}
 }
 function resetItemGallery(item){
  galleryObjectUrls.forEach(url=>URL.revokeObjectURL(url));galleryObjectUrls=[];
- galleryEntries=itemMediaList(item).map(url=>({url,file:null}));
+ galleryEntries=catalogMediaEntries(item).map(entry=>({...entry,file:null}));
  $("itemMedia").value="";
- drawOwnerGallery();
+ updateCatalogMediaQualityNote();drawOwnerGallery();
 }
 function drawOwnerGallery(){
  const root=$("itemMediaGallery");root.replaceChildren();
@@ -1533,7 +1591,7 @@ function drawOwnerGallery(){
   const right=document.createElement("button");right.type="button";right.textContent="→";right.disabled=i===galleryEntries.length-1;right.title="Move later";
   right.addEventListener("click",()=>{[galleryEntries[i+1],galleryEntries[i]]=[galleryEntries[i],galleryEntries[i+1]];drawOwnerGallery()});
   const remove=document.createElement("button");remove.type="button";remove.textContent="×";remove.title="Remove this media";remove.setAttribute("aria-label","Remove media "+(i+1));
-  remove.addEventListener("click",()=>{galleryEntries.splice(i,1);drawOwnerGallery()});
+  remove.addEventListener("click",()=>{galleryEntries.splice(i,1);updateCatalogMediaQualityNote();drawOwnerGallery()});
   actions.append(label,left,right,remove);tile.append(image,actions);root.append(tile);
  });
 }
@@ -1541,9 +1599,16 @@ $("itemMedia").addEventListener("change",async event=>{
  const input=event.currentTarget,files=[...input.files];if(!files.length)return;
  if(galleryEntries.length+files.length>12){showToast("Maximum 12 media files per product.",true);input.value="";return}
  try{
-  for(const file of files){validateProductMedia(file);await validateProductVideo(file)}
-  for(const file of files){const url=URL.createObjectURL(file);galleryObjectUrls.push(url);galleryEntries.push({url,file})}
-  drawOwnerGallery();
+  const staged=[];
+  for(const file of files){
+   validateProductMedia(file);await validateProductVideo(file);
+   staged.push({file,dimensions:await catalogImageDimensions(file)});
+  }
+  for(const {file,dimensions} of staged){
+   const url=URL.createObjectURL(file);galleryObjectUrls.push(url);
+   galleryEntries.push({url,file,width:dimensions?.width||0,height:dimensions?.height||0,variants:[]});
+  }
+  updateCatalogMediaQualityNote();drawOwnerGallery();
  }catch(error){showToast(error.message||"Invalid product media.",true)}
  finally{input.value=""}
 });
@@ -1551,18 +1616,37 @@ async function uploadCatalogMedia(client,file){
  validateProductMedia(file);await validateProductVideo(file);
  if(!currentBusiness||!currentUser)throw Error("Sign in before uploading.");
  const path=currentUser.id+"/"+currentBusiness.id+"/"+crypto.randomUUID()+"."+MEDIA_TYPES[file.type];
- const {error}=await client.storage.from(ITEM_BUCKET).upload(path,file,{contentType:file.type,cacheControl:"3600",upsert:false});
- if(error)throw error;
- const {data}=client.storage.from(ITEM_BUCKET).getPublicUrl(path);
- return {url:data.publicUrl,path};
+ let imageData={width:0,height:0,variants:[]};
+ try{imageData=await createCatalogImageVariants(file)}catch(error){console.warn("Could not prepare responsive image sizes; the original will be used.",error)}
+ const uploadedPaths=[],bucket=client.storage.from(ITEM_BUCKET),basePath=path.replace(/\.[^.]+$/,"");
+ try{
+  const {error}=await bucket.upload(path,file,{contentType:file.type,cacheControl:"31536000",upsert:false});
+  if(error)throw error;
+  uploadedPaths.push(path);
+  const originalUrl=bucket.getPublicUrl(path).data.publicUrl,variants=[];
+  for(const variant of imageData.variants){
+   const variantPath=basePath+"-"+variant.width+".webp";
+   const {error:variantError}=await bucket.upload(variantPath,variant.blob,{contentType:"image/webp",cacheControl:"31536000",upsert:false});
+   if(variantError){console.warn("An optimized image size could not be uploaded; the original will be used.",variantError);continue}
+   uploadedPaths.push(variantPath);
+   variants.push({width:variant.width,url:bucket.getPublicUrl(variantPath).data.publicUrl});
+  }
+  return {entry:{url:originalUrl,width:imageData.width,height:imageData.height,variants},paths:uploadedPaths};
+ }catch(error){
+  if(uploadedPaths.length)await bucket.remove(uploadedPaths).catch(()=>{});
+  throw error;
 }
 function mediaPathForUrl(url){
  if(!url)return null;
  const prefix=STORE_AUTH.url+"/storage/v1/object/public/"+ITEM_BUCKET+"/";
  if(!url.startsWith(prefix))return null;
- const path=decodeURIComponent(url.slice(prefix.length).split("?")[0]);
+ const path=decodeURIComponent(url.slice(prefix.length).split(/[?#]/)[0]);
  if(!path.startsWith(currentUser.id+"/"+currentBusiness.id+"/"))return null;
  return path;
+}
+function mediaStoragePaths(entry){
+ const urls=[entry?.url,...(Array.isArray(entry?.variants)?entry.variants.map(variant=>variant.url):[])];
+ return [...new Set(urls.map(mediaPathForUrl).filter(Boolean))];
 }
 
 $("itemForm").addEventListener("submit",async event=>{
@@ -1586,24 +1670,25 @@ $("itemForm").addEventListener("submit",async event=>{
   client=await loadAuth();
   const entries=[];
   for(const entry of galleryEntries){
-   if(entry.file){const uploaded=await uploadCatalogMedia(client,entry.file);uploads.push(uploaded);entries.push(uploaded.url)}
-   else entries.push(entry.url);
+   if(entry.file){const uploaded=await uploadCatalogMedia(client,entry.file);uploads.push(uploaded);entries.push(uploaded.entry)}
+   else entries.push({url:entry.url,width:entry.width||0,height:entry.height||0,variants:entry.variants||[]});
   }
-  const primaryImage=entries.find(url=>!isProductVideo(url))||null;
+  const primaryImage=entries.find(entry=>!isProductVideo(entry.url))?.url||null;
   const prior=businessItems.find(item=>item.id===itemId);
   const row={image_url:primaryImage,media_urls:entries,customization_options:optionsForSave(),business_id:currentBusiness.id,item_type:$("itemType").value,name:$("itemName").value.trim(),description:$("itemDescription").value.trim(),price:bookingPricing?(priceRangeMin??priceRangeMax??0):Number($("itemPrice").value),price_range_min:bookingPricing?priceRangeMin:(prior?.price_range_min??null),price_range_max:bookingPricing?priceRangeMax:(prior?.price_range_max??null),booking_fee:bookingPricing?((bookingFeeMin===null)!==(bookingFeeMax===null)?(bookingFeeMin??bookingFeeMax):null):(prior?.booking_fee??null),booking_fee_min:bookingPricing?bookingFeeMin:(prior?.booking_fee_min??prior?.booking_fee??null),booking_fee_max:bookingPricing?bookingFeeMax:(prior?.booking_fee_max??null),category_id:$("itemCategory").value||null,is_available:$("itemAvailability").value==="true",display_order:Number($("itemOrder").value)||0,updated_at:new Date().toISOString()};
   const query=itemId?client.from("business_items").update(row).eq("id",itemId).eq("business_id",currentBusiness.id):client.from("business_items").insert(row);
   const {data,error}=await query.select("id");
   if(error)throw error;if(!data?.length)throw Error("The product could not be saved. Please retry.");
-  const unused=itemMediaList(prior).filter(url=>!entries.includes(url)).map(mediaPathForUrl).filter(Boolean);
+  const retainedUrls=new Set(entries.map(entry=>entry.url));
+  const unused=catalogMediaEntries(prior).filter(entry=>!retainedUrls.has(entry.url)).flatMap(mediaStoragePaths);
   if(unused.length)client.storage.from(ITEM_BUCKET).remove(unused).catch(error=>console.warn("Media cleanup failed",error));
   await loadBusinessData();closeModal($("itemModal"));showToast(itemId?"Product gallery updated.":"Product added.");
  }catch(error){
-  if(client&&uploads.length)await client.storage.from(ITEM_BUCKET).remove(uploads.map(a=>a.path)).catch(()=>{});
+  if(client&&uploads.length)await client.storage.from(ITEM_BUCKET).remove(uploads.flatMap(upload=>upload.paths)).catch(()=>{});
   message.textContent=friendlyError(error);message.className="message error";message.hidden=false;
  }finally{busy(form,false)}
 });
-$("itemGrid").addEventListener("click",async event=>{const button=event.target.closest("[data-action]");if(!button)return;const item=businessItems.find(row=>row.id===button.dataset.id);if(!item)return;if(button.dataset.action==="delete"){if(!confirm(`Delete “${item.name}” from your catalogue?`))return;button.disabled=true;try{const client=await loadAuth();const {error}=await client.from("business_items").delete().eq("id",item.id).eq("business_id",currentBusiness.id);if(error)throw error;const paths=itemMediaList(item).map(mediaPathForUrl).filter(Boolean);if(paths.length)await client.storage.from(ITEM_BUCKET).remove(paths).catch(()=>{});await loadBusinessData();showToast("Item deleted.")}catch(error){showToast(friendlyError(error),true)}finally{button.disabled=false}}});
+$("itemGrid").addEventListener("click",async event=>{const button=event.target.closest("[data-action]");if(!button)return;const item=businessItems.find(row=>row.id===button.dataset.id);if(!item)return;if(button.dataset.action==="delete"){if(!confirm(`Delete “${item.name}” from your catalogue?`))return;button.disabled=true;try{const client=await loadAuth();const {error}=await client.from("business_items").delete().eq("id",item.id).eq("business_id",currentBusiness.id);if(error)throw error;const paths=catalogMediaEntries(item).flatMap(mediaStoragePaths);if(paths.length)await client.storage.from(ITEM_BUCKET).remove(paths).catch(()=>{});await loadBusinessData();showToast("Item deleted.")}catch(error){showToast(friendlyError(error),true)}finally{button.disabled=false}}});
 $("itemSearch").addEventListener("input",event=>{itemQuery=event.target.value.trim().toLowerCase();renderItems()});document.querySelectorAll("[data-filter]").forEach(button=>button.addEventListener("click",()=>{selectedFilter=button.dataset.filter;document.querySelectorAll("[data-filter]").forEach(el=>el.classList.toggle("active",el===button));renderItems()}));
 $("dashboardSidebar").addEventListener("click",event=>{const button=event.target.closest("[data-section]");if(button)setDashboardSection(button.dataset.section)});
 $("mobileNavToggle").addEventListener("click",()=>{const list=$("mobileNavList"),open=list.hidden;list.hidden=!open;$("mobileNavToggle").setAttribute("aria-expanded",String(open))});populateMobileNav();
