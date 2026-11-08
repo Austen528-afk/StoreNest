@@ -321,6 +321,22 @@ html[data-theme="dark"] .overall-order-item-choice,html[data-theme="dark"] .over
 html[data-theme="dark"] .overall-order-item-note{color:#efc38a}
 @media(max-width:400px){.overall-order-item{grid-template-columns:44px minmax(0,1fr) auto;gap:7px}.overall-order-item-photo{width:44px;height:52px}.overall-order-item-price{font-size:11px}}
 
+.customer-order-detail-overlay{position:fixed;inset:0;z-index:1250;display:flex;align-items:center;justify-content:center;padding:14px;background:#0b1b13bb;overscroll-behavior:contain}
+.customer-order-detail-overlay[hidden]{display:none!important}
+.customer-order-detail-dialog{display:flex;flex-direction:column;width:min(550px,100%);max-height:calc(100dvh - 28px);overflow:hidden;border-radius:16px;background:#fff;color:#1c2920;box-shadow:0 20px 60px #0004}
+.customer-order-detail-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px;border-bottom:1px solid #e3ece6}
+.customer-order-detail-head small{font-size:10px;color:#799085;font-weight:750}
+.customer-order-detail-head h2{font-size:20px;margin:4px 0 0}
+.customer-order-detail-close{display:grid;place-items:center;width:38px;height:38px;border:0;border-radius:10px;background:#edf2ee;color:#1d3025;font-size:23px;cursor:pointer}
+.customer-order-detail-body{padding:15px 18px 22px;overflow-y:auto;overscroll-behavior:contain}
+.customer-order-detail-status{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.customer-order-detail-status span{border-radius:99px;padding:6px 10px;background:#e8f7ef;color:#277257;font-size:11px;font-weight:800}
+.customer-order-detail-body .overall-order-details{margin:0;padding:0;border:0}
+.customer-order-detail-body .overall-order-details h3{margin:0 0 12px}
+html[data-theme="dark"] .customer-order-detail-dialog{background:#1c2b25;color:#edf6ef}
+html[data-theme="dark"] .customer-order-detail-head{border-color:#34483d}
+html[data-theme="dark"] .customer-order-detail-close{background:#293f35;color:#edf6ef}
+@media(max-width:550px){.customer-order-detail-overlay{padding:0}.customer-order-detail-dialog{width:100%;height:100dvh;max-height:100dvh;border-radius:0}}
 .overall-orders-note{margin:8px 0 0;color:#77847c;font-size:11px;line-height:1.45}
 .overall-orders-footer{padding-top:12px;border-top:1px solid #e3eae6}
 .overall-orders-refresh{width:100%;min-height:43px;border:1px solid #d0e2d7;border-radius:11px;background:#f2f9f5;color:#24664f;font:inherit;font-size:12px;font-weight:800;cursor:pointer}
@@ -400,6 +416,12 @@ html[data-theme="dark"] .overall-orders-refresh{background:#233a30;color:#b1ecd2
     <footer class="overall-orders-footer">
       <button class="overall-orders-refresh" id="overallOrdersRefresh" type="button">Refresh order status</button>
     </footer>
+  </section>
+</div>
+<div id="customerOrderDetailOverlay" class="customer-order-detail-overlay" hidden>
+  <section class="customer-order-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="customerOrderDetailTitle">
+    <header class="customer-order-detail-head"><div><small>MY ORDER</small><h2 id="customerOrderDetailTitle">Order details</h2></div><button type="button" id="customerOrderDetailClose" class="customer-order-detail-close" aria-label="Close order details">×</button></header>
+    <div id="customerOrderDetailBody" class="customer-order-detail-body"></div>
   </section>
 </div>
 <div id="iosInstallOverlay" class="ios-install-overlay" hidden>
@@ -970,17 +992,47 @@ function renderCustomerOrderContents(order){
  const total=order.subtotal===null||order.subtotal===undefined?"":'<div class="overall-order-total"><span>Total</span><strong>'+customerOrderCurrency(order.subtotal)+'</strong></div>';
  return '<h3>Order contents</h3><div class="overall-order-items">'+html+'</div>'+total;
 }
+let activeCustomerOrderModalId=null,customerOrderModalFocus=null;
+function renderCustomerOrderModal(order){
+ if(!order)return;
+ const ref=String(order.id||"").replace(/-/g,"").slice(0,8).toUpperCase();
+ const status=String(order.status||"new");
+ $("customerOrderDetailTitle").textContent="Order #"+ref;
+ $("customerOrderDetailBody").innerHTML=
+  '<div class="customer-order-detail-status"><span>'+escapeResult(CUSTOMER_ORDER_STATUS_LABELS[status]||"Awaiting acceptance")+'</span><span>'+escapeResult(order.businessName||"Store")+'</span></div>'+
+  '<section class="overall-order-details">'+renderCustomerOrderContents(order)+'</section>';
+}
+function closeCustomerOrderModal(){
+ const overlay=$("customerOrderDetailOverlay");
+ if(overlay.hidden)return;
+ overlay.hidden=true;
+ activeCustomerOrderModalId=null;
+ if(customerOrderModalFocus?.isConnected)customerOrderModalFocus.focus({preventScroll:true});
+ customerOrderModalFocus=null;
+}
 function toggleCustomerOrderCard(card){
  const id=card?.dataset.orderOpen;
- if(!id)return;
- const expanded=!expandedCustomerOrderIds.has(id);
- if(expanded)expandedCustomerOrderIds.add(id);else expandedCustomerOrderIds.delete(id);
- card.setAttribute("aria-expanded",String(expanded));
- const details=card.querySelector("[data-order-details]");
- if(details)details.hidden=!expanded;
- const hint=card.querySelector("[data-order-hint]");
- if(hint)hint.textContent=expanded?"Hide order contents":"View order contents";
+ const order=displayedCustomerOrders.find(row=>row.id===id);
+ if(!order)return;
+ customerOrderModalFocus=card;
+ activeCustomerOrderModalId=id;
+ renderCustomerOrderModal(order);
+ $("customerOrderDetailOverlay").hidden=false;
+ $("customerOrderDetailClose").focus({preventScroll:true});
 }
+$("customerOrderDetailClose").addEventListener("click",closeCustomerOrderModal);
+$("customerOrderDetailOverlay").addEventListener("click",event=>{
+ if(event.target===$("customerOrderDetailOverlay"))closeCustomerOrderModal();
+});
+$("customerOrderDetailOverlay").addEventListener("keydown",event=>{
+ if(event.key==="Escape"){event.preventDefault();event.stopPropagation();closeCustomerOrderModal();return}
+ if(event.key==="Tab"){
+  const focusable=[...$("customerOrderDetailOverlay").querySelectorAll("button:not([disabled]),a[href]")].filter(el=>el.getClientRects().length);
+  if(!focusable.length)return;
+  if(event.shiftKey&&document.activeElement===focusable[0]){event.preventDefault();focusable[focusable.length-1].focus()}
+  else if(!event.shiftKey&&document.activeElement===focusable[focusable.length-1]){event.preventDefault();focusable[0].focus()}
+ }
+});
 overallOrdersList.addEventListener("click",event=>{
  const card=event.target.closest("[data-order-open]");
  if(card&&overallOrdersList.contains(card))toggleCustomerOrderCard(card);
@@ -1196,6 +1248,7 @@ function openAllCustomerOrders(){
  overallOrdersClose.focus();
 }
 function closeAllCustomerOrders(){
+ closeCustomerOrderModal();
  overallOrdersOverlay.hidden=true;
  stopCustomerOrdersRealtime();
  stopCustomerOrdersGuestPolling();
