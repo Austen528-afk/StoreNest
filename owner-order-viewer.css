@@ -1,0 +1,35 @@
+/* Customer order content viewer in the business owner's Orders section. */
+.owner-order-card[data-owner-order-view]{cursor:pointer;transition:border-color .16s,box-shadow .16s}
+.owner-order-card[data-owner-order-view]:hover{border-color:#90c5a5;box-shadow:0 2px 12px #172f1b0e}
+.owner-order-card[data-owner-order-view]:focus-visible{outline:2px solid #2dac82;outline-offset:3px}
+.owner-order-view-trigger{margin-top:11px;display:flex;justify-content:space-between;align-items:center;color:#237758;font-size:12px;font-weight:800}
+.owner-order-view-trigger span:last-child{font-size:20px}
+.owner-order-viewer-overlay{position:fixed;inset:0;z-index:2000;display:flex;justify-content:center;align-items:center;background:rgba(8,23,15,.68);padding:14px;overscroll-behavior:contain}
+.owner-order-viewer-overlay[hidden]{display:none!important}
+.owner-order-viewer-dialog{width:min(640px,100%);max-height:calc(100dvh - 28px);display:flex;flex-direction:column;overflow:hidden;border:1px solid #d9e7de;border-radius:16px;background:#fff;color:#1d2b22;box-shadow:0 24px 65px #0004}
+.owner-order-viewer-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:18px 20px;border-bottom:1px solid #e5ece7}
+.owner-order-viewer-head small{display:block;font-size:11px;letter-spacing:.07em;font-weight:750;color:#718477}
+.owner-order-viewer-head h2{font-size:21px;margin:4px 0 0}
+.owner-order-viewer-close{width:38px;height:38px;flex:0 0 auto;border:0;border-radius:10px;background:#eef3ef;color:#203b2e;font-size:24px;cursor:pointer}
+.owner-order-viewer-scroll{padding:16px 20px 22px;overflow:auto;overscroll-behavior:contain;min-height:0}
+.owner-order-viewer-tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
+.owner-order-viewer-tags span{padding:6px 10px;border-radius:99px;background:#eaf7f0;color:#286a50;font-size:11px;font-weight:800}
+.owner-order-viewer-customer{display:grid;gap:4px;padding:12px;border-radius:10px;background:#f5f9f6;border:1px solid #e2ebe5;font-size:12px;line-height:1.6}
+.owner-order-viewer-customer a{color:#227f60;text-decoration:none}
+.owner-order-viewer-scroll h3{font-size:14px;margin:20px 0 12px}
+.owner-order-viewer-items{display:grid;gap:13px}
+.owner-order-viewer-item{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:11px;padding-bottom:13px;border-bottom:1px solid #e7ede9;align-items:start}
+.owner-order-viewer-photo{display:grid;place-items:center;width:64px;height:70px;overflow:hidden;border-radius:9px;background:#ebf1ed;color:#87988c}
+.owner-order-viewer-photo img{width:100%;height:100%;object-fit:cover}
+.owner-order-viewer-item-body{display:grid;gap:5px;min-width:0}
+.owner-order-viewer-item-body>strong{font-size:13px;overflow-wrap:anywhere}
+.owner-order-viewer-choice{font-size:11px;color:#5f7166;line-height:1.5;overflow-wrap:anywhere}
+.owner-order-viewer-note{font-size:11px;color:#8b5d2d;line-height:1.5;overflow-wrap:anywhere}
+.owner-order-viewer-price{font-size:12px;font-weight:800;white-space:nowrap}
+.owner-order-viewer-price small{display:block;font-weight:500;color:#839186;font-size:10px}
+.owner-order-viewer-total{display:flex;justify-content:space-between;gap:12px;margin-top:15px;font-size:15px}
+html[data-theme="dark"] body[data-page-kind="owner"] .owner-order-viewer-dialog{background:var(--st-panel);color:var(--st-text);border-color:var(--st-border)}
+html[data-theme="dark"] body[data-page-kind="owner"] .owner-order-viewer-head,html[data-theme="dark"] body[data-page-kind="owner"] .owner-order-viewer-item{border-color:var(--st-border)}
+html[data-theme="dark"] body[data-page-kind="owner"] .owner-order-viewer-close,html[data-theme="dark"] body[data-page-kind="owner"] .owner-order-viewer-customer,html[data-theme="dark"] body[data-page-kind="owner"] .owner-order-viewer-photo{background:var(--st-panel2);border-color:var(--st-border);color:var(--st-text)}
+html[data-theme="dark"] body[data-page-kind="owner"] .owner-order-viewer-choice{color:var(--st-muted)}
+@media(max-width:520px){.owner-order-viewer-overlay{padding:0}.owner-order-viewer-dialog{height:100dvh;max-height:100dvh;width:100%;border-radius:0}.owner-order-viewer-head{padding:16px}.owner-order-viewer-scroll{padding:15px 16px 25px}.owner-order-viewer-item{grid-template-columns:48px minmax(0,1fr) auto;gap:8px}.owner-order-viewer-photo{width:48px;height:56px}.owner-order-viewer-price{font-size:11px}}
