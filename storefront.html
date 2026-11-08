@@ -1067,6 +1067,19 @@ body[data-store-category="fashion"] #catalog .art:has(img) img{
  max-height:none;
  object-fit:contain;
 }
+
+/* Hide the product dialog scrollbar without disabling vertical scrolling. */
+#galleryDialog,
+#galleryDialog .gallery-panel{
+ scrollbar-width:none;
+ -ms-overflow-style:none;
+}
+#galleryDialog::-webkit-scrollbar,
+#galleryDialog .gallery-panel::-webkit-scrollbar{
+ display:none;
+ width:0;
+ height:0;
+}
 </style>
 <link rel="stylesheet" href="/theme.css">
 <link rel="stylesheet" href="/service-bookings.css">
