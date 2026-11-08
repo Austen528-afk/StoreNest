@@ -1052,6 +1052,21 @@ body[data-store-category="events-decor"] #catalog .decor-service-feed-card .serv
   line-height:1
  }
 }
+
+/* Fashion & Accessories product photos keep their own proportions and heights. */
+body[data-store-category="fashion"] #catalog .art:has(img){
+ height:auto;
+ min-height:0;
+ aspect-ratio:auto;
+ align-items:flex-start;
+}
+body[data-store-category="fashion"] #catalog .art:has(img) img{
+ display:block;
+ width:100%;
+ height:auto!important;
+ max-height:none;
+ object-fit:contain;
+}
 </style>
 <link rel="stylesheet" href="/theme.css">
 <link rel="stylesheet" href="/service-bookings.css">
