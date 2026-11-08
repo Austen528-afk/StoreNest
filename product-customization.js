@@ -29,6 +29,7 @@
     id:safeId(group?.id)||"group-"+gIndex,
     name:clean(group?.name,75),
     selection,
+    priceMode:group?.priceMode==="fixed"?"fixed":"additional",
     required:Boolean(group?.required),
     max,
     defaultOptionId,
@@ -39,7 +40,8 @@
  function quote(item,selection={}){
   const groups=normalize(item?.customization_options);
   const summary=[];
-  let total=price(item?.price),error=null;
+  const basePrice=price(item?.price);
+  let fixedPrice=null,additionalPrice=0,error=null;
   for(const group of groups){
    const selected=selection[group.id];
    const ids=Array.isArray(selected)?selected:[];
@@ -49,10 +51,13 @@
    const tooMany=group.selection==="multiple"?unique.length>group.max:unique.length>1;
    if(tooMany&&!error)error={id:group.id,message:"Too many selections for "+group.name+"."};
    if(found.length){
-    total+=found.reduce((sum,o)=>sum+o.price,0);
-    summary.push({group:group.name,values:found.map(o=>o.name),price:found.reduce((sum,o)=>sum+o.price,0)});
+    const groupPrice=found.reduce((sum,o)=>sum+o.price,0);
+    if(group.priceMode==="fixed"&&group.selection==="single"&&found.length===1)fixedPrice=groupPrice;
+    else additionalPrice+=groupPrice;
+    summary.push({group:group.name,values:found.map(o=>o.name),price:group.priceMode==="fixed"?0:groupPrice});
    }
   }
+  const total=(fixedPrice===null?basePrice:fixedPrice)+additionalPrice;
   return {total:Math.round(total*100)/100,summary,error,valid:!error};
  }
  window.StoreNestOptions=Object.freeze({normalize,quote,price});
