@@ -1020,15 +1020,9 @@ body[data-store-category="events-decor"] #catalog .decor-service-feed-card .serv
 }
 
 
-/* Keep the Foods & Drinks basket button in the hero on phones, with icon and count side by side. */
+/* Keep the basket control visible and consistent across storefront categories on phones. */
 @media(max-width:750px){
- body[data-store-category="food-drink"] .page .hero .bag{
-  position:relative!important;
-  top:auto!important;
-  right:auto!important;
-  bottom:auto!important;
-  left:auto!important;
-  z-index:2;
+ body[data-page-kind="storefront"] .page .bag{
   display:flex!important;
   flex-direction:row;
   align-items:center;
@@ -1038,11 +1032,9 @@ body[data-store-category="events-decor"] #catalog .decor-service-feed-card .serv
   min-height:52px;
   visibility:visible!important;
   opacity:1!important;
-  border-radius:15px;
-  background:#ffffff1b;
-  color:#fff
+  border-radius:15px
  }
- body[data-store-category="food-drink"] .page .hero .bag svg{
+ body[data-page-kind="storefront"] .page .bag svg{
   display:inline-block!important;
   flex:0 0 20px;
   width:20px;
@@ -1053,7 +1045,7 @@ body[data-store-category="events-decor"] #catalog .decor-service-feed-card .serv
   stroke-linecap:round;
   stroke-linejoin:round
  }
- body[data-store-category="food-drink"] .page .hero .bag #bagCount{
+ body[data-page-kind="storefront"] .page .bag #bagCount{
   display:inline-block!important;
   flex:0 0 auto;
   color:inherit;

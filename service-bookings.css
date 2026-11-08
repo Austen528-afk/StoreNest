@@ -1,6 +1,4 @@
-/* Service quotes: separate from ordinary shopping-cart checkout */
-body[data-catalog-mode="services"] .hero .bag,
-body[data-catalog-mode="services"] .decor-visual .bag{display:none!important}
+/* Booking enquiries keep their own flow; the storefront basket remains available. */
 .card:has(.service-disclaimer) .add{min-width:150px;border-radius:7px;background:#37332d}
 .card:has(.service-disclaimer) .add:hover{background:#5b5045}
 .service-disclaimer{font-size:10px;color:#786c5c;margin-top:10px;line-height:1.45}
