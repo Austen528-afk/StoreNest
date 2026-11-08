@@ -402,7 +402,7 @@ body[data-store-type="decor"] .decor-copy .brand-name{font-weight:780}
 @media(max-width:470px){.item-body{min-height:102px}}
 
 /* Product detail: image first, description below. Photos move in a native horizontal carousel. */
-.gallery-panel{display:flex;flex-direction:column;overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}.gallery-scroll-area{display:flex;flex:1 0 auto;flex-direction:column;min-height:0;overflow:visible;touch-action:auto}
+.gallery-panel{display:flex;flex-direction:column;overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;touch-action:auto}.gallery-scroll-area{display:flex;flex:1 0 auto;flex-direction:column;min-height:0;overflow:visible;touch-action:auto}
 .gallery-stage{display:block;flex:0 1 auto;min-height:0}
 .gallery-track{display:flex;width:100%;min-width:0;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;scrollbar-width:none;touch-action:pan-x pan-y}
 .gallery-track::-webkit-scrollbar{display:none}
@@ -475,7 +475,7 @@ body[data-store-type="decor"] .decor-copy .brand-name{font-weight:780}
     overflow-y:auto;
     overscroll-behavior-y:contain;
     -webkit-overflow-scrolling:touch;
-    touch-action:pan-y;
+    touch-action:pan-x pan-y;
   }
   #galleryDialog .gallery-panel {
     display:flex;
@@ -1364,17 +1364,16 @@ function galleryViewEntries(item){
  }
  if(isStorefrontFashionProduct(item)){
   const sets=storefrontFashionColorSets(item);
-  if(sets.length)return sets.flatMap(set=>set.entries.map(entry=>({...entry,fashionColorId:set.id,fashionColorName:set.name})));
+  if(sets.length)return sets.flatMap(set=>set.entries.map((entry,index)=>({...entry,fashionColorId:set.id,fashionColorName:set.name,fashionColorPhotoIndex:index})));
  }
  return galleryMediaEntries(item);
 }
-function galleryModalEntries(item){
+function galleryModalEntries(item){return galleryViewEntries(item)}
+function fashionGalleryIndexForColor(item,colorId,photoIndex=0){
  const entries=galleryViewEntries(item);
- if(item===activeGalleryItem&&isStorefrontFashionOffering(item)&&activeGalleryFashionColorId){
-  const selected=storefrontFashionColorSets(item).find(set=>set.id===activeGalleryFashionColorId);
-  if(selected)return selected.entries.map(entry=>({...entry,fashionColorId:selected.id,fashionColorName:selected.name}));
- }
- return entries;
+ const exact=entries.findIndex(entry=>entry.fashionColorId===colorId&&Number(entry.fashionColorPhotoIndex||0)===photoIndex);
+ if(exact>=0)return exact;
+ return entries.findIndex(entry=>entry.fashionColorId===colorId);
 }
 function galleryPhotos(item){return galleryModalEntries(item).map(entry=>entry.url)}
 function galleryMediaEntry(item,url){return galleryModalEntries(item).find(entry=>entry.url===url)||{url,width:0,height:0,variants:[]}}
@@ -2017,16 +2016,27 @@ function renderGalleryFashionColors(item,initialId=null){
  if(sets.length>1)options.innerHTML=sets.map(set=>'<button type="button" class="gallery-fashion-color-option" role="radio" aria-checked="' +(set.id===selected.id?'true':'false')+'" data-fashion-color-id="' +esc(set.id)+'">' +esc(set.name)+'</button>').join("");
  updateFashionColorDescription(item,selected.id);
 }
+function syncGalleryFashionColorSelection(item,colorSetId,preserveMatchingSize=true){
+ const sets=storefrontFashionColorSets(item),set=sets.find(row=>row.id===colorSetId);if(!set)return false;
+ const previousGroup=storefrontFashionSizeGroup(item,activeGalleryFashionColorId);
+ const previousSizeName=previousGroup?.options.find(option=>option.id===activeGalleryFashionSizeId)?.name||"";
+ activeGalleryFashionColorId=set.id;
+ const nextGroup=storefrontFashionSizeGroup(item,set.id);
+ const matchingSize=preserveMatchingSize&&previousSizeName?nextGroup?.options.find(option=>option.name.trim().toLowerCase()===previousSizeName.trim().toLowerCase()):null;
+ activeGalleryFashionSizeId=matchingSize?.id||null;
+ $("galleryFashionColorSelected").textContent=sets.length>1?set.name:"";
+ $("galleryFashionColorOptions").querySelectorAll("[data-fashion-color-id]").forEach(option=>option.setAttribute("aria-checked",option.dataset.fashionColorId===set.id?"true":"false"));
+ updateFashionColorDescription(item,set.id);
+ renderGalleryFashionSizes(item,activeGalleryFashionSizeId);
+ updateGalleryOptionsPrice();
+ return true;
+}
 $("galleryFashionColorOptions").addEventListener("click",event=>{
  const button=event.target.closest("[data-fashion-color-id]");if(!button||!activeGalleryItem)return;
  const selected=storefrontFashionColorSets(activeGalleryItem).find(set=>set.id===button.dataset.fashionColorId);if(!selected)return;
- activeGalleryFashionColorId=selected.id;activeGalleryFashionSizeId=null;
- $("galleryFashionColorSelected").textContent=selected.name;
- $("galleryFashionColorOptions").querySelectorAll("[data-fashion-color-id]").forEach(option=>option.setAttribute("aria-checked",option.dataset.fashionColorId===selected.id?"true":"false"));
- updateFashionColorDescription(activeGalleryItem,selected.id);renderGalleryFashionSizes(activeGalleryItem,null);
- galleryIndex=0;renderGallerySlides();
- const photos=galleryPhotos(activeGalleryItem);if(photos.length)showGalleryImage("auto");else updateGalleryPosition();
- updateGalleryOptionsPrice();
+ const index=fashionGalleryIndexForColor(activeGalleryItem,selected.id,0);
+ syncGalleryFashionColorSelection(activeGalleryItem,selected.id,true);
+ if(index>=0){galleryIndex=index;showGalleryImage("smooth")}
 });
 function renderGallerySlides(){
  const entries=galleryModalEntries(activeGalleryItem),media=entries.map(entry=>entry.url),track=$("galleryTrack"),dots=$("galleryDots");
@@ -2242,8 +2252,13 @@ function quoteItemForFashionSelection(item,selection={}){
  const sets=storefrontFashionColorSets(item);
  const selectedId=selection?.[FASHION_COLOR_GROUP_ID]?.[0]||(item===activeGalleryItem?activeGalleryFashionColorId:null);
  const set=sets.find(row=>row.id===selectedId)||sets[0];
- const base=Number(set?.price??item.price),customization_options=window.StoreNestOptions.normalize(item?.customization_options).filter(group=>group.id!==FASHION_SIZE_GROUP_ID);
  const sizes=storefrontFashionSizeGroup(item,set?.id);
+ const selectedSizeId=selection?.[FASHION_SIZE_GROUP_ID]?.[0]||(item===activeGalleryItem?activeGalleryFashionSizeId:null);
+ const selectedSize=sizes?.options.find(option=>option.id===selectedSizeId);
+ const fixedPrices=sizes?.priceMode==="fixed"?sizes.options.map(option=>Number(option.price)).filter(price=>Number.isFinite(price)&&price>=0):[];
+ const configuredBase=Number(set?.price??item.price);
+ const base=!selectedSize&&fixedPrices.length?Math.min(...fixedPrices):configuredBase;
+ const customization_options=window.StoreNestOptions.normalize(item?.customization_options).filter(group=>group.id!==FASHION_SIZE_GROUP_ID);
  if(sizes?.options.length)customization_options.push(sizes);
  return {...item,price:Number.isFinite(base)&&base>=0?base:Number(item.price)||0,customization_options};
 }
@@ -2304,9 +2319,11 @@ function openProductGallery(id,trigger,cartKey=null){
  const sizeGroup=storefrontFashionSizeGroup(item,activeGalleryFashionColorId),savedFashionSizeId=editRow?.selection?.[FASHION_SIZE_GROUP_ID]?.[0];
  activeGalleryFashionSizeId=sizeGroup?.options.some(option=>option.id===savedFashionSizeId)?savedFashionSizeId:null;
  renderGalleryFashionSizes(item,activeGalleryFashionSizeId);
- if(availableFashionColors.length&&requestedFashionColorId){
-  const requestedIndex=Number(trigger?.dataset?.fashionColorPhotoIndex),selectedSet=availableFashionColors.find(set=>set.id===activeGalleryFashionColorId);
-  if(Number.isInteger(requestedIndex)&&requestedIndex>=0&&requestedIndex<(selectedSet?.entries.length||0))galleryIndex=requestedIndex;
+ if(availableFashionColors.length){
+  const requestedIndex=Number(trigger?.dataset?.fashionColorPhotoIndex);
+  const photoIndex=Number.isInteger(requestedIndex)&&requestedIndex>=0?requestedIndex:0;
+  const selectedIndex=fashionGalleryIndexForColor(item,activeGalleryFashionColorId,photoIndex);
+  galleryIndex=selectedIndex>=0?selectedIndex:0;
  }
  const availableDecorSets=isStorefrontDecorOffering(item)?storefrontDecorColorSets(item):[];
  const requestedDecorSet=trigger?.dataset?.decorSetId;
@@ -2413,6 +2430,10 @@ $("galleryTrack").addEventListener("scroll",()=>{
     activeGalleryDecorSetId=set.id;
     syncDecorPhotoSelection(galleryReturnFocus?.closest(".decor-service-feed-card"),activeGalleryItem,set);
    }
+  }
+  if(isStorefrontFashionProduct(activeGalleryItem)){
+   const entry=galleryViewEntries(activeGalleryItem)[nextIndex];
+   if(entry?.fashionColorId&&entry.fashionColorId!==activeGalleryFashionColorId)syncGalleryFashionColorSelection(activeGalleryItem,entry.fashionColorId,true);
   }
   updateGalleryPosition();
  });
