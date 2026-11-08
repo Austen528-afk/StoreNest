@@ -688,9 +688,13 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
 /* Keep fashion photo dots directly over the photo with no backing panel or frame. */
 #galleryDialog.gallery-fashion-style .gallery-overlay-pager{position:absolute;inset:0;display:block;z-index:3;pointer-events:none;background:transparent;border:0}
 #galleryDialog.gallery-fashion-style .gallery-dots{position:absolute;left:0;right:0;bottom:12px;justify-content:center;pointer-events:auto;background:transparent;border:0;box-shadow:none}
+/* Hide only the requested fashion summary rows; keep the selectable sizes visible. */
 #galleryDialog.gallery-fashion-style #galleryProductActionRow,
 #galleryDialog.gallery-fashion-style #galleryFashionColors .gallery-fashion-colors-heading,
-#galleryDialog.gallery-fashion-style #galleryBottom{display:none!important}
+#galleryDialog.gallery-fashion-style #galleryPosition{display:none!important}
+#galleryDialog.gallery-fashion-style #galleryBottom{height:0;min-height:0;margin:0;padding:0;overflow:hidden}
+#galleryDialog.gallery-fashion-style #galleryFashionSizes:not([hidden]){display:block!important}
+#galleryDialog.gallery-fashion-style #galleryFashionSizes[hidden]{display:none!important}
 #galleryDialog.gallery-booking-style .gallery-booking-details{display:block;padding:17px 22px 0;background:var(--canvas,#f8f6f1);border-top:1px solid var(--border,#e8e1d6)}
 #galleryDialog.gallery-booking-style .gallery-description{margin:0;padding:0;font-size:15px;line-height:1.65;color:var(--ink,#342e27)}
 #galleryDialog.gallery-booking-style .gallery-description:empty{display:none}
