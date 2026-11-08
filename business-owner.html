@@ -764,7 +764,7 @@ html[data-theme="dark"] #itemMediaQualityNote[data-warning="true"]{color:#f4c27e
   <div class="field"><label for="itemBookingFeeMax">Booking fee up to (ZAR)</label><div class="price-input"><span>R</span><input id="itemBookingFeeMax" type="number" min="0" step="0.01" placeholder="Optional"></div></div>
  </div>
 </div><div id="cateringServiceNote" class="catering-service-note full-field" hidden><strong>Catering service</strong><span>Customers will send their event date, venue and guest count with a booking request. Use the description for general service information; confirm the service scope and final details with the customer.</span></div><div class="field"><label for="itemCategory">Category</label><div class="category-input"><select id="itemCategory"><option value="">No category</option></select><button type="button" id="addCategoryButton" aria-label="Add category">＋</button></div></div><div class="field full-field"><label id="itemDescriptionLabel" for="itemDescription">Description</label><textarea id="itemDescription" rows="3" maxlength="500" placeholder="Describe your item"></textarea></div>
-<div id="itemMediaField" class="field full-field"><label id="itemMediaLabel" for="itemMedia">Product photos, GIFs & short videos (up to 12)</label><input id="itemMedia" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"><small>Images/GIFs: max 10 MB. MP4/WebM videos: max 20 MB and 30 seconds. First file is the cover.</small><small id="itemMediaQualityNote" class="media-quality-note" role="status" aria-live="polite">Original photos are preserved. New photos get responsive storefront sizes.</small><div id="itemMediaGallery" class="owner-gallery"></div></div><div id="decorColorSetsEditor" class="decor-color-sets-editor full-field" hidden><div class="decor-color-sets-heading"><div><strong>Décor colour sets</strong><small>Group photos of the same setup by colour theme. Each set can have its own optional description.</small></div><button type="button" id="addDecorColorSet" class="outline-button">+ Add colour set</button></div><div id="decorColorSetsList"></div><small class="decor-color-sets-note">Upload up to 12 pictures across all colour sets. The first picture in the first set is the main storefront photo.</small></div><div class="field"><label for="itemAvailability">Availability</label><select id="itemAvailability"><option value="true">Available</option><option value="false">Unavailable</option></select></div><div class="field"><label for="itemOrder">Display order</label><input id="itemOrder" type="number" min="0" step="1" value="0"></div></div>
+<div id="itemMediaField" class="field full-field"><label id="itemMediaLabel" for="itemMedia">Product photos, GIFs & short videos (up to 12)</label><input id="itemMedia" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"><small>Images/GIFs: max 10 MB. MP4/WebM videos: max 20 MB and 30 seconds. First file is the cover.</small><small id="itemMediaQualityNote" class="media-quality-note" role="status" aria-live="polite">Original photos are preserved. New photos get responsive storefront sizes.</small><div id="itemMediaGallery" class="owner-gallery"></div></div><div id="decorColorSetsEditor" class="decor-color-sets-editor full-field" hidden><div class="decor-color-sets-heading"><div><strong>Décor colour sets</strong><small>Group photos of the same setup by colour theme. Each set can have its own optional description.</small></div><button type="button" id="addDecorColorSet" class="outline-button">+ Add colour set</button></div><div id="decorColorSetsList"></div><small class="decor-color-sets-note">Upload up to 12 pictures across all colour sets. The first picture in the first set is the main storefront photo.</small></div><div id="fashionColorSetsEditor" class="decor-color-sets-editor full-field" hidden><div class="decor-color-sets-heading"><div><strong>Clothing colour variants</strong><small>Add each colour of this clothing item and upload its photos. Customers can choose a colour before adding it to their basket.</small></div><button type="button" id="addFashionColorSet" class="outline-button">+ Add colour</button></div><div id="fashionColorSetsList"></div><small class="decor-color-sets-note">Upload up to 12 pictures across all colours. The first picture in the first colour is the storefront cover.</small></div><div class="field"><label for="itemAvailability">Availability</label><select id="itemAvailability"><option value="true">Available</option><option value="false">Unavailable</option></select></div><div class="field"><label for="itemOrder">Display order</label><input id="itemOrder" type="number" min="0" step="1" value="0"></div></div>
 <div id="itemOptionsEditor" class="item-options-editor">
   <div class="item-options-heading"><div><strong>Customization &amp; Extras</strong><small>Create scales for amounts or heat levels, or choice groups for extras.</small></div>
   <div class="item-options-actions"><button type="button" id="addScaleGroup" class="outline-button">+ Add scale</button><button type="button" id="addCustomizationGroup" class="outline-button">+ Add choice group</button></div></div>
@@ -1284,7 +1284,7 @@ $("customizationGroupsList").addEventListener("click",event=>{
 });
 function optionsForSave(){
  if($("itemType").value!=="product")return [];
- const configuredGroups=editedOptionGroups.filter(group=>group.options.some(option=>String(option.name||"").trim()));
+ const configuredGroups=editedOptionGroups.filter(group=>group.id!==FASHION_COLOR_GROUP_ID).filter(group=>group.options.some(option=>String(option.name||"").trim()));
  for(const group of configuredGroups){
   if(!group.name.trim())throw Error("Name each customization group, or remove the empty group.");
   for(const option of group.options){
@@ -1326,19 +1326,34 @@ function isDecorOffering(){
  // Hide the colour-set editor only when the selected section explicitly identifies catering.
  return usesBookingPricing()&&$("itemType").value==="service"&&!/cater/.test(name);
 }
+function isFashionProduct(){return window.StoreNestCategoryId?.(currentBusiness?.category)==="fashion"&&$("itemType").value==="product"}
+function fashionColourLabel(set,index){return String(set?.name||"").trim()||"Colour "+(index+1)}
+function fashionColourOptionGroup(sets){return {id:FASHION_COLOR_GROUP_ID,name:"Colour",selection:"single",required:true,max:1,options:sets.map((set,index)=>({id:set.id,name:fashionColourLabel(set,index),price:0}))}}
+function newFashionColorSet(name){
+ return {id:window.crypto?.randomUUID?.()||("fashion-"+Date.now()+"-"+Math.random().toString(36).slice(2)),name:name||"",media_urls:[]};
+}
 function newDecorColorSet(name){
  return {id:window.crypto?.randomUUID?.()||("decor-"+Date.now()+"-"+Math.random().toString(36).slice(2)),name:name||"",description:"",media_urls:[]};
 }
 function syncDecorColorSetEditor(){
  syncCateringServiceEditor();
- const enabled=isDecorOffering(),editor=$("decorColorSetsEditor"),mediaField=$("itemMediaField");
- if(editor)editor.hidden=!enabled;
- if(mediaField)mediaField.hidden=enabled;
- if(!enabled)return;
- if(!editedDecorColorSets.length)editedDecorColorSets=[newDecorColorSet()];
- const validIds=new Set(editedDecorColorSets.map(set=>set.id)),firstSet=editedDecorColorSets[0];
- galleryEntries.forEach(entry=>{if(!validIds.has(entry.decorSetId))entry.decorSetId=firstSet.id});
- drawDecorColorSetEditor();drawOwnerGallery();
+ const decorEnabled=isDecorOffering(),fashionEnabled=isFashionProduct(),decorEditor=$("decorColorSetsEditor"),fashionEditor=$("fashionColorSetsEditor"),mediaField=$("itemMediaField");
+ if(decorEditor)decorEditor.hidden=!decorEnabled;
+ if(fashionEditor)fashionEditor.hidden=!fashionEnabled;
+ if(mediaField)mediaField.hidden=decorEnabled||fashionEnabled;
+ if(decorEnabled){
+  if(!editedDecorColorSets.length)editedDecorColorSets=[newDecorColorSet()];
+  const validIds=new Set(editedDecorColorSets.map(set=>set.id)),firstSet=editedDecorColorSets[0];
+  galleryEntries.forEach(entry=>{if(!validIds.has(entry.decorSetId))entry.decorSetId=firstSet.id});
+  drawDecorColorSetEditor();drawOwnerGallery();return;
+ }
+ if(fashionEnabled){
+  if(!editedFashionColorSets.length)editedFashionColorSets=[newFashionColorSet()];
+  const validIds=new Set(editedFashionColorSets.map(set=>set.id)),firstSet=editedFashionColorSets[0];
+  galleryEntries.forEach(entry=>{if(!validIds.has(entry.fashionSetId))entry.fashionSetId=firstSet.id});
+  drawFashionColorSetEditor();drawOwnerGallery();return;
+ }
+ drawOwnerGallery();
 }
 function loadDecorColorSets(item){
  editedDecorColorSets=[];
@@ -1355,6 +1370,21 @@ function loadDecorColorSets(item){
  const urlToSet=new Map();
  for(const set of editedDecorColorSets)for(const url of set.media_urls)if(!urlToSet.has(url))urlToSet.set(url,set.id);
  galleryEntries.forEach(entry=>{entry.decorSetId=urlToSet.get(entry.url)||editedDecorColorSets[0].id});
+}
+function loadFashionColorSets(item){
+ editedFashionColorSets=[];
+ if(!isFashionProduct())return;
+ const media=catalogMediaEntries(item),mediaByUrl=new Set(media.map(entry=>entry.url));
+ const source=Array.isArray(item?.fashion_color_sets)?item.fashion_color_sets:[];
+ editedFashionColorSets=source.map(set=>({
+  id:String(set?.id||"").trim()||newFashionColorSet().id,
+  name:String(set?.name||"").trim().slice(0,80),
+  media_urls:(Array.isArray(set?.media_urls)?set.media_urls:[]).map(value=>typeof value==="string"?value:value?.url).filter(url=>typeof url==="string"&&mediaByUrl.has(url))
+ }));
+ if(!editedFashionColorSets.length)editedFashionColorSets=[newFashionColorSet()];
+ const urlToSet=new Map();
+ for(const set of editedFashionColorSets)for(const url of set.media_urls)if(!urlToSet.has(url))urlToSet.set(url,set.id);
+ galleryEntries.forEach(entry=>{entry.fashionSetId=urlToSet.get(entry.url)||editedFashionColorSets[0].id});
 }
 function syncItemPricingFields(){const booking=usesBookingPricing();$("itemPriceField").hidden=booking;$("bookingPricingFields").hidden=!booking;$("itemPrice").required=!booking;syncDecorColorSetEditor()}
 $("itemType").addEventListener("change",syncItemPricingFields);
@@ -1383,9 +1413,9 @@ function openItemModal(item){
   $("itemBookingFeeMin").value=savedBookingFeeMin??(hasSavedBookingFeeRange?"":legacyBookingFee);
   $("itemBookingFeeMax").value=item?.booking_fee_max??"";
   syncItemPricingFields();$("itemDescription").value=item?.description||"";
-  editedOptionGroups=window.StoreNestOptions.normalize(item?.customization_options);drawCustomizationEditor();
+  editedOptionGroups=window.StoreNestOptions.normalize(item?.customization_options).filter(group=>group.id!==FASHION_COLOR_GROUP_ID);drawCustomizationEditor();
   $("itemAvailability").value=String(item?.is_available??true);$("itemOrder").value=item?.display_order??businessItems.length;$("itemCategory").value=item?.category_id||"";
-  $("itemFormMessage").hidden=true;editedDecorColorSets=[];resetItemGallery(item);loadDecorColorSets(item);syncDecorColorSetEditor();openModal("itemModal");
+  $("itemFormMessage").hidden=true;editedDecorColorSets=[];editedFashionColorSets=[];resetItemGallery(item);loadDecorColorSets(item);loadFashionColorSets(item);syncDecorColorSetEditor();openModal("itemModal");
   if($("itemModal")?.hidden)throw new Error("The edit form could not be opened.");
  }catch(error){console.error("StoreNest product edit error",error);showToast("Could not open the product editor: "+friendlyError(error),true)}
 }
@@ -1594,7 +1624,8 @@ const MEDIA_TYPES={"image/jpeg":"jpg","image/png":"png","image/webp":"webp","ima
 function isProductVideo(url){return /\.(?:mp4|webm)(?:[?#]|$)/i.test(String(url||""))}
 function validateProductMedia(file){if(!file||!file.size||!MEDIA_TYPES[file.type]||file.size>(file.type.startsWith("video/")?20:10)*1048576)throw Error("Images/GIFs must be 10 MB or smaller; MP4/WebM clips must be 20 MB or smaller.")}
 function validateProductVideo(file){return file?.type.startsWith("video/")?validateVideoDuration(file):Promise.resolve()}
-let galleryEntries=[],galleryObjectUrls=[],editedDecorColorSets=[];
+const FASHION_COLOR_GROUP_ID="fashion-color";
+let galleryEntries=[],galleryObjectUrls=[],editedDecorColorSets=[],editedFashionColorSets=[];
 function normalizeCatalogMedia(value){
  const source=typeof value==="string"?{url:value}:value;
  if(!source||typeof source.url!=="string"||!/^https:\/\//i.test(source.url))return null;
@@ -1697,6 +1728,16 @@ function drawOwnerGallery(){
   }
   return;
  }
+ if(isFashionProduct()){
+  root.replaceChildren();
+  for(const set of editedFashionColorSets){
+   const gallery=[...$("fashionColorSetsList").querySelectorAll("[data-fashion-set-gallery]")].find(node=>node.dataset.fashionSetGallery===set.id);if(!gallery)continue;
+   const records=galleryEntries.map((entry,index)=>({entry,index})).filter(record=>record.entry.fashionSetId===set.id);
+   renderOwnerGalleryTiles(gallery,records);
+   if(!records.length){const empty=document.createElement("p");empty.className="decor-color-set-empty";empty.textContent="No photos added for this colour yet.";gallery.append(empty)}
+  }
+  return;
+ }
  renderOwnerGalleryTiles(root,galleryEntries.map((entry,index)=>({entry,index})));
 }
 function drawDecorColorSetEditor(){
@@ -1721,6 +1762,60 @@ function drawDecorColorSetEditor(){
   card.append(head,fields,uploadLabel,gallery);root.append(card);
  });
 }
+function drawFashionColorSetEditor(){
+ const root=$("fashionColorSetsList");root.replaceChildren();
+ editedFashionColorSets.forEach((set,index)=>{
+  const card=document.createElement("section");card.className="decor-color-set-card";card.dataset.fashionSetCard=set.id;
+  const head=document.createElement("div");head.className="decor-color-set-head";
+  const title=document.createElement("h4");title.textContent=fashionColourLabel(set,index);
+  const remove=document.createElement("button");remove.type="button";remove.className="decor-color-set-remove";remove.textContent="×";remove.title="Remove this colour";remove.setAttribute("aria-label","Remove colour "+(index+1));remove.disabled=editedFashionColorSets.length<2;remove.dataset.removeFashionSet=set.id;
+  head.append(title,remove);
+  const fields=document.createElement("div");fields.className="decor-color-set-fields";
+  const nameLabel=document.createElement("label");nameLabel.textContent="Colour name (optional)";
+  const nameInput=document.createElement("input");nameInput.type="text";nameInput.maxLength=80;nameInput.placeholder="e.g. Black, White, Brown";nameInput.value=set.name;nameInput.dataset.fashionSetName=set.id;nameLabel.append(nameInput);fields.append(nameLabel);
+  const uploadLabel=document.createElement("label");uploadLabel.className="decor-color-set-upload";
+  const uploadText=document.createElement("span");uploadText.textContent="Upload photos for this colour";
+  const upload=document.createElement("input");upload.type="file";upload.multiple=true;upload.accept="image/jpeg,image/png,image/webp,image/gif";upload.dataset.fashionSetUpload=set.id;
+  uploadLabel.append(uploadText,upload);
+  const gallery=document.createElement("div");gallery.className="owner-gallery";gallery.dataset.fashionSetGallery=set.id;
+  card.append(head,fields,uploadLabel,gallery);root.append(card);
+ });
+}
+$("addFashionColorSet").addEventListener("click",()=>{
+ if(!isFashionProduct())return;
+ if(editedFashionColorSets.length>=12){showToast("You can add up to 12 colours.",true);return}
+ editedFashionColorSets.push(newFashionColorSet());drawFashionColorSetEditor();drawOwnerGallery();
+});
+$("fashionColorSetsList").addEventListener("input",event=>{
+ const target=event.target,card=target.closest("[data-fashion-set-card]");if(!card)return;
+ const set=editedFashionColorSets.find(row=>row.id===card.dataset.fashionSetCard);if(!set)return;
+ if(target.matches("[data-fashion-set-name]")){set.name=target.value;card.querySelector(".decor-color-set-head h4").textContent=fashionColourLabel(set,editedFashionColorSets.indexOf(set))}
+});
+$("fashionColorSetsList").addEventListener("click",event=>{
+ const button=event.target.closest("[data-remove-fashion-set]");if(!button)return;
+ const id=button.dataset.removeFashionSet;if(editedFashionColorSets.length<2)return;
+ editedFashionColorSets=editedFashionColorSets.filter(set=>set.id!==id);
+ galleryEntries=galleryEntries.filter(entry=>entry.fashionSetId!==id);
+ drawFashionColorSetEditor();drawOwnerGallery();updateCatalogMediaQualityNote();
+});
+$("fashionColorSetsList").addEventListener("change",async event=>{
+ const input=event.target.closest("[data-fashion-set-upload]");if(!input)return;
+ const setId=input.dataset.fashionSetUpload,files=[...input.files];if(!files.length)return;
+ if(galleryEntries.length+files.length>12){showToast("Maximum 12 pictures across all colours.",true);input.value="";return}
+ try{
+  const staged=[];
+  for(const file of files){
+   if(!file.type.startsWith("image/"))throw Error("Clothing colour variants accept pictures only.");
+   validateProductMedia(file);staged.push({file,dimensions:await catalogImageDimensions(file)});
+  }
+  for(const {file,dimensions} of staged){
+   const url=URL.createObjectURL(file);galleryObjectUrls.push(url);
+   galleryEntries.push({url,file,width:dimensions?.width||0,height:dimensions?.height||0,variants:[],fashionSetId:setId});
+  }
+  drawOwnerGallery();
+ }catch(error){showToast(error.message||"Invalid picture.",true)}
+ finally{input.value=""}
+});
 $("addDecorColorSet").addEventListener("click",()=>{
  if(!isDecorOffering())return;
  const set=newDecorColorSet();
@@ -1761,6 +1856,24 @@ $("decorColorSetsList").addEventListener("change",async event=>{
 function orderedDecorGalleryEntries(){
  if(!isDecorOffering())return galleryEntries;
  return editedDecorColorSets.flatMap(set=>galleryEntries.filter(entry=>entry.decorSetId===set.id));
+}
+function orderedFashionGalleryEntries(){
+ if(!isFashionProduct())return galleryEntries;
+ return editedFashionColorSets.flatMap(set=>galleryEntries.filter(entry=>entry.fashionSetId===set.id));
+}
+function validateFashionColorSets(){
+ if(!isFashionProduct()||editedFashionColorSets.length<2)return;
+ for(const [index,set] of editedFashionColorSets.entries())if(!galleryEntries.some(entry=>entry.fashionSetId===set.id))throw Error("Upload at least one picture for "+fashionColourLabel(set,index)+", or remove that colour.");
+}
+function serializeFashionColorSets(savedEntries){
+ if(!isFashionProduct())return [];
+ let offset=0;
+ return editedFashionColorSets.map(set=>{
+  const count=galleryEntries.filter(entry=>entry.fashionSetId===set.id).length;
+  const media_urls=savedEntries.slice(offset,offset+count).map(entry=>entry.url);
+  offset+=media_urls.length;
+  return {id:set.id,name:String(set.name||"").trim().slice(0,80),media_urls};
+ }).filter(set=>set.media_urls.length);
 }
 function validateDecorColorSets(){
  if(!isDecorOffering())return;
@@ -1853,17 +1966,20 @@ $("itemForm").addEventListener("submit",async event=>{
   if(bookingPricing&&bookingFeeMin!==null&&(!Number.isFinite(bookingFeeMin)||bookingFeeMin<0))throw Error("Enter a valid booking fee.");
   if(bookingPricing&&bookingFeeMax!==null&&(!Number.isFinite(bookingFeeMax)||bookingFeeMax<0))throw Error("Enter a valid upper booking fee.");
   if(bookingPricing&&bookingFeeMin!==null&&bookingFeeMax!==null&&bookingFeeMax<bookingFeeMin)throw Error("The upper booking fee cannot be lower than the starting booking fee.");
-  const isDecorItem=isDecorOffering();if(isDecorItem)validateDecorColorSets();
+  const isDecorItem=isDecorOffering(),isFashionItem=isFashionProduct();
+  if(isDecorItem)validateDecorColorSets();if(isFashionItem)validateFashionColorSets();
   client=await loadAuth();
-  const entries=[],orderedEntries=isDecorItem?orderedDecorGalleryEntries():galleryEntries;
+  const entries=[],orderedEntries=isDecorItem?orderedDecorGalleryEntries():isFashionItem?orderedFashionGalleryEntries():galleryEntries;
   for(const entry of orderedEntries){
    if(entry.file){const uploaded=await uploadCatalogMedia(client,entry.file);uploads.push(uploaded);entries.push(uploaded.entry)}
    else entries.push({url:entry.url,width:entry.width||0,height:entry.height||0,variants:entry.variants||[]});
   }
   const primaryImage=entries.find(entry=>!isProductVideo(entry.url))?.url||null;
-  const decorColorSets=isDecorItem?serializeDecorColorSets(entries):[];
+  const decorColorSets=isDecorItem?serializeDecorColorSets(entries):[],fashionColorSets=isFashionItem?serializeFashionColorSets(entries):[];
   const prior=businessItems.find(item=>item.id===itemId);
-  const row={image_url:primaryImage,media_urls:entries,decor_color_sets:decorColorSets,customization_options:optionsForSave(),business_id:currentBusiness.id,item_type:$("itemType").value,name:$("itemName").value.trim(),description:$("itemDescription").value.trim(),price:bookingPricing?(priceRangeMin??priceRangeMax??0):Number($("itemPrice").value),price_range_min:bookingPricing?priceRangeMin:(prior?.price_range_min??null),price_range_max:bookingPricing?priceRangeMax:(prior?.price_range_max??null),booking_fee:bookingPricing?((bookingFeeMin===null)!==(bookingFeeMax===null)?(bookingFeeMin??bookingFeeMax):null):(prior?.booking_fee??null),booking_fee_min:bookingPricing?bookingFeeMin:(prior?.booking_fee_min??prior?.booking_fee??null),booking_fee_max:bookingPricing?bookingFeeMax:(prior?.booking_fee_max??null),category_id:$("itemCategory").value||null,is_available:$("itemAvailability").value==="true",display_order:Number($("itemOrder").value)||0,updated_at:new Date().toISOString()};
+  const customizationOptions=optionsForSave();
+  if(fashionColorSets.length>1)customizationOptions.unshift(fashionColourOptionGroup(fashionColorSets));
+  const row={image_url:primaryImage,media_urls:entries,decor_color_sets:decorColorSets,fashion_color_sets:fashionColorSets,customization_options:customizationOptions,business_id:currentBusiness.id,item_type:$("itemType").value,name:$("itemName").value.trim(),description:$("itemDescription").value.trim(),price:bookingPricing?(priceRangeMin??priceRangeMax??0):Number($("itemPrice").value),price_range_min:bookingPricing?priceRangeMin:(prior?.price_range_min??null),price_range_max:bookingPricing?priceRangeMax:(prior?.price_range_max??null),booking_fee:bookingPricing?((bookingFeeMin===null)!==(bookingFeeMax===null)?(bookingFeeMin??bookingFeeMax):null):(prior?.booking_fee??null),booking_fee_min:bookingPricing?bookingFeeMin:(prior?.booking_fee_min??prior?.booking_fee??null),booking_fee_max:bookingPricing?bookingFeeMax:(prior?.booking_fee_max??null),category_id:$("itemCategory").value||null,is_available:$("itemAvailability").value==="true",display_order:Number($("itemOrder").value)||0,updated_at:new Date().toISOString()};
   const query=itemId?client.from("business_items").update(row).eq("id",itemId).eq("business_id",currentBusiness.id):client.from("business_items").insert(row);
   const {data,error}=await query.select("id");
   if(error)throw error;if(!data?.length)throw Error("The product could not be saved. Please retry.");
