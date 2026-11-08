@@ -152,7 +152,11 @@ $("bookingRequestForm").addEventListener("submit",async e=>{
   rememberCustomerBooking({
    id:bookingId,token:trackingToken,customerUserId:userId,
    businessName:business.name||"Business",itemName:activeItem.name||"Service",
-   eventDate:payload.event_date,createdAt:new Date().toISOString(),status:"pending"
+   businessId:business.id,itemId:activeItem.id,
+   customerName:payload.customer_name,contactPhone:payload.contact_phone,contactEmail:payload.contact_email,
+   eventDate:payload.event_date,eventLocation:payload.event_location,
+   guestCount:payload.guest_count==null?"":String(payload.guest_count),notes:payload.notes,
+   createdAt:new Date().toISOString(),status:"pending"
   },userId);
   window.dispatchEvent(new Event("storenest:booking-created"));
   form.hidden=true;$("bookingSuccess").hidden=false;

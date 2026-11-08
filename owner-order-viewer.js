@@ -27,15 +27,17 @@
   title.textContent="Order #"+ref;
   const content=items.map(item=>{
    const quantity=Math.max(1,Math.floor(Number(item?.quantity)||1));
-   const photo=imageUrl(item?.image_url||item?.media_urls?.[0]);
-   const options=Array.isArray(item?.customizations)?item.customizations:[];
+   const photo=imageUrl(item?.image_url||item?.imageUrl||item?.image||item?.photo_url||item?.media_urls?.[0]||item?.mediaUrls?.[0]||item?.photos?.[0]);
+   const options=Array.isArray(item?.customizations)?item.customizations:Array.isArray(item?.summary)?item.summary:[];
    const optionsHtml=options.map(group=>{
     const values=Array.isArray(group?.values)?group.values.map(x=>String(x)).filter(Boolean):[];
-    return values.length?'<span class="owner-order-viewer-choice"><strong>'+html(group?.group||"Option")+':</strong> '+html(values.join(", "))+'</span>':"";
+    return values.length?'<span class="owner-order-viewer-choice"><strong>'+html(group?.group||group?.name||"Option")+':</strong> '+html(values.join(", "))+'</span>':"";
    }).join("");
-   const note=String(item?.note||"").trim();
-   const total=item?.line_total??(Number(item?.unit_price||0)*quantity);
-   const perItem=item?.unit_price!==undefined&&item?.unit_price!==null?'<small>'+money(item.unit_price)+' each</small>':"";
+   const note=String(item?.note||item?.special_instructions||"").trim();
+   const unitPrice=item?.unit_price??item?.unitPrice??item?.price??null;
+   const total=item?.line_total??item?.lineTotal??(Number(unitPrice||0)*quantity);
+   const eachPrice=unitPrice??(Number.isFinite(Number(total))?Number(total)/quantity:null);
+   const perItem=eachPrice!==null?'<small>'+money(eachPrice)+' each</small>':"";
    return '<div class="owner-order-viewer-item"><div class="owner-order-viewer-photo">'+(photo?'<img alt="" src="'+html(photo)+'" loading="lazy" decoding="async">':'▧')+'</div>'+
     '<div class="owner-order-viewer-item-body"><strong>'+html(quantity+" × "+String(item?.name||"Product"))+'</strong>'+optionsHtml+
     (note?'<span class="owner-order-viewer-note"><strong>Special instructions:</strong> '+html(note)+'</span>':"")+

@@ -7,6 +7,16 @@ let bookingChannel=null,bookingChannelClient=null,bookingChannelBusinessId=null,
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const labels={pending:"Pending",accepted:"Accepted",declined:"Declined",completed:"Completed"};
 const money=value=>"R"+Number(value||0).toFixed(2);
+function updateBookingNavigationBadge(){
+ const count=requests.filter(row=>row.status==="pending"||row.status==="accepted").length;
+ document.querySelectorAll('[data-owner-nav-badge="bookings"]').forEach(badge=>{
+  badge.textContent=count>99?"99+":String(count);badge.hidden=count===0;
+ });
+ document.querySelectorAll('.side-link[data-section="bookings"]').forEach(button=>{
+  const label=count?"Bookings, "+count+" active booking"+(count===1?"":"s"):"Bookings";
+  button.setAttribute("aria-label",label);button.title=label;
+ });
+}
 function resetRealtime(){
  if(bookingChannel&&bookingChannelClient)bookingChannelClient.removeChannel(bookingChannel);
  bookingChannel=null;bookingChannelClient=null;bookingChannelBusinessId=null;
@@ -29,6 +39,7 @@ function ensureRealtime(client,businessId){
   });
 }
 function render(){
+ updateBookingNavigationBadge();
  const list=$("ownerBookingsList"),empty=$("ownerBookingsEmpty"),summary=$("ownerBookingsSummary");
  const heading=$("ownerBookingsHeading"),description=$("ownerBookingsDescription"),historyButton=$("ownerBookingsHistory");
  list.replaceChildren();
@@ -100,7 +111,7 @@ async function refresh(client,business,products){
  const previousBusinessId=String(activeBusiness?.id||"");
  activeClient=client;activeBusiness=business;items=products||[];
  const businessId=String(business?.id||"");
- if(previousBusinessId&&previousBusinessId!==businessId)ownerBookingsHistoryMode=false;
+ if(previousBusinessId&&previousBusinessId!==businessId){ownerBookingsHistoryMode=false;requests=[];render()}
  if(!businessId)throw Error("Select a business to view its booking requests.");
  ensureRealtime(client,businessId);
  const sequence=++refreshSequence;

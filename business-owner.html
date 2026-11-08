@@ -142,6 +142,10 @@ h1{font-size:clamp(25px,5dvh,42px);margin:6px 0}
 .side-link.active{background:#60d6bd19;color:#76e0c8;box-shadow:inset 2px 0 #60d6bd}
 .side-link.active>span{color:#60d6bd}
 .side-link small{margin-left:auto;border-radius:20px;background:#ffffff0e;color:#7f929c;padding:2px 7px;font-size:9px}
+.side-link>span.owner-nav-badge{width:auto;min-width:18px;height:18px;margin-left:auto;padding:0 5px;display:inline-flex;align-items:center;justify-content:center;border-radius:99px;background:#dc5c59;color:#fff;font-size:10px;font-weight:850;line-height:1}
+.side-link>span.owner-nav-badge[hidden]{display:none!important}
+.side-link>span.nav-name+.owner-nav-badge{margin-left:auto}
+.side-link.active>span.owner-nav-badge{color:#fff}
 .side-spacer{flex:1;min-height:16px}
 .side-link.signout{color:#d39d9d;margin-top:7px}
 .workspace{min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain;padding:1px 4px 14px 0;scrollbar-width:thin;scrollbar-color:#31454e transparent}
@@ -717,7 +721,7 @@ html[data-theme="dark"] #itemMediaQualityNote[data-warning="true"]{color:#f4c27e
   <div class="dashboard-head"><div><span class="eyebrow">BUSINESS WORKSPACE</span><h2 id="businessTitle">Your business</h2><div class="business-switcher"><label for="businessSelect">Current business</label><select id="businessSelect" aria-label="Select business"></select><button type="button" id="createBusinessButton" class="outline-button">+ Create business</button><button type="button" id="deleteBusinessButton" class="outline-button danger-outline-button" disabled>Delete store</button></div><p class="sub" id="dashboardWelcome">Here’s your business at a glance.</p></div><div class="head-actions"><button type="button" class="theme-switch theme-switch-header" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false"><span class="theme-switch-icon" aria-hidden="true">☾</span><span class="theme-switch-label">Dark mode</span></button><button type="button" class="icon-button" id="notificationsButton" aria-label="Notifications">♧</button><button type="button" class="avatar" id="profileButton" aria-label="Business profile">SN</button></div></div>
   <div class="dashboard-layout">
     <aside class="sidebar" id="dashboardSidebar" aria-label="Business dashboard navigation">
-<div class="sidebar-group"><div class="side-label">DAILY WORKSPACE</div><button type="button" class="side-link active" data-section="overview"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span class="nav-name">Overview</span></button><button type="button" class="side-link" data-section="orders"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l1 12H4L5 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg></span><span class="nav-name">Orders</span></button><button type="button" class="side-link" data-section="bookings"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M8 14h3M14 14h3M8 17h3"/></svg></span><span class="nav-name">Bookings</span></button></div>
+<div class="sidebar-group"><div class="side-label">DAILY WORKSPACE</div><button type="button" class="side-link active" data-section="overview"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span class="nav-name">Overview</span></button><button type="button" class="side-link" data-section="orders"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l1 12H4L5 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg></span><span class="nav-name">Orders</span><span class="owner-nav-badge" data-owner-nav-badge="orders" hidden></span></button><button type="button" class="side-link" data-section="bookings"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M8 14h3M14 14h3M8 17h3"/></svg></span><span class="nav-name">Bookings</span><span class="owner-nav-badge" data-owner-nav-badge="bookings" hidden></span></button></div>
 <div class="sidebar-divider" role="separator"></div>
 <div class="sidebar-group"><div class="side-label">PERFORMANCE &amp; CUSTOMERS</div><button type="button" class="side-link" data-section="payments"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="2"/><path d="M3 9h18M16 14h3"/></svg></span><span class="nav-name">Payments &amp; Earnings</span><small class="nav-soon">Soon</small></button><button type="button" class="side-link" data-section="customers"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M17 6a3 3 0 0 1 0 6M18 15a5 5 0 0 1 3 5"/></svg></span><span class="nav-name">Customers</span></button><button type="button" class="side-link" data-section="analytics"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V12M10 20V9M16 20V13M22 20V4M3 10l6-5 5 4 7-6"/></svg></span><span class="nav-name">Analytics</span></button></div>
 <div class="sidebar-divider" role="separator"></div>
@@ -936,7 +940,7 @@ async function chooseBusiness(id){
   ownerOrdersHistoryMode=false;
   applyBusiness(found);
   businessItems=[];businessCategories=[];storefrontDraft=null;renderItems();renderCategories();updateStats();
-  await loadBusinessData();await loadStorefrontDraft();
+  await loadBusinessData();await refreshOwnerOrdersBadgeCount(await loadAuth(),found.id);await loadStorefrontDraft();
   try{localStorage.setItem(ownerBusinessKey(currentUser),found.id)}catch{}
   setDashboardSection("overview");
  }catch(error){showToast(friendlyError(error),true)}
@@ -997,8 +1001,14 @@ $("confirmDeleteBusiness").addEventListener("click",async()=>{
 async function loadBusinessData(){const client=await loadAuth();const [{data:items,error:itemsError},{data:categories,error:categoriesError}]=await Promise.all([client.from("business_items").select("*").eq("business_id",currentBusiness.id).order("display_order").order("created_at",{ascending:false}),client.from("business_categories").select("*").eq("business_id",currentBusiness.id).order("display_order").order("name")]);if(itemsError)throw itemsError;if(categoriesError)throw categoriesError;businessItems=items||[];businessCategories=categories||[];renderItems();renderCategories();updateStats();await window.StoreNestOwnerBookings.refresh(client,currentBusiness,businessItems)}
 async function activateDashboard(user){
  currentUser=user;const client=await loadAuth();const business=await ensureBusiness(client,user);applyBusiness(business);renderBusinessSelector();showView("account");
- if(business){await loadBusinessData();await loadStorefrontDraft().catch(error=>builderStatus(friendlyError(error)))}
- else{businessItems=[];businessCategories=[];storefrontDraft=null;renderItems();renderCategories();updateStats();setDashboardSection("overview")}
+ if(business){
+  await loadBusinessData();
+  await refreshOwnerOrdersBadgeCount(client,business.id);
+  await loadStorefrontDraft().catch(error=>builderStatus(friendlyError(error)));
+ }else{
+  resetOwnerOrdersRealtime();setOwnerOrdersBadgeCount(0);
+  businessItems=[];businessCategories=[];storefrontDraft=null;renderItems();renderCategories();updateStats();setDashboardSection("overview")
+ }
  /* Incomplete profiles are prompted by the overview setup banner, not a recurring login modal. */
 }
 
@@ -1573,9 +1583,36 @@ function setDashboardSection(name){
  if(name==="orders")loadBusinessOrders();
 }
 let ownerOrdersChannel=null,ownerOrdersChannelBusinessId=null,ownerOrdersRows=[],ownerOrdersHistoryMode=false;
+function setOwnerOrdersBadgeCount(value){
+ const count=Math.max(0,Math.floor(Number(value)||0));
+ document.querySelectorAll('[data-owner-nav-badge="orders"]').forEach(badge=>{
+  badge.textContent=count>99?"99+":String(count);badge.hidden=count===0;
+ });
+ document.querySelectorAll('.side-link[data-section="orders"]').forEach(button=>{
+  const label=count?"Orders, "+count+" active order"+(count===1?"":"s"):"Orders";
+  button.setAttribute("aria-label",label);button.title=label;
+ });
+}
+async function fetchOwnerOrdersBadgeCount(client,businessId){
+ const id=String(businessId||"");
+ if(!id||String(currentBusiness?.id||"")!==id){if(!id)setOwnerOrdersBadgeCount(0);return}
+ try{
+  const {count,error}=await client.from("storefront_orders").select("id",{count:"exact",head:true})
+   .eq("business_id",id).neq("status","completed").neq("status","cancelled");
+  if(error)throw error;
+  if(String(currentBusiness?.id||"")===id)setOwnerOrdersBadgeCount(count||0);
+ }catch(error){console.warn("Could not refresh this business's active order badge:",error)}
+}
+function refreshOwnerOrdersBadgeCount(client,businessId){
+ const id=String(businessId||currentBusiness?.id||"");
+ if(!id){setOwnerOrdersBadgeCount(0);return Promise.resolve()}
+ ensureOwnerOrdersRealtime(client,id);
+ return fetchOwnerOrdersBadgeCount(client,id);
+}
 function resetOwnerOrdersRealtime(client){
  if(ownerOrdersChannel)(client||authClient)?.removeChannel(ownerOrdersChannel);
  ownerOrdersChannel=null;ownerOrdersChannelBusinessId=null;ownerOrdersRows=[];
+ setOwnerOrdersBadgeCount(0);
 }
 function ensureOwnerOrdersRealtime(client,businessId){
  if(ownerOrdersChannel&&ownerOrdersChannelBusinessId===businessId)return;
@@ -1585,12 +1622,14 @@ function ensureOwnerOrdersRealtime(client,businessId){
   .on("postgres_changes",{event:"*",schema:"public",table:"storefront_orders",filter:"business_id=eq."+businessId},payload=>{
    const order=payload?.new;
    if(!order||String(order.business_id)!==String(currentBusiness?.id)||ownerOrdersChannelBusinessId!==businessId)return;
+   void fetchOwnerOrdersBadgeCount(client,businessId);
    const alreadyVisible=ownerOrdersRows.some(row=>row.id===order.id);
    ownerOrdersRows=[order,...ownerOrdersRows.filter(row=>row.id!==order.id)];
    renderBusinessOrders(ownerOrdersRows);
    if(payload.eventType==="INSERT"&&!alreadyVisible)showToast("New order request received.");
   })
   .subscribe(status=>{
+   if(status==="SUBSCRIBED")void fetchOwnerOrdersBadgeCount(client,businessId);
    if(status==="CHANNEL_ERROR"||status==="TIMED_OUT")console.warn("StoreNest order updates are temporarily unavailable:",status);
   });
 }
@@ -1600,19 +1639,19 @@ function renderBusinessOrders(rows){
  const heading=$("ownerOrdersHeading"),description=$("ownerOrdersDescription"),historyButton=$("ownerOrdersHistory");
  const businessId=String(currentBusiness?.id||"");
  const businessRows=(Array.isArray(rows)?rows:[]).filter(row=>String(row.business_id)===businessId);
- const visibleRows=businessRows.filter(row=>ownerOrdersHistoryMode?row.status==="completed":row.status!=="completed");
+ const visibleRows=businessRows.filter(row=>ownerOrdersHistoryMode?["completed","cancelled"].includes(row.status):!["completed","cancelled"].includes(row.status));
  if(heading)heading.textContent=ownerOrdersHistoryMode?"Order history":"Orders";
- if(description)description.textContent=ownerOrdersHistoryMode?"Completed orders are kept here for your records.":"Review active customer orders, item choices and payment method.";
+ if(description)description.textContent=ownerOrdersHistoryMode?"Completed and cancelled orders are kept here for your records.":"Review active customer orders, item choices and payment method.";
  if(historyButton){historyButton.textContent=ownerOrdersHistoryMode?"← Active orders":"▤ History";historyButton.setAttribute("aria-pressed",String(ownerOrdersHistoryMode))}
  if(!visibleRows.length){
   list.replaceChildren();summary.hidden=true;empty.hidden=false;
-  empty.querySelector("strong").textContent=ownerOrdersHistoryMode?"No completed orders yet":"No active orders";
-  empty.querySelector("p").textContent=ownerOrdersHistoryMode?"Orders will appear here after you mark them collected.":"New customer orders will appear here after checkout. Completed orders are available in History.";
+  empty.querySelector("strong").textContent=ownerOrdersHistoryMode?"No past orders yet":"No active orders";
+  empty.querySelector("p").textContent=ownerOrdersHistoryMode?"Completed and cancelled orders are kept in History.":"New customer orders will appear here after checkout. Completed and cancelled orders are available in History.";
   return;
  }
  const newCount=visibleRows.filter(row=>row.status==="new").length;
  summary.textContent=ownerOrdersHistoryMode
-  ?visibleRows.length+" completed order"+(visibleRows.length===1?"":"s")
+  ?visibleRows.length+" past order"+(visibleRows.length===1?"":"s")
   :visibleRows.length+" active order"+(visibleRows.length===1?"":"s")+" · "+newCount+" awaiting acceptance";
  summary.hidden=false;empty.hidden=true;
  const orderStatus={new:"Awaiting acceptance",accepted:"Order received",preparing:"In progress",prepared:"Prepared",ready:"Ready for collection",completed:"Collected",cancelled:"Cancelled"};
@@ -1674,6 +1713,7 @@ async function advanceStorefrontOrder(orderId,nextStatus,button){
   if(!updated)throw new Error("The order did not update. Refresh and try again.");
   ownerOrdersRows=ownerOrdersRows.map(row=>row.id===orderId?{...row,status:updated.status,updated_at:updated.updated_at}:row);
   renderBusinessOrders(ownerOrdersRows);
+  void fetchOwnerOrdersBadgeCount(client,currentBusiness.id);
   const labels={accepted:"Order accepted.",preparing:"Preparation started.",prepared:"Order marked prepared.",ready:"Marked ready for collection."};
   showToast(labels[nextStatus]||"Order updated.");
  }catch(error){
@@ -1701,6 +1741,7 @@ async function verifyStorefrontOrderCollectionPin(orderId,button){
   }
   ownerOrdersRows=ownerOrdersRows.map(row=>row.id===orderId?{...row,status:result.status||"completed",updated_at:result.updated_at||new Date().toISOString()}:row);
   renderBusinessOrders(ownerOrdersRows);
+  void fetchOwnerOrdersBadgeCount(client,currentBusiness.id);
   showToast("PIN verified. Order marked collected.");
  }catch(error){
   console.error("StoreNest collection PIN verification failed:",error);
@@ -1717,6 +1758,7 @@ async function loadBusinessOrders(){
  try{
   const client=await loadAuth();
   ensureOwnerOrdersRealtime(client,businessId);
+  void fetchOwnerOrdersBadgeCount(client,businessId);
   const fetched=[],pageSize=500;
   for(let offset=0;;offset+=pageSize){
    const {data,error}=await client.from("storefront_orders")
@@ -1741,6 +1783,9 @@ async function loadBusinessOrders(){
  }finally{if(refresh)refresh.disabled=false}
 }
 $("ownerOrdersRefresh").addEventListener("click",loadBusinessOrders);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&currentBusiness&&authClient)void fetchOwnerOrdersBadgeCount(authClient,currentBusiness.id)});
+setInterval(()=>{if(document.visibilityState==="visible"&&currentBusiness&&authClient)void fetchOwnerOrdersBadgeCount(authClient,currentBusiness.id)},45000);
+
 $("ownerOrdersHistory").addEventListener("click",()=>{ownerOrdersHistoryMode=!ownerOrdersHistoryMode;renderBusinessOrders(ownerOrdersRows)});
 $("ownerOrdersList").addEventListener("click",event=>{
  const verifyButton=event.target.closest("[data-verify-collection-pin]");
