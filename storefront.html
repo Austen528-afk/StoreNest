@@ -528,6 +528,12 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
 
 /* Product options sit below the original price/Add row, with the running total in the fixed footer. */
 #galleryCustomization[hidden]{display:none!important}
+.gallery-fashion-colors{padding:14px 20px 16px;border-top:1px solid #e7ebe8;background:var(--canvas,#fff)}
+.gallery-fashion-colors-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;color:var(--ink,#21382b);font-size:13px}
+.gallery-fashion-colors-heading span{color:#64746a;font-size:12px;font-weight:600}
+.gallery-fashion-color-options{display:flex;flex-wrap:wrap;gap:8px}
+.gallery-fashion-color-option{min-height:36px;padding:7px 13px;border:1px solid #d7e0da;border-radius:999px;background:#fff;color:#34473b;font-size:12px;font-weight:700;cursor:pointer}
+.gallery-fashion-color-option[aria-checked="true"]{border-color:#28a27d;background:#e6f7ef;color:#17684d;box-shadow:0 0 0 1px #28a27d inset}
 .gallery-customization{padding:16px 20px 21px;border-top:1px solid #e7ebe8;background:var(--canvas,#fff)}
 .gallery-customization h3{font-size:17px;letter-spacing:-.025em;margin:0 0 4px;color:var(--ink,#1d2d26)}
 .gallery-customize-help{font-size:12px;color:#6d7a71;margin:0 0 14px}
@@ -1221,6 +1227,7 @@ body[data-store-category="fashion"] #catalog .art:has(img) img{
   <div class="gallery-stage"><div id="galleryTrack" class="gallery-track" role="region" aria-label="Product photos" aria-roledescription="carousel" tabindex="0"></div><div id="galleryOverlayPager" class="gallery-overlay-pager" role="group" aria-label="Media gallery navigation"></div></div>
   <div id="galleryBookingDetails" class="gallery-booking-details"><p id="galleryDescription" class="gallery-description"></p><div id="galleryServiceFee" class="gallery-service-fee" hidden></div></div>
   <div id="galleryProductActionRow" class="gallery-product-action-row" hidden><strong id="galleryProductPrice" class="gallery-price"></strong></div>
+  <div id="galleryFashionColors" class="gallery-fashion-colors" hidden><div class="gallery-fashion-colors-heading"><strong>Colour</strong><span id="galleryFashionColorSelected"></span></div><div id="galleryFashionColorOptions" class="gallery-fashion-color-options" role="radiogroup" aria-label="Choose a colour"></div></div>
   <div id="galleryCustomization" class="gallery-customization" hidden>
    <div id="galleryChoiceGroups"></div>
    <label class="gallery-notes-label">Special instructions (optional)<textarea id="galleryNotes" maxlength="200" rows="2" placeholder="e.g. No onions, less salt"></textarea></label>
@@ -1236,8 +1243,9 @@ body[data-store-category="fashion"] #catalog .art:has(img) img{
 <script>
 "use strict";
 const CONFIG={url:"https://cypbjzbagezdelmemuhb.supabase.co",key:"sb_publishable_8W8zyYtggQMWoFlnxrzoVA_BUKjQ9va"};
+const FASHION_COLOR_GROUP_ID="fashion-color";
 const cart=new Map();
-let storefrontClient=null,availableItems=[],toastTimer=null,activeGalleryItem=null,galleryIndex=0,galleryReturnFocus=null,activePublicBusiness=null,galleryEditCartKey=null,activeGalleryDecorSetId=null,activePublicSections=[];
+let storefrontClient=null,availableItems=[],toastTimer=null,activeGalleryItem=null,galleryIndex=0,galleryReturnFocus=null,activePublicBusiness=null,galleryEditCartKey=null,activeGalleryDecorSetId=null,activeGalleryFashionColorId=null,activePublicSections=[];
 let checkoutPendingCode=null,checkoutVerifiedUser=null,checkoutVerifiedProfile=null,checkoutPendingPassword="",checkoutAuthMode="signup";
 const $=id=>document.getElementById(id);
 const returnCategoryId=new URLSearchParams(location.search).get("returnCategory");
@@ -1286,15 +1294,43 @@ function storefrontDecorColorSets(item){
  }
  return entries.length?[{id:"legacy-media",name:"Colour set",description:"",entries}]:[];
 }
+function storefrontFashionColorSets(item){
+ const entries=galleryMediaEntries(item),byUrl=new Map(entries.map(entry=>[entry.url,entry]));
+ const source=Array.isArray(item?.fashion_color_sets)?item.fashion_color_sets:[];
+ const sets=source.map((set,index)=>{
+  const urls=(Array.isArray(set?.media_urls)?set.media_urls:[]).map(value=>typeof value==="string"?value:value?.url).filter(url=>typeof url==="string");
+  return {id:String(set?.id||"fashion-colour-"+(index+1)),name:String(set?.name||"").trim()||"Colour "+(index+1),entries:urls.map(url=>byUrl.get(url)).filter(Boolean)};
+ }).filter(set=>set.entries.length);
+ if(sets.length){
+  const assigned=new Set(sets.flatMap(set=>set.entries.map(entry=>entry.url)));
+  sets[0].entries.push(...entries.filter(entry=>!assigned.has(entry.url)));
+  return sets;
+ }
+ return entries.length?[{id:"fashion-default-colour",name:"Colour 1",entries}]:[];
+}
+function isStorefrontFashionProduct(item){return window.StoreNestCategoryId?.(activePublicBusiness?.category)==="fashion"&&item?.item_type==="product"}
+function isStorefrontFashionOffering(item){return isStorefrontFashionProduct(item)&&storefrontFashionColorSets(item).length>1}
 function galleryViewEntries(item){
  if(isStorefrontDecorOffering(item)){
   const sets=storefrontDecorColorSets(item);
   if(sets.length)return sets.flatMap(set=>set.entries.map(entry=>({...entry,decorPhotoSetId:set.id,decorPhotoSetName:set.name,decorPhotoSetDescription:set.description})));
  }
+ if(isStorefrontFashionProduct(item)){
+  const sets=storefrontFashionColorSets(item);
+  if(sets.length)return sets.flatMap(set=>set.entries.map(entry=>({...entry,fashionColorId:set.id,fashionColorName:set.name})));
+ }
  return galleryMediaEntries(item);
 }
-function galleryPhotos(item){return galleryViewEntries(item).map(entry=>entry.url)}
-function galleryMediaEntry(item,url){return galleryViewEntries(item).find(entry=>entry.url===url)||{url,width:0,height:0,variants:[]}}
+function galleryModalEntries(item){
+ const entries=galleryViewEntries(item);
+ if(item===activeGalleryItem&&isStorefrontFashionOffering(item)&&activeGalleryFashionColorId){
+  const selected=storefrontFashionColorSets(item).find(set=>set.id===activeGalleryFashionColorId);
+  if(selected)return selected.entries.map(entry=>({...entry,fashionColorId:selected.id,fashionColorName:selected.name}));
+ }
+ return entries;
+}
+function galleryPhotos(item){return galleryModalEntries(item).map(entry=>entry.url)}
+function galleryMediaEntry(item,url){return galleryModalEntries(item).find(entry=>entry.url===url)||{url,width:0,height:0,variants:[]}}
 function catalogMediaSrcset(entry){
  const candidates=(entry?.variants||[]).map(variant=>({url:safeUrl(variant.url),width:Number(variant.width)||0})).filter(candidate=>candidate.url&&candidate.width>0);
  if(entry?.width>0&&safeUrl(entry.url))candidates.push({url:safeUrl(entry.url),width:Number(entry.width)});
@@ -1398,7 +1434,9 @@ function restoreTrackedOrderFromUrl(){
 function renderCart(){
  const rows=[...cart.entries()].map(([key,row])=>({key,row,item:availableItems.find(i=>i.id===row.itemId)})).filter(entry=>entry.item);
  $("cartItems").innerHTML=rows.length?rows.map(({key,row,item})=>{
-  const photoEntry=galleryMediaEntries(item).find(entry=>!isProductVideo(entry.url)),photo=photoEntry?.url||"";
+  const colorId=row.selection?.[FASHION_COLOR_GROUP_ID]?.[0];
+  const colorSet=colorId?storefrontFashionColorSets(item).find(set=>set.id===colorId):null;
+  const photoEntry=(colorSet?.entries||galleryMediaEntries(item)).find(entry=>!isProductVideo(entry.url)),photo=photoEntry?.url||"";
   return '<div class="cart-item">'+
    '<button type="button" class="cart-item-photo" data-cart-action="edit" data-key="'+esc(key)+'" aria-label="Edit order options for '+esc(item.name)+'">'+
    (photo?'<img src="'+esc(photo)+'"'+catalogResponsiveAttributes(photoEntry,"64px")+' alt="'+esc(item.name)+'" loading="lazy" decoding="async">':'<span aria-hidden="true">▧</span>')+
@@ -1758,8 +1796,26 @@ function updateGalleryPosition(){
  });
 }
 
+function renderGalleryFashionColors(item,initialId=null){
+ const root=$("galleryFashionColors"),options=$("galleryFashionColorOptions"),sets=isStorefrontFashionOffering(item)?storefrontFashionColorSets(item):[];
+ root.hidden=!sets.length;options.replaceChildren();
+ if(!sets.length){$("galleryFashionColorSelected").textContent="";return}
+ const selected=sets.find(set=>set.id===initialId)||sets[0];activeGalleryFashionColorId=selected.id;
+ $("galleryFashionColorSelected").textContent=selected.name;
+ options.innerHTML=sets.map(set=>'<button type="button" class="gallery-fashion-color-option" role="radio" aria-checked="' +(set.id===selected.id?'true':'false')+'" data-fashion-color-id="' +esc(set.id)+'">' +esc(set.name)+'</button>').join("");
+}
+$("galleryFashionColorOptions").addEventListener("click",event=>{
+ const button=event.target.closest("[data-fashion-color-id]");if(!button||!activeGalleryItem)return;
+ const selected=storefrontFashionColorSets(activeGalleryItem).find(set=>set.id===button.dataset.fashionColorId);if(!selected)return;
+ activeGalleryFashionColorId=selected.id;
+ $("galleryFashionColorSelected").textContent=selected.name;
+ $("galleryFashionColorOptions").querySelectorAll("[data-fashion-color-id]").forEach(option=>option.setAttribute("aria-checked",option.dataset.fashionColorId===selected.id?"true":"false"));
+ galleryIndex=0;renderGallerySlides();
+ const photos=galleryPhotos(activeGalleryItem);if(photos.length)showGalleryImage("auto");else updateGalleryPosition();
+ updateGalleryOptionsPrice();
+});
 function renderGallerySlides(){
- const entries=galleryViewEntries(activeGalleryItem),media=entries.map(entry=>entry.url),track=$("galleryTrack"),dots=$("galleryDots");
+ const entries=galleryModalEntries(activeGalleryItem),media=entries.map(entry=>entry.url),track=$("galleryTrack"),dots=$("galleryDots");
  track.replaceChildren();dots.replaceChildren();track.scrollLeft=0;
  media.forEach((url,i)=>{
   const isVideo=isProductVideo(url),slide=document.createElement("div");
@@ -1850,7 +1906,7 @@ function renderGalleryScale(group){
 }
 function renderGalleryOptions(item,initialSelection={}){
  const container=$("galleryCustomization"),list=$("galleryChoiceGroups");
- const groups=window.StoreNestBookings.isBookingOffer(item,activePublicBusiness)?[]:window.StoreNestOptions.normalize(item.customization_options);
+ const groups=window.StoreNestBookings.isBookingOffer(item,activePublicBusiness)?[]:window.StoreNestOptions.normalize(item.customization_options).filter(group=>group.id!==FASHION_COLOR_GROUP_ID);
  galleryOptionSelections={};
  container.hidden=!groups.length;
  $("galleryOptionsError").hidden=true;
@@ -1899,9 +1955,14 @@ function renderGalleryOptions(item,initialSelection={}){
  }
 }
 
+function gallerySelectionForQuote(){
+ const selection=copyProductSelection(galleryOptionSelections);
+ if(isStorefrontFashionOffering(activeGalleryItem)&&activeGalleryFashionColorId)selection[FASHION_COLOR_GROUP_ID]=[activeGalleryFashionColorId];
+ return selection;
+}
 function updateGalleryOptionsPrice(){
  if(!activeGalleryItem)return;
- const quote=window.StoreNestOptions.quote(activeGalleryItem,galleryOptionSelections);
+ const quote=window.StoreNestOptions.quote(activeGalleryItem,gallerySelectionForQuote());
  $("galleryTotal").textContent=money(quote.total);
 }
 $("galleryChoiceGroups").addEventListener("change",event=>{
@@ -1944,6 +2005,10 @@ function openProductGallery(id,trigger,cartKey=null){
  const isDecorBooking=isBookingOffer&&window.StoreNestCategoryId(activePublicBusiness?.category)==="events-decor";
  const editRow=cartKey?cart.get(cartKey):null;
  activeGalleryItem=item;galleryReturnFocus=trigger;galleryIndex=0;galleryEditCartKey=editRow?cartKey:null;
+ const availableFashionColors=isStorefrontFashionOffering(item)?storefrontFashionColorSets(item):[];
+ const savedFashionColorId=editRow?.selection?.[FASHION_COLOR_GROUP_ID]?.[0];
+ activeGalleryFashionColorId=availableFashionColors.some(set=>set.id===savedFashionColorId)?savedFashionColorId:(availableFashionColors[0]?.id||null);
+ renderGalleryFashionColors(item,activeGalleryFashionColorId);
  const availableDecorSets=isStorefrontDecorOffering(item)?storefrontDecorColorSets(item):[];
  const requestedDecorSet=trigger?.dataset?.decorSetId;
  activeGalleryDecorSetId=availableDecorSets.some(set=>set.id===requestedDecorSet)?requestedDecorSet:(Array.isArray(item.decor_color_sets)&&item.decor_color_sets.length?availableDecorSets[0]?.id||null:null);
@@ -1992,7 +2057,7 @@ function selectDecorColorSetOnCard(card,item,set){
  if(width)track.scrollTo({left:targetIndex*width,behavior:"smooth"});
 }
 
-function closeProductGallery(){$("galleryTrack").querySelectorAll("video").forEach(video=>{video.pause();video.removeAttribute("src");video.load()});$("galleryTrack").replaceChildren();$("galleryDialog").hidden=true;document.body.style.overflow="";activeGalleryItem=null;activeGalleryDecorSetId=null;galleryEditCartKey=null;galleryReturnFocus?.focus()}
+function closeProductGallery(){$("galleryTrack").querySelectorAll("video").forEach(video=>{video.pause();video.removeAttribute("src");video.load()});$("galleryTrack").replaceChildren();$("galleryDialog").hidden=true;document.body.style.overflow="";activeGalleryItem=null;activeGalleryDecorSetId=null;activeGalleryFashionColorId=null;galleryEditCartKey=null;galleryReturnFocus?.focus()}
 $("galleryClose").addEventListener("click",closeProductGallery);
 $("galleryDialog").addEventListener("click",event=>{if(event.target===$("galleryDialog"))closeProductGallery()});
 
@@ -2002,7 +2067,8 @@ function handleGalleryAdd(){
  if(window.StoreNestBookings.isBookingOffer(item,activePublicBusiness)){const selectedSet=isStorefrontDecorOffering(item)?storefrontDecorColorSets(item).find(set=>set.id===activeGalleryDecorSetId):null;closeProductGallery();window.StoreNestBookings.open(item,trigger,{decorColorSetName:selectedSet?.name||""});return}
  const editingKey=galleryEditCartKey;
  const note=editingKey!==null?$("galleryNotes").value:($("galleryCustomization").hidden?"":$("galleryNotes").value);
- const quote=editingKey?updateCartProduct(editingKey,item,galleryOptionSelections,note):addProductToCart(item,galleryOptionSelections,note);
+ const selection=gallerySelectionForQuote();
+ const quote=editingKey?updateCartProduct(editingKey,item,selection,note):addProductToCart(item,selection,note);
  if(!quote.valid){
   $("galleryOptionsError").hidden=false;
   $("galleryOptionsError").textContent=quote.error?.message||"Choose your options.";
@@ -2450,7 +2516,7 @@ async function load(){
    }
    // Catalogue and category metadata are independent once the business ID is known.
    const [catalog,sectionResult]=await Promise.all([
-     client.from("business_items").select("id,name,item_type,description,price,price_range_min,price_range_max,booking_fee,booking_fee_min,booking_fee_max,image_url,media_urls,decor_color_sets,category_id,customization_options").eq("business_id",business.id).eq("is_available",true).order("display_order").order("created_at",{ascending:false}),
+     client.from("business_items").select("id,name,item_type,description,price,price_range_min,price_range_max,booking_fee,booking_fee_min,booking_fee_max,image_url,media_urls,decor_color_sets,fashion_color_sets,category_id,customization_options").eq("business_id",business.id).eq("is_available",true).order("display_order").order("created_at",{ascending:false}),
      client.from("business_categories").select("id,name,description,display_style,display_order").eq("business_id",business.id).order("display_order").order("name")
    ]);
    if(catalog.error)throw catalog.error;
