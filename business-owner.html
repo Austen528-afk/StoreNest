@@ -568,6 +568,7 @@ html[data-theme="dark"] #itemOptionsEditor small{color:#afc4b6}
 </style>
 <link rel="stylesheet" href="/theme.css">
 <link rel="stylesheet" href="/owner-bookings.css">
+<link rel="stylesheet" href="/owner-order-viewer.css">
 <script src="/theme.js"></script>
 <script src="/categories.js"></script>
 <script src="/product-customization.js"></script>
@@ -754,6 +755,12 @@ html[data-theme="dark"] #itemMediaQualityNote[data-warning="true"]{color:#f4c27e
     </main>
   </div>
   <div class="mobile-nav-backdrop" id="mobileNavBackdrop" hidden></div>
+  <div id="ownerOrderViewer" class="owner-order-viewer-overlay" hidden>
+    <section class="owner-order-viewer-dialog" role="dialog" aria-modal="true" aria-labelledby="ownerOrderViewerTitle">
+      <header class="owner-order-viewer-head"><div><small>ORDER DETAILS</small><h2 id="ownerOrderViewerTitle">Order</h2></div><button type="button" id="ownerOrderViewerClose" class="owner-order-viewer-close" aria-label="Close order details">×</button></header>
+      <div class="owner-order-viewer-scroll" id="ownerOrderViewerScroll"><div id="ownerOrderViewerBody"></div></div>
+    </section>
+  </div>
   <div class="modal-backdrop" id="profileModal" hidden><div class="modal-card profile-setup-modal" role="dialog" aria-modal="true" aria-labelledby="setupTitle"><div class="modal-head"><div><span class="eyebrow">YOUR STOREFRONT STARTS HERE</span><h3 id="setupTitle">Set up your business</h3></div><button class="close-modal" type="button" data-close-modal aria-label="Close">×</button></div><p class="modal-subtitle">Share the details customers need to recognize and contact your business.</p><form id="setupForm" class="business-form"><div class="form-grid"><div class="field"><label for="setupName">Business name <em>*</em></label><input id="setupName" maxlength="120" required placeholder="e.g. Dineo’s Kitchen"></div><div class="field"><label for="setupCategory">Business category <em>*</em></label><select id="setupCategory" required><option value="">Choose a category</option></select><small class="category-help">Choose the main StoreNest marketplace category for your business. You can still sell different products and services.</small></div><div class="field full-field"><label for="setupDescription">Business description</label><textarea id="setupDescription" maxlength="500" rows="3" placeholder="Tell customers what you offer"></textarea></div><div class="field"><label for="setupLocation">Location</label><input id="setupLocation" placeholder="Town, province"></div><div class="field"><label for="setupPhone">Contact number</label><input id="setupPhone" type="tel" placeholder="e.g. 060 000 0000"></div><div class="field"><label for="setupEmail">Contact email</label><input id="setupEmail" type="email" placeholder="Business email"></div><div class="field"><label for="setupWebsite">Website or social link</label><input id="setupWebsite" type="url" placeholder="https://"></div><div class="field"><label for="setupHours">Operating hours</label><input id="setupHours" placeholder="e.g. Mon–Sat, 08:00–17:00"></div></div><div class="message" id="setupMessage" role="status" aria-live="polite" hidden></div><div class="modal-actions"><button class="outline-button" type="button" data-close-modal>Do this later</button><button class="primary-button" type="submit">Save and continue <span>→</span></button></div></form></div></div>
   <div class="modal-backdrop" id="itemModal" hidden><div class="modal-card item-modal" role="dialog" aria-modal="true" aria-labelledby="itemModalTitle"><div class="modal-head"><div><span class="eyebrow">YOUR CATALOGUE</span><h3 id="itemModalTitle">Add an item</h3></div><button class="close-modal" type="button" data-close-modal aria-label="Close">×</button></div><p id="itemModalSubtitle" class="modal-subtitle">Add a product or service to your business catalogue.</p><form id="itemForm" class="business-form"><input type="hidden" id="itemId"><div class="form-grid"><div class="field"><label for="itemType">Item type <em>*</em></label><select id="itemType"><option value="product">Product</option><option value="service">Service</option></select></div><div class="field"><label for="itemName">Name <em>*</em></label><input id="itemName" maxlength="120" required placeholder="e.g. Kota combo"></div><div class="field" id="itemPriceField"><label for="itemPrice">Price (ZAR) <em>*</em></label><div class="price-input"><span>R</span><input id="itemPrice" type="number" min="0" step="0.01" required placeholder="0.00"></div><small id="itemPriceHelp" class="item-price-help" hidden>Calculated from the size prices below. Store listings show the lowest price.</small></div>
 <div id="bookingPricingFields" class="booking-pricing-fields full-field" hidden>
@@ -1642,13 +1649,14 @@ function renderBusinessOrders(rows){
   const paymentNote=order.payment_method==="card"&&order.payment_status==="pending"
    ?'<small class="owner-order-payment-note">Preview only: no card payment was processed.</small>'
    :order.payment_method==="pay_on_collection"?'<small>Customer pays when collecting.</small>':"";
-  return '<article class="owner-order-card">'+
+  return '<article class="owner-order-card" data-owner-order-view="'+escapeHtml(order.id)+'" role="button" tabindex="0" aria-label="View full details for order '+escapeHtml(ref)+'">'+
    '<div class="owner-order-header"><div><div class="owner-order-ref">Order #'+escapeHtml(ref)+'</div><div class="owner-order-date">'+escapeHtml(submitted)+'</div></div>'+
    '<div class="owner-order-badges"><span class="owner-order-badge '+statusClass+'">'+escapeHtml(status)+'</span><span class="owner-order-badge '+paymentClass+'">'+escapeHtml(payment)+'</span></div></div>'+
    '<div class="owner-order-customer"><strong>'+escapeHtml(order.customer_name||"Customer")+'</strong>'+contacts.join("")+'</div>'+
    '<ul class="owner-order-lines">'+lines+'</ul>'+
    '<div class="owner-order-bottom"><div class="owner-order-payment"><span>'+escapeHtml(method)+'</span>'+paymentNote+'</div><strong class="owner-order-total">'+formatOrderMoney(order.subtotal)+'</strong></div>'+
    actionMarkup+
+   '<div class="owner-order-view-trigger"><span>Click to view full order</span><span aria-hidden="true">›</span></div>'+
    '</article>';
  }).join("");
 }
@@ -2302,5 +2310,6 @@ if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.ser
 
 document.getElementById("pageRefreshButton")?.addEventListener("click",()=>window.location.reload());
 </script>
+<script src="/owner-order-viewer.js"></script>
 </body>
 </html>
