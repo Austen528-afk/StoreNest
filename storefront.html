@@ -685,6 +685,9 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
 #galleryDialog.gallery-booking-style .gallery-dots{position:absolute;left:0;right:0;bottom:13px;justify-content:center;pointer-events:auto}
 #galleryDialog.gallery-booking-style .gallery-dots button{background:#fffD;box-shadow:0 1px 5px #0005}
 #galleryDialog.gallery-booking-style .gallery-dots button.active{background:var(--accent,#27856d)}
+/* Keep fashion photo dots directly over the photo with no backing panel or frame. */
+#galleryDialog.gallery-fashion-style .gallery-overlay-pager{position:absolute;inset:0;display:block;z-index:3;pointer-events:none;background:transparent;border:0}
+#galleryDialog.gallery-fashion-style .gallery-dots{position:absolute;left:0;right:0;bottom:12px;justify-content:center;pointer-events:auto;background:transparent;border:0;box-shadow:none}
 #galleryDialog.gallery-booking-style .gallery-booking-details{display:block;padding:17px 22px 0;background:var(--canvas,#f8f6f1);border-top:1px solid var(--border,#e8e1d6)}
 #galleryDialog.gallery-booking-style .gallery-description{margin:0;padding:0;font-size:15px;line-height:1.65;color:var(--ink,#342e27)}
 #galleryDialog.gallery-booking-style .gallery-description:empty{display:none}
@@ -2338,6 +2341,7 @@ function openProductGallery(id,trigger,cartKey=null){
  }
  $("galleryDialog").classList.toggle("gallery-booking-style",isDecorBooking);
  $("galleryDialog").classList.toggle("gallery-photo-only",isDecorBooking);
+ $("galleryDialog").classList.toggle("gallery-fashion-style",isStorefrontFashionProduct(item));
  const bookingFee=isBookingOffer?window.StoreNestBookings.bookingFeeLabel(item,activePublicBusiness):"";
  $("galleryTitle").textContent=item.name;
  const galleryDescription=$("galleryDescription");galleryDescription.textContent=item.description||"";galleryDescription.hidden=!String(item.description||"").trim();
@@ -2346,7 +2350,11 @@ function openProductGallery(id,trigger,cartKey=null){
  $("galleryBookingDetails").hidden=isDecorBooking&&!String(item.description||"").trim()&&!bookingFee;
  const galleryBottom=$("galleryBottom"),overlayPager=$("galleryOverlayPager");
  if(isDecorBooking)overlayPager.append($("galleryPosition"),$("galleryDots"));
- else galleryBottom.prepend($("galleryPosition"),$("galleryDots"));
+ else{
+  galleryBottom.prepend($("galleryPosition"));
+  if(isStorefrontFashionProduct(item))overlayPager.append($("galleryDots"));
+  else galleryBottom.prepend($("galleryDots"));
+ }
  $("galleryProductActionRow").hidden=isBookingOffer;
  $("galleryServiceActionRow").hidden=!isBookingOffer;
  $("galleryTotalBar").hidden=isBookingOffer;
