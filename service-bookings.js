@@ -1,7 +1,7 @@
 /* Customer-side StoreNest service booking requests: no charges, no basket. */
 (function(){
 "use strict";
-let client=null,business=null,activeItem=null,returnFocus=null,activeDecorColorSetName="";
+let client=null,business=null,activeItem=null,returnFocus=null,activeDecorColorSetName="",activeBookingOptions=[],activeBookingOptionSurcharge=0,activeBookingEstimatedPrice=null;
 const $=id=>document.getElementById(id);
 const money=value=>"R"+Number(value||0).toFixed(2);
 const isService=item=>item?.item_type==="service";
@@ -93,11 +93,26 @@ async function prefillBookingCustomerDetails(form,requestId){
 function open(item,trigger,options={}){
  if(!isBookingOffer(item,business)||!client||!business)return;
  activeItem=item;returnFocus=trigger||null;activeDecorColorSetName=String(options?.decorColorSetName||"").trim().slice(0,80);
+ activeBookingOptions=(Array.isArray(options?.selectedOptions)?options.selectedOptions:[]).slice(0,12).map(row=>({
+  group:String(row?.group||"").trim().slice(0,75),
+  values:(Array.isArray(row?.values)?row.values:[]).slice(0,8).map(value=>String(value||"").trim().slice(0,75)).filter(Boolean),
+  price:Number.isFinite(Number(row?.price))&&Number(row?.price)>0?Number(row.price):0
+ })).filter(row=>row.group&&row.values.length);
+ activeBookingOptionSurcharge=Number.isFinite(Number(options?.optionSurcharge))&&Number(options.optionSurcharge)>0?Number(options.optionSurcharge):0;
+ activeBookingEstimatedPrice=Number.isFinite(Number(options?.estimatedPrice))&&Number(options.estimatedPrice)>=0?Number(options.estimatedPrice):null;
  const requestId=++bookingPrefillRequest;
  const form=$("bookingRequestForm");form.reset();form.hidden=false;
  $("bookingSuccess").hidden=true;$("bookingFormError").hidden=true;
  $("bookingPackageName").textContent=item.name;
- $("bookingPackagePrice").textContent=priceLabel(item);
+ const baseLabel=priceLabel(item),selectionBox=$("bookingPackageOptions"),optionPrice=$("bookingPackageOptionPrice");
+ selectionBox.hidden=!activeBookingOptions.length;
+ selectionBox.textContent=activeBookingOptions.length?"Selected: "+activeBookingOptions.map(row=>row.group+": "+row.values.join(", ")+(row.price>0?" (+"+money(row.price)+")":"")).join(" · "):"";
+ optionPrice.hidden=!activeBookingOptions.length;
+ optionPrice.textContent=activeBookingOptions.length?"Includes "+money(activeBookingOptionSurcharge)+" in selected option extras": "";
+ $("bookingPackagePrice").textContent=activeBookingOptions.length&&activeBookingEstimatedPrice!==null
+  ? "Estimated from "+money(activeBookingEstimatedPrice)+" · "+baseLabel+" base"
+  : baseLabel;
+ form.elements.namedItem("notes").value=String(options?.specialInstructions||"").slice(0,1500);
  const feeText=bookingFeeLabel(item),fee=$("bookingPackageFee");fee.textContent=feeText;fee.hidden=!feeText;
  const date=form.elements.namedItem("event_date");
  date.min=todayLocalDate();date.value="";
@@ -108,7 +123,7 @@ function open(item,trigger,options={}){
 function close(){
  bookingPrefillRequest++;
  $("bookingBackdrop").hidden=true;document.body.style.overflow="";
- activeItem=null;activeDecorColorSetName="";returnFocus?.focus();returnFocus=null;
+ activeItem=null;activeDecorColorSetName="";activeBookingOptions=[];activeBookingOptionSurcharge=0;activeBookingEstimatedPrice=null;returnFocus?.focus();returnFocus=null;
 }
 for(const id of ["bookingClose","bookingCancel","bookingDone"])$(id).addEventListener("click",close);
 $("bookingBackdrop").addEventListener("click",e=>{if(e.target===$("bookingBackdrop"))close()});
@@ -130,7 +145,14 @@ $("bookingRequestForm").addEventListener("submit",async e=>{
    event_date:String(d.get("event_date")||""),
    event_location:String(d.get("event_location")||"").trim(),
    guest_count:d.get("guest_count")?Number(d.get("guest_count")):null,
-   notes:activeDecorColorSetName?"Selected décor colour set: "+activeDecorColorSetName+(String(d.get("notes")||"").trim()?"\n\n"+String(d.get("notes")||"").trim():""):String(d.get("notes")||"").trim()
+   notes:(()=>{
+    const optionLines=activeBookingOptions.map(row=>row.group+": "+row.values.join(", ")+(row.price>0?" (+"+money(row.price)+")":""));
+    const selectionNotes=optionLines.length?"Selected service options:\n"+optionLines.join("\n"):"";
+    const estimateNotes=activeBookingOptions.length&&activeBookingEstimatedPrice!==null?"Estimated from selected options: "+money(activeBookingEstimatedPrice):"";
+    const prefix=[activeDecorColorSetName?"Selected décor colour set: "+activeDecorColorSetName:"",selectionNotes,estimateNotes].filter(Boolean).join("\n\n").slice(0,900);
+    const customerNotes=String(d.get("notes")||"").trim();
+    return (prefix+(prefix&&customerNotes?"\n\n":"")+customerNotes.slice(0,Math.max(0,1500-prefix.length-(prefix&&customerNotes?2:0)))).slice(0,1500);
+   })()
   };
   // The account ID is verified by Supabase RLS; guests retain a private tracking token on this device.
   let userId=null;
@@ -156,6 +178,7 @@ $("bookingRequestForm").addEventListener("submit",async e=>{
    customerName:payload.customer_name,contactPhone:payload.contact_phone,contactEmail:payload.contact_email,
    eventDate:payload.event_date,eventLocation:payload.event_location,
    guestCount:payload.guest_count==null?"":String(payload.guest_count),notes:payload.notes,
+   selectedOptions:activeBookingOptions,estimatedPrice:activeBookingEstimatedPrice,
    createdAt:new Date().toISOString(),status:"pending"
   },userId);
   window.dispatchEvent(new Event("storenest:booking-created"));

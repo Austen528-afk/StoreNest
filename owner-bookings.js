@@ -102,7 +102,7 @@ function render(){
    (pricing.length?'<div><small>Booking pricing</small><strong>'+esc(pricing.join(" · "))+'</strong></div>':'')+
    (r.guest_count?'<div><small>Estimated guests</small><strong>'+esc(r.guest_count)+'</strong></div>':'')+
    '</div>'+
-   (r.notes?'<div class="booking-request-notes"><small>Special requirements</small><p>'+esc(r.notes)+'</p></div>':'')+
+   (r.notes?'<div class="booking-request-notes"><small>Selections &amp; requirements</small><p>'+esc(r.notes)+'</p></div>':'')+
    (actions?'<div class="booking-request-actions">'+actions+'</div>':'');
   list.append(card);
  }

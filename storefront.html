@@ -1232,7 +1232,7 @@ body[data-store-category="fashion"] #catalog .art:has(img) img{
 <div id="bookingBackdrop" class="booking-backdrop" hidden>
  <section class="booking-panel" role="dialog" aria-modal="true" aria-labelledby="bookingTitle">
   <div class="booking-top"><div><small>BOOKING ENQUIRY</small><h2 id="bookingTitle">Request a booking</h2><p>Tell the business about your event. No payment is required.</p></div><button type="button" id="bookingClose" class="booking-close" aria-label="Close booking request">×</button></div>
-  <div class="booking-package"><strong id="bookingPackageName"></strong><div class="booking-package-values"><span id="bookingPackagePrice"></span><span id="bookingPackageFee" hidden></span></div></div>
+  <div class="booking-package"><strong id="bookingPackageName"></strong><div class="booking-package-values"><span id="bookingPackagePrice"></span><span id="bookingPackageFee" hidden></span><span id="bookingPackageOptionPrice" hidden></span></div><div id="bookingPackageOptions" class="booking-package-options" hidden></div></div>
   <form id="bookingRequestForm">
    <div class="booking-form-grid">
     <label>Your name <em>*</em><input name="customer_name" required minlength="2" maxlength="100" autocomplete="name" placeholder="Full name"></label>
@@ -1256,7 +1256,7 @@ body[data-store-category="fashion"] #catalog .art:has(img) img{
   <div id="galleryScrollArea" class="gallery-scroll-area">
   <div class="gallery-top"><div><h2 id="galleryTitle">Product</h2></div><button id="galleryClose" class="gallery-close" type="button" aria-label="Close product photos">×</button></div>
   <div class="gallery-stage"><div id="galleryTrack" class="gallery-track" role="region" aria-label="Product photos" aria-roledescription="carousel" tabindex="0"></div><div id="galleryOverlayPager" class="gallery-overlay-pager" role="group" aria-label="Media gallery navigation"></div></div>
-  <div id="galleryBookingDetails" class="gallery-booking-details"><p id="galleryDescription" class="gallery-description"></p><div id="galleryServiceFee" class="gallery-service-fee" hidden></div></div>
+  <div id="galleryBookingDetails" class="gallery-booking-details"><p id="galleryDescription" class="gallery-description"></p><div id="galleryServiceFee" class="gallery-service-fee" hidden></div><div id="galleryServiceOptionEstimate" class="gallery-service-option-estimate" hidden></div></div>
   <div id="galleryProductActionRow" class="gallery-product-action-row" hidden><strong id="galleryProductPrice" class="gallery-price"></strong></div>
   <div id="galleryFashionColors" class="gallery-fashion-colors" hidden><div class="gallery-fashion-colors-heading"><strong>Colour</strong><span id="galleryFashionColorSelected"></span></div><div id="galleryFashionColorOptions" class="gallery-fashion-color-options" role="radiogroup" aria-label="Choose a colour"></div></div>
   <div id="galleryFashionSizes" class="gallery-fashion-colors" hidden><div class="gallery-fashion-colors-heading"><strong>Size</strong><span id="galleryFashionSizeSelected">Choose a size</span></div><div id="galleryFashionSizeOptions" class="gallery-fashion-color-options" role="radiogroup" aria-label="Choose a size"></div></div>
@@ -2184,7 +2184,7 @@ function renderGalleryScale(group){
 }
 function renderGalleryOptions(item,initialSelection={}){
  const container=$("galleryCustomization"),list=$("galleryChoiceGroups");
- const groups=window.StoreNestBookings.isBookingOffer(item,activePublicBusiness)?[]:window.StoreNestOptions.normalize(item.customization_options).filter(group=>group.id!==FASHION_COLOR_GROUP_ID&&group.id!==FASHION_SIZE_GROUP_ID);
+ const groups=window.StoreNestOptions.normalize(item.customization_options).filter(group=>group.id!==FASHION_COLOR_GROUP_ID&&group.id!==FASHION_SIZE_GROUP_ID);
  galleryOptionSelections={};
  container.hidden=!groups.length;
  $("galleryOptionsError").hidden=true;
@@ -2323,11 +2323,41 @@ function quoteItemForFashionSelection(item,selection={}){
 function quoteProduct(item,selection={}){
  return window.StoreNestOptions.quote(quoteItemForFashionSelection(item,selection),selection);
 }
+function storefrontBookingOptionGroups(item){
+ return window.StoreNestOptions.normalize(item?.customization_options).filter(group=>group.id!==FASHION_COLOR_GROUP_ID&&group.id!==FASHION_SIZE_GROUP_ID);
+}
+function quoteBookingOptions(item,selection={}){
+ const basePrice=item?.price_range_min??item?.price_range_max??item?.price??0;
+ return window.StoreNestOptions.quote({...item,price:basePrice,customization_options:storefrontBookingOptionGroups(item)},selection);
+}
+function hasStorefrontBookingOptions(item){
+ return window.StoreNestBookings.isBookingOffer(item,activePublicBusiness)&&storefrontBookingOptionGroups(item).length>0;
+}
 function updateGalleryOptionsPrice(){
  if(!activeGalleryItem)return;
- const selection=gallerySelectionForQuote(),quote=quoteProduct(activeGalleryItem,selection);
+ const selection=gallerySelectionForQuote(),isBooking=window.StoreNestBookings.isBookingOffer(activeGalleryItem,activePublicBusiness);
+ const quote=isBooking?quoteBookingOptions(activeGalleryItem,selection):quoteProduct(activeGalleryItem,selection);
  $("galleryTotal").textContent=money(quote.total);
- $("galleryProductPrice").textContent=storefrontSelectedFashionPrice(activeGalleryItem,activeGalleryFashionColorId,activeGalleryFashionSizeId);
+ if(isBooking){
+  const estimate=$("galleryServiceOptionEstimate"),groups=storefrontBookingOptionGroups(activeGalleryItem);
+  estimate.hidden=!groups.length;
+  if(groups.length){
+   const basePrice=Number(activeGalleryItem.price_range_min??activeGalleryItem.price_range_max??activeGalleryItem.price)||0;
+   const optionExtras=Math.max(0,quote.total-basePrice);
+   if(!quote.valid){
+    estimate.textContent=quote.error?.message||"Choose the required service options to see an estimate.";
+    $("galleryServicePrice").textContent=window.StoreNestBookings.priceLabel(activeGalleryItem,activePublicBusiness);
+   }else{
+    const selected=quote.summary.map(row=>row.group+": "+row.values.join(", ")+(row.price>0?" (+"+money(row.price)+")":""));
+    const estimateText=basePrice>0?"Estimated from "+money(quote.total):"Selected option extras: "+money(optionExtras)+" · base service price to be confirmed";
+    estimate.textContent=(selected.length?selected.join(" · ")+" · ":"")+estimateText+". The business confirms the final quote.";
+    $("galleryServicePrice").textContent=quote.total>0?"Estimated from "+money(quote.total):window.StoreNestBookings.priceLabel(activeGalleryItem,activePublicBusiness);
+   }
+  }
+ }else{
+  $("galleryServiceOptionEstimate").hidden=true;
+  $("galleryProductPrice").textContent=storefrontSelectedFashionPrice(activeGalleryItem,activeGalleryFashionColorId,activeGalleryFashionSizeId);
+ }
 }
 $("galleryChoiceGroups").addEventListener("change",event=>{
  const input=event.target.closest("[data-option-id]");if(!input||!activeGalleryItem)return;
@@ -2392,14 +2422,14 @@ function openProductGallery(id,trigger,cartKey=null){
   galleryIndex=Number.isInteger(requestedPhotoIndex)&&entries[requestedPhotoIndex]?.decorPhotoSetId===activeGalleryDecorSetId?requestedPhotoIndex:Math.max(firstSetIndex,0);
  }
  $("galleryDialog").classList.toggle("gallery-booking-style",isDecorBooking);
- $("galleryDialog").classList.toggle("gallery-photo-only",isDecorBooking);
+ $("galleryDialog").classList.toggle("gallery-photo-only",isDecorBooking&&!hasStorefrontBookingOptions(item));
  $("galleryDialog").classList.toggle("gallery-fashion-style",isStorefrontFashionProduct(item));
  const bookingFee=isBookingOffer?window.StoreNestBookings.bookingFeeLabel(item,activePublicBusiness):"";
  $("galleryTitle").textContent=item.name;
  const galleryDescription=$("galleryDescription");galleryDescription.textContent=item.description||"";galleryDescription.hidden=!String(item.description||"").trim();
  if(isStorefrontFashionProduct(item))updateFashionColorDescription(item,activeGalleryFashionColorId);
  $("galleryServiceFee").textContent=bookingFee;$("galleryServiceFee").hidden=!bookingFee;
- $("galleryBookingDetails").hidden=isDecorBooking&&!String(item.description||"").trim()&&!bookingFee;
+ $("galleryBookingDetails").hidden=isDecorBooking&&!String(item.description||"").trim()&&!bookingFee&&!hasStorefrontBookingOptions(item);
  const galleryBottom=$("galleryBottom"),overlayPager=$("galleryOverlayPager");
  if(isDecorBooking)overlayPager.append($("galleryPosition"),$("galleryDots"));
  else{
@@ -2418,7 +2448,7 @@ function openProductGallery(id,trigger,cartKey=null){
  $("galleryAdd").textContent=isBookingOffer?"Request booking":"＋ Add";
  renderGalleryOptions(item,editRow?.selection||{});
  if(editRow)$("galleryNotes").value=editRow.note||"";
- if(!isBookingOffer)updateGalleryOptionsPrice();
+ updateGalleryOptionsPrice();
  const wa=$("galleryWhatsApp"),waUrl=isBookingOffer?serviceWhatsAppUrl(activePublicBusiness,item):"";
  wa.hidden=!waUrl;
  if(waUrl){wa.href=waUrl;wa.setAttribute("aria-label","Contact "+activePublicBusiness.name+" on WhatsApp about "+item.name)}else wa.removeAttribute("href");
@@ -2467,7 +2497,25 @@ $("galleryDialog").addEventListener("click",event=>{if(event.target===$("gallery
 function handleGalleryAdd(){
  const item=activeGalleryItem;if(!item)return;
  const trigger=galleryReturnFocus;
- if(window.StoreNestBookings.isBookingOffer(item,activePublicBusiness)){const selectedSet=isStorefrontDecorOffering(item)?storefrontDecorColorSets(item).find(set=>set.id===activeGalleryDecorSetId):null;closeProductGallery();window.StoreNestBookings.open(item,trigger,{decorColorSetName:selectedSet?.name||""});return}
+ if(window.StoreNestBookings.isBookingOffer(item,activePublicBusiness)){
+  const selection=gallerySelectionForQuote(),groups=storefrontBookingOptionGroups(item),quote=quoteBookingOptions(item,selection);
+  if(groups.length&&!quote.valid){
+   $("galleryOptionsError").hidden=false;
+   $("galleryOptionsError").textContent=quote.error?.message||"Choose your service options.";
+   $("galleryChoiceGroups").querySelector('[data-group-id="'+quote.error?.id+'"]')?.scrollIntoView({block:"nearest"});
+   return;
+  }
+  const selectedSet=isStorefrontDecorOffering(item)?storefrontDecorColorSets(item).find(set=>set.id===activeGalleryDecorSetId):null;
+  const selectedOptions=quote.summary.map(row=>({group:row.group,values:row.values,price:row.price}));
+  const optionSurcharge=selectedOptions.reduce((sum,row)=>sum+Number(row.price||0),0);
+  const specialInstructions=$("galleryNotes").value.trim();
+  closeProductGallery();
+  window.StoreNestBookings.open(item,trigger,{
+   decorColorSetName:selectedSet?.name||"",
+   selectedOptions,optionSurcharge,estimatedPrice:quote.total,specialInstructions
+  });
+  return;
+ }
  const editingKey=galleryEditCartKey;
  const note=editingKey!==null?$("galleryNotes").value:($("galleryCustomization").hidden?"":$("galleryNotes").value);
  const selection=gallerySelectionForQuote();
@@ -2562,7 +2610,7 @@ $("main").addEventListener("click",e=>{
    return;
   }
   const add=e.target.closest("[data-add-item]");
-  if(add){const item=availableItems.find(i=>i.id===add.dataset.addItem);if(!item)return;if(window.StoreNestBookings.isBookingOffer(item,activePublicBusiness)){window.StoreNestBookings.open(item,add,{decorColorSetName:add.dataset.decorColorSetName||""});return}if(needsProductCustomization(item)){openProductGallery(item.id,add);return}addProductToCart(item);return}
+  if(add){const item=availableItems.find(i=>i.id===add.dataset.addItem);if(!item)return;if(window.StoreNestBookings.isBookingOffer(item,activePublicBusiness)){if(hasStorefrontBookingOptions(item)){openProductGallery(item.id,add);return}window.StoreNestBookings.open(item,add,{decorColorSetName:add.dataset.decorColorSetName||""});return}if(needsProductCustomization(item)){openProductGallery(item.id,add);return}addProductToCart(item);return}
   const open=e.target.closest("[data-open-product]");if(open){openProductGallery(open.dataset.openProduct,open);return}
   
 });
