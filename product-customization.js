@@ -11,7 +11,7 @@
  };
  function normalize(raw){
   if(!Array.isArray(raw))return [];
-  return raw.slice(0,11).map((group,gIndex)=>{
+  return raw.slice(0,12).map((group,gIndex)=>{
    const options=Array.isArray(group?.options)?group.options.slice(0,16).map((item,i)=>({
     id:safeId(item?.id)||"option-"+gIndex+"-"+i,
     name:clean(item?.name,75),
