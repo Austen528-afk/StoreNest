@@ -1278,7 +1278,7 @@ const CONFIG={url:"https://cypbjzbagezdelmemuhb.supabase.co",key:"sb_publishable
 const FASHION_COLOR_GROUP_ID="fashion-color",FASHION_SIZE_GROUP_ID="fashion-size";
 const GLOBAL_BASKET_STORAGE_KEY="storenest:global-basket:v1",GLOBAL_CHECKOUT_STORAGE_KEY="storenest:global-checkout:v1";
 const cart=new Map();
-let storefrontClient=null,availableItems=[],toastTimer=null,activeGalleryItem=null,galleryIndex=0,galleryReturnFocus=null,activePublicBusiness=null,galleryEditCartKey=null,activeGalleryDecorSetId=null,activeGalleryFashionColorId=null,activeGalleryFashionSizeId=null,activePublicSections=[];
+let storefrontClient=null,availableItems=[],toastTimer=null,activeGalleryItem=null,galleryIndex=0,galleryPhotoOnlyReturn=false,galleryReturnFocus=null,activePublicBusiness=null,galleryEditCartKey=null,activeGalleryDecorSetId=null,activeGalleryFashionColorId=null,activeGalleryFashionSizeId=null,activePublicSections=[];
 let checkoutPendingCode=null,checkoutVerifiedUser=null,checkoutVerifiedProfile=null,checkoutPendingPassword="",checkoutAuthMode="signup";
 const $=id=>document.getElementById(id);
 function readPendingGlobalCheckout(){
@@ -2115,6 +2115,29 @@ const finishGalleryMouseDrag=event=>{
 galleryTrackElement.addEventListener("pointerup",finishGalleryMouseDrag);
 galleryTrackElement.addEventListener("pointercancel",finishGalleryMouseDrag);
 
+/* A tap on a fashion photo enlarges it into the Decor-style swipe viewer. */
+let galleryImagePointer=null;
+galleryTrackElement.addEventListener("pointerdown",event=>{
+ const image=event.target.closest(".gallery-slide img");
+ if(!image||!isStorefrontFashionProduct(activeGalleryItem)||event.button!==0||galleryPhotoOnlyReturn)return;
+ galleryImagePointer={pointerId:event.pointerId,startX:event.clientX,startY:event.clientY,startScrollLeft:galleryTrackElement.scrollLeft,startedAt:Date.now(),image,moved:false};
+},{passive:true});
+document.addEventListener("pointermove",event=>{
+ const start=galleryImagePointer;if(!start||start.pointerId!==event.pointerId)return;
+ if(Math.abs(event.clientX-start.startX)>8||Math.abs(event.clientY-start.startY)>8||Math.abs(galleryTrackElement.scrollLeft-start.startScrollLeft)>6)start.moved=true;
+},{passive:true});
+galleryTrackElement.addEventListener("scroll",()=>{
+ if(galleryImagePointer&&Math.abs(galleryTrackElement.scrollLeft-galleryImagePointer.startScrollLeft)>6)galleryImagePointer.moved=true;
+},{passive:true});
+const finishGalleryImagePointer=event=>{
+ const start=galleryImagePointer;if(!start||start.pointerId!==event.pointerId)return;
+ galleryImagePointer=null;
+ if(event.type!=="pointerup"||start.moved||Date.now()-start.startedAt>900||!start.image.isConnected||!isStorefrontFashionProduct(activeGalleryItem)||galleryPhotoOnlyReturn)return;
+ openFashionPhotoViewer();
+};
+document.addEventListener("pointerup",finishGalleryImagePointer);
+document.addEventListener("pointercancel",finishGalleryImagePointer);
+
 let galleryOptionSelections={};
 function renderGalleryScale(group){
  const count=group.options.length;
@@ -2318,12 +2341,12 @@ $("galleryChoiceGroups").addEventListener("change",event=>{
  updateGalleryOptionsPrice();
 });
 
-function openProductGallery(id,trigger,cartKey=null){
+function openProductGallery(id,trigger,cartKey=null,openPhotoOnly=false){
  const item=availableItems.find(row=>row.id===id);if(!item)return;
  const isBookingOffer=window.StoreNestBookings.isBookingOffer(item,activePublicBusiness);
  const isDecorBooking=isBookingOffer&&window.StoreNestCategoryId(activePublicBusiness?.category)==="events-decor";
  const editRow=cartKey?cart.get(cartKey):null;
- activeGalleryItem=item;galleryReturnFocus=trigger;galleryIndex=0;galleryEditCartKey=editRow?cartKey:null;
+ activeGalleryItem=item;galleryReturnFocus=trigger;galleryIndex=0;galleryPhotoOnlyReturn=false;galleryEditCartKey=editRow?cartKey:null;
  const availableFashionColors=isStorefrontFashionProduct(item)?storefrontFashionColorSets(item):[];
  const savedFashionColorId=editRow?.selection?.[FASHION_COLOR_GROUP_ID]?.[0],requestedFashionColorId=trigger?.dataset?.fashionColorId;
  const preferredFashionColorId=availableFashionColors.some(set=>set.id===requestedFashionColorId)?requestedFashionColorId:savedFashionColorId;
@@ -2380,7 +2403,7 @@ function openProductGallery(id,trigger,cartKey=null){
  const photos=galleryPhotos(item);
  renderGallerySlides();
  if(photos.length)showGalleryImage("auto");else{$("galleryPosition").textContent="No pictures yet";$("galleryPosition").hidden=false;$("galleryDots").hidden=true}
- $("galleryDialog").hidden=false;const mobileGalleryViewport=window.matchMedia("(max-width:820px), (pointer:coarse) and (max-width:1100px)").matches;document.body.style.overflow=isDecorBooking?"hidden":(mobileGalleryViewport?"":"hidden");$("galleryClose").focus();if(photos.length)requestAnimationFrame(()=>{if(!$("galleryDialog").hidden&&activeGalleryItem===item)showGalleryImage("auto")});
+ $("galleryDialog").hidden=false;const mobileGalleryViewport=window.matchMedia("(max-width:820px), (pointer:coarse) and (max-width:1100px)").matches;document.body.style.overflow=isDecorBooking?"hidden":(mobileGalleryViewport?"":"hidden");$("galleryClose").focus();if(openPhotoOnly&&isStorefrontFashionProduct(item))openFashionPhotoViewer();if(photos.length)requestAnimationFrame(()=>{if(!$("galleryDialog").hidden&&activeGalleryItem===item)showGalleryImage("auto")});
 }
 
 function selectDecorColorSetOnCard(card,item,set){
@@ -2393,9 +2416,26 @@ function selectDecorColorSetOnCard(card,item,set){
  if(width)track.scrollTo({left:targetIndex*width,behavior:"smooth"});
 }
 
-function closeProductGallery(){$("galleryTrack").querySelectorAll("video").forEach(video=>{video.pause();video.removeAttribute("src");video.load()});$("galleryTrack").replaceChildren();$("galleryDialog").hidden=true;document.body.style.overflow="";activeGalleryItem=null;activeGalleryDecorSetId=null;activeGalleryFashionColorId=null;activeGalleryFashionSizeId=null;galleryEditCartKey=null;galleryReturnFocus?.focus()}
-$("galleryClose").addEventListener("click",closeProductGallery);
-$("galleryDialog").addEventListener("click",event=>{if(event.target===$("galleryDialog"))closeProductGallery()});
+function openFashionPhotoViewer(){
+ if(!isStorefrontFashionProduct(activeGalleryItem)||galleryPhotoOnlyReturn)return;
+ galleryPhotoOnlyReturn=true;
+ $("galleryDialog").classList.add("gallery-photo-only");
+ document.body.style.overflow="hidden";
+ $("galleryClose").focus();
+}
+function closeFashionPhotoViewer(){
+ if(!galleryPhotoOnlyReturn)return false;
+ galleryPhotoOnlyReturn=false;
+ $("galleryDialog").classList.remove("gallery-photo-only");
+ const mobileGalleryViewport=window.matchMedia("(max-width:820px), (pointer:coarse) and (max-width:1100px)").matches;
+ document.body.style.overflow=mobileGalleryViewport?"":"hidden";
+ $("galleryClose").focus();
+ return true;
+}
+function handleGalleryClose(){if(!closeFashionPhotoViewer())closeProductGallery()}
+function closeProductGallery(){$("galleryTrack").querySelectorAll("video").forEach(video=>{video.pause();video.removeAttribute("src");video.load()});$("galleryTrack").replaceChildren();$("galleryDialog").hidden=true;document.body.style.overflow="";activeGalleryItem=null;galleryPhotoOnlyReturn=false;activeGalleryDecorSetId=null;activeGalleryFashionColorId=null;activeGalleryFashionSizeId=null;galleryEditCartKey=null;galleryReturnFocus?.focus()}
+$("galleryClose").addEventListener("click",handleGalleryClose);
+$("galleryDialog").addEventListener("click",event=>{if(event.target===$("galleryDialog"))handleGalleryClose()});
 
 function handleGalleryAdd(){
  const item=activeGalleryItem;if(!item)return;
@@ -2425,7 +2465,7 @@ $("galleryProductAdd").addEventListener("click",handleGalleryAdd);
 $("galleryAdd").addEventListener("click",handleGalleryAdd);
 document.addEventListener("keydown",event=>{
  if($("galleryDialog").hidden)return;
- if(event.key==="Escape")closeProductGallery();
+ if(event.key==="Escape")handleGalleryClose();
  else if(event.key==="ArrowLeft"&&galleryIndex>0){galleryIndex--;showGalleryImage()}
  else if(event.key==="ArrowRight"&&galleryIndex<galleryPhotos(activeGalleryItem).length-1){galleryIndex++;showGalleryImage()}
 });
@@ -2495,7 +2535,7 @@ $("main").addEventListener("click",e=>{
   }
   const add=e.target.closest("[data-add-item]");
   if(add){const item=availableItems.find(i=>i.id===add.dataset.addItem);if(!item)return;if(window.StoreNestBookings.isBookingOffer(item,activePublicBusiness)){window.StoreNestBookings.open(item,add,{decorColorSetName:add.dataset.decorColorSetName||""});return}if(needsProductCustomization(item)){openProductGallery(item.id,add);return}addProductToCart(item);return}
-  const open=e.target.closest("[data-open-product]");if(open){openProductGallery(open.dataset.openProduct,open);return}
+  const open=e.target.closest("[data-open-product]");if(open){openProductGallery(open.dataset.openProduct,open,null,Boolean(e.target.closest(".art")));return}
   
 });
 /* One hero renderer used for published storefronts and unsaved owner previews. */
