@@ -2257,7 +2257,11 @@ function storefrontSelectedFashionPrice(item,colorSetId=null,sizeId=null){
  }
  return money(set?.price??item.price);
 }
-function storefrontFashionSizeDisplayLabel(option){return option.name}
+function storefrontFashionSizeDisplayLabel(option){
+ const raw=String(option?.name??"").trim(),key=raw.toUpperCase();
+ const labels={XXS:"Double Extra Small",XS:"Extra Small",S:"Small",M:"Medium",L:"Large",XL:"Extra Large",XXL:"Double Extra Large",XXXL:"Triple Extra Large","2XL":"Double Extra Large","3XL":"Triple Extra Large","4XL":"Quadruple Extra Large"};
+ return labels[key]||raw;
+}
 function updateFashionColorDescription(item,colorSetId){
  const set=storefrontFashionColorSets(item).find(row=>row.id===colorSetId);
  const copy=String(set?.description||item?.description||"");
