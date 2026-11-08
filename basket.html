@@ -16,17 +16,22 @@ header{height:68px;display:flex;align-items:center;justify-content:space-between
 .brand{font-weight:900;font-size:22px;letter-spacing:-.07em;text-decoration:none;color:#172421}.brand span{color:#279b83}
 .header-links{display:flex;align-items:center;gap:10px}
 .header-links a{color:#51665c;font-size:13px;font-weight:650;text-decoration:none}
-main{padding:30px 0 60px}
+main{padding:30px 0 112px}
 h1{margin:0;font-size:clamp(26px,4vw,36px);letter-spacing:-.045em}
-.intro{color:#708078;font-size:14px;line-height:1.5;margin:7px 0 24px}
-.store-group{margin:0 0 20px;padding:0 18px 18px;border:1px solid #dae6df;border-radius:16px;background:#fff;box-shadow:0 2px 14px #1a342309}
-.store-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:17px 0 12px;border-bottom:1px solid #ebf0ed}
+.intro{color:#708078;font-size:14px;line-height:1.5;margin:7px 0 20px}
+.selection-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px;padding:12px 14px;border:1px solid #dce8df;border-radius:12px;background:#fff}
+.selection-toolbar label{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:750;color:#2d4437}
+.selection-toolbar input,.select-item input{width:18px;height:18px;accent-color:#20a782;cursor:pointer}
+#selectionSummary{font-size:12px;color:#6d7c73;text-align:right}
+.store-group{margin:0 0 15px;padding:0 18px 8px;border:1px solid #dae6df;border-radius:16px;background:#fff;box-shadow:0 2px 14px #1a342309}
+.store-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 0 12px;border-bottom:1px solid #ebf0ed}
 .store-heading h2{font-size:17px;margin:0;letter-spacing:-.02em}
 .store-heading p{font-size:12px;color:#718079;margin:5px 0 0}
 .store-items{display:grid;gap:0}
-.basket-row{display:grid;grid-template-columns:80px minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid #eff2f0}
+.basket-row{display:grid;grid-template-columns:28px 74px minmax(0,1fr) auto;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid #eff2f0}
 .basket-row:last-child{border-bottom:0}
-.item-image{width:80px;height:80px;display:grid;place-items:center;overflow:hidden;border-radius:10px;background:#eef2ef;color:#87948d;font-size:22px}
+.select-item{display:grid;place-items:center}
+.item-image{width:74px;height:74px;display:grid;place-items:center;overflow:hidden;border-radius:10px;background:#eef2ef;color:#87948d;font-size:22px}
 .item-image img{display:block;width:100%;height:100%;object-fit:cover}
 .item-title{display:block;font-size:14px;font-weight:750;line-height:1.35}
 .item-options{display:flex;flex-wrap:wrap;gap:5px 12px;margin-top:5px;color:#6c7a73;font-size:12px}
@@ -36,29 +41,44 @@ h1{margin:0;font-size:clamp(26px,4vw,36px);letter-spacing:-.045em}
 .item-actions{display:flex;align-items:center;gap:7px}
 .qty-controls{display:flex;align-items:center;gap:8px}
 .qty-controls button,.remove-item{width:32px;height:32px;display:grid;place-items:center;border:1px solid #d9e5de;border-radius:9px;background:#f8fbf9;color:#24382f}
+.qty-controls button:disabled{opacity:.4;cursor:not-allowed}
 .remove-item{color:#8c514b}
-.store-footer{display:flex;align-items:center;justify-content:flex-end;gap:15px;padding-top:14px;border-top:1px solid #ebf0ed}
-.subtotal{font-size:14px;color:#66736d}.subtotal strong{color:#1c2d24;font-size:16px;margin-left:5px}
-.checkout-link,.primary-link{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 17px;border:0;border-radius:999px;background:#101615;color:#fff;text-decoration:none;font-size:13px;font-weight:750}
-.checkout-link[aria-disabled="true"]{opacity:.45;pointer-events:none}
+.store-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0 4px;color:#718079;font-size:12px}
+.store-footer strong{color:#263c30}
+.basket-checkout-footer{position:fixed;z-index:10;left:0;right:0;bottom:0;padding:13px max(14px,calc((100vw - 1040px)/2));display:flex;align-items:center;justify-content:space-between;gap:14px;border-top:1px solid #dce6e2;background:#fffffff2;backdrop-filter:blur(12px);box-shadow:0 -8px 28px #18332612}
+.basket-checkout-footer[hidden]{display:none}
+.footer-selection{display:flex;flex-direction:column;gap:4px}
+.footer-selection strong{font-size:14px;color:#20372a}
+.footer-selection span{font-size:12px;color:#6c7a73}
+.primary-button{min-height:44px;padding:0 19px;border:0;border-radius:999px;background:#111715;color:#fff;font-size:13px;font-weight:800}
+.primary-button:hover:not(:disabled){background:#263a31}
+.primary-button:disabled{opacity:.45;cursor:not-allowed}
 .empty-state{padding:40px 20px;text-align:center;border:1px dashed #cfded5;border-radius:16px;background:#fff;color:#718078}
 .empty-state strong{display:block;color:#21362a;font-size:17px;margin-bottom:8px}
 .empty-state p{margin:0 0 18px;font-size:13px;line-height:1.5}
-.empty-state .primary-link{background:#52cfae;color:#10251d}
+.empty-state .primary-link{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 17px;border-radius:999px;background:#52cfae;color:#10251d;text-decoration:none;font-size:13px;font-weight:750}
+#basketMessage{margin:12px 0;color:#9a493e;font-size:12px}
 @media(max-width:620px){
  .page{width:calc(100% - 20px)}
  header{height:58px}
  .brand{font-size:20px}
  .header-links{gap:8px}
  .header-links a{font-size:11px}
- main{padding:22px 0 38px}
- .store-group{padding:0 12px 13px}
- .basket-row{grid-template-columns:62px minmax(0,1fr);gap:10px;padding:12px 0}
+ main{padding:22px 0 105px}
+ .selection-toolbar{padding:10px 11px}
+ .selection-toolbar label{font-size:12px}
+ #selectionSummary{font-size:10px}
+ .store-group{padding:0 12px 7px}
+ .basket-row{grid-template-columns:22px 62px minmax(0,1fr);gap:8px;padding:12px 0}
  .item-image{width:62px;height:62px}
- .item-actions{grid-column:2;justify-content:space-between}
+ .item-actions{grid-column:3;justify-content:space-between;margin-top:4px}
+ .qty-controls{gap:6px}
  .qty-controls button,.remove-item{width:30px;height:30px}
- .store-footer{flex-wrap:wrap;gap:10px}
- .checkout-link{flex:1}
+ .store-footer{font-size:11px}
+ .basket-checkout-footer{padding:11px 10px;gap:8px}
+ .footer-selection strong{font-size:12px}
+ .footer-selection span{font-size:10px}
+ .primary-button{min-height:42px;padding:0 13px;font-size:12px}
 }
 </style>
 </head>
@@ -70,16 +90,28 @@ h1{margin:0;font-size:clamp(26px,4vw,36px);letter-spacing:-.045em}
 </header>
 <main>
 <h1>Your marketplace basket</h1>
-<p class="intro">Items from your different stores stay together here. Place a separate order with each store.</p>
+<p class="intro">Choose the products you want to check out. Selected items from different stores will be submitted together, and each store will receive its own order.</p>
+<div class="selection-toolbar">
+<label><input type="checkbox" id="selectAllBasket" checked> Select all items</label>
+<span id="selectionSummary">All items selected</span>
+</div>
 <div id="basketContents" aria-live="polite"></div>
+<p id="basketMessage" role="status" aria-live="polite" hidden></p>
 </main>
+</div>
+<div class="basket-checkout-footer" id="basketCheckoutFooter" hidden>
+<div class="footer-selection"><strong id="selectedCount">0 items selected</strong><span id="selectedTotal">Estimated total R0.00</span></div>
+<button class="primary-button" id="checkoutSelected" type="button" disabled>Checkout selected</button>
 </div>
 <script>
 "use strict";
 const GLOBAL_BASKET_STORAGE_KEY="storenest:global-basket:v1";
+const GLOBAL_CHECKOUT_STORAGE_KEY="storenest:global-checkout:v1";
 const contents=document.getElementById("basketContents");
+let selectedBasketIds=null,knownBasketIds=new Set();
 function esc(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function safeImage(value){try{const url=new URL(String(value||""),location.origin);return ["https:","http:"].includes(url.protocol)?url.href:""}catch(_){return""}}
+function basketIdentity(row){return JSON.stringify([String(row?.businessId||""),String(row?.cartKey||"")])}
 function readBasket(){
  try{const value=JSON.parse(localStorage.getItem(GLOBAL_BASKET_STORAGE_KEY)||"[]");return Array.isArray(value)?value.filter(row=>row&&typeof row==="object"&&row.businessId&&row.itemId&&Number(row.quantity)>0):[]}catch(_){return[]}
 }
@@ -96,17 +128,48 @@ function groupBasket(rows){
  });
  return [...groups.values()];
 }
+function syncSelectedIds(rows){
+ const current=new Set(rows.map(basketIdentity));
+ if(selectedBasketIds===null){selectedBasketIds=new Set(current);knownBasketIds=current;return}
+ for(const id of [...selectedBasketIds])if(!current.has(id))selectedBasketIds.delete(id);
+ for(const id of current)if(!knownBasketIds.has(id))selectedBasketIds.add(id);
+ knownBasketIds=current;
+}
+function updateSelectionUI(rows){
+ const selected=rows.filter(row=>selectedBasketIds.has(basketIdentity(row)));
+ const total=selected.reduce((sum,row)=>sum+(Number(row.unitPrice)||0)*(Number(row.quantity)||0),0);
+ const selectAll=document.getElementById("selectAllBasket");
+ selectAll.checked=rows.length>0&&selected.length===rows.length;
+ selectAll.indeterminate=selected.length>0&&selected.length<rows.length;
+ document.getElementById("selectionSummary").textContent=selected.length===rows.length
+  ?"All items selected":selected.length?selected.length+" of "+rows.length+" product lines selected":"No items selected";
+ document.getElementById("selectedCount").textContent=selected.reduce((sum,row)=>sum+Math.max(1,Math.floor(Number(row.quantity)||1)),0)+" item"+(selected.reduce((sum,row)=>sum+Math.max(1,Math.floor(Number(row.quantity)||1)),0)===1?"":"s")+" selected";
+ document.getElementById("selectedTotal").textContent="Estimated total "+money(total);
+ const grouped=new Map();selected.forEach(row=>grouped.set(String(row.businessId),(grouped.get(String(row.businessId))||0)+1));
+ const tooMany=[...grouped.values()].some(count=>count>50);
+ const invalidStore=selected.some(row=>!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(String(row.businessSlug||"")));
+ const message=document.getElementById("basketMessage");
+ message.hidden=!tooMany&&!invalidStore;
+ message.textContent=tooMany?"Select up to 50 different products from each store for one order.":invalidStore?"A selected store is unavailable for checkout. Remove its items or contact the store.":"";
+ const button=document.getElementById("checkoutSelected");
+ button.disabled=selected.length===0||tooMany||invalidStore;
+ button.textContent="Checkout selected ("+selected.reduce((sum,row)=>sum+Math.max(1,Math.floor(Number(row.quantity)||1)),0)+")";
+}
 function renderBasket(){
  const rows=readBasket();
+ if(rows.length)syncSelectedIds(rows);
+ document.getElementById("selectionSummary").closest(".selection-toolbar").hidden=!rows.length;
+ document.getElementById("basketCheckoutFooter").hidden=!rows.length;
  if(!rows.length){
   contents.innerHTML='<section class="empty-state"><strong>Your basket is empty</strong><p>Browse local stores and add products to collect them here.</p><a class="primary-link" href="/">Explore stores</a></section>';
+  document.getElementById("basketMessage").hidden=true;
   return;
  }
  contents.innerHTML=groupBasket(rows).map(group=>{
-  const quantity=group.rows.reduce((sum,row)=>sum+Math.max(0,Math.floor(Number(row.quantity)||0)),0);
-  const subtotal=group.rows.reduce((sum,row)=>sum+(Number(row.unitPrice)||0)*(Number(row.quantity)||0),0);
-  const validSlug=/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(group.slug);
-  const checkout=validSlug?'/storefront.html?slug='+encodeURIComponent(group.slug)+'&checkoutStore=1':'';
+  const allQuantity=group.rows.reduce((sum,row)=>sum+Math.max(0,Math.floor(Number(row.quantity)||0)),0);
+  const selectedRows=group.rows.filter(row=>selectedBasketIds.has(basketIdentity(row)));
+  const selectedQuantity=selectedRows.reduce((sum,row)=>sum+Math.max(0,Math.floor(Number(row.quantity)||0)),0);
+  const subtotal=selectedRows.reduce((sum,row)=>sum+(Number(row.unitPrice)||0)*(Number(row.quantity)||0),0);
   const lines=group.rows.map(row=>{
    const image=safeImage(row.itemImageUrl);
    const options=Array.isArray(row.summary)?row.summary.map(option=>{
@@ -114,16 +177,29 @@ function renderBasket(){
     return values.length?'<span>'+esc(option.group||"Options")+': '+esc(values.join(", "))+'</span>':"";
    }).join(""):"";
    const note=row.note?'<div class="item-note">Note: '+esc(row.note)+'</div>':"";
-   const key=String(row.cartKey||"");
+   const key=String(row.cartKey||""),identity=basketIdentity(row),quantity=Math.max(1,Math.floor(Number(row.quantity)||1));
    return '<article class="basket-row">'+
+    '<label class="select-item"><input type="checkbox" data-basket-select data-id="'+esc(identity)+'" '+(selectedBasketIds.has(identity)?"checked":"")+' aria-label="Select '+esc(row.itemName||"item")+' from '+esc(group.name)+' for checkout"></label>'+
     '<div class="item-image">'+(image?'<img src="'+esc(image)+'" alt="" loading="lazy" decoding="async">':'<span aria-hidden="true">▧</span>')+'</div>'+
     '<div><span class="item-title">'+esc(row.itemName||"Item")+'</span><div class="item-options">'+options+'</div>'+note+'<div class="item-price">'+money(row.unitPrice)+' each</div></div>'+
-    '<div class="item-actions"><div class="qty-controls"><button type="button" data-action="minus" data-business="'+esc(group.id)+'" data-key="'+esc(key)+'" aria-label="Remove one '+esc(row.itemName||"item")+'">−</button><span>'+Math.max(1,Math.floor(Number(row.quantity)||1))+'</span><button type="button" data-action="plus" data-business="'+esc(group.id)+'" data-key="'+esc(key)+'" aria-label="Add one '+esc(row.itemName||"item")+'">+</button></div><button type="button" class="remove-item" data-action="remove" data-business="'+esc(group.id)+'" data-key="'+esc(key)+'" aria-label="Remove '+esc(row.itemName||"item")+' from basket">×</button></div>'+
+    '<div class="item-actions"><div class="qty-controls"><button type="button" data-action="minus" data-business="'+esc(group.id)+'" data-key="'+esc(key)+'" aria-label="Remove one '+esc(row.itemName||"item")+'">−</button><span>'+quantity+'</span><button type="button" data-action="plus" data-business="'+esc(group.id)+'" data-key="'+esc(key)+'" '+(quantity>=50?"disabled":"")+' aria-label="Add one '+esc(row.itemName||"item")+'">+</button></div><button type="button" class="remove-item" data-action="remove" data-business="'+esc(group.id)+'" data-key="'+esc(key)+'" aria-label="Remove '+esc(row.itemName||"item")+' from basket">×</button></div>'+
    '</article>';
   }).join("");
-  return '<section class="store-group" aria-label="Basket items from '+esc(group.name)+'"><div class="store-heading"><div><h2>'+esc(group.name)+'</h2><p>'+quantity+' item'+(quantity===1?"":"s")+'</p></div></div><div class="store-items">'+lines+'</div><div class="store-footer"><div class="subtotal">Store subtotal<strong>'+money(subtotal)+'</strong></div><a class="checkout-link" href="'+esc(checkout||"#")+'" '+(checkout?'':'aria-disabled="true" tabindex="-1" title="This store link is unavailable"')+'>Checkout this store</a></div></section>';
+  return '<section class="store-group" aria-label="Basket items from '+esc(group.name)+'"><div class="store-heading"><div><h2>'+esc(group.name)+'</h2><p>'+selectedQuantity+' of '+allQuantity+' item'+(allQuantity===1?"":"s")+' selected</p></div></div><div class="store-items">'+lines+'</div><div class="store-footer"><span>Selected subtotal</span><strong>'+money(subtotal)+'</strong></div></section>';
  }).join("");
+ updateSelectionUI(rows);
 }
+document.getElementById("selectAllBasket").addEventListener("change",event=>{
+ const rows=readBasket();
+ selectedBasketIds=new Set(event.target.checked?rows.map(basketIdentity):[]);
+ renderBasket();
+});
+contents.addEventListener("change",event=>{
+ if(!event.target.matches("[data-basket-select]"))return;
+ const id=event.target.dataset.id,rows=readBasket();
+ if(event.target.checked)selectedBasketIds.add(id);else selectedBasketIds.delete(id);
+ renderBasket();
+});
 contents.addEventListener("click",event=>{
  const button=event.target.closest("[data-action]");
  if(!button)return;
@@ -132,10 +208,20 @@ contents.addEventListener("click",event=>{
  if(index<0)return;
  if(action==="remove")rows.splice(index,1);
  else{
-  const quantity=Math.max(1,Math.floor(Number(rows[index].quantity)||1))+(action==="plus"?1:-1);
-  if(quantity<=0)rows.splice(index,1);else rows[index].quantity=quantity;
+  const current=Math.max(1,Math.floor(Number(rows[index].quantity)||1));
+  const quantity=current+(action==="plus"?1:-1);
+  if(quantity<=0)rows.splice(index,1);else rows[index].quantity=Math.min(50,quantity);
  }
  writeBasket(rows);renderBasket();
+});
+document.getElementById("checkoutSelected").addEventListener("click",()=>{
+ const selected=readBasket().filter(row=>selectedBasketIds?.has(basketIdentity(row)));
+ if(!selected.length)return;
+ const first=selected[0],slug=String(first.businessSlug||"");
+ if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))return;
+ try{sessionStorage.setItem(GLOBAL_CHECKOUT_STORAGE_KEY,JSON.stringify(selected))}
+ catch(error){document.getElementById("basketMessage").textContent="Your selection could not be saved. Refresh the page and try again.";document.getElementById("basketMessage").hidden=false;return}
+ location.href="/storefront.html?slug="+encodeURIComponent(slug)+"&globalCheckout=1";
 });
 window.addEventListener("storage",event=>{if(event.key===GLOBAL_BASKET_STORAGE_KEY)renderBasket()});
 window.addEventListener("storenest:cart-updated",renderBasket);
