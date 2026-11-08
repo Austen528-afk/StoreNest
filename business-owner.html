@@ -1379,12 +1379,26 @@ function validateFashionSizePricing(){
 function fashionColourLabel(set,index){return String(set?.name||"").trim()||"Colour "+(index+1)}
 function fashionColourOptionGroup(sets){return {id:FASHION_COLOR_GROUP_ID,name:"Colour",selection:"single",required:true,max:1,options:sets.map((set,index)=>({id:set.id,name:fashionColourLabel(set,index),price:0}))}}
 function newFashionSizeId(setId=""){return "fashion-size-"+String(setId||"set").replace(/[^a-zA-Z0-9_-]/g,"").slice(0,32)+"-"+(window.crypto?.randomUUID?.()||Date.now()+"-"+Math.random().toString(36).slice(2))}
-function addFashionSizeForSet(setId,value){
- const set=editedFashionColorSets.find(row=>row.id===setId);if(!set)return;
- const name=String(value??"").trim().replace(/\s+/g," ").slice(0,40);if(!name)return;
- if(set.sizes.some(size=>size.name.toLowerCase()===name.toLowerCase())){showToast(name+" is already added to "+fashionColourLabel(set,editedFashionColorSets.indexOf(set))+".");return}
- if(set.sizes.length>=16){showToast("You can add up to 16 sizes per colour.",true);return}
- set.sizes.push({id:newFashionSizeId(set.id),name,price:""});drawFashionColorSetEditor();syncFashionSizePricingUI();
+function addFashionSizeForSet(setId,value){return addFashionSizesForSet(setId,[value])}
+function addFashionSizesForSet(setId,values){
+ const set=editedFashionColorSets.find(row=>row.id===setId);if(!set)return false;
+ const added=[],label=fashionColourLabel(set,editedFashionColorSets.indexOf(set));
+ for(const raw of values){
+  const name=String(raw??"").trim().replace(/\s+/g," ").slice(0,40);if(!name)continue;
+  if(set.sizes.some(size=>size.name.toLowerCase()===name.toLowerCase()))continue;
+  if(set.sizes.length>=16){showToast("You can add up to 16 sizes per colour.",true);break}
+  set.sizes.push({id:newFashionSizeId(set.id),name,price:""});added.push(name);
+ }
+ if(!added.length){showToast("No new sizes were added. Check for duplicates or the 16-size limit.",true);return false}
+ drawFashionColorSetEditor();syncFashionSizePricingUI();
+ showToast(added.join(", ")+" added to "+label+".");
+ return true;
+}
+function addFashionCustomSizesForSet(setId,input){
+ const raw=String(input?.value||"").trim();if(!raw)return;
+ const values=/^\d+(?:\s+\d+)+$/.test(raw)?raw.split(/\s+/):raw.split(/[,;\n]+/);
+ input.value="";
+ return addFashionSizesForSet(setId,values);
 }
 function newFashionColorSet(name){
  return {id:window.crypto?.randomUUID?.()||("fashion-"+Date.now()+"-"+Math.random().toString(36).slice(2)),name:name||"",description:"",price:"",priceBySize:false,sizes:[],media_urls:[]};
@@ -1849,12 +1863,14 @@ function drawFashionSizesForSet(card,set){
  headingText.append(title,note);heading.append(headingText);section.append(heading);
  const presets=document.createElement("div");presets.className="fashion-size-presets";
  ["XXS","XS","S","M","L","XL","XXL"].forEach(name=>{
-  const button=document.createElement("button");button.type="button";button.textContent=name;button.dataset.fashionSizePreset=name;button.dataset.fashionSizeSet=set.id;presets.append(button);
+  const button=document.createElement("button");button.type="button";button.textContent=name;button.dataset.fashionSizePreset=name;button.dataset.fashionSizeSet=set.id;button.addEventListener("click",event=>{event.preventDefault();event.stopPropagation();addFashionSizeForSet(set.id,name)});presets.append(button);
  });
  section.append(presets);
  const addRow=document.createElement("div");addRow.className="fashion-size-add-row";
  const input=document.createElement("input");input.type="text";input.maxLength=200;input.placeholder="e.g. 28, 30, 32 or 38, 39, 40";input.setAttribute("aria-label","Enter sizes for "+fashionColourLabel(set,editedFashionColorSets.indexOf(set)));input.dataset.fashionCustomSizes=set.id;
  const add=document.createElement("button");add.type="button";add.className="outline-button";add.textContent="Add sizes";add.dataset.addFashionSizes=set.id;
+ add.addEventListener("click",event=>{event.preventDefault();event.stopPropagation();addFashionCustomSizesForSet(set.id,input)});
+ input.addEventListener("keydown",event=>{if(event.key==="Enter"){event.preventDefault();event.stopPropagation();addFashionCustomSizesForSet(set.id,input)}});
  addRow.append(input,add);section.append(addRow);
  const toggleLabel=document.createElement("label");toggleLabel.className="fashion-size-price-toggle";
  const toggle=document.createElement("input");toggle.type="checkbox";toggle.checked=Boolean(set.priceBySize);toggle.dataset.fashionSizePriceToggle=set.id;
@@ -1917,16 +1933,6 @@ $("fashionColorSetsList").addEventListener("input",event=>{
  }
 });
 $("fashionColorSetsList").addEventListener("click",event=>{
- const preset=event.target.closest("[data-fashion-size-preset]");
- if(preset){addFashionSizeForSet(preset.dataset.fashionSizeSet,preset.dataset.fashionSizePreset);return}
- const add=event.target.closest("[data-add-fashion-sizes]");
- if(add){
-  const input=[...$("fashionColorSetsList").querySelectorAll("[data-fashion-custom-sizes]")].find(row=>row.dataset.fashionCustomSizes===add.dataset.addFashionSizes);
-  if(!input)return;
-  const raw=input.value.trim();if(!raw)return;
-  const values=/^\d+(?:\s+\d+)+$/.test(raw)?raw.split(/\s+/):raw.split(/[,;\n]+/);
-  values.map(value=>value.trim()).filter(Boolean).forEach(value=>addFashionSizeForSet(add.dataset.addFashionSizes,value));input.value="";return;
- }
  const removeSize=event.target.closest("[data-remove-fashion-size]");
  if(removeSize){
   const set=editedFashionColorSets.find(row=>row.id===removeSize.dataset.fashionSizeSet);if(!set)return;
@@ -1937,10 +1943,6 @@ $("fashionColorSetsList").addEventListener("click",event=>{
  editedFashionColorSets=editedFashionColorSets.filter(set=>set.id!==id);
  galleryEntries=galleryEntries.filter(entry=>entry.fashionSetId!==id);
  drawFashionColorSetEditor();drawOwnerGallery();syncFashionSizePricingUI();updateCatalogMediaQualityNote();
-});
-$("fashionColorSetsList").addEventListener("keydown",event=>{
- const input=event.target.closest("[data-fashion-custom-sizes]");
- if(input&&event.key==="Enter"){event.preventDefault();[...$("fashionColorSetsList").querySelectorAll("[data-add-fashion-sizes]")].find(button=>button.dataset.addFashionSizes===input.dataset.fashionCustomSizes)?.click()}
 });
 $("fashionColorSetsList").addEventListener("change",async event=>{
  const toggle=event.target.closest("[data-fashion-size-price-toggle]");
