@@ -2383,7 +2383,7 @@ function renderStorefrontHero(business,cfg,options={}){
  const videoCover=/\.(mp4|webm)(?:[?#]|$)/i.test(cover)||Boolean(options.preview&&cfg.heroIsVideo);
  const logo=resolveAsset(preview?(cfg.logo||business.logo_url):business.logo_url);
    const standardHero=
-     '<section class="hero layout-'+layout+'">'+(cover?(videoCover?'<video class="hero-cover-video" src="'+esc(cover)+'" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>':'<img class="hero-cover" src="'+esc(cover)+'" alt="" fetchpriority="high" decoding="async">'):'')+
+     '<section class="hero layout-'+layout+'">'+(cover?(videoCover?'<video class="hero-cover-video" src="'+esc(cover)+'" autoplay muted loop playsinline webkit-playsinline preload="auto" aria-hidden="true"></video>':'<img class="hero-cover" src="'+esc(cover)+'" alt="" fetchpriority="high" decoding="async">'):'')+
      '<div class="hero-top"><div class="store-identity">'+(logo?'<img class="store-logo" src="'+esc(logo)+'" alt="">':'')+
      '<span class="brand-name">'+esc(business.name)+'<span class="brand-dot">.</span></span></div>'+
      '</div>'+
@@ -2400,26 +2400,41 @@ function renderStorefrontHero(business,cfg,options={}){
      (cfg.tagline?'<p class="decor-tag">'+esc(cfg.tagline)+'</p>':'')+
      '<p class="decor-summary">'+esc(business.description||(isLocalServices?"Explore helpful services for everyday needs.":"Explore pieces for the home and everyday spaces."))+'</p></div>'+
      '<a class="decor-cta" href="#catalog">'+(isLocalServices?"Explore services":"Explore collection")+'</a></div>'+
-     '<div class="decor-visual">'+(decorImage?(videoCover?'<video class="decor-cover-video" src="'+esc(decorImage)+'" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>':'<img src="'+esc(decorImage)+'" alt="'+(isLocalServices?"Featured local service":"Featured home decor")+'" fetchpriority="high" decoding="async">'):'')+
+     '<div class="decor-visual">'+(decorImage?(videoCover?'<video class="decor-cover-video" src="'+esc(decorImage)+'" autoplay muted loop playsinline webkit-playsinline preload="auto" aria-hidden="true"></video>':'<img src="'+esc(decorImage)+'" alt="'+(isLocalServices?"Featured local service":"Featured home decor")+'" fetchpriority="high" decoding="async">'):'')+
      '</div></section>';
 
  return isDecor?decorHero:standardHero;
 }
 function activateBackgroundVideos(root){
  root.querySelectorAll(".hero-cover-video,.decor-cover-video").forEach(video=>{
+  // iOS Safari may only fetch MP4 metadata while waiting for loadeddata.
+  // Start playback immediately so the muted inline video can request frames.
   video.muted=true;
   video.defaultMuted=true;
+  video.volume=0;
   video.loop=true;
   video.playsInline=true;
+  video.setAttribute("autoplay","");
+  video.setAttribute("muted","");
+  video.setAttribute("playsinline","");
+  video.setAttribute("webkit-playsinline","");
+  video.removeAttribute("controls");
+  let retryScheduled=false;
   const start=()=>{
-   const attempt=video.play();
+   if(!video.isConnected||!video.paused)return;
+   let attempt;
+   try{attempt=video.play()}catch(error){console.warn("Background video playback blocked:",error?.message||error);return}
    if(attempt&&typeof attempt.catch==="function")attempt.catch(error=>{
+    if(error?.name==="AbortError"&&!retryScheduled){
+     retryScheduled=true;
+     if(video.readyState>=2)requestAnimationFrame(start);
+     else video.addEventListener("loadeddata",start,{once:true});
+     return;
+    }
     console.warn("Background video playback blocked:",error?.message||error);
-    // Keep the first video frame visible if autoplay is denied.
    });
   };
-  if(video.readyState>=2)start();
-  else video.addEventListener("loadeddata",start,{once:true});
+  start();
   video.addEventListener("error",()=>console.warn("Storefront video could not be loaded:",video.error?.code),{once:true});
  });
 }
