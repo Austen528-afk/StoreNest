@@ -2274,7 +2274,7 @@ function renderGalleryFashionSizes(item,initialId=null){
  const selected=group.options.find(option=>option.id===initialId)||null;
  activeGalleryFashionSizeId=selected?.id||null;
  $("galleryFashionSizeSelected").textContent=selected?storefrontFashionSizeDisplayLabel(selected):"Choose a size (required)";
- options.innerHTML=group.options.map(option=>'<button type="button" class="gallery-fashion-color-option" role="radio" aria-checked="' +(option.id===activeGalleryFashionSizeId?'true':'false')+'" data-fashion-size-id="' +esc(option.id)+'">' +esc(storefrontFashionSizeDisplayLabel(option))+'</button>').join("");
+ options.innerHTML=group.options.map(option=>'<button type="button" class="gallery-fashion-color-option" role="radio" aria-checked="' +(option.id===activeGalleryFashionSizeId?'true':'false')+'" data-fashion-size-id="' +esc(option.id)+'">' +esc(option.name)+'</button>').join("");
 }
 $("galleryFashionSizeOptions").addEventListener("click",event=>{
  const button=event.target.closest("[data-fashion-size-id]");if(!button||!activeGalleryItem)return;
