@@ -764,7 +764,7 @@ html[data-theme="dark"] #itemMediaQualityNote[data-warning="true"]{color:#f4c27e
   <div class="field"><label for="itemBookingFeeMax">Booking fee up to (ZAR)</label><div class="price-input"><span>R</span><input id="itemBookingFeeMax" type="number" min="0" step="0.01" placeholder="Optional"></div></div>
  </div>
 </div><div id="cateringServiceNote" class="catering-service-note full-field" hidden><strong>Catering service</strong><span>Customers will send their event date, venue and guest count with a booking request. Use the description for general service information; confirm the service scope and final details with the customer.</span></div><div class="field"><label for="itemCategory">Category</label><div class="category-input"><select id="itemCategory"><option value="">No category</option></select><button type="button" id="addCategoryButton" aria-label="Add category">＋</button></div></div><div class="field full-field"><label id="itemDescriptionLabel" for="itemDescription">Description</label><textarea id="itemDescription" rows="3" maxlength="500" placeholder="Describe your item"></textarea></div>
-<div id="itemMediaField" class="field full-field"><label id="itemMediaLabel" for="itemMedia">Product photos, GIFs & short videos (up to 12)</label><input id="itemMedia" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"><small>Images/GIFs: max 10 MB. MP4/WebM videos: max 20 MB and 30 seconds. First file is the cover.</small><small id="itemMediaQualityNote" class="media-quality-note" role="status" aria-live="polite">Original photos are preserved. New photos get responsive storefront sizes.</small><div id="itemMediaGallery" class="owner-gallery"></div></div><div id="decorColorSetsEditor" class="decor-color-sets-editor full-field" hidden><div class="decor-color-sets-heading"><div><strong>Décor colour sets</strong><small>Group photos of the same setup by colour theme. Each set can have its own optional description.</small></div><button type="button" id="addDecorColorSet" class="outline-button">+ Add colour set</button></div><div id="decorColorSetsList"></div><small class="decor-color-sets-note">Upload up to 12 pictures across all colour sets. The first picture in the first set is the main storefront photo.</small></div><div id="fashionColorSetsEditor" class="decor-color-sets-editor full-field" hidden><div class="decor-color-sets-heading"><div><strong>Clothing colour variants</strong><small>Add each colour of this clothing item and upload its photos. Customers can choose a colour before adding it to their basket.</small></div><button type="button" id="addFashionColorSet" class="outline-button">+ Add colour</button></div><div id="fashionColorSetsList"></div><small class="decor-color-sets-note">Upload up to 12 pictures across all colours. The first picture in the first colour is the storefront cover.</small></div><div id="fashionSizeEditor" class="decor-color-sets-editor full-field" hidden><div class="decor-color-sets-heading"><div><strong>Available sizes</strong><small>Optional. Add clothing or shoe sizes. Customers must choose one when sizes are listed.</small></div></div><div id="fashionSizePresets" class="fashion-size-presets"><button type="button" data-fashion-size-preset="XXS">XXS</button><button type="button" data-fashion-size-preset="XS">XS</button><button type="button" data-fashion-size-preset="S">S</button><button type="button" data-fashion-size-preset="M">M</button><button type="button" data-fashion-size-preset="L">L</button><button type="button" data-fashion-size-preset="XL">XL</button><button type="button" data-fashion-size-preset="XXL">XXL</button></div><div class="fashion-size-add-row"><input id="fashionCustomSizes" type="text" maxlength="200" placeholder="e.g. 28, 30, 32 or 38, 39, 40" aria-label="Enter custom clothing or shoe sizes"><button type="button" id="addFashionSizes" class="outline-button">Add sizes</button></div><div id="fashionSizesList" class="fashion-size-chips"></div><label class="fashion-size-price-toggle"><input id="fashionSizePricesEnabled" type="checkbox"><span><strong>Different price for each size (optional)</strong><small>Enter each size’s total price. Store listings show the lowest price; choosing a size shows its price.</small></span></label><small class="decor-color-sets-note">Add standard letter sizes or type numeric sizes. Sizes such as 28, 32, or 38, 39, 40 work for clothing and shoes.</small></div><div class="field"><label for="itemAvailability">Availability</label><select id="itemAvailability"><option value="true">Available</option><option value="false">Unavailable</option></select></div><div class="field"><label for="itemOrder">Display order</label><input id="itemOrder" type="number" min="0" step="1" value="0"></div></div>
+<div id="itemMediaField" class="field full-field"><label id="itemMediaLabel" for="itemMedia">Product photos, GIFs & short videos (up to 12)</label><input id="itemMedia" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"><small>Images/GIFs: max 10 MB. MP4/WebM videos: max 20 MB and 30 seconds. First file is the cover.</small><small id="itemMediaQualityNote" class="media-quality-note" role="status" aria-live="polite">Original photos are preserved. New photos get responsive storefront sizes.</small><div id="itemMediaGallery" class="owner-gallery"></div></div><div id="decorColorSetsEditor" class="decor-color-sets-editor full-field" hidden><div class="decor-color-sets-heading"><div><strong>Décor colour sets</strong><small>Group photos of the same setup by colour theme. Each set can have its own optional description.</small></div><button type="button" id="addDecorColorSet" class="outline-button">+ Add colour set</button></div><div id="decorColorSetsList"></div><small class="decor-color-sets-note">Upload up to 12 pictures across all colour sets. The first picture in the first set is the main storefront photo.</small></div><div id="fashionColorSetsEditor" class="decor-color-sets-editor full-field" hidden><div class="decor-color-sets-heading"><div><strong>Clothing colour variants</strong><small>Add each colour of this clothing item and upload its photos. Customers can choose a colour before adding it to their basket.</small></div><button type="button" id="addFashionColorSet" class="outline-button">+ Add colour</button></div><div id="fashionColorSetsList"></div><small class="decor-color-sets-note">Upload up to 12 pictures across all colours. The first picture in the first colour is the storefront cover.</small></div><!-- Fashion sizes and prices are configured inside each colour set. --><div class="field"><label for="itemAvailability">Availability</label><select id="itemAvailability"><option value="true">Available</option><option value="false">Unavailable</option></select></div><div class="field"><label for="itemOrder">Display order</label><input id="itemOrder" type="number" min="0" step="1" value="0"></div></div>
 <div id="itemOptionsEditor" class="item-options-editor">
   <div class="item-options-heading"><div><strong>Customization &amp; Extras</strong><small>Create scales for amounts or heat levels, or choice groups for extras.</small></div>
   <div class="item-options-actions"><button type="button" id="addScaleGroup" class="outline-button">+ Add scale</button><button type="button" id="addCustomizationGroup" class="outline-button">+ Add choice group</button></div></div>
@@ -1327,42 +1327,67 @@ function isDecorOffering(){
  return usesBookingPricing()&&$("itemType").value==="service"&&!/cater/.test(name);
 }
 function isFashionProduct(){return window.StoreNestCategoryId?.(currentBusiness?.category)==="fashion"&&$("itemType").value==="product"}
+function fashionPriceValue(raw){
+ const text=String(raw??"").trim();if(!text)return null;
+ const value=Number(text);
+ return Number.isFinite(value)&&value>=0&&value<=100000?Math.round(value*100)/100:null;
+}
+function fashionSetUsesSizePrices(set){return Boolean(set?.priceBySize)}
+function fashionSetPrices(set){
+ if(fashionSetUsesSizePrices(set))return set.sizes.map(size=>fashionPriceValue(size.price));
+ const price=fashionPriceValue(set?.price);if(price!==null)return [price];
+ const fallback=fashionPriceValue($("itemPrice")?.value);return fallback===null?[]:[fallback];
+}
 function syncFashionSizePricingUI(){
- const input=$("itemPrice"),field=$("itemPriceField"),label=field?.querySelector("label"),help=$("itemPriceHelp"),toggle=$("fashionSizePricesEnabled");
- const enabled=isFashionProduct()&&Boolean(toggle?.checked);
- fashionSizePricesEnabled=enabled;
- if(input){input.required=!usesBookingPricing()&&!enabled;input.readOnly=enabled;input.placeholder=enabled?"Calculated":"0.00"}
- if(label)label.innerHTML=enabled?"Lowest size price (ZAR)":"Price (ZAR) <em>*</em>";
- if(help)help.hidden=!enabled;
- if(enabled&&input){
-  const prices=editedFashionSizes.map(size=>String(size.price??"").trim());
-  const complete=prices.length>0&&prices.every(value=>value!==""&&Number.isFinite(Number(value))&&Number(value)>=0&&Number(value)<=100000);
-  input.value=complete?Math.min(...prices.map(Number)).toFixed(2):"";
+ const input=$("itemPrice"),field=$("itemPriceField"),label=field?.querySelector("label"),help=$("itemPriceHelp");
+ const isFashion=isFashionProduct(),hasSizePrices=isFashion&&editedFashionColorSets.some(fashionSetUsesSizePrices);
+ const allColorPrices=isFashion&&editedFashionColorSets.length>0&&editedFashionColorSets.every(set=>
+  fashionSetUsesSizePrices(set)?set.sizes.length>0&&set.sizes.every(size=>fashionPriceValue(size.price)!==null):fashionPriceValue(set.price)!==null
+ );
+ fashionSizePricesEnabled=hasSizePrices;
+ if(input){input.required=!usesBookingPricing()&&!hasSizePrices&&!allColorPrices;input.readOnly=hasSizePrices||allColorPrices;input.placeholder=hasSizePrices||allColorPrices?"Calculated":"0.00"}
+ if(label)label.innerHTML=hasSizePrices||allColorPrices?"Lowest variant price (ZAR)":"Price (ZAR) <em>*</em>";
+ if(help){help.hidden=!(hasSizePrices||allColorPrices);help.textContent="Calculated from this colour’s price or size prices. The storefront shows one current price."}
+ if(input&&(hasSizePrices||allColorPrices)){
+  const prices=editedFashionColorSets.flatMap(set=>fashionSetPrices(set));
+  const validPrices=prices.filter(price=>price!==null);input.value=validPrices.length?Math.min(...validPrices).toFixed(2):"";
  }
 }
 function validateFashionSizePricing(){
- if(!isFashionProduct()||!fashionSizePricesEnabled)return null;
- if(!editedFashionSizes.length)throw Error("Add at least one size before setting prices by size.");
- const prices=editedFashionSizes.map(size=>{
-  const raw=String(size.price??"").trim(),value=Number(raw);
-  if(raw===""||!Number.isFinite(value)||value<0||value>100000)throw Error("Enter a valid total price for size "+size.name+".");
-  return Math.round(value*100)/100;
- });
- return Math.min(...prices);
+ if(!isFashionProduct())return null;
+ const fixedPrices=editedFashionColorSets.flatMap(set=>fashionSetUsesSizePrices(set)?(set.sizes||[]).map(size=>fashionPriceValue(size.price)).filter(price=>price!==null):[]);
+ const setPrices=editedFashionColorSets.map(set=>{
+  const raw=String(set.price??"").trim();if(raw&&fashionPriceValue(raw)===null)throw Error("Enter a valid price for "+fashionColourLabel(set,editedFashionColorSets.indexOf(set))+".");
+  return fashionPriceValue(raw);
+ }).filter(price=>price!==null);
+ const basePrice=fashionPriceValue($("itemPrice").value);
+ const fallback=basePrice??(fixedPrices.length||setPrices.length?Math.min(...fixedPrices,...setPrices):null);
+ const prices=[];
+ for(const [index,set] of editedFashionColorSets.entries()){
+  const label=String(set.name||"").trim()||"Colour "+(index+1);
+  if(fashionSetUsesSizePrices(set)){
+   if(!set.sizes.length)throw Error("Add at least one size for "+label+" before setting size prices.");
+   for(const size of set.sizes){const price=fashionPriceValue(size.price);if(price===null)throw Error("Enter a valid total price for "+size.name+" in "+label+".");prices.push(price)}
+  }else{
+   const price=fashionPriceValue(set.price)??fallback;
+   if(price===null)throw Error("Enter a price for "+label+".");
+   prices.push(price);
+  }
+ }
+ return prices.length?Math.min(...prices):null;
 }
 function fashionColourLabel(set,index){return String(set?.name||"").trim()||"Colour "+(index+1)}
 function fashionColourOptionGroup(sets){return {id:FASHION_COLOR_GROUP_ID,name:"Colour",selection:"single",required:true,max:1,options:sets.map((set,index)=>({id:set.id,name:fashionColourLabel(set,index),price:0}))}}
-function fashionSizeOptionGroup(sizes,priceBySize=false){return {id:FASHION_SIZE_GROUP_ID,name:"Size",selection:"single",required:true,max:1,priceMode:priceBySize?"fixed":"additional",options:sizes.map(size=>({id:size.id,name:size.name,price:priceBySize?Number(size.price):0}))}}
-function newFashionSizeId(){return "fashion-size-"+(window.crypto?.randomUUID?.()||Date.now()+"-"+Math.random().toString(36).slice(2))}
-function addFashionSize(value){
- if(!isFashionProduct())return;
+function newFashionSizeId(setId=""){return "fashion-size-"+String(setId||"set").replace(/[^a-zA-Z0-9_-]/g,"").slice(0,32)+"-"+(window.crypto?.randomUUID?.()||Date.now()+"-"+Math.random().toString(36).slice(2))}
+function addFashionSizeForSet(setId,value){
+ const set=editedFashionColorSets.find(row=>row.id===setId);if(!set)return;
  const name=String(value??"").trim().replace(/\s+/g," ").slice(0,40);if(!name)return;
- if(editedFashionSizes.some(size=>size.name.toLowerCase()===name.toLowerCase())){showToast(name+" is already added.");return}
- if(editedFashionSizes.length>=16){showToast("You can add up to 16 sizes.",true);return}
- editedFashionSizes.push({id:newFashionSizeId(),name,price:""});drawFashionSizeEditor();
+ if(set.sizes.some(size=>size.name.toLowerCase()===name.toLowerCase())){showToast(name+" is already added to "+fashionColourLabel(set,editedFashionColorSets.indexOf(set))+".");return}
+ if(set.sizes.length>=16){showToast("You can add up to 16 sizes per colour.",true);return}
+ set.sizes.push({id:newFashionSizeId(set.id),name,price:""});drawFashionColorSetEditor();syncFashionSizePricingUI();
 }
 function newFashionColorSet(name){
- return {id:window.crypto?.randomUUID?.()||("fashion-"+Date.now()+"-"+Math.random().toString(36).slice(2)),name:name||"",media_urls:[]};
+ return {id:window.crypto?.randomUUID?.()||("fashion-"+Date.now()+"-"+Math.random().toString(36).slice(2)),name:name||"",description:"",price:"",priceBySize:false,sizes:[],media_urls:[]};
 }
 function newDecorColorSet(name){
  return {id:window.crypto?.randomUUID?.()||("decor-"+Date.now()+"-"+Math.random().toString(36).slice(2)),name:name||"",description:"",media_urls:[]};
@@ -1373,7 +1398,7 @@ function syncDecorColorSetEditor(){
  const decorEnabled=isDecorOffering(),fashionEnabled=isFashionProduct(),decorEditor=$("decorColorSetsEditor"),fashionEditor=$("fashionColorSetsEditor"),mediaField=$("itemMediaField");
  if(decorEditor)decorEditor.hidden=!decorEnabled;
  if(fashionEditor)fashionEditor.hidden=!fashionEnabled;
- const sizeEditor=$("fashionSizeEditor");if(sizeEditor)sizeEditor.hidden=!fashionEnabled;
+ const sizeEditor=$("fashionSizeEditor");if(sizeEditor)sizeEditor.hidden=true;
  if(mediaField)mediaField.hidden=decorEnabled||fashionEnabled;
  if(decorEnabled){
   if(!editedDecorColorSets.length)editedDecorColorSets=[newDecorColorSet()];
@@ -1385,7 +1410,7 @@ function syncDecorColorSetEditor(){
   if(!editedFashionColorSets.length)editedFashionColorSets=[newFashionColorSet()];
   const validIds=new Set(editedFashionColorSets.map(set=>set.id)),firstSet=editedFashionColorSets[0];
   galleryEntries.forEach(entry=>{if(!validIds.has(entry.fashionSetId))entry.fashionSetId=firstSet.id});
-  drawFashionColorSetEditor();drawFashionSizeEditor();drawOwnerGallery();return;
+  drawFashionColorSetEditor();syncFashionSizePricingUI();drawOwnerGallery();return;
  }
  drawOwnerGallery();
 }
@@ -1409,32 +1434,41 @@ function loadFashionColorSets(item){
  editedFashionColorSets=[];
  if(!isFashionProduct())return;
  const media=catalogMediaEntries(item),mediaByUrl=new Set(media.map(entry=>entry.url));
+ const legacyGroup=window.StoreNestOptions.normalize(item?.customization_options).find(row=>row.id===FASHION_SIZE_GROUP_ID);
  const source=Array.isArray(item?.fashion_color_sets)?item.fashion_color_sets:[];
- editedFashionColorSets=source.map(set=>({
-  id:String(set?.id||"").trim()||newFashionColorSet().id,
-  name:String(set?.name||"").trim().slice(0,80),
-  media_urls:(Array.isArray(set?.media_urls)?set.media_urls:[]).map(value=>typeof value==="string"?value:value?.url).filter(url=>typeof url==="string"&&mediaByUrl.has(url))
- }));
+ editedFashionColorSets=source.map(raw=>{
+  const id=String(raw?.id||"").trim()||newFashionColorSet().id;
+  const hasOwnSizes=Array.isArray(raw?.sizes),sizeSource=hasOwnSizes?raw.sizes:(legacyGroup?.options||[]);
+  return {
+   id,name:String(raw?.name||"").trim().slice(0,80),description:String(raw?.description||"").slice(0,500),
+   price:raw?.price==null?"":String(raw.price),
+   priceBySize:typeof raw?.priceBySize==="boolean"?raw.priceBySize:(!hasOwnSizes&&legacyGroup?.priceMode==="fixed"),
+   sizes:sizeSource.map(size=>({
+    id:hasOwnSizes?String(size?.id||newFashionSizeId(id)):newFashionSizeId(id),
+    name:String(size?.name||"").trim().slice(0,40),
+    price:(hasOwnSizes?size?.price:legacyGroup?.priceMode==="fixed"?size?.price:"")??""
+   })).filter(size=>size.name),
+   media_urls:(Array.isArray(raw?.media_urls)?raw.media_urls:[]).map(value=>typeof value==="string"?value:value?.url).filter(url=>typeof url==="string"&&mediaByUrl.has(url))
+  };
+ });
  if(!editedFashionColorSets.length)editedFashionColorSets=[newFashionColorSet()];
  const urlToSet=new Map();
  for(const set of editedFashionColorSets)for(const url of set.media_urls)if(!urlToSet.has(url))urlToSet.set(url,set.id);
  galleryEntries.forEach(entry=>{entry.fashionSetId=urlToSet.get(entry.url)||editedFashionColorSets[0].id});
 }
-function loadFashionSizes(item){
- editedFashionSizes=[];fashionSizePricesEnabled=false;
- const toggle=$("fashionSizePricesEnabled");if(toggle)toggle.checked=false;
- if(!isFashionProduct())return;
- const group=window.StoreNestOptions.normalize(item?.customization_options).find(row=>row.id===FASHION_SIZE_GROUP_ID);
- fashionSizePricesEnabled=group?.priceMode==="fixed";
- if(toggle)toggle.checked=fashionSizePricesEnabled;
- editedFashionSizes=(group?.options||[]).map(option=>({id:option.id,name:option.name,price:group?.priceMode==="fixed"?String(option.price):""}));
-}
+function loadFashionSizes(){fashionSizePricesEnabled=editedFashionColorSets.some(fashionSetUsesSizePrices)}
 function syncItemPricingFields(){const booking=usesBookingPricing();$("itemPriceField").hidden=booking;$("bookingPricingFields").hidden=!booking;$("itemPrice").required=!booking;syncDecorColorSetEditor()}
 $("itemType").addEventListener("change",syncItemPricingFields);
 $("itemCategory").addEventListener("change",syncDecorColorSetEditor);
 function ownerItemPriceLabel(item){
- const sizeGroup=window.StoreNestOptions.normalize(item?.customization_options).find(group=>group.id==="fashion-size");
- if(sizeGroup?.priceMode==="fixed"&&sizeGroup.options.length)return "From "+formatOrderMoney(Math.min(...sizeGroup.options.map(option=>option.price)));
+ const fashionSets=Array.isArray(item?.fashion_color_sets)?item.fashion_color_sets:[];
+ const variantPrices=fashionSets.flatMap(set=>{
+  if(set?.priceBySize&&Array.isArray(set.sizes))return set.sizes.map(size=>Number(size.price)).filter(price=>Number.isFinite(price)&&price>=0);
+  const price=Number(set?.price);return Number.isFinite(price)&&set?.price!=null?[price]:[];
+ });
+ const legacySizeGroup=window.StoreNestOptions.normalize(item?.customization_options).find(group=>group.id==="fashion-size");
+ if(!variantPrices.length&&legacySizeGroup?.priceMode==="fixed")variantPrices.push(...legacySizeGroup.options.map(option=>Number(option.price)).filter(price=>Number.isFinite(price)&&price>=0));
+ if(variantPrices.length)return "From "+formatOrderMoney(Math.min(...variantPrices));
  if(!isCateringDecorStore())return formatOrderMoney(item.price);
  const min=item.price_range_min,max=item.price_range_max;
  if(min!=null&&max!=null&&Number(min)!==Number(max))return formatOrderMoney(min)+" – "+formatOrderMoney(max);
@@ -1460,7 +1494,7 @@ function openItemModal(item){
   syncItemPricingFields();$("itemDescription").value=item?.description||"";
   editedOptionGroups=window.StoreNestOptions.normalize(item?.customization_options).filter(group=>group.id!==FASHION_COLOR_GROUP_ID&&group.id!==FASHION_SIZE_GROUP_ID);drawCustomizationEditor();
   $("itemAvailability").value=String(item?.is_available??true);$("itemOrder").value=item?.display_order??businessItems.length;$("itemCategory").value=item?.category_id||"";
-  $("itemFormMessage").hidden=true;editedDecorColorSets=[];editedFashionColorSets=[];editedFashionSizes=[];resetItemGallery(item);loadDecorColorSets(item);loadFashionColorSets(item);loadFashionSizes(item);syncDecorColorSetEditor();openModal("itemModal");
+  $("itemFormMessage").hidden=true;editedDecorColorSets=[];editedFashionColorSets=[];resetItemGallery(item);loadDecorColorSets(item);loadFashionColorSets(item);loadFashionSizes();syncDecorColorSetEditor();openModal("itemModal");
   if($("itemModal")?.hidden)throw new Error("The edit form could not be opened.");
  }catch(error){console.error("StoreNest product edit error",error);showToast("Could not open the product editor: "+friendlyError(error),true)}
 }
@@ -1670,7 +1704,7 @@ function isProductVideo(url){return /\.(?:mp4|webm)(?:[?#]|$)/i.test(String(url|
 function validateProductMedia(file){if(!file||!file.size||!MEDIA_TYPES[file.type]||file.size>(file.type.startsWith("video/")?20:10)*1048576)throw Error("Images/GIFs must be 10 MB or smaller; MP4/WebM clips must be 20 MB or smaller.")}
 function validateProductVideo(file){return file?.type.startsWith("video/")?validateVideoDuration(file):Promise.resolve()}
 const FASHION_COLOR_GROUP_ID="fashion-color",FASHION_SIZE_GROUP_ID="fashion-size";
-let galleryEntries=[],galleryObjectUrls=[],editedDecorColorSets=[],editedFashionColorSets=[],editedFashionSizes=[],fashionSizePricesEnabled=false;
+let galleryEntries=[],galleryObjectUrls=[],editedDecorColorSets=[],editedFashionColorSets=[],fashionSizePricesEnabled=false;
 function normalizeCatalogMedia(value){
  const source=typeof value==="string"?{url:value}:value;
  if(!source||typeof source.url!=="string"||!/^https:\/\//i.test(source.url))return null;
@@ -1807,51 +1841,42 @@ function drawDecorColorSetEditor(){
   card.append(head,fields,uploadLabel,gallery);root.append(card);
  });
 }
-function drawFashionSizeEditor(){
- const root=$("fashionSizesList"),priceBySize=isFashionProduct()&&$("fashionSizePricesEnabled").checked;
- root.replaceChildren();root.classList.toggle("fashion-size-chips-priced",priceBySize);
- if(!editedFashionSizes.length){const empty=document.createElement("small");empty.className="decor-color-set-empty";empty.textContent="No sizes added. Add sizes only if this item needs them.";root.append(empty);syncFashionSizePricingUI();return}
- for(const size of editedFashionSizes){
-  const chip=document.createElement(priceBySize?"div":"span");chip.className=priceBySize?"fashion-size-price-row":"fashion-size-chip";
+function drawFashionSizesForSet(card,set){
+ const section=document.createElement("div");section.className="fashion-set-sizes";
+ const heading=document.createElement("div");heading.className="decor-color-sets-heading";
+ const headingText=document.createElement("div"),title=document.createElement("strong"),note=document.createElement("small");
+ title.textContent="Sizes and pricing";note.textContent="These options apply only to this colour.";
+ headingText.append(title,note);heading.append(headingText);section.append(heading);
+ const presets=document.createElement("div");presets.className="fashion-size-presets";
+ ["XXS","XS","S","M","L","XL","XXL"].forEach(name=>{
+  const button=document.createElement("button");button.type="button";button.textContent=name;button.dataset.fashionSizePreset=name;button.dataset.fashionSizeSet=set.id;presets.append(button);
+ });
+ section.append(presets);
+ const addRow=document.createElement("div");addRow.className="fashion-size-add-row";
+ const input=document.createElement("input");input.type="text";input.maxLength=200;input.placeholder="e.g. 28, 30, 32 or 38, 39, 40";input.setAttribute("aria-label","Enter sizes for "+fashionColourLabel(set,editedFashionColorSets.indexOf(set)));input.dataset.fashionCustomSizes=set.id;
+ const add=document.createElement("button");add.type="button";add.className="outline-button";add.textContent="Add sizes";add.dataset.addFashionSizes=set.id;
+ addRow.append(input,add);section.append(addRow);
+ const toggleLabel=document.createElement("label");toggleLabel.className="fashion-size-price-toggle";
+ const toggle=document.createElement("input");toggle.type="checkbox";toggle.checked=Boolean(set.priceBySize);toggle.dataset.fashionSizePriceToggle=set.id;
+ const copy=document.createElement("span"),copyTitle=document.createElement("strong"),copyNote=document.createElement("small");
+ copyTitle.textContent="Different price for each size (optional)";copyNote.textContent="Choosing a size updates the single price shown to customers.";
+ copy.append(copyTitle,copyNote);toggleLabel.append(toggle,copy);section.append(toggleLabel);
+ const list=document.createElement("div");list.className="fashion-size-chips"+(set.priceBySize?" fashion-size-chips-priced":"");list.dataset.fashionSizeList=set.id;
+ if(!set.sizes.length){const empty=document.createElement("small");empty.className="decor-color-set-empty";empty.textContent="No sizes added for this colour.";list.append(empty)}
+ for(const size of set.sizes){
+  const chip=document.createElement(set.priceBySize?"div":"span");chip.className=set.priceBySize?"fashion-size-price-row":"fashion-size-chip";
   const label=document.createElement("strong");label.textContent=size.name;
-  const remove=document.createElement("button");remove.type="button";remove.textContent="×";remove.title="Remove size "+size.name;remove.setAttribute("aria-label","Remove size "+size.name);remove.dataset.removeFashionSize=size.id;
-  if(priceBySize){
-   const priceField=document.createElement("label");priceField.className="fashion-size-price-input";priceField.setAttribute("aria-label","Total price for size "+size.name);
+  const remove=document.createElement("button");remove.type="button";remove.textContent="×";remove.title="Remove size "+size.name;remove.setAttribute("aria-label","Remove size "+size.name);remove.dataset.removeFashionSize=size.id;remove.dataset.fashionSizeSet=set.id;
+  if(set.priceBySize){
+   const priceField=document.createElement("label");priceField.className="fashion-size-price-input";priceField.setAttribute("aria-label","Total price for "+size.name);
    const currency=document.createElement("span");currency.textContent="R";
-   const input=document.createElement("input");input.type="number";input.min="0";input.max="100000";input.step="0.01";input.placeholder="0.00";input.required=true;input.value=size.price??"";input.dataset.fashionSizePrice=size.id;input.setAttribute("aria-label","Total price for size "+size.name);
-   priceField.append(currency,input);chip.append(label,priceField,remove);
+   const price=document.createElement("input");price.type="number";price.min="0";price.max="100000";price.step="0.01";price.placeholder="0.00";price.value=size.price??"";price.dataset.fashionSizePrice=size.id;price.dataset.fashionSizeSet=set.id;price.setAttribute("aria-label","Total price for "+size.name);
+   priceField.append(currency,price);chip.append(label,priceField,remove);
   }else chip.append(label,remove);
-  root.append(chip);
+  list.append(chip);
  }
- syncFashionSizePricingUI();
+ section.append(list);card.append(section);
 }
-$("fashionSizePricesEnabled").addEventListener("change",()=>{
- const enabled=$("fashionSizePricesEnabled").checked;
- if(enabled&&!fashionSizePricesEnabled){
-  const base=String($("itemPrice").value||"").trim();
-  editedFashionSizes=editedFashionSizes.map(size=>({...size,price:String(size.price??"").trim()||base}));
- }
- fashionSizePricesEnabled=enabled;syncFashionSizePricingUI();drawFashionSizeEditor();
-});
-$("fashionSizesList").addEventListener("input",event=>{
- const input=event.target.closest("[data-fashion-size-price]");if(!input)return;
- const size=editedFashionSizes.find(row=>row.id===input.dataset.fashionSizePrice);if(size)size.price=input.value;
- syncFashionSizePricingUI();
-});
-$("fashionSizePresets").addEventListener("click",event=>{
- const button=event.target.closest("[data-fashion-size-preset]");if(button)addFashionSize(button.dataset.fashionSizePreset);
-});
-function addFashionCustomSizes(){
- const input=$("fashionCustomSizes"),raw=input.value.trim();if(!raw)return;
- const values=/^\d+(?:\s+\d+)+$/.test(raw)?raw.split(/\s+/):raw.split(/[,;\n]+/);
- values.map(value=>value.trim()).filter(Boolean).forEach(addFashionSize);input.value="";
-}
-$("addFashionSizes").addEventListener("click",addFashionCustomSizes);
-$("fashionCustomSizes").addEventListener("keydown",event=>{if(event.key==="Enter"){event.preventDefault();addFashionCustomSizes()}});
-$("fashionSizesList").addEventListener("click",event=>{
- const button=event.target.closest("[data-remove-fashion-size]");if(!button)return;
- editedFashionSizes=editedFashionSizes.filter(size=>size.id!==button.dataset.removeFashionSize);drawFashionSizeEditor();
-});
 function drawFashionColorSetEditor(){
  const root=$("fashionColorSetsList");root.replaceChildren();
  editedFashionColorSets.forEach((set,index)=>{
@@ -1863,32 +1888,71 @@ function drawFashionColorSetEditor(){
   const fields=document.createElement("div");fields.className="decor-color-set-fields";
   const nameLabel=document.createElement("label");nameLabel.textContent="Colour name (optional)";
   const nameInput=document.createElement("input");nameInput.type="text";nameInput.maxLength=80;nameInput.placeholder="e.g. Black, White, Brown";nameInput.value=set.name;nameInput.dataset.fashionSetName=set.id;nameLabel.append(nameInput);fields.append(nameLabel);
+  const descriptionLabel=document.createElement("label");descriptionLabel.textContent="Description (optional)";
+  const description=document.createElement("textarea");description.maxLength=500;description.placeholder="Add details for this colour";description.value=set.description||"";description.dataset.fashionSetDescription=set.id;descriptionLabel.append(description);fields.append(descriptionLabel);
+  const priceLabel=document.createElement("label");priceLabel.textContent="Price for this colour (optional)";
+  const priceInput=document.createElement("input");priceInput.type="number";priceInput.min="0";priceInput.max="100000";priceInput.step="0.01";priceInput.placeholder="Uses product price if blank";priceInput.value=set.price??"";priceInput.dataset.fashionSetPrice=set.id;priceLabel.append(priceInput);fields.append(priceLabel);
   const uploadLabel=document.createElement("label");uploadLabel.className="decor-color-set-upload";
   const uploadText=document.createElement("span");uploadText.textContent="Upload photos for this colour";
   const upload=document.createElement("input");upload.type="file";upload.multiple=true;upload.accept="image/jpeg,image/png,image/webp,image/gif";upload.dataset.fashionSetUpload=set.id;
   uploadLabel.append(uploadText,upload);
   const gallery=document.createElement("div");gallery.className="owner-gallery";gallery.dataset.fashionSetGallery=set.id;
-  card.append(head,fields,uploadLabel,gallery);root.append(card);
+  card.append(head,fields,uploadLabel,gallery);drawFashionSizesForSet(card,set);root.append(card);
  });
 }
 $("addFashionColorSet").addEventListener("click",()=>{
  if(!isFashionProduct())return;
  if(editedFashionColorSets.length>=12){showToast("You can add up to 12 colours.",true);return}
- editedFashionColorSets.push(newFashionColorSet());drawFashionColorSetEditor();drawOwnerGallery();
+ editedFashionColorSets.push(newFashionColorSet());drawFashionColorSetEditor();syncFashionSizePricingUI();drawOwnerGallery();
 });
 $("fashionColorSetsList").addEventListener("input",event=>{
  const target=event.target,card=target.closest("[data-fashion-set-card]");if(!card)return;
  const set=editedFashionColorSets.find(row=>row.id===card.dataset.fashionSetCard);if(!set)return;
  if(target.matches("[data-fashion-set-name]")){set.name=target.value;card.querySelector(".decor-color-set-head h4").textContent=fashionColourLabel(set,editedFashionColorSets.indexOf(set))}
+ if(target.matches("[data-fashion-set-description]"))set.description=target.value;
+ if(target.matches("[data-fashion-set-price]")){set.price=target.value;syncFashionSizePricingUI()}
+ if(target.matches("[data-fashion-size-price]")){
+  const size=set.sizes.find(row=>row.id===target.dataset.fashionSizePrice);if(size)size.price=target.value;
+  syncFashionSizePricingUI();
+ }
 });
 $("fashionColorSetsList").addEventListener("click",event=>{
+ const preset=event.target.closest("[data-fashion-size-preset]");
+ if(preset){addFashionSizeForSet(preset.dataset.fashionSizeSet,preset.dataset.fashionSizePreset);return}
+ const add=event.target.closest("[data-add-fashion-sizes]");
+ if(add){
+  const input=[...$("fashionColorSetsList").querySelectorAll("[data-fashion-custom-sizes]")].find(row=>row.dataset.fashionCustomSizes===add.dataset.addFashionSizes);
+  if(!input)return;
+  const raw=input.value.trim();if(!raw)return;
+  const values=/^\d+(?:\s+\d+)+$/.test(raw)?raw.split(/\s+/):raw.split(/[,;\n]+/);
+  values.map(value=>value.trim()).filter(Boolean).forEach(value=>addFashionSizeForSet(add.dataset.addFashionSizes,value));input.value="";return;
+ }
+ const removeSize=event.target.closest("[data-remove-fashion-size]");
+ if(removeSize){
+  const set=editedFashionColorSets.find(row=>row.id===removeSize.dataset.fashionSizeSet);if(!set)return;
+  set.sizes=set.sizes.filter(size=>size.id!==removeSize.dataset.removeFashionSize);drawFashionColorSetEditor();syncFashionSizePricingUI();return;
+ }
  const button=event.target.closest("[data-remove-fashion-set]");if(!button)return;
  const id=button.dataset.removeFashionSet;if(editedFashionColorSets.length<2)return;
  editedFashionColorSets=editedFashionColorSets.filter(set=>set.id!==id);
  galleryEntries=galleryEntries.filter(entry=>entry.fashionSetId!==id);
- drawFashionColorSetEditor();drawOwnerGallery();updateCatalogMediaQualityNote();
+ drawFashionColorSetEditor();drawOwnerGallery();syncFashionSizePricingUI();updateCatalogMediaQualityNote();
+});
+$("fashionColorSetsList").addEventListener("keydown",event=>{
+ const input=event.target.closest("[data-fashion-custom-sizes]");
+ if(input&&event.key==="Enter"){event.preventDefault();[...$("fashionColorSetsList").querySelectorAll("[data-add-fashion-sizes]")].find(button=>button.dataset.addFashionSizes===input.dataset.fashionCustomSizes)?.click()}
 });
 $("fashionColorSetsList").addEventListener("change",async event=>{
+ const toggle=event.target.closest("[data-fashion-size-price-toggle]");
+ if(toggle){
+  const set=editedFashionColorSets.find(row=>row.id===toggle.dataset.fashionSizePriceToggle);if(!set)return;
+  set.priceBySize=toggle.checked;
+  if(set.priceBySize){
+   const fallback=String(set.price||$("itemPrice").value||"").trim();
+   set.sizes=set.sizes.map(size=>({...size,price:String(size.price??"").trim()||fallback}));
+  }
+  drawFashionColorSetEditor();syncFashionSizePricingUI();return;
+ }
  const input=event.target.closest("[data-fashion-set-upload]");if(!input)return;
  const setId=input.dataset.fashionSetUpload,files=[...input.files];if(!files.length)return;
  if(galleryEntries.length+files.length>12){showToast("Maximum 12 pictures across all colours.",true);input.value="";return}
@@ -2058,7 +2122,7 @@ $("itemForm").addEventListener("submit",async event=>{
   if(bookingPricing&&bookingFeeMin!==null&&bookingFeeMax!==null&&bookingFeeMax<bookingFeeMin)throw Error("The upper booking fee cannot be lower than the starting booking fee.");
   const isDecorItem=isDecorOffering(),isFashionItem=isFashionProduct();
   if(isDecorItem)validateDecorColorSets();if(isFashionItem)validateFashionColorSets();
-  const priceBySize=isFashionItem&&fashionSizePricesEnabled,minimumSizePrice=priceBySize?validateFashionSizePricing():null;
+  const minimumFashionPrice=isFashionItem?validateFashionSizePricing():null;
   client=await loadAuth();
   const entries=[],orderedEntries=isDecorItem?orderedDecorGalleryEntries():isFashionItem?orderedFashionGalleryEntries():galleryEntries;
   for(const entry of orderedEntries){
@@ -2066,12 +2130,12 @@ $("itemForm").addEventListener("submit",async event=>{
    else entries.push({url:entry.url,width:entry.width||0,height:entry.height||0,variants:entry.variants||[]});
   }
   const primaryImage=entries.find(entry=>!isProductVideo(entry.url))?.url||null;
-  const decorColorSets=isDecorItem?serializeDecorColorSets(entries):[],fashionColorSets=isFashionItem?serializeFashionColorSets(entries):[],fashionSizes=isFashionItem?editedFashionSizes:[];
+  const decorColorSets=isDecorItem?serializeDecorColorSets(entries):[],fashionColorSets=isFashionItem?serializeFashionColorSets(entries):[];
   const prior=businessItems.find(item=>item.id===itemId);
   const customizationOptions=optionsForSave();
-  if(fashionSizes.length)customizationOptions.unshift(fashionSizeOptionGroup(fashionSizes,priceBySize));
+  
   if(fashionColorSets.length>1)customizationOptions.unshift(fashionColourOptionGroup(fashionColorSets));
-  const row={image_url:primaryImage,media_urls:entries,decor_color_sets:decorColorSets,fashion_color_sets:fashionColorSets,customization_options:customizationOptions,business_id:currentBusiness.id,item_type:$("itemType").value,name:$("itemName").value.trim(),description:$("itemDescription").value.trim(),price:bookingPricing?(priceRangeMin??priceRangeMax??0):priceBySize?minimumSizePrice:Number($("itemPrice").value),price_range_min:bookingPricing?priceRangeMin:(prior?.price_range_min??null),price_range_max:bookingPricing?priceRangeMax:(prior?.price_range_max??null),booking_fee:bookingPricing?((bookingFeeMin===null)!==(bookingFeeMax===null)?(bookingFeeMin??bookingFeeMax):null):(prior?.booking_fee??null),booking_fee_min:bookingPricing?bookingFeeMin:(prior?.booking_fee_min??prior?.booking_fee??null),booking_fee_max:bookingPricing?bookingFeeMax:(prior?.booking_fee_max??null),category_id:$("itemCategory").value||null,is_available:$("itemAvailability").value==="true",display_order:Number($("itemOrder").value)||0,updated_at:new Date().toISOString()};
+  const row={image_url:primaryImage,media_urls:entries,decor_color_sets:decorColorSets,fashion_color_sets:fashionColorSets,customization_options:customizationOptions,business_id:currentBusiness.id,item_type:$("itemType").value,name:$("itemName").value.trim(),description:$("itemDescription").value.trim(),price:bookingPricing?(priceRangeMin??priceRangeMax??0):isFashionItem?minimumFashionPrice:Number($("itemPrice").value),price_range_min:bookingPricing?priceRangeMin:(prior?.price_range_min??null),price_range_max:bookingPricing?priceRangeMax:(prior?.price_range_max??null),booking_fee:bookingPricing?((bookingFeeMin===null)!==(bookingFeeMax===null)?(bookingFeeMin??bookingFeeMax):null):(prior?.booking_fee??null),booking_fee_min:bookingPricing?bookingFeeMin:(prior?.booking_fee_min??prior?.booking_fee??null),booking_fee_max:bookingPricing?bookingFeeMax:(prior?.booking_fee_max??null),category_id:$("itemCategory").value||null,is_available:$("itemAvailability").value==="true",display_order:Number($("itemOrder").value)||0,updated_at:new Date().toISOString()};
   const query=itemId?client.from("business_items").update(row).eq("id",itemId).eq("business_id",currentBusiness.id):client.from("business_items").insert(row);
   const {data,error}=await query.select("id");
   if(error)throw error;if(!data?.length)throw Error("The product could not be saved. Please retry.");
