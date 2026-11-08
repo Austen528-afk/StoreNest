@@ -31,7 +31,7 @@ h1{margin:0;font-size:clamp(26px,4vw,36px);letter-spacing:-.045em}
 .basket-row{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid #eff2f0}
 .basket-row:last-child{border-bottom:0}
 .select-item{display:grid;place-items:center}
-.basket-item-open{display:grid;grid-template-columns:74px minmax(0,1fr);align-items:center;gap:12px;width:100%;min-width:0;padding:0;border:0;background:transparent;color:inherit;text-align:left}
+.basket-item-open{display:grid;grid-template-columns:74px minmax(0,1fr);align-items:center;gap:12px;width:100%;min-width:0;padding:0;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}
 .basket-item-open:hover .item-title{color:#218a70;text-decoration:underline}
 .basket-item-open:focus-visible{outline:2px solid #20a782;outline-offset:4px;border-radius:10px}
 .basket-item-copy{display:block;min-width:0}
@@ -85,28 +85,6 @@ h1{margin:0;font-size:clamp(26px,4vw,36px);letter-spacing:-.045em}
  .footer-selection span{font-size:10px}
  .primary-button{min-height:42px;padding:0 13px;font-size:12px}
 }
-.basket-item-detail-overlay{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;background:#101a16b8;overflow:auto;overscroll-behavior:contain}
-.basket-item-detail-overlay[hidden]{display:none!important}
-.basket-item-detail-dialog{display:flex;flex-direction:column;width:min(650px,100%);max-height:calc(100dvh - 32px);min-height:0;overflow:hidden;border-radius:17px;background:#fff;color:#182321;box-shadow:0 18px 55px #0004}
-.basket-item-detail-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:17px 19px;border-bottom:1px solid #e6ede8}
-.basket-item-detail-head h2{margin:0;font-size:20px;line-height:1.25}
-.basket-item-detail-close{flex:0 0 auto;width:38px;height:38px;border:0;border-radius:50%;background:#eef2ef;color:#17231d;font-size:25px;line-height:1}
-.basket-item-detail-gallery{display:flex;gap:10px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;padding:12px 16px 8px;touch-action:pan-x pan-y}
-.basket-item-detail-gallery[hidden]{display:none!important}
-.basket-item-detail-slide{display:grid;place-items:center;flex:0 0 100%;min-height:170px;scroll-snap-align:center}
-.basket-item-detail-slide img,.basket-item-detail-slide video{display:block;max-width:100%;max-height:min(55dvh,520px);object-fit:contain;border-radius:8px}
-.basket-item-detail-copy{min-height:0;overflow-y:auto;padding:4px 19px 18px;overscroll-behavior:contain}
-.basket-item-detail-description{margin:8px 0 13px;color:#66746c;font-size:14px;line-height:1.55;white-space:pre-wrap}
-.basket-item-detail-copy h3{margin:14px 0 7px;font-size:12px;color:#56665d}
-.basket-item-detail-options{display:grid;gap:7px}
-.basket-item-detail-option{display:flex;flex-wrap:wrap;gap:5px 10px;font-size:13px}
-.basket-item-detail-option strong{color:#283d32}
-.basket-item-detail-option span,.basket-item-detail-note{color:#68776e}
-.basket-item-detail-note{margin:12px 0;padding:10px 12px;border-radius:9px;background:#f5f8f6;font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere}
-.basket-item-detail-price{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:15px;padding-top:13px;border-top:1px solid #e5ece7}
-.basket-item-detail-price span{color:#6c7a73;font-size:13px}
-.basket-item-detail-price strong{font-size:17px;color:#17231d}
-@media(max-width:620px){.basket-item-detail-overlay{padding:0}.basket-item-detail-dialog{width:100%;height:100dvh;max-height:100dvh;border-radius:0}.basket-item-detail-head{padding:14px}.basket-item-detail-copy{padding:2px 14px 18px}.basket-item-detail-gallery{max-height:57dvh}.basket-item-detail-slide img,.basket-item-detail-slide video{max-height:52dvh}}
 </style>
 </head>
 <body>
@@ -130,18 +108,12 @@ h1{margin:0;font-size:clamp(26px,4vw,36px);letter-spacing:-.045em}
 <div class="footer-selection"><strong id="selectedCount">0 items selected</strong><span id="selectedTotal">Estimated total R0.00</span></div>
 <button class="primary-button" id="checkoutSelected" type="button" disabled>Checkout selected</button>
 </div>
-<div id="basketItemDetailOverlay" class="basket-item-detail-overlay" hidden>
- <section class="basket-item-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="basketItemDetailTitle" tabindex="-1">
-  <header class="basket-item-detail-head"><div><small id="basketItemDetailStore"></small><h2 id="basketItemDetailTitle">Item details</h2></div><button type="button" id="basketItemDetailClose" class="basket-item-detail-close" aria-label="Close item details">×</button></header>
-  <div id="basketItemDetailGallery" class="basket-item-detail-gallery" aria-label="Item pictures" hidden></div>
-  <div id="basketItemDetailCopy" class="basket-item-detail-copy"></div>
- </section>
-</div>
-<script src="/customer-auth.js"></script>
+
 <script>
 "use strict";
 const GLOBAL_BASKET_STORAGE_KEY="storenest:global-basket:v1";
 const GLOBAL_CHECKOUT_STORAGE_KEY="storenest:global-checkout:v1";
+const GLOBAL_BASKET_SELECTION_STORAGE_KEY="storenest:global-basket-selection:v1";
 const contents=document.getElementById("basketContents");
 let selectedBasketIds=null,knownBasketIds=new Set();
 function esc(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
@@ -165,7 +137,13 @@ function groupBasket(rows){
 }
 function syncSelectedIds(rows){
  const current=new Set(rows.map(basketIdentity));
- if(selectedBasketIds===null){selectedBasketIds=new Set(current);knownBasketIds=current;return}
+ if(selectedBasketIds===null){
+  let restored=null;
+  try{restored=JSON.parse(sessionStorage.getItem(GLOBAL_BASKET_SELECTION_STORAGE_KEY)||"null");sessionStorage.removeItem(GLOBAL_BASKET_SELECTION_STORAGE_KEY)}catch(_){}
+  selectedBasketIds=Array.isArray(restored)?new Set(restored.filter(id=>typeof id==="string")):new Set(current);
+  for(const id of [...selectedBasketIds])if(!current.has(id))selectedBasketIds.delete(id);
+  knownBasketIds=current;return;
+ }
  for(const id of [...selectedBasketIds])if(!current.has(id))selectedBasketIds.delete(id);
  for(const id of current)if(!knownBasketIds.has(id))selectedBasketIds.add(id);
  knownBasketIds=current;
@@ -190,93 +168,23 @@ function updateSelectionUI(rows){
  button.disabled=selected.length===0||tooMany||invalidStore;
  button.textContent="Checkout selected ("+selected.reduce((sum,row)=>sum+Math.max(1,Math.floor(Number(row.quantity)||1)),0)+")";
 }
-const basketItemDetailOverlay=document.getElementById("basketItemDetailOverlay");
-const basketItemDetailTitle=document.getElementById("basketItemDetailTitle");
-const basketItemDetailStore=document.getElementById("basketItemDetailStore");
-const basketItemDetailGallery=document.getElementById("basketItemDetailGallery");
-const basketItemDetailCopy=document.getElementById("basketItemDetailCopy");
-const basketItemDetailClose=document.getElementById("basketItemDetailClose");
-let basketItemDetailReturnFocus=null,basketItemDetailRequest=0;
-function findCachedBasketItem(row){
- try{
-  const cached=JSON.parse(sessionStorage.getItem("storenest:public-store:v2:"+String(row.businessSlug||""))||"null");
-  if(cached?.business?.id&&String(cached.business.id)!==String(row.businessId))return null;
-  return Array.isArray(cached?.items)?cached.items.find(item=>String(item.id)===String(row.itemId))||null:null;
- }catch(_){return null}
-}
-function basketItemMedia(row,item){
- const saved=Array.isArray(row.itemMediaUrls)?row.itemMediaUrls.map(safeImage).filter(Boolean):[];
- let source=saved;
- const colorId=row.selection?.["fashion-color"]?.[0];
- const colorSet=colorId&&Array.isArray(item?.fashion_color_sets)?item.fashion_color_sets.find(set=>String(set?.id)===String(colorId)):null;
- if(!source.length&&colorSet&&Array.isArray(colorSet.media_urls))source=colorSet.media_urls.map(value=>safeImage(typeof value==="string"?value:value?.url)).filter(Boolean);
- if(!source.length&&Array.isArray(item?.media_urls))source=item.media_urls.map(value=>safeImage(typeof value==="string"?value:value?.url)).filter(Boolean);
- if(!source.length&&item?.image_url)source=[safeImage(item.image_url)].filter(Boolean);
- if(!source.length&&row.itemImageUrl)source=[safeImage(row.itemImageUrl)].filter(Boolean);
- return [...new Set(source)].slice(0,12);
-}
-function renderBasketItemDetails(row,item=null){
- const colorId=row.selection?.["fashion-color"]?.[0];
- const colorSet=colorId&&Array.isArray(item?.fashion_color_sets)?item.fashion_color_sets.find(set=>String(set?.id)===String(colorId)):null;
- const description=String(row.itemDescription||item?.description||"").trim();
- const colorDescription=String(row.itemColorDescription||colorSet?.description||"").trim();
- const colorName=String(row.itemColorName||colorSet?.name||"").trim();
- const media=basketItemMedia(row,item);
- basketItemDetailTitle.textContent=row.itemName||item?.name||"Item";
- basketItemDetailStore.textContent=row.businessName||"";
- basketItemDetailGallery.innerHTML=media.map((url,index)=>{
-  const isVideo=/\.(mp4|webm)(?:[?#]|$)/i.test(url);
-  return '<div class="basket-item-detail-slide" role="group" aria-label="'+(isVideo?"Video":"Picture")+' '+(index+1)+' of '+media.length+'">'+(isVideo?'<video controls playsinline preload="metadata" src="'+esc(url)+'"></video>':'<img src="'+esc(url)+'" alt="'+esc(row.itemName||"Item")+' photo '+(index+1)+'" loading="lazy" decoding="async">')+'</div>';
- }).join("");
- basketItemDetailGallery.hidden=!media.length;
- const options=Array.isArray(row.summary)?row.summary.map(option=>{
-  const values=Array.isArray(option?.values)?option.values.map(String).filter(Boolean):[];
-  return values.length?'<div class="basket-item-detail-option"><strong>'+esc(option.group||"Options")+':</strong><span>'+esc(values.join(", "))+'</span></div>':"";
- }).join(""):"";
- const quantity=Math.max(1,Math.floor(Number(row.quantity)||1)),unitPrice=Number(row.unitPrice)||0;
- const lineTotal=unitPrice*quantity;
- basketItemDetailCopy.innerHTML=
-  (description?'<h3>Description</h3><p class="basket-item-detail-description">'+esc(description)+'</p>':'<p class="basket-item-detail-description">A description is not available for this saved basket item.</p>')+
-  (colorName||colorDescription?'<h3>Selected colour</h3><div class="basket-item-detail-option"><strong>'+esc(colorName||"Colour")+'</strong></div>'+(colorDescription?'<p class="basket-item-detail-description">'+esc(colorDescription)+'</p>':""):"")+
-  (options?'<h3>Selected options</h3><div class="basket-item-detail-options">'+options+'</div>':"")+
-  (row.note?'<h3>Special instructions</h3><p class="basket-item-detail-note">'+esc(row.note)+'</p>':"")+
-  '<div class="basket-item-detail-price"><span>'+quantity+' × '+money(unitPrice)+' each</span><strong>'+money(lineTotal)+'</strong></div>';
-}
-async function openBasketItemDetails(button){
+function startBasketItemEdit(button){
  const row=readBasket().find(entry=>String(entry.businessId)===String(button.dataset.business)&&String(entry.cartKey||"")===String(button.dataset.key));
  if(!row)return;
- basketItemDetailReturnFocus=button;
- const request=++basketItemDetailRequest;
- const cached=findCachedBasketItem(row);
- renderBasketItemDetails(row,cached);
- basketItemDetailOverlay.hidden=false;
- basketItemDetailClose.focus({preventScroll:true});
- if(row.itemDescription&&Array.isArray(row.itemMediaUrls)&&row.itemMediaUrls.length)return;
- try{
-  if(!window.StoreNestCustomerAuth?.getClient)return;
-  const client=await window.StoreNestCustomerAuth.getClient();
-  const {data,error}=await client.from("business_items").select("id,name,description,image_url,media_urls,fashion_color_sets").eq("id",row.itemId).eq("business_id",row.businessId).maybeSingle();
-  if(error)throw error;
-  if(request!==basketItemDetailRequest||basketItemDetailOverlay.hidden||!data)return;
-  const latest=readBasket().find(entry=>String(entry.businessId)===String(row.businessId)&&String(entry.cartKey||"")===String(row.cartKey||""))||row;
-  renderBasketItemDetails(latest,data);
- }catch(error){console.warn("Could not load the saved basket item description:",error)}
+ const slug=String(row.businessSlug||""),cartKey=String(row.cartKey||"");
+ if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)||!cartKey||cartKey.length>4096){
+  const message=document.getElementById("basketMessage");
+  message.textContent="This item’s store link is unavailable. Refresh the basket and try again.";
+  message.hidden=false;return;
+ }
+ try{sessionStorage.setItem(GLOBAL_BASKET_SELECTION_STORAGE_KEY,JSON.stringify([...selectedBasketIds]))}
+ catch(error){console.warn("Could not preserve basket selections while editing",error)}
+ const params=new URLSearchParams({slug,editCartKey:cartKey,returnToBasket:"1"});
+ location.href="/storefront.html?"+params.toString();
 }
-function closeBasketItemDetails(){
- if(basketItemDetailOverlay.hidden)return;
- basketItemDetailOverlay.hidden=true;
- basketItemDetailRequest++;
- basketItemDetailGallery.querySelectorAll("video").forEach(video=>video.pause());
- if(basketItemDetailReturnFocus?.isConnected)basketItemDetailReturnFocus.focus({preventScroll:true});
- basketItemDetailReturnFocus=null;
-}
-basketItemDetailClose.addEventListener("click",closeBasketItemDetails);
-basketItemDetailOverlay.addEventListener("click",event=>{if(event.target===basketItemDetailOverlay)closeBasketItemDetails()});
-document.addEventListener("keydown",event=>{if(event.key==="Escape"&&!basketItemDetailOverlay.hidden)closeBasketItemDetails()});
-
 function renderBasket(){
  const rows=readBasket();
- if(rows.length)syncSelectedIds(rows);
+ syncSelectedIds(rows);
  document.getElementById("selectionSummary").closest(".selection-toolbar").hidden=!rows.length;
  document.getElementById("basketCheckoutFooter").hidden=!rows.length;
  if(!rows.length){
@@ -299,7 +207,7 @@ function renderBasket(){
    const key=String(row.cartKey||""),identity=basketIdentity(row),quantity=Math.max(1,Math.floor(Number(row.quantity)||1));
    return '<article class="basket-row">'+
     '<label class="select-item"><input type="checkbox" data-basket-select data-id="'+esc(identity)+'" '+(selectedBasketIds.has(identity)?"checked":"")+' aria-label="Select '+esc(row.itemName||"item")+' from '+esc(group.name)+' for checkout"></label>'+
-    '<button type="button" class="basket-item-open" data-basket-details data-business="'+esc(group.id)+'" data-key="'+esc(key)+'" aria-label="View full details for '+esc(row.itemName||"item")+'">'+
+    '<button type="button" class="basket-item-open" data-basket-details data-business="'+esc(group.id)+'" data-key="'+esc(key)+'" aria-label="Edit item options for '+esc(row.itemName||"item")+' before checkout" title="Edit this item before checkout">'+
      '<span class="item-image">'+(image?'<img src="'+esc(image)+'" alt="" loading="lazy" decoding="async">':'<span aria-hidden="true">▧</span>')+'</span>'+
      '<span class="basket-item-copy"><span class="item-title">'+esc(row.itemName||"Item")+'</span><span class="item-options">'+options+'</span>'+note.replace('<div class="item-note">','<span class="item-note">').replace('</div>','</span>')+'<span class="item-price">'+money(row.unitPrice)+' each</span></span>'+
     '</button>'+
@@ -323,7 +231,7 @@ contents.addEventListener("change",event=>{
 });
 contents.addEventListener("click",event=>{
  const detailButton=event.target.closest("[data-basket-details]");
- if(detailButton){openBasketItemDetails(detailButton);return}
+ if(detailButton){startBasketItemEdit(detailButton);return}
  const button=event.target.closest("[data-action]");
  if(!button)return;
  const {action,business,key}=button.dataset;
