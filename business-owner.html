@@ -779,10 +779,10 @@ html[data-theme="dark"] #itemMediaQualityNote[data-warning="true"]{color:#f4c27e
 <div id="fashionSharedSizesEditor" class="fashion-shared-settings full-field" hidden><div class="fashion-shared-heading"><div><strong>Shared clothing defaults</strong><small>Set the description, sizes and prices once for every colour. A colour can use its own sizes and description below.</small></div></div><div id="fashionSharedDescriptionSlot"></div><div class="fashion-shared-size-panel"><div class="fashion-shared-size-heading"><strong>Shared sizes and prices</strong><small>These apply to colours using shared sizes. Add a separate size set to any colour that needs different sizes or prices.</small></div><div id="fashionSharedSizePresets" class="fashion-size-presets"></div><div class="fashion-size-add-row"><input id="fashionSharedSizeInput" type="text" maxlength="200" placeholder="e.g. 28, 30, 32 or 38, 39, 40" aria-label="Enter shared clothing sizes"><button type="button" id="addFashionSharedSizes" class="outline-button">Add sizes</button></div><div id="fashionSharedSizesList" class="fashion-size-chips fashion-size-chips-priced"></div></div></div>
 <div id="itemMediaField" class="field full-field"><label id="itemMediaLabel" for="itemMedia">Product photos, GIFs & short videos (up to 12)</label><input id="itemMedia" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"><small>Images/GIFs: max 10 MB. MP4/WebM videos: max 20 MB and 30 seconds. First file is the cover.</small><small id="itemMediaQualityNote" class="media-quality-note" role="status" aria-live="polite">Original photos are preserved. New photos get responsive storefront sizes.</small><div id="itemMediaGallery" class="owner-gallery"></div></div><div id="decorColorSetsEditor" class="decor-color-sets-editor full-field" hidden><div class="decor-color-sets-heading"><div><strong>Décor colour sets</strong><small>Group photos of the same setup by colour theme. Each set can have its own optional description.</small></div><button type="button" id="addDecorColorSet" class="outline-button">+ Add colour set</button></div><div id="decorColorSetsList"></div><small class="decor-color-sets-note">Upload up to 12 pictures across all colour sets. The first picture in the first set is the main storefront photo.</small></div><div id="fashionColorSetsEditor" class="decor-color-sets-editor full-field" hidden><div class="decor-color-sets-heading"><div><strong>Clothing colour variants</strong><small>Add each colour of this clothing item and upload its photos. Customers can choose a colour before adding it to their basket.</small></div><button type="button" id="addFashionColorSet" class="outline-button">+ Add colour</button></div><div id="fashionColorSetsList"></div><small class="decor-color-sets-note">Upload up to 12 pictures across all colours. The first picture in the first colour is the storefront cover.</small></div><!-- Clothing sizes and prices can be shared above or configured for each colour. --><div class="field"><label for="itemAvailability">Availability</label><select id="itemAvailability"><option value="true">Available</option><option value="false">Unavailable</option></select></div><div class="field"><label for="itemOrder">Display order</label><input id="itemOrder" type="number" min="0" step="1" value="0"></div></div>
 <div id="itemOptionsEditor" class="item-options-editor">
-  <div class="item-options-heading"><div><strong>Customization &amp; Extras</strong><small>Create scales for amounts or heat levels, or choice groups for extras.</small></div>
+  <div class="item-options-heading"><div><strong>Customizations &amp; options</strong><small>Create choice groups such as dye levels. You can add an optional extra price to any choice.</small></div>
   <div class="item-options-actions"><button type="button" id="addScaleGroup" class="outline-button">+ Add scale</button><button type="button" id="addCustomizationGroup" class="outline-button">+ Add choice group</button></div></div>
   <div id="customizationGroupsList"></div>
-  <small class="item-options-note">Scales start with None, Less, Mid and Extra, with Mid selected by default. Groups are optional unless you mark them Required.</small>
+  <small class="item-options-note">Scales start with None, Less, Mid and Extra, with Mid selected by default. Choose a default level and set an optional extra price for each level. Options can be used on products and services.</small>
 </div>
 <div class="message" id="itemFormMessage" role="status" aria-live="polite" hidden></div><div class="modal-actions"><button class="outline-button" type="button" data-close-modal>Cancel</button><button class="primary-button" type="submit">Save item <span>→</span></button></div></form></div></div>
   <div class="modal-backdrop" id="categoryModal" hidden><div class="modal-card small-modal" role="dialog" aria-modal="true" aria-labelledby="categoryModalTitle"><div class="modal-head"><div><span class="eyebrow">CATALOGUE ORGANISATION</span><h3 id="categoryModalTitle">Add a category</h3></div><button class="close-modal" type="button" data-close-modal aria-label="Close">×</button></div><form id="categoryForm"><div class="field"><label for="categoryName">Section name</label><input id="categoryName" required maxlength="60" placeholder="e.g. Catering, Décor, Ice Cream"><label for="categoryMarketplace">Marketplace category</label><select id="categoryMarketplace"><option value="food-drink">Food & Drinks</option><option value="events-decor">Catering and Decor Services</option><option value="electronics">Electronics</option><option value="study-supplies">Education &amp; Study Supplies</option><option value="fashion">Fashion & Accessories</option><option value="cosmetics">Cosmetics</option><option value="beauty">Personal Services</option><option value="home-living">Home & Living</option><option value="groceries">Groceries & Essentials</option><option value="local-services">Local Services</option><option value="gifts-occasions">Gifts &amp; Occasions</option><option value="other">Other</option></select><small>Controls where customers discover this section on StoreNest. It does not restrict what you offer.</small><label for="categoryStyle">Display style</label><select id="categoryStyle"><option value="auto">Automatic</option><option value="menu">Food menu</option><option value="showcase">Visual showcase</option><option value="portfolio">Service portfolio</option><option value="catalogue">Product catalogue</option><option value="booking">Booking / enquiry</option></select><small id="categoryStyleHelp">Choose how this section appears on the storefront.</small><label for="categoryDescription">Short introduction (optional)</label><textarea id="categoryDescription" maxlength="300" rows="2" placeholder="What this section offers"></textarea><input id="categoryEditId" type="hidden"></div><div class="message" id="categoryMessage" role="status" aria-live="polite" hidden></div><div class="modal-actions"><button class="outline-button" type="button" data-close-modal>Cancel</button><button class="primary-button" type="submit">Add category</button></div></form></div></div>
@@ -1220,11 +1220,11 @@ function createCustomizationOption(name=""){return {id:newCustomizationId(),name
 function drawCustomizationEditor(){
  const root=$("customizationGroupsList");
  editedOptionGroups.forEach(group=>{if(group.selection==="scale"&&!group.options.some(option=>option.id===group.defaultOptionId)){const midpoint=group.options.find(option=>/^(mid|medium|moderate|regular)$/i.test(option.name))||group.options[Math.floor(group.options.length/2)];group.defaultOptionId=midpoint?.id||""}});
- $("itemOptionsEditor").hidden=$("itemType").value!=="product";
+ $("itemOptionsEditor").hidden=false;
  root.innerHTML=editedOptionGroups.map((group,gi)=>`
   <section class="option-group-editor" data-group-index="${gi}">
    <div class="option-group-editor-head">
-    <label>Group name<input type="text" maxlength="75" data-group-field="name" value="${escapeHtml(group.name)}" placeholder="e.g. Sauces or Extras" aria-label="Option group name"></label>
+    <label>Group name<input type="text" maxlength="75" data-group-field="name" value="${escapeHtml(group.name)}" placeholder="e.g. Black Dye, Sauces or Extras" aria-label="Option group name"></label>
     <button class="outline-button option-remove-group" type="button" data-option-action="remove-group">Remove group</button>
    </div>
    <div class="option-group-settings">
@@ -1266,7 +1266,7 @@ function drawCustomizationEditor(){
 }
 $("itemType").addEventListener("change",drawCustomizationEditor);
 function addOptionEditorGroup(group){
- if(editedOptionGroups.length>=10){showToast("Up to 10 option groups per product.",true);return}
+ if(editedOptionGroups.length>=10){showToast("Up to 10 option groups per item.",true);return}
  editedOptionGroups.push(group);
  drawCustomizationEditor();
  const groups=$("customizationGroupsList").querySelectorAll(".option-group-editor");
@@ -1302,14 +1302,13 @@ $("customizationGroupsList").addEventListener("click",event=>{
  drawCustomizationEditor();
 });
 function optionsForSave(){
- if($("itemType").value!=="product")return [];
  const configuredGroups=editedOptionGroups.filter(group=>group.id!==FASHION_COLOR_GROUP_ID&&group.id!==FASHION_SIZE_GROUP_ID).filter(group=>group.options.some(option=>String(option.name||"").trim()));
  for(const group of configuredGroups){
   if(!group.name.trim())throw Error("Name each customization group, or remove the empty group.");
   for(const option of group.options){
    if(!String(option.name).trim())throw Error("Enter each choice name in "+group.name+".");
    if(!Number.isFinite(Number(option.price))||Number(option.price)<0||Number(option.price)>100000)
-    throw Error("Enter a valid extra price between R0 and R100,000.");
+    throw Error("Enter a valid optional extra price between R0 and R100,000.");
   }
   if(group.selection==="multiple"&&(!Number.isInteger(Number(group.max))||Number(group.max)<1||Number(group.max)>group.options.length))
    throw Error("Maximum choices must be between 1 and "+group.options.length+" for "+group.name+".");

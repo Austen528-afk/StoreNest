@@ -38,7 +38,6 @@ html[data-theme="dark"] .service-disclaimer{color:#adbbb4}
 html[data-theme="dark"] .card:has(.service-disclaimer) .add{background:#62cba7;color:#152e24}
 @media(max-width:520px){.booking-panel{padding:16px;max-height:96dvh}.booking-form-grid{grid-template-columns:1fr}.booking-top h2{font-size:21px}}
 
-
 /* Direct service-owner contact sits beside Request booking. */
 .service-action-row,.gallery-action-row{display:flex;align-items:center;flex-wrap:wrap;gap:10px}
 .service-action-row .add{min-height:45px}
@@ -82,3 +81,12 @@ html[data-theme="dark"] body[data-local-services-layout="true"] .card:has(.servi
    white-space:normal;overflow-wrap:anywhere;
  }
 }
+
+.booking-package-options{grid-column:1/-1;color:#526b5d;font-size:11px;line-height:1.45;white-space:pre-line}
+.booking-package-values #bookingPackageOptionPrice{font-size:10px;font-weight:650;color:#708079}
+.booking-package-options[hidden],.booking-package #bookingPackageOptionPrice[hidden]{display:none!important}
+.gallery-service-option-estimate{margin-top:9px;color:var(--muted,#6d6157);font-size:12px;font-weight:650;line-height:1.55}
+.gallery-service-option-estimate[hidden]{display:none!important}
+html[data-theme="dark"] .booking-package-options{color:#b5cfc2}
+html[data-theme="dark"] .booking-package-values #bookingPackageOptionPrice{color:#a8bcb2}
+@media(max-width:520px){.booking-package{grid-template-columns:minmax(0,1fr)}.booking-package-values{align-items:flex-start}.booking-package span{text-align:left}.booking-package-values #bookingPackageOptionPrice{align-self:flex-start}}
