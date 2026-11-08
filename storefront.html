@@ -2341,7 +2341,7 @@ $("galleryChoiceGroups").addEventListener("change",event=>{
  updateGalleryOptionsPrice();
 });
 
-function openProductGallery(id,trigger,cartKey=null,openPhotoOnly=false){
+function openProductGallery(id,trigger,cartKey=null){
  const item=availableItems.find(row=>row.id===id);if(!item)return;
  const isBookingOffer=window.StoreNestBookings.isBookingOffer(item,activePublicBusiness);
  const isDecorBooking=isBookingOffer&&window.StoreNestCategoryId(activePublicBusiness?.category)==="events-decor";
@@ -2403,7 +2403,7 @@ function openProductGallery(id,trigger,cartKey=null,openPhotoOnly=false){
  const photos=galleryPhotos(item);
  renderGallerySlides();
  if(photos.length)showGalleryImage("auto");else{$("galleryPosition").textContent="No pictures yet";$("galleryPosition").hidden=false;$("galleryDots").hidden=true}
- $("galleryDialog").hidden=false;const mobileGalleryViewport=window.matchMedia("(max-width:820px), (pointer:coarse) and (max-width:1100px)").matches;document.body.style.overflow=isDecorBooking?"hidden":(mobileGalleryViewport?"":"hidden");$("galleryClose").focus();if(openPhotoOnly&&isStorefrontFashionProduct(item))openFashionPhotoViewer();if(photos.length)requestAnimationFrame(()=>{if(!$("galleryDialog").hidden&&activeGalleryItem===item)showGalleryImage("auto")});
+ $("galleryDialog").hidden=false;const mobileGalleryViewport=window.matchMedia("(max-width:820px), (pointer:coarse) and (max-width:1100px)").matches;document.body.style.overflow=isDecorBooking?"hidden":(mobileGalleryViewport?"":"hidden");$("galleryClose").focus();if(photos.length)requestAnimationFrame(()=>{if(!$("galleryDialog").hidden&&activeGalleryItem===item)showGalleryImage("auto")});
 }
 
 function selectDecorColorSetOnCard(card,item,set){
@@ -2535,7 +2535,7 @@ $("main").addEventListener("click",e=>{
   }
   const add=e.target.closest("[data-add-item]");
   if(add){const item=availableItems.find(i=>i.id===add.dataset.addItem);if(!item)return;if(window.StoreNestBookings.isBookingOffer(item,activePublicBusiness)){window.StoreNestBookings.open(item,add,{decorColorSetName:add.dataset.decorColorSetName||""});return}if(needsProductCustomization(item)){openProductGallery(item.id,add);return}addProductToCart(item);return}
-  const open=e.target.closest("[data-open-product]");if(open){openProductGallery(open.dataset.openProduct,open,null,Boolean(e.target.closest(".art")));return}
+  const open=e.target.closest("[data-open-product]");if(open){openProductGallery(open.dataset.openProduct,open);return}
   
 });
 /* One hero renderer used for published storefronts and unsaved owner previews. */
