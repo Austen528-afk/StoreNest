@@ -1456,7 +1456,6 @@ window.addEventListener("storage",event=>{if(event.key===GLOBAL_BASKET_STORAGE_K
 window.addEventListener("storenest:cart-updated",handleGlobalBasketUpdate);
 function cartQuantity(){return [...cart.values()].reduce((n,row)=>n+row.quantity,0)}
 function productCartKey(itemId,selection,note){
-function productCartKey(itemId,selection,note){
  const unique=Object.entries(selection||{}).map(([id,values])=>[id,[...(Array.isArray(values)?values:[])].sort()]).sort(([a],[b])=>a.localeCompare(b));
  return JSON.stringify([itemId,unique,String(note||"").trim().slice(0,200)]);
 }
