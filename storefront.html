@@ -1954,11 +1954,14 @@ async function submitCheckout(event){
   updateCheckoutPaymentNotice();
  }catch(error){
   console.error("StoreNest checkout failed:",error);
-  const changed=/no longer available|choice|option|quantity|empty|unavailable|product/i.test(String(error?.message||""));
-  $("checkoutError").textContent=multiStoreCheckout
-   ?"Checkout was not completed because at least one selected item changed or a store is unavailable. No orders were submitted. Return to your basket, review your selection, and try again."
-   :changed?"An item or option in your basket changed. Go back, review your basket, and try again."
-   :"We couldn't submit your order. Please check your connection and try again.";
+  // Distinguish a confirmed validation rejection from an unknown network outcome.
+  const checkoutReason=String(error?.message||"").trim();
+  const knownValidationIssue=/^(?:This store is unavailable|An item|A selected|Each item|Your basket|Item choices|Choose |The selected clothing|That size|Clothing variant price|Too many options)/i.test(checkoutReason);
+  $("checkoutError").textContent=knownValidationIssue
+   ?checkoutReason+" No orders were submitted. Review the affected item in your basket and try again."
+   :multiStoreCheckout
+    ?"We couldn't confirm whether checkout succeeded. Check My Orders before retrying to avoid duplicate orders."
+    :"We couldn't confirm whether your order went through. Check My Orders before retrying.";
   $("checkoutError").hidden=false;
  }finally{
   button.disabled=false;button.textContent="Place order";
