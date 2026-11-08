@@ -475,6 +475,7 @@ html[data-theme="dark"] .customer-booking-detail-fields strong,html[data-theme="
   </section>
 </div>
 <script>
+const $=id=>document.getElementById(id);
 if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("/sw.js").catch(()=>{})})}
 let installPrompt=null;const installBtn=document.getElementById("installBtn");const installHint=document.getElementById("installHint");
 const iosInstallOverlay=document.getElementById("iosInstallOverlay");
