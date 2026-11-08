@@ -610,6 +610,7 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
 .checkout-collection strong{font-size:14px}.checkout-collection span{font-size:12px;color:#68756e;line-height:1.45}
 .checkout-summary{border:1px solid #e5e9e6;border-radius:12px;padding:12px}
 .checkout-summary h3,.checkout-fields h3{margin:0 0 10px;font-size:15px}
+.checkout-summary-store{padding:10px 0 3px;color:#27856d;font-size:12px;font-weight:800}.checkout-summary-store:first-child{padding-top:2px}
 .checkout-summary-row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:12px}
 .checkout-summary-row:last-child{border-bottom:0}
 .checkout-summary-row span:first-child{min-width:0;overflow-wrap:anywhere;color:#4d5851}
@@ -1253,11 +1254,20 @@ body[data-store-category="fashion"] #catalog .art:has(img) img{
 "use strict";
 const CONFIG={url:"https://cypbjzbagezdelmemuhb.supabase.co",key:"sb_publishable_8W8zyYtggQMWoFlnxrzoVA_BUKjQ9va"};
 const FASHION_COLOR_GROUP_ID="fashion-color",FASHION_SIZE_GROUP_ID="fashion-size";
-const GLOBAL_BASKET_STORAGE_KEY="storenest:global-basket:v1";
+const GLOBAL_BASKET_STORAGE_KEY="storenest:global-basket:v1",GLOBAL_CHECKOUT_STORAGE_KEY="storenest:global-checkout:v1";
 const cart=new Map();
 let storefrontClient=null,availableItems=[],toastTimer=null,activeGalleryItem=null,galleryIndex=0,galleryReturnFocus=null,activePublicBusiness=null,galleryEditCartKey=null,activeGalleryDecorSetId=null,activeGalleryFashionColorId=null,activeGalleryFashionSizeId=null,activePublicSections=[];
 let checkoutPendingCode=null,checkoutVerifiedUser=null,checkoutVerifiedProfile=null,checkoutPendingPassword="",checkoutAuthMode="signup";
 const $=id=>document.getElementById(id);
+function readPendingGlobalCheckout(){
+ if(new URLSearchParams(location.search).get("globalCheckout")!=="1")return null;
+ try{
+  const rows=JSON.parse(sessionStorage.getItem(GLOBAL_CHECKOUT_STORAGE_KEY)||"[]");
+  return Array.isArray(rows)?rows.filter(row=>row&&row.businessId&&row.itemId&&row.cartKey&&Number(row.quantity)>0):null;
+ }catch(_){return null}
+}
+let globalCheckoutRows=readPendingGlobalCheckout();
+function globalBasketIdentity(row){return JSON.stringify([String(row?.businessId||""),String(row?.cartKey||"")])}
 const returnCategoryId=new URLSearchParams(location.search).get("returnCategory");
 if(returnCategoryId&&window.StoreNestCategories?.some(row=>row.id===returnCategoryId)){
  const exploreStoresLink=document.querySelector(".back-link");
@@ -1419,7 +1429,8 @@ function persistCurrentStoreBasket(){
 function restoreCurrentStoreBasket(business){
  cart.clear();
  if(!business?.id){syncCartBadge();return}
- for(const saved of readGlobalBasket().filter(row=>String(row.businessId)===String(business.id))){
+ const sourceRows=globalCheckoutRows?.length?globalCheckoutRows:readGlobalBasket();
+ for(const saved of sourceRows.filter(row=>String(row.businessId)===String(business.id))){
   const item=availableItems.find(candidate=>String(candidate.id)===String(saved.itemId));
   if(!item)continue;
   const selection=copyProductSelection(saved.selection||{});
@@ -1484,11 +1495,11 @@ function updateCartProduct(key,item,selection,note=""){
 }
 
 const ORDER_TRACKING_STORAGE_PREFIX="storenest_order_tracking:";
-function orderTrackingStorageKey(customerUserId="shared"){
- return activePublicBusiness?.id?ORDER_TRACKING_STORAGE_PREFIX+activePublicBusiness.id+":"+String(customerUserId||"shared"):null;
+function orderTrackingStorageKey(customerUserId="shared",businessId=activePublicBusiness?.id){
+ return businessId?ORDER_TRACKING_STORAGE_PREFIX+businessId+":"+String(customerUserId||"shared"):null;
 }
-function readTrackedOrders(customerUserId="shared"){
- const key=orderTrackingStorageKey(customerUserId);if(!key)return [];
+function readTrackedOrders(customerUserId="shared",businessId=activePublicBusiness?.id){
+ const key=orderTrackingStorageKey(customerUserId,businessId);if(!key)return [];
  try{
   const saved=localStorage.getItem(key);
   if(!saved)return [];
@@ -1496,14 +1507,14 @@ function readTrackedOrders(customerUserId="shared"){
   return Array.isArray(parsed)?parsed.filter(order=>order&&typeof order.id==="string"&&typeof order.token==="string").slice(0,5):[];
  }catch(_){return []}
 }
-function saveTrackedOrders(orders,customerUserId="shared"){
- const key=orderTrackingStorageKey(customerUserId);if(!key)return;
+function saveTrackedOrders(orders,customerUserId="shared",businessId=activePublicBusiness?.id){
+ const key=orderTrackingStorageKey(customerUserId,businessId);if(!key)return;
  try{localStorage.setItem(key,JSON.stringify((orders||[]).slice(0,5)))}catch(_){}
 }
 function rememberTrackedOrder(order){
- const customerUserId=order.customerUserId||"shared";
- const orders=readTrackedOrders(customerUserId).filter(existing=>existing.id!==order.id);
- orders.unshift(order);saveTrackedOrders(orders,customerUserId);
+ const customerUserId=order.customerUserId||"shared",businessId=order.businessId||activePublicBusiness?.id;
+ const orders=readTrackedOrders(customerUserId,businessId).filter(existing=>existing.id!==order.id);
+ orders.unshift(order);saveTrackedOrders(orders,customerUserId,businessId);
 }
 function restoreTrackedOrderFromUrl(){
  const params=new URLSearchParams(location.hash.slice(1));
@@ -1535,6 +1546,27 @@ function renderCart(){
  
 }
 function renderCheckoutSummary(){
+ if(globalCheckoutRows?.length){
+  const grouped=new Map();
+  globalCheckoutRows.forEach(row=>{
+   const id=String(row.businessId);
+   if(!grouped.has(id))grouped.set(id,{name:String(row.businessName||"Store"),rows:[]});
+   grouped.get(id).rows.push(row);
+  });
+  $("checkoutSummary").innerHTML=[...grouped.values()].map(group=>
+   '<div class="checkout-summary-store">'+esc(group.name)+'</div>'+
+   group.rows.map(row=>
+    '<div class="checkout-summary-row"><span>'+esc(Math.max(1,Math.floor(Number(row.quantity)||1))+' × '+(row.itemName||"Item"))+'</span><strong>'+money((Number(row.unitPrice)||0)*(Number(row.quantity)||0))+'</strong></div>'+
+    (Array.isArray(row.summary)?row.summary.map(option=>'<div class="checkout-summary-row"><span>↳ '+esc(option.group||"Options")+': '+esc((Array.isArray(option.values)?option.values:[]).join(", "))+'</span><span></span></div>').join(""):"")
+   ).join("")
+  ).join("");
+  const total=globalCheckoutRows.reduce((sum,row)=>sum+(Number(row.unitPrice)||0)*(Number(row.quantity)||0),0);
+  const storeCount=grouped.size;
+  $("checkoutTotal").textContent=money(total);$("checkoutSubmitTotal").textContent=money(total);
+  $("checkoutStoreName").textContent="Order from "+storeCount+" store"+(storeCount===1?"":"s");
+  $("checkoutStoreLocation").textContent="Each store will receive a separate order with only its selected items.";
+  return;
+ }
  const rows=[...cart.entries()].map(([key,row])=>({key,row,item:availableItems.find(i=>i.id===row.itemId)})).filter(entry=>entry.item);
  $("checkoutSummary").innerHTML=rows.map(({row,item})=>
   '<div class="checkout-summary-row"><span>'+esc(row.quantity+' × '+item.name)+'</span><strong>'+money(row.unitPrice*row.quantity)+'</strong></div>'+
@@ -1552,10 +1584,14 @@ function showBasketReview(){
  renderCart();
 }
 function openCheckout(){
- if(!cart.size)return;
+ if(!cart.size&&!globalCheckoutRows?.length)return;
  renderCheckoutSummary();
  $("checkoutError").hidden=true;
  $("cartReviewView").hidden=true;$("checkoutSuccessView").hidden=true;$("checkoutForm").hidden=false;
+ const globalCheckout=Boolean(globalCheckoutRows?.length);
+ $("checkoutBack").hidden=globalCheckout;
+ $("checkoutDone").dataset.returnToBasket=String(globalCheckout);
+ $("checkoutDone").textContent=globalCheckout?"Return to basket":"Back to store";
  $("cartTitle").textContent="Checkout";
  resetCheckoutProfileGate();
  showCheckoutProfileGate();
@@ -1750,6 +1786,7 @@ function validateCheckoutContact(profile){
 async function submitCheckout(event){
  event.preventDefault();
  const form=$("checkoutForm");
+ const multiStoreCheckout=Boolean(globalCheckoutRows?.length);
  if(!storefrontClient||!activePublicBusiness?.id){
   $("checkoutError").textContent="The store could not be reached. Refresh and try again.";
   $("checkoutError").hidden=false;return;
@@ -1773,49 +1810,110 @@ async function submitCheckout(event){
  if(!emailField.value&&user.email)emailField.value=user.email;
  if(!validateCheckoutContact(profile))return;
  const values=new FormData(form),paymentMethod=String(values.get("payment_method")||"pay_on_collection");
- const orderId=crypto.randomUUID(),trackingToken=crypto.randomUUID();
- const payload={
-  id:orderId,business_id:activePublicBusiness.id,tracking_token:trackingToken,
-  customer_name:profile.profile_name,
-  contact_phone:String(values.get("contact_phone")||"").trim(),
-  contact_email:String(values.get("contact_email")||"").trim()||user.email||null,
-  payment_method:paymentMethod,
-  items:[...cart.values()].map(row=>({item_id:row.itemId,quantity:row.quantity,selection:row.selection||{},note:row.note||""}))
- };
- const button=$("placeOrderButton");button.disabled=true;button.textContent="Sending order…";
+ const phone=String(values.get("contact_phone")||"").trim();
+ const email=String(values.get("contact_email")||"").trim()||user.email||null;
+ const orderGroups=[];
+ if(multiStoreCheckout){
+  const grouped=new Map();
+  for(const row of globalCheckoutRows){
+   if(!row.businessId||!row.itemId||!row.cartKey||Number(row.quantity)<1||Number(row.quantity)>50){
+    $("checkoutError").textContent="One of the selected items is invalid. Return to your basket and select the items again.";
+    $("checkoutError").hidden=false;return;
+   }
+   const id=String(row.businessId);
+   if(!grouped.has(id))grouped.set(id,{businessId:id,businessName:String(row.businessName||"Store"),rows:[]});
+   grouped.get(id).rows.push(row);
+  }
+  for(const group of grouped.values()){
+   if(group.rows.length>50){
+    $("checkoutError").textContent="A store can receive up to 50 different items in one order. Return to your basket and select fewer items from that store.";
+    $("checkoutError").hidden=false;return;
+   }
+   orderGroups.push(group);
+  }
+ }else{
+  const rows=[...cart.values()];
+  if(!rows.length){
+   $("checkoutError").textContent="Your basket is empty. Return to the store and add an item.";
+   $("checkoutError").hidden=false;return;
+  }
+  orderGroups.push({businessId:String(activePublicBusiness.id),businessName:String(activePublicBusiness.name||"Store"),rows});
+ }
+ if(!orderGroups.length){
+  $("checkoutError").textContent="Select at least one item to place an order.";
+  $("checkoutError").hidden=false;return;
+ }
+ const payloads=orderGroups.map(group=>({
+  id:crypto.randomUUID(),business_id:group.businessId,tracking_token:crypto.randomUUID(),
+  customer_name:profile.profile_name,contact_phone:phone,contact_email:email,payment_method:paymentMethod,
+  items:group.rows.map(row=>({
+   item_id:row.itemId||row.item_id,quantity:Number(row.quantity),
+   selection:row.selection||{},note:String(row.note||"")
+  }))
+ }));
+ const button=$("placeOrderButton");button.disabled=true;button.textContent=multiStoreCheckout?"Sending orders…":"Sending order…";
  try{
-  const {error}=await storefrontClient.from("storefront_orders").insert(payload);
+  // One API request inserts one row per store. The database prepares and validates
+  // every row in the same transaction, so stores never receive another store's items.
+  const {error}=await storefrontClient.from("storefront_orders").insert(multiStoreCheckout?payloads:payloads[0]);
   if(error)throw error;
-  let collectionPin="";
-  try{
-   const {data:pinData,error:pinError}=await storefrontClient.rpc("get_storefront_order_collection_pin",{p_order_id:orderId});
-   if(pinError)throw pinError;
-   const candidate=String(pinData||"");
-   if(/^[0-9]{6}$/.test(candidate))collectionPin=candidate;
-  }catch(pinError){console.warn("The order was submitted, but its collection PIN could not be loaded yet:",pinError)}
-  const reference=orderId.replace(/-/g,"").slice(0,8).toUpperCase();
-  const trackedOrder={id:orderId,token:trackingToken,customerUserId:user.id,status:"new",createdAt:new Date().toISOString(),businessName:activePublicBusiness.name||"Store",collectionPin};
-  rememberTrackedOrder(trackedOrder);
-  cart.clear();persistCurrentStoreBasket();renderCart();
+  const orderResults=await Promise.all(payloads.map(async payload=>{
+   let collectionPin="";
+   try{
+    const {data:pinData,error:pinError}=await storefrontClient.rpc("get_storefront_order_collection_pin",{p_order_id:payload.id});
+    if(pinError)throw pinError;
+    const candidate=String(pinData||"");
+    if(/^[0-9]{6}$/.test(candidate))collectionPin=candidate;
+   }catch(pinError){console.warn("An order was submitted, but its collection PIN could not be loaded yet:",pinError)}
+   const group=orderGroups.find(entry=>entry.businessId===payload.business_id);
+   const result={id:payload.id,token:payload.tracking_token,businessId:payload.business_id,businessName:group?.businessName||"Store",collectionPin};
+   rememberTrackedOrder({id:result.id,token:result.token,customerUserId:user.id,businessId:result.businessId,businessName:result.businessName,status:"new",createdAt:new Date().toISOString(),collectionPin});
+   return result;
+  }));
+  if(multiStoreCheckout){
+   const selectedIds=new Set(globalCheckoutRows.map(globalBasketIdentity));
+   globalCheckoutRows=null;
+   try{sessionStorage.removeItem(GLOBAL_CHECKOUT_STORAGE_KEY)}catch(_){}
+   const params=new URLSearchParams(location.search);params.delete("globalCheckout");
+   const query=params.toString();
+   try{history.replaceState(null,"",location.pathname+(query?"?"+query:"")+location.hash)}catch(_){}
+   writeGlobalBasket(readGlobalBasket().filter(row=>!selectedIds.has(globalBasketIdentity(row))));
+  }else{
+   cart.clear();persistCurrentStoreBasket();
+  }
+  renderCart();
   $("checkoutForm").hidden=true;$("cartReviewView").hidden=true;$("checkoutSuccessView").hidden=false;
-  $("cartTitle").textContent="Order request sent";
-  $("checkoutReference").textContent="Request #"+reference;
-  const pinMessage=collectionPin
-   ?" Your collection PIN is "+collectionPin+". Keep it private and show it to the business when you collect the order."
-   :" Your order is in My Orders. Refresh there if your collection PIN is not shown yet.";
-  const paymentMessage=paymentMethod==="card"?"Card payment is not connected yet, so no card was charged.":"Pay when you collect it.";
-  $("checkoutSuccessMessage").textContent="Your request was sent to "+(activePublicBusiness.name||"the business")+". It is waiting for the business to accept it."+pinMessage+" "+paymentMessage+" Order progress is available from My Orders on the StoreNest home page.";
-  
-  
+  $("cartTitle").textContent=multiStoreCheckout?"Orders sent":"Order request sent";
+  $("checkoutSuccessView").querySelector("h3").textContent=multiStoreCheckout?"Checkout complete":"Order request sent";
+  $("checkoutDone").textContent=multiStoreCheckout?"Return to basket":"Back to store";
+  $("checkoutDone").dataset.returnToBasket=String(multiStoreCheckout);
+  if(multiStoreCheckout){
+   $("checkoutReference").textContent=orderResults.length+" separate store order"+(orderResults.length===1?"":"s");
+   const details=orderResults.map(order=>{
+    const reference=order.id.replace(/-/g,"").slice(0,8).toUpperCase();
+    return order.businessName+" — #"+reference+(order.collectionPin?" — collection PIN "+order.collectionPin:"");
+   }).join(" · ");
+   const paymentMessage=paymentMethod==="card"?"Card payment is not connected yet, so no card was charged.":"Pay each store when you collect its items.";
+   $("checkoutSuccessMessage").textContent="Your selected items were submitted in one checkout. Each store received only its own order. "+details+". "+paymentMessage+" View your orders in My Orders.";
+  }else{
+   const order=orderResults[0],reference=order.id.replace(/-/g,"").slice(0,8).toUpperCase();
+   $("checkoutReference").textContent="Request #"+reference;
+   const pinMessage=order.collectionPin
+    ?" Your collection PIN is "+order.collectionPin+". Keep it private and show it to the business when you collect the order."
+    :" Your order is in My Orders. Refresh there if your collection PIN is not shown yet.";
+   const paymentMessage=paymentMethod==="card"?"Card payment is not connected yet, so no card was charged.":"Pay when you collect it.";
+   $("checkoutSuccessMessage").textContent="Your request was sent to "+(activePublicBusiness.name||"the business")+". It is waiting for the business to accept it."+pinMessage+" "+paymentMessage+" Order progress is available from My Orders on the StoreNest home page.";
+  }
   form.reset();
   resetCheckoutProfileGate();
   form.querySelector('[name="payment_method"][value="pay_on_collection"]').checked=true;
   updateCheckoutPaymentNotice();
  }catch(error){
   console.error("StoreNest checkout failed:",error);
-  const changed=/no longer available|choice|option|quantity|empty/i.test(String(error?.message||""));
-  $("checkoutError").textContent=changed
-   ?"An item or option in your basket changed. Go back, review your basket, and try again."
+  const changed=/no longer available|choice|option|quantity|empty|unavailable|product/i.test(String(error?.message||""));
+  $("checkoutError").textContent=multiStoreCheckout
+   ?"Checkout was not completed because at least one selected item changed or a store is unavailable. No orders were submitted. Return to your basket, review your selection, and try again."
+   :changed?"An item or option in your basket changed. Go back, review your basket, and try again."
    :"We couldn't submit your order. Please check your connection and try again.";
   $("checkoutError").hidden=false;
  }finally{
@@ -1838,7 +1936,7 @@ function closeCart(){closeCheckoutProfileGate(false);$("cartBackdrop").hidden=tr
 $("closeCart").addEventListener("click",closeCart);
 $("checkoutStart").addEventListener("click",openCheckout);
 $("checkoutBack").addEventListener("click",showBasketReview);
-$("checkoutDone").addEventListener("click",closeCart);
+$("checkoutDone").addEventListener("click",()=>{if($("checkoutDone").dataset.returnToBasket==="true"){location.href="/basket.html";return}closeCart()});
 $("checkoutForm").addEventListener("submit",submitCheckout);
 $("checkoutForm").addEventListener("change",event=>{if(event.target.name==="payment_method")updateCheckoutPaymentNotice()});
 $("checkoutAuthMethod").addEventListener("change",updateCheckoutAuthMethod);
@@ -2462,12 +2560,16 @@ let autoOpenedCheckoutStoreId="";
 function openBasketCheckoutFromUrl(business){
  const params=new URLSearchParams(location.search);
  const businessId=String(business?.id||"");
- if(params.get("checkoutStore")!=="1"||!businessId||autoOpenedCheckoutStoreId===businessId)return;
+ const isGlobalCheckout=params.get("globalCheckout")==="1"&&Boolean(globalCheckoutRows?.length);
+ const isStoreCheckout=params.get("checkoutStore")==="1";
+ if((!isGlobalCheckout&&!isStoreCheckout)||!businessId||autoOpenedCheckoutStoreId===businessId)return;
  autoOpenedCheckoutStoreId=businessId;
- params.delete("checkoutStore");
- const query=params.toString();
- try{history.replaceState(null,"",location.pathname+(query?"?"+query:"")+location.hash)}catch(_){}
- requestAnimationFrame(()=>{openCart();if(cart.size)openCheckout()});
+ if(isStoreCheckout){
+  params.delete("checkoutStore");
+  const query=params.toString();
+  try{history.replaceState(null,"",location.pathname+(query?"?"+query:"")+location.hash)}catch(_){}
+ }
+ requestAnimationFrame(()=>{openCart();if(cart.size||globalCheckoutRows?.length)openCheckout()});
 }
 function renderPublishedStorefront(root,client,business,items,storefrontSections){
    activePublicBusiness=business;activePublicSections=storefrontSections||[];
@@ -2619,6 +2721,9 @@ async function load(){
  const slug=search.get("slug");
  const root=$("main");
  if(embedded){setupPrivateHeroPreview(root);return}
+ if(search.get("globalCheckout")==="1"&&!globalCheckoutRows?.length){
+  root.innerHTML='<div class="notice">Your item selection expired. Return to your basket and select the items again.</div>';return;
+ }
  if(!slug){root.innerHTML='<div class="notice">This storefront link is incomplete.</div>';return}
  let renderedCache=false;
  try{
