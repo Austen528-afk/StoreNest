@@ -1330,16 +1330,21 @@ function storefrontFashionColorSets(item){
  const sets=source.map((raw,index)=>{
   const urls=(Array.isArray(raw?.media_urls)?raw.media_urls:[]).map(value=>typeof value==="string"?value:value?.url).filter(url=>typeof url==="string");
   const hasOwnSizes=Array.isArray(raw?.sizes),sizeSource=hasOwnSizes?raw.sizes:(legacySizeGroup?.options||[]);
+  const sizes=sizeSource.map((size,sizeIndex)=>{
+   const rawPrice=hasOwnSizes?size?.price:legacySizeGroup?.priceMode==="fixed"?size?.price:null;
+   const hasPrice=rawPrice!==null&&rawPrice!==undefined&&String(rawPrice).trim()!=="";
+   const price=hasPrice?Number(rawPrice):null;
+   return {id:String(size?.id||("fashion-size-"+index+"-"+sizeIndex)),name:String(size?.name||"").trim(),price:Number.isFinite(price)&&price>=0?price:null};
+  }).filter(size=>size.name);
+  const hasSizePrices=sizes.some(size=>size.price!==null);
+  const rawSetPrice=raw?.price,hasSetPrice=rawSetPrice!==null&&rawSetPrice!==undefined&&String(rawSetPrice).trim()!=="";
+  const setPrice=hasSetPrice?Number(rawSetPrice):null;
   return {
    id:String(raw?.id||"fashion-colour-"+(index+1)),name:String(raw?.name||"").trim()||"Colour "+(index+1),
    description:String(raw?.description||"").trim(),
-   price:raw?.price==null?null:Number(raw.price),
-   priceBySize:typeof raw?.priceBySize==="boolean"?raw.priceBySize:(!hasOwnSizes&&legacySizeGroup?.priceMode==="fixed"),
-   sizes:sizeSource.map((size,sizeIndex)=>({
-    id:String(size?.id||("fashion-size-"+index+"-"+sizeIndex)),
-    name:String(size?.name||"").trim(),
-    price:(hasOwnSizes?size?.price:legacySizeGroup?.priceMode==="fixed"?size?.price:0)??0
-   })).filter(size=>size.name),
+   price:Number.isFinite(setPrice)&&setPrice>=0?setPrice:null,
+   priceBySize:hasSizePrices||raw?.priceBySize===true||(!hasOwnSizes&&legacySizeGroup?.priceMode==="fixed"),
+   sizes,
    entries:urls.map(url=>byUrl.get(url)).filter(Boolean)
   };
  }).filter(set=>set.entries.length);
@@ -2039,7 +2044,7 @@ function renderGallerySlides(){
    video.src=url;slide.append(video);
   }else{
    const image=document.createElement("img");
-   image.alt=activeGalleryItem.name+" photo "+(i+1);
+   image.alt=activeGalleryItem.name+" photo "+(i+1);image.draggable=false;
    const srcset=catalogMediaSrcset(entry);
    if(srcset){image.srcset=srcset;image.sizes="(max-width: 720px) 100vw, 690px"}
    image.src=url;slide.append(image);
@@ -2066,7 +2071,7 @@ function showGalleryImage(behavior="smooth"){
 let galleryMouseDrag=null;
 const galleryTrackElement=$("galleryTrack");
 galleryTrackElement.addEventListener("pointerdown",event=>{
- if(!$("galleryDialog").classList.contains("gallery-photo-only")||event.pointerType!=="mouse"||event.button!==0||event.target.closest("video,button,a"))return;
+ if(event.pointerType!=="mouse"||event.button!==0||event.target.closest("video,button,a"))return;
  galleryMouseDrag={pointerId:event.pointerId,startX:event.clientX,startScrollLeft:galleryTrackElement.scrollLeft,moved:false};
  galleryTrackElement.classList.add("is-dragging");
  if(galleryTrackElement.setPointerCapture)galleryTrackElement.setPointerCapture(event.pointerId);
@@ -2168,8 +2173,13 @@ function storefrontFashionSizeGroup(item,colorSetId=null){
  if(!isStorefrontFashionProduct(item))return null;
  const sets=storefrontFashionColorSets(item),set=sets.find(row=>row.id===colorSetId)||sets[0];
  if(set?.sizes?.length){
-  return {id:FASHION_SIZE_GROUP_ID,name:"Size",selection:"single",required:true,max:1,priceMode:set.priceBySize?"fixed":"additional",
-   options:set.sizes.map(size=>({id:size.id,name:size.name,price:set.priceBySize?Number(size.price)||0:0}))};
+  const hasSizePrices=Boolean(set.priceBySize)||set.sizes.some(size=>size.price!==null&&size.price!==undefined&&String(size.price).trim()!=="");
+  return {id:FASHION_SIZE_GROUP_ID,name:"Size",selection:"single",required:true,max:1,priceMode:hasSizePrices?"fixed":"additional",
+   options:set.sizes.map(size=>{
+    const raw=size.price,hasPrice=raw!==null&&raw!==undefined&&String(raw).trim()!=="";
+    const price=hasPrice?Number(raw):Number(set.price??item.price??0);
+    return {id:size.id,name:size.name,price:Number.isFinite(price)&&price>=0?price:0};
+   })};
  }
  return window.StoreNestOptions.normalize(item?.customization_options).find(group=>group.id===FASHION_SIZE_GROUP_ID)||null;
 }
@@ -2179,19 +2189,22 @@ function storefrontProductPriceLabel(item){
  for(const set of sets){
   const group=storefrontFashionSizeGroup(item,set.id);
   if(group?.priceMode==="fixed"&&group.options.length)prices.push(...group.options.map(option=>Number(option.price)).filter(price=>Number.isFinite(price)&&price>=0));
-  else{const value=Number(set.price??item.price);if(Number.isFinite(value)&&value>=0)prices.push(value)}
+  else{
+   const raw=set.price??item.price,value=Number(raw);
+   if(Number.isFinite(value)&&value>=0)prices.push(value);
+  }
  }
  if(!prices.length)return money(item.price);
  return (prices.length>1?"From ":"")+money(Math.min(...prices));
 }
 function storefrontSelectedFashionPrice(item,colorSetId=null,sizeId=null){
  if(!isStorefrontFashionProduct(item))return storefrontProductPriceLabel(item);
- const set=storefrontFashionColorSets(item).find(row=>row.id===colorSetId)||storefrontFashionColorSets(item)[0];
+ const sets=storefrontFashionColorSets(item),set=sets.find(row=>row.id===colorSetId)||sets[0];
  const group=storefrontFashionSizeGroup(item,set?.id),selected=group?.options.find(option=>option.id===sizeId);
  if(group?.priceMode==="fixed"&&selected)return money(selected.price);
  if(group?.priceMode==="fixed"&&group.options.length){
-  const lowest=Math.min(...group.options.map(option=>Number(option.price)).filter(price=>Number.isFinite(price)&&price>=0));
-  return (group.options.length>1?"From ":"")+money(lowest);
+  const prices=group.options.map(option=>Number(option.price)).filter(price=>Number.isFinite(price)&&price>=0);
+  if(prices.length)return (prices.length>1?"From ":"")+money(Math.min(...prices));
  }
  return money(set?.price??item.price);
 }
@@ -2677,13 +2690,16 @@ function wireFashionPhotoTrack(track){
   }
  };
  const scheduleUpdate=()=>{if(scrollFrame)cancelAnimationFrame(scrollFrame);scrollFrame=requestAnimationFrame(updatePosition)};
- track.addEventListener("scroll",scheduleUpdate,{passive:true});
- track.querySelectorAll("img,video").forEach(media=>media.addEventListener("load",scheduleUpdate,{once:true}));
  if("ResizeObserver" in window&&art)new ResizeObserver(scheduleUpdate).observe(art);
  requestAnimationFrame(updatePosition);
  const ignoreSwipeClick=()=>{if(openButton)openButton.dataset.ignorePhotoClickUntil=String(Date.now()+800)};
+ track.addEventListener("scroll",()=>{
+  if(pointerStart&&pointerStart.type!=="mouse"&&Math.abs(track.scrollLeft-pointerStart.scrollLeft)>5)ignoreSwipeClick();
+  scheduleUpdate();
+ },{passive:true});
+ track.querySelectorAll("img,video").forEach(media=>media.addEventListener("load",scheduleUpdate,{once:true}));
  track.addEventListener("pointerdown",event=>{
-  pointerStart={id:event.pointerId,x:event.clientX,y:event.clientY};
+  pointerStart={id:event.pointerId,x:event.clientX,y:event.clientY,type:event.pointerType,scrollLeft:track.scrollLeft};
   if(event.pointerType==="mouse"&&event.button===0){
    mouseDrag={id:event.pointerId,x:event.clientX,scrollLeft:track.scrollLeft,moved:false};
    if(track.setPointerCapture)track.setPointerCapture(event.pointerId);
