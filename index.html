@@ -291,6 +291,36 @@ html[data-theme="dark"] .order-notification-badge{border-color:#1b292c}
 html[data-theme="dark"] .overall-order-pin{background:#20312b;border-color:#38584a}
 html[data-theme="dark"] .overall-order-pin>div span,html[data-theme="dark"] .overall-order-pin>strong{color:#d8f6e8}
 html[data-theme="dark"] .overall-order-pin small{color:#a7bdb1}
+
+/* Click a tracked order card to expand its immutable item snapshot. */
+.overall-order-card[data-order-open]{cursor:pointer;transition:border-color .16s}
+.overall-order-card[data-order-open]:hover{border-color:#86c5a5}
+.overall-order-card[data-order-open]:focus-visible{outline:2px solid #30b695;outline-offset:3px}
+.overall-order-hint{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;font-size:12px;font-weight:800;color:#27785d}
+.overall-order-hint span:last-child{font-size:20px;line-height:1;transition:transform .15s}
+.overall-order-card[aria-expanded="true"] .overall-order-hint span:last-child{transform:rotate(180deg)}
+.overall-order-details{margin-top:12px;padding-top:14px;border-top:1px solid #dce8e1}
+.overall-order-details[hidden]{display:none!important}
+.overall-order-details h3{font-size:13px;margin:0 0 10px}
+.overall-order-items{display:grid;gap:12px}
+.overall-order-item{display:grid;grid-template-columns:52px minmax(0,1fr) auto;align-items:start;gap:10px}
+.overall-order-item+.overall-order-item{border-top:1px solid #e5ece8;padding-top:12px}
+.overall-order-item-photo{display:grid;place-items:center;width:52px;height:58px;border-radius:8px;overflow:hidden;background:#ecf2ee;color:#7f9588}
+.overall-order-item-photo img{width:100%;height:100%;object-fit:cover}
+.overall-order-item-body{min-width:0;display:grid;gap:5px}
+.overall-order-item-body strong{font-size:12px;overflow-wrap:anywhere}
+.overall-order-item-choice{font-size:11px;color:#62746a;line-height:1.45;overflow-wrap:anywhere}
+.overall-order-item-note{font-size:11px;color:#835d32;line-height:1.45;overflow-wrap:anywhere}
+.overall-order-item-price{font-size:12px;font-weight:800;white-space:nowrap}
+.overall-order-total{display:flex;justify-content:space-between;gap:12px;margin-top:12px;padding-top:12px;border-top:1px solid #dce8e1;font-size:13px;font-weight:850}
+.overall-order-details-empty{margin:0;color:#75867b;font-size:12px;line-height:1.5}
+html[data-theme="dark"] .overall-order-details,html[data-theme="dark"] .overall-order-item+.overall-order-item,html[data-theme="dark"] .overall-order-total{border-color:#34483d}
+html[data-theme="dark"] .overall-order-hint{color:#a9edd1}
+html[data-theme="dark"] .overall-order-item-photo{background:#293e33;color:#b5ccbd}
+html[data-theme="dark"] .overall-order-item-choice,html[data-theme="dark"] .overall-order-details-empty{color:#b8cabe}
+html[data-theme="dark"] .overall-order-item-note{color:#efc38a}
+@media(max-width:400px){.overall-order-item{grid-template-columns:44px minmax(0,1fr) auto;gap:7px}.overall-order-item-photo{width:44px;height:52px}.overall-order-item-price{font-size:11px}}
+
 .overall-orders-note{margin:8px 0 0;color:#77847c;font-size:11px;line-height:1.45}
 .overall-orders-footer{padding-top:12px;border-top:1px solid #e3eae6}
 .overall-orders-refresh{width:100%;min-height:43px;border:1px solid #d0e2d7;border-radius:11px;background:#f2f9f5;color:#24664f;font:inherit;font-size:12px;font-weight:800;cursor:pointer}
@@ -906,6 +936,61 @@ function persistCustomerOrderStatuses(orders){
   }catch(error){console.warn("Could not update saved order statuses:",error)}
  });
 }
+
+const expandedCustomerOrderIds=new Set();
+function customerOrderCurrency(value){
+ const n=Number(value);
+ return Number.isFinite(n)&&n>=0?"R"+n.toFixed(2):"—";
+}
+function safeCustomerOrderImage(value){
+ try{
+  const url=new URL(String(value||""));
+  return ["https:","http:"].includes(url.protocol)&&!/\.(?:mp4|webm)(?:[?#]|$)/i.test(url.href)?url.href:"";
+ }catch(_){return""}
+}
+function renderCustomerOrderContents(order){
+ const lines=Array.isArray(order.items)?order.items:[];
+ if(!lines.length)return '<p class="overall-order-details-empty">Item details are not available for this saved tracking record. Sign in with the purchasing account to view the full order.</p>';
+ const html=lines.map(line=>{
+  const qty=Math.max(1,Math.floor(Number(line?.quantity)||1));
+  const image=safeCustomerOrderImage(line?.image_url||line?.imageUrl);
+  const choices=Array.isArray(line?.customizations)?line.customizations:Array.isArray(line?.summary)?line.summary:[];
+  const options=choices.map(group=>{
+   const values=Array.isArray(group?.values)?group.values.map(x=>String(x)).filter(Boolean):[];
+   return values.length?'<span class="overall-order-item-choice">'+escapeResult(group.group||"Options")+': '+escapeResult(values.join(", "))+'</span>':"";
+  }).join("");
+  const note=String(line?.note||"").trim();
+  const total=line?.line_total??(Number(line?.unit_price??line?.unitPrice)*qty);
+  return '<div class="overall-order-item"><div class="overall-order-item-photo">'+
+   (image?'<img src="'+escapeResult(image)+'" alt="" loading="lazy" decoding="async">':'<span aria-hidden="true">▧</span>')+
+   '</div><div class="overall-order-item-body"><strong>'+escapeResult(qty)+' × '+escapeResult(line?.name||line?.itemName||"Product")+'</strong>'+options+
+   (note?'<span class="overall-order-item-note">Special instructions: '+escapeResult(note)+'</span>':"")+
+   '</div><strong class="overall-order-item-price">'+customerOrderCurrency(total)+'</strong></div>';
+ }).join("");
+ const total=order.subtotal===null||order.subtotal===undefined?"":'<div class="overall-order-total"><span>Total</span><strong>'+customerOrderCurrency(order.subtotal)+'</strong></div>';
+ return '<h3>Order contents</h3><div class="overall-order-items">'+html+'</div>'+total;
+}
+function toggleCustomerOrderCard(card){
+ const id=card?.dataset.orderOpen;
+ if(!id)return;
+ const expanded=!expandedCustomerOrderIds.has(id);
+ if(expanded)expandedCustomerOrderIds.add(id);else expandedCustomerOrderIds.delete(id);
+ card.setAttribute("aria-expanded",String(expanded));
+ const details=card.querySelector("[data-order-details]");
+ if(details)details.hidden=!expanded;
+ const hint=card.querySelector("[data-order-hint]");
+ if(hint)hint.textContent=expanded?"Hide order contents":"View order contents";
+}
+overallOrdersList.addEventListener("click",event=>{
+ const card=event.target.closest("[data-order-open]");
+ if(card&&overallOrdersList.contains(card))toggleCustomerOrderCard(card);
+});
+overallOrdersList.addEventListener("keydown",event=>{
+ if(event.target.matches("[data-order-open]")&&(event.key==="Enter"||event.key===" ")){
+  event.preventDefault();toggleCustomerOrderCard(event.target);
+ }
+});
+
 function renderCustomerOrderCard(order){
  const status=String(order.status||"new");
  const statusLabel=CUSTOMER_ORDER_STATUS_LABELS[status]||"Awaiting acceptance";
@@ -922,9 +1007,14 @@ function renderCustomerOrderCard(order){
  const createdAt=Date.parse(order.createdAt||"");
  const dateLabel=createdAt?new Intl.DateTimeFormat(undefined,{dateStyle:"medium",timeStyle:"short"}).format(new Date(createdAt)):"";
  const pinPanel=status==="cancelled"||collected?"":'<div class="overall-order-pin"><div><span>Collection PIN</span><small>Keep it private and show it to the business when you collect.</small></div><strong>'+escapeResult(collectionPin||"Unavailable")+'</strong></div>';
- return '<article class="overall-order-card"><div class="overall-order-head"><div class="overall-order-store"><span>'+escapeResult(order.businessName||"Store")+'</span><small>Order #'+escapeResult(reference)+(dateLabel?' · '+escapeResult(dateLabel):'')+'</small></div><span class="overall-order-status">'+escapeResult(statusLabel)+'</span></div>'+
+
+ const expanded=expandedCustomerOrderIds.has(order.id);
+ const detailsId="customer-order-details-"+String(order.id).replace(/[^a-zA-Z0-9-]/g,"");
+ return '<article class="overall-order-card" role="button" tabindex="0" data-order-open="'+escapeResult(order.id)+'" aria-expanded="'+String(expanded)+'" aria-controls="'+detailsId+'" aria-label="Order '+escapeResult(reference)+', '+escapeResult(statusLabel)+'. View order contents">'+
+ '<div class="overall-order-head"><div class="overall-order-store"><span>'+escapeResult(order.businessName||"Store")+'</span><small>Order #'+escapeResult(reference)+(dateLabel?' · '+escapeResult(dateLabel):'')+'</small></div><span class="overall-order-status">'+escapeResult(statusLabel)+'</span></div>'+
  (status==="cancelled"?'<p class="overall-order-cancelled">This order request was cancelled.</p>':'<ol class="overall-order-steps">'+steps+'</ol>')+
- pinPanel+'</article>';
+ pinPanel+'<div class="overall-order-hint"><span data-order-hint>'+(expanded?'Hide order contents':'View order contents')+'</span><span aria-hidden="true">⌄</span></div>'+
+ '<section class="overall-order-details" id="'+detailsId+'" data-order-details '+(expanded?'':'hidden')+'>'+renderCustomerOrderContents(order)+'</section></article>';
 }
 function renderAllCustomerOrders(orders,note=""){
  const current=orders||[];
@@ -1039,7 +1129,7 @@ async function refreshAllCustomerOrders({showBusy=true}={}){
    orders=currentUserOrders;
    try{
     const {data,error}=await client.from("storefront_orders")
-     .select("id,customer_user_id,status,created_at,updated_at,customer_business_name,tracking_token")
+     .select("id,customer_user_id,status,created_at,updated_at,customer_business_name,tracking_token,items,subtotal")
      .eq("customer_user_id",userId)
      .order("created_at",{ascending:false}).limit(50);
     if(error)throw error;
@@ -1050,7 +1140,7 @@ async function refreshAllCustomerOrders({showBusy=true}={}){
     [...currentUserOrders,...legacyMatches].forEach(order=>byId.set(order.id,order));
     ownedRows.forEach(row=>{
      const previous=byId.get(row.id)||{};
-     byId.set(row.id,{...previous,id:row.id,customerUserId:userId,accountRecord:true,token:row.tracking_token||previous.token||"",status:row.status||"new",createdAt:row.created_at||previous.createdAt,updatedAt:row.updated_at||previous.updatedAt,businessName:row.customer_business_name||previous.businessName||"Store"});
+     byId.set(row.id,{...previous,id:row.id,customerUserId:userId,accountRecord:true,token:row.tracking_token||previous.token||"",status:row.status||"new",createdAt:row.created_at||previous.createdAt,updatedAt:row.updated_at||previous.updatedAt,businessName:row.customer_business_name||previous.businessName||"Store",items:Array.isArray(row.items)?row.items:previous.items,subtotal:row.subtotal??previous.subtotal});
     });
     orders=[...byId.values()].sort((a,b)=>(Date.parse(b.createdAt||"")||0)-(Date.parse(a.createdAt||"")||0));
     await attachCustomerOrderCollectionPins(client,orders,userId);
