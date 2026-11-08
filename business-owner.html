@@ -1335,7 +1335,7 @@ function syncDecorColorSetEditor(){
  if(editor)editor.hidden=!enabled;
  if(mediaField)mediaField.hidden=enabled;
  if(!enabled)return;
- if(!editedDecorColorSets.length)editedDecorColorSets=[newDecorColorSet("Colour set 1")];
+ if(!editedDecorColorSets.length)editedDecorColorSets=[newDecorColorSet()];
  const validIds=new Set(editedDecorColorSets.map(set=>set.id)),firstSet=editedDecorColorSets[0];
  galleryEntries.forEach(entry=>{if(!validIds.has(entry.decorSetId))entry.decorSetId=firstSet.id});
  drawDecorColorSetEditor();drawOwnerGallery();
@@ -1347,11 +1347,11 @@ function loadDecorColorSets(item){
  const source=Array.isArray(item?.decor_color_sets)?item.decor_color_sets:[];
  editedDecorColorSets=source.map((set,index)=>({
   id:String(set?.id||"").trim()||newDecorColorSet("x").id,
-  name:String(set?.name||"").trim()||("Colour set "+(index+1)),
+  name:String(set?.name||"").trim(),
   description:String(set?.description||"").slice(0,500),
   media_urls:(Array.isArray(set?.media_urls)?set.media_urls:[]).map(value=>typeof value==="string"?value:value?.url).filter(url=>typeof url==="string"&&mediaByUrl.has(url))
  }));
- if(!editedDecorColorSets.length)editedDecorColorSets=[newDecorColorSet(media.length?"Existing photos":"Colour set 1")];
+ if(!editedDecorColorSets.length)editedDecorColorSets=[newDecorColorSet()];
  const urlToSet=new Map();
  for(const set of editedDecorColorSets)for(const url of set.media_urls)if(!urlToSet.has(url))urlToSet.set(url,set.id);
  galleryEntries.forEach(entry=>{entry.decorSetId=urlToSet.get(entry.url)||editedDecorColorSets[0].id});
@@ -1708,7 +1708,7 @@ function drawDecorColorSetEditor(){
   const remove=document.createElement("button");remove.type="button";remove.className="decor-color-set-remove";remove.textContent="×";remove.title="Remove this colour set";remove.setAttribute("aria-label","Remove colour set "+(index+1));remove.disabled=editedDecorColorSets.length<2;remove.dataset.removeDecorSet=set.id;
   head.append(title,remove);
   const fields=document.createElement("div");fields.className="decor-color-set-fields";
-  const nameLabel=document.createElement("label");nameLabel.textContent="Colour set name";
+  const nameLabel=document.createElement("label");nameLabel.textContent="Colour set name (optional)";
   const nameInput=document.createElement("input");nameInput.type="text";nameInput.maxLength=80;nameInput.placeholder="e.g. Blush Pink & Gold";nameInput.value=set.name;nameInput.dataset.decorSetName=set.id;nameLabel.append(nameInput);
   const descLabel=document.createElement("label");descLabel.textContent="Description (optional)";
   const desc=document.createElement("textarea");desc.maxLength=500;desc.placeholder="Describe this colour combination";desc.value=set.description;desc.dataset.decorSetDescription=set.id;descLabel.append(desc);
@@ -1723,7 +1723,7 @@ function drawDecorColorSetEditor(){
 }
 $("addDecorColorSet").addEventListener("click",()=>{
  if(!isDecorOffering())return;
- const number=editedDecorColorSets.length+1,set=newDecorColorSet("Colour set "+number);
+ const set=newDecorColorSet();
  editedDecorColorSets.push(set);drawDecorColorSetEditor();drawOwnerGallery();
 });
 $("decorColorSetsList").addEventListener("input",event=>{
@@ -1766,7 +1766,7 @@ function validateDecorColorSets(){
  if(!isDecorOffering())return;
  if(!editedDecorColorSets.length)throw Error("Add at least one décor colour set.");
  for(const [index,set] of editedDecorColorSets.entries()){
-  if(!String(set.name||"").trim())throw Error("Enter a name for colour set "+(index+1)+".");
+  
   if(!galleryEntries.some(entry=>entry.decorSetId===set.id))throw Error("Upload at least one picture for "+String(set.name||("colour set "+(index+1)))+", or remove that set.");
  }
 }
