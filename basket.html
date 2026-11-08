@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f8faf9">
+<title>Your basket — StoreNest</title>
+<style>
+:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#182321;background:#f8faf9}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:#f8faf9}
+a{color:inherit}button{font:inherit;cursor:pointer}
+[hidden]{display:none!important}
+.page{width:min(1040px,calc(100% - 28px));margin:auto}
+header{height:68px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #dce6e2}
+.brand{font-weight:900;font-size:22px;letter-spacing:-.07em;text-decoration:none;color:#172421}.brand span{color:#279b83}
+.header-links{display:flex;align-items:center;gap:10px}
+.header-links a{color:#51665c;font-size:13px;font-weight:650;text-decoration:none}
+main{padding:30px 0 60px}
+h1{margin:0;font-size:clamp(26px,4vw,36px);letter-spacing:-.045em}
+.intro{color:#708078;font-size:14px;line-height:1.5;margin:7px 0 24px}
+.store-group{margin:0 0 20px;padding:0 18px 18px;border:1px solid #dae6df;border-radius:16px;background:#fff;box-shadow:0 2px 14px #1a342309}
+.store-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:17px 0 12px;border-bottom:1px solid #ebf0ed}
+.store-heading h2{font-size:17px;margin:0;letter-spacing:-.02em}
+.store-heading p{font-size:12px;color:#718079;margin:5px 0 0}
+.store-items{display:grid;gap:0}
+.basket-row{display:grid;grid-template-columns:80px minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid #eff2f0}
+.basket-row:last-child{border-bottom:0}
+.item-image{width:80px;height:80px;display:grid;place-items:center;overflow:hidden;border-radius:10px;background:#eef2ef;color:#87948d;font-size:22px}
+.item-image img{display:block;width:100%;height:100%;object-fit:cover}
+.item-title{display:block;font-size:14px;font-weight:750;line-height:1.35}
+.item-options{display:flex;flex-wrap:wrap;gap:5px 12px;margin-top:5px;color:#6c7a73;font-size:12px}
+.item-options span{max-width:100%;overflow-wrap:anywhere}
+.item-note{margin-top:5px;color:#76837c;font-size:12px;overflow-wrap:anywhere}
+.item-price{margin-top:7px;color:#344b3d;font-weight:750;font-size:13px}
+.item-actions{display:flex;align-items:center;gap:7px}
+.qty-controls{display:flex;align-items:center;gap:8px}
+.qty-controls button,.remove-item{width:32px;height:32px;display:grid;place-items:center;border:1px solid #d9e5de;border-radius:9px;background:#f8fbf9;color:#24382f}
+.remove-item{color:#8c514b}
+.store-footer{display:flex;align-items:center;justify-content:flex-end;gap:15px;padding-top:14px;border-top:1px solid #ebf0ed}
+.subtotal{font-size:14px;color:#66736d}.subtotal strong{color:#1c2d24;font-size:16px;margin-left:5px}
+.checkout-link,.primary-link{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 17px;border:0;border-radius:999px;background:#101615;color:#fff;text-decoration:none;font-size:13px;font-weight:750}
+.checkout-link[aria-disabled="true"]{opacity:.45;pointer-events:none}
+.empty-state{padding:40px 20px;text-align:center;border:1px dashed #cfded5;border-radius:16px;background:#fff;color:#718078}
+.empty-state strong{display:block;color:#21362a;font-size:17px;margin-bottom:8px}
+.empty-state p{margin:0 0 18px;font-size:13px;line-height:1.5}
+.empty-state .primary-link{background:#52cfae;color:#10251d}
+@media(max-width:620px){
+ .page{width:calc(100% - 20px)}
+ header{height:58px}
+ .brand{font-size:20px}
+ .header-links{gap:8px}
+ .header-links a{font-size:11px}
+ main{padding:22px 0 38px}
+ .store-group{padding:0 12px 13px}
+ .basket-row{grid-template-columns:62px minmax(0,1fr);gap:10px;padding:12px 0}
+ .item-image{width:62px;height:62px}
+ .item-actions{grid-column:2;justify-content:space-between}
+ .qty-controls button,.remove-item{width:30px;height:30px}
+ .store-footer{flex-wrap:wrap;gap:10px}
+ .checkout-link{flex:1}
+}
+</style>
+</head>
+<body>
+<div class="page">
+<header>
+<a class="brand" href="/">store<span>nest.</span></a>
+<nav class="header-links" aria-label="Basket navigation"><a href="/">Explore stores</a><a href="/customer-account.html">Profile</a></nav>
+</header>
+<main>
+<h1>Your marketplace basket</h1>
+<p class="intro">Items from your different stores stay together here. Place a separate order with each store.</p>
+<div id="basketContents" aria-live="polite"></div>
+</main>
+</div>
+<script>
+"use strict";
+const GLOBAL_BASKET_STORAGE_KEY="storenest:global-basket:v1";
+const contents=document.getElementById("basketContents");
+function esc(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function safeImage(value){try{const url=new URL(String(value||""),location.origin);return ["https:","http:"].includes(url.protocol)?url.href:""}catch(_){return""}}
+function readBasket(){
+ try{const value=JSON.parse(localStorage.getItem(GLOBAL_BASKET_STORAGE_KEY)||"[]");return Array.isArray(value)?value.filter(row=>row&&typeof row==="object"&&row.businessId&&row.itemId&&Number(row.quantity)>0):[]}catch(_){return[]}
+}
+function writeBasket(rows){
+ try{localStorage.setItem(GLOBAL_BASKET_STORAGE_KEY,JSON.stringify(rows));window.dispatchEvent(new Event("storenest:cart-updated"))}catch(error){console.warn("Could not save the marketplace basket",error)}
+}
+function money(value){return "R"+Number(value||0).toFixed(2)}
+function groupBasket(rows){
+ const groups=new Map();
+ rows.forEach(row=>{
+  const id=String(row.businessId);
+  if(!groups.has(id))groups.set(id,{id,name:String(row.businessName||"Store"),slug:String(row.businessSlug||""),rows:[]});
+  groups.get(id).rows.push(row);
+ });
+ return [...groups.values()];
+}
+function renderBasket(){
+ const rows=readBasket();
+ if(!rows.length){
+  contents.innerHTML='<section class="empty-state"><strong>Your basket is empty</strong><p>Browse local stores and add products to collect them here.</p><a class="primary-link" href="/">Explore stores</a></section>';
+  return;
+ }
+ contents.innerHTML=groupBasket(rows).map(group=>{
+  const quantity=group.rows.reduce((sum,row)=>sum+Math.max(0,Math.floor(Number(row.quantity)||0)),0);
+  const subtotal=group.rows.reduce((sum,row)=>sum+(Number(row.unitPrice)||0)*(Number(row.quantity)||0),0);
+  const validSlug=/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(group.slug);
+  const checkout=validSlug?'/storefront.html?slug='+encodeURIComponent(group.slug)+'&checkoutStore=1':'';
+  const lines=group.rows.map(row=>{
+   const image=safeImage(row.itemImageUrl);
+   const options=Array.isArray(row.summary)?row.summary.map(option=>{
+    const values=Array.isArray(option?.values)?option.values.map(value=>String(value)).filter(Boolean):[];
+    return values.length?'<span>'+esc(option.group||"Options")+': '+esc(values.join(", "))+'</span>':"";
+   }).join(""):"";
+   const note=row.note?'<div class="item-note">Note: '+esc(row.note)+'</div>':"";
+   const key=String(row.cartKey||"");
+   return '<article class="basket-row">'+
+    '<div class="item-image">'+(image?'<img src="'+esc(image)+'" alt="" loading="lazy" decoding="async">':'<span aria-hidden="true">▧</span>')+'</div>'+
+    '<div><span class="item-title">'+esc(row.itemName||"Item")+'</span><div class="item-options">'+options+'</div>'+note+'<div class="item-price">'+money(row.unitPrice)+' each</div></div>'+
+    '<div class="item-actions"><div class="qty-controls"><button type="button" data-action="minus" data-business="'+esc(group.id)+'" data-key="'+esc(key)+'" aria-label="Remove one '+esc(row.itemName||"item")+'">−</button><span>'+Math.max(1,Math.floor(Number(row.quantity)||1))+'</span><button type="button" data-action="plus" data-business="'+esc(group.id)+'" data-key="'+esc(key)+'" aria-label="Add one '+esc(row.itemName||"item")+'">+</button></div><button type="button" class="remove-item" data-action="remove" data-business="'+esc(group.id)+'" data-key="'+esc(key)+'" aria-label="Remove '+esc(row.itemName||"item")+' from basket">×</button></div>'+
+   '</article>';
+  }).join("");
+  return '<section class="store-group" aria-label="Basket items from '+esc(group.name)+'"><div class="store-heading"><div><h2>'+esc(group.name)+'</h2><p>'+quantity+' item'+(quantity===1?"":"s")+'</p></div></div><div class="store-items">'+lines+'</div><div class="store-footer"><div class="subtotal">Store subtotal<strong>'+money(subtotal)+'</strong></div><a class="checkout-link" href="'+esc(checkout||"#")+'" '+(checkout?'':'aria-disabled="true" tabindex="-1" title="This store link is unavailable"')+'>Checkout this store</a></div></section>';
+ }).join("");
+}
+contents.addEventListener("click",event=>{
+ const button=event.target.closest("[data-action]");
+ if(!button)return;
+ const {action,business,key}=button.dataset;
+ const rows=readBasket(),index=rows.findIndex(row=>String(row.businessId)===String(business)&&String(row.cartKey||"")===String(key));
+ if(index<0)return;
+ if(action==="remove")rows.splice(index,1);
+ else{
+  const quantity=Math.max(1,Math.floor(Number(rows[index].quantity)||1))+(action==="plus"?1:-1);
+  if(quantity<=0)rows.splice(index,1);else rows[index].quantity=quantity;
+ }
+ writeBasket(rows);renderBasket();
+});
+window.addEventListener("storage",event=>{if(event.key===GLOBAL_BASKET_STORAGE_KEY)renderBasket()});
+window.addEventListener("storenest:cart-updated",renderBasket);
+renderBasket();
+</script>
+</body>
+</html>
