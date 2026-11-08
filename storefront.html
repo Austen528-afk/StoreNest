@@ -2366,7 +2366,8 @@ $("galleryChoiceGroups").addEventListener("change",event=>{
 function openProductGallery(id,trigger,cartKey=null){
  const item=availableItems.find(row=>row.id===id);if(!item)return;
  const isBookingOffer=window.StoreNestBookings.isBookingOffer(item,activePublicBusiness);
- const isDecorBooking=isBookingOffer&&window.StoreNestCategoryId(activePublicBusiness?.category)==="events-decor";
+ const galleryCategoryId=window.StoreNestCategoryId(activePublicBusiness?.category);
+ const isDecorBooking=isBookingOffer&&["events-decor","beauty"].includes(galleryCategoryId);
  const editRow=cartKey?cart.get(cartKey):null;
  activeGalleryItem=item;galleryReturnFocus=trigger;galleryIndex=0;galleryPhotoOnlyReturn=false;galleryEditCartKey=editRow?cartKey:null;
  const availableFashionColors=isStorefrontFashionProduct(item)?storefrontFashionColorSets(item):[];
@@ -2576,13 +2577,16 @@ function renderStorefrontHero(business,cfg,options={}){
   return safeUrl(uri);
  };
  const layout=["classic","showcase","compact","decor"].includes(cfg.layout)?cfg.layout:"classic";
+ const categoryId=window.StoreNestCategoryId(business.category);
  const decorCategory=/home\s*(?:&|and)\s*decor|decors?|furnish|interior|homeware|furniture/i.test([business.category,business.name].filter(Boolean).join(" "));
- const isLocalServices=window.StoreNestCategoryId(business.category)==="local-services";
- const isDecor=layout==="decor"||((decorCategory||isLocalServices)&&layout==="classic");
+ const isLocalServices=categoryId==="local-services";
+ const isPersonalServices=categoryId==="beauty";
+ const isServiceStorefront=isLocalServices||isPersonalServices;
+ const isDecor=layout==="decor"||((decorCategory||isServiceStorefront)&&layout==="classic");
  document.body.dataset.storeType=isDecor?"decor":"standard";
- document.body.dataset.localServicesLayout=String(isDecor&&isLocalServices);
+ document.body.dataset.localServicesLayout=String(isDecor&&isServiceStorefront);
  const accent=/^#[0-9a-f]{6}$/i.test(cfg.accent||"")?cfg.accent:"#e6a15e";
- document.documentElement.style.setProperty("--accent",isDecor&&(!cfg.accent||/^#60d6bd$/i.test(cfg.accent))?(isLocalServices?"#27856d":"#98836a"):accent);
+ document.documentElement.style.setProperty("--accent",isDecor&&(!cfg.accent||/^#60d6bd$/i.test(cfg.accent))?(isServiceStorefront?"#27856d":"#98836a"):accent);
  const cover=resolveAsset(cfg.hero);
  const videoCover=/\.(mp4|webm)(?:[?#]|$)/i.test(cover)||Boolean(options.preview&&cfg.heroIsVideo);
  const logo=resolveAsset(preview?(cfg.logo||business.logo_url):business.logo_url);
@@ -2600,11 +2604,11 @@ function renderStorefrontHero(business,cfg,options={}){
      '<section class="decor-hero"><div class="decor-copy"><div class="store-identity">'+
      (logo?'<img class="store-logo" src="'+esc(logo)+'" alt="">':'')+
      '<span class="brand-name">'+esc(business.name)+'<span class="brand-dot">.</span></span></div>'+
-     '<div><span class="decor-eyebrow">'+(isLocalServices?"LOCAL SERVICES":"HOME &amp; DECOR")+'</span><h1>'+esc(cfg.headline||(isLocalServices?"Local expertise, close to home":"Made for the spaces you love"))+'</h1>'+
+     '<div><span class="decor-eyebrow">'+(isPersonalServices?"PERSONAL SERVICES":isLocalServices?"LOCAL SERVICES":"HOME &amp; DECOR")+'</span><h1>'+esc(cfg.headline||(isPersonalServices?"Personal care, your way":isLocalServices?"Local expertise, close to home":"Made for the spaces you love"))+'</h1>'+
      (cfg.tagline?'<p class="decor-tag">'+esc(cfg.tagline)+'</p>':'')+
-     '<p class="decor-summary">'+esc(business.description||(isLocalServices?"Explore helpful services for everyday needs.":"Explore pieces for the home and everyday spaces."))+'</p></div>'+
-     '<a class="decor-cta" href="#catalog">'+(isLocalServices?"Explore services":"Explore collection")+'</a></div>'+
-     '<div class="decor-visual">'+(decorImage?(videoCover?'<video class="decor-cover-video" src="'+esc(decorImage)+'" autoplay muted loop playsinline webkit-playsinline preload="auto" aria-hidden="true"></video>':'<img src="'+esc(decorImage)+'" alt="'+(isLocalServices?"Featured local service":"Featured home decor")+'" fetchpriority="high" decoding="async">'):'')+
+     '<p class="decor-summary">'+esc(business.description||(isPersonalServices?"Explore grooming, beauty and personal care services.":isLocalServices?"Explore helpful services for everyday needs.":"Explore pieces for the home and everyday spaces."))+'</p></div>'+
+     '<a class="decor-cta" href="#catalog">'+(isPersonalServices||isLocalServices?"Explore services":"Explore collection")+'</a></div>'+
+     '<div class="decor-visual">'+(decorImage?(videoCover?'<video class="decor-cover-video" src="'+esc(decorImage)+'" autoplay muted loop playsinline webkit-playsinline preload="auto" aria-hidden="true"></video>':'<img src="'+esc(decorImage)+'" alt="'+(isPersonalServices?"Featured personal service":isLocalServices?"Featured local service":"Featured home decor")+'" fetchpriority="high" decoding="async">'):'')+
      '</div></section>';
 
  return isDecor?decorHero:standardHero;
@@ -2891,13 +2895,16 @@ function renderPublishedStorefront(root,client,business,items,storefrontSections
    const accent=/^#[0-9a-f]{6}$/i.test(cfg.accent||"")?cfg.accent:"#e6a15e";
    document.documentElement.style.setProperty("--accent",accent);
    const layout=["classic","showcase","compact","decor"].includes(cfg.layout)?cfg.layout:"classic";
+   const businessCategoryId=window.StoreNestCategoryId(business.category);
    const decorCategory=/home\s*(?:&|and)\s*decor|decors?|furnish|interior|homeware|furniture/i.test([business.category,business.name].filter(Boolean).join(" "));
-   const isLocalServices=window.StoreNestCategoryId(business.category)==="local-services";
-   const isDecor=layout==="decor"||((decorCategory||isLocalServices)&&layout==="classic");
+   const isLocalServices=businessCategoryId==="local-services";
+   const isPersonalServices=businessCategoryId==="beauty";
+   const isServiceStorefront=isLocalServices||isPersonalServices;
+   const isDecor=layout==="decor"||((decorCategory||isServiceStorefront)&&layout==="classic");
    document.body.dataset.storeType=isDecor?"decor":"standard";
-   document.body.dataset.storeCategory=window.StoreNestCategoryId(business.category);
-   document.body.dataset.localServicesLayout=String(isDecor&&isLocalServices);
-   if(isDecor&&(!cfg.accent||/^#60d6bd$/i.test(cfg.accent)))document.documentElement.style.setProperty("--accent",isLocalServices?"#27856d":"#98836a");
+   document.body.dataset.storeCategory=businessCategoryId;
+   document.body.dataset.localServicesLayout=String(isDecor&&isServiceStorefront);
+   if(isDecor&&(!cfg.accent||/^#60d6bd$/i.test(cfg.accent)))document.documentElement.style.setProperty("--accent",isServiceStorefront?"#27856d":"#98836a");
    const contacts=[];
    if(business.location)contacts.push('<span>⌖ '+esc(business.location)+'</span>');
    if(business.phone)contacts.push('<a href="tel:'+esc(business.phone)+'">☎ '+esc(business.phone)+'</a>');
@@ -2908,7 +2915,9 @@ function renderPublishedStorefront(root,client,business,items,storefrontSections
    const logo=safeUrl(business.logo_url);
 const cardForItem=item=>{
      const mediaEntries=galleryMediaEntries(item),service=window.StoreNestBookings.isBookingOffer(item,business);
-     const decorBooking=service&&window.StoreNestCategoryId(business.category)==="events-decor";
+     const decorBooking=service&&businessCategoryId==="events-decor";
+     const personalServicesBooking=service&&businessCategoryId==="beauty";
+     const serviceFeedBooking=decorBooking||personalServicesBooking;
      const cateringBooking=decorBooking&&isStorefrontCateringOffering(item);
      const hasDecorColorSets=decorBooking&&isStorefrontDecorOffering(item);
      const colorSets=hasDecorColorSets?storefrontDecorColorSets(item):[];
@@ -2925,7 +2934,7 @@ const cardForItem=item=>{
      const setAttribute=hasConfiguredColorSets&&firstColorSet?' data-decor-set-id="'+esc(firstColorSet.id)+'"':"";
      const initialSetName=hasConfiguredColorSets&&firstColorSet?firstColorSet.name:"";
      const titleButton='<button class="item-title-open" type="button" data-open-product="'+esc(item.id)+'"'+setAttribute+' title="'+esc(item.name)+'" aria-label="View details for '+esc(item.name)+'">'+esc(item.name)+'</button>';
-     const artwork=(first?(isProductVideo(first)?'<video data-catalog-preview data-src="'+esc(first)+'" muted loop playsinline preload="none" aria-label="'+esc(item.name)+' video"></video>':'<img src="'+esc(first)+'"'+catalogResponsiveAttributes(firstEntry,decorBooking?"(max-width: 600px) 100vw, (max-width: 750px) 600px, 50vw":"(max-width: 750px) 50vw, (max-width: 1000px) 33vw, 25vw")+' alt="'+esc(item.name)+'" loading="lazy" decoding="async">'):service?"✦":"▧")+(count>1?'<span class="photo-count'+(decorBooking?' decor-photo-count':'')+'">'+(decorBooking?'1 / '+count:'▧ '+count+' media')+'</span>':'');
+     const artwork=(first?(isProductVideo(first)?'<video data-catalog-preview data-src="'+esc(first)+'" muted loop playsinline preload="none" aria-label="'+esc(item.name)+' video"></video>':'<img src="'+esc(first)+'"'+catalogResponsiveAttributes(firstEntry,serviceFeedBooking?"(max-width: 600px) 100vw, (max-width: 750px) 600px, 50vw":"(max-width: 750px) 50vw, (max-width: 1000px) 33vw, 25vw")+' alt="'+esc(item.name)+'" loading="lazy" decoding="async">'):service?"✦":"▧")+(count>1?'<span class="photo-count'+(serviceFeedBooking?' decor-photo-count':'')+'">'+(serviceFeedBooking?'1 / '+count:'▧ '+count+' media')+'</span>':'');
      const decorArtwork=count?(
        '<div class="decor-photo-track" data-decor-photo-track role="group" aria-roledescription="carousel" aria-label="'+esc(item.name)+' photo gallery">'+
        displayedEntries.map((entry,index)=>{
@@ -2951,7 +2960,7 @@ const cardForItem=item=>{
        (count>1?'<span class="photo-count fashion-photo-count" data-fashion-photo-count aria-live="polite" aria-atomic="true">1 / '+count+'</span>':'')
      ):'';
      const actionButton='<button class="add" type="button" data-add-item="'+esc(item.id)+'"'+(hasConfiguredColorSets?' data-decor-color-set-name="'+esc(initialSetName)+'"':"")+' aria-label="'+(service?"Request booking for ":"Add ")+esc(item.name)+(service?"":" to basket")+'">'+(service?"":'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>')+action+'</button>';
-     if(decorBooking){
+     if(serviceFeedBooking){
        const colorPicker=hasConfiguredColorSets&&colorSets.length?'<div class="decor-color-set-picker" data-decor-color-picker="'+esc(item.id)+'"><span class="decor-color-set-label">Colour theme</span><div class="decor-color-set-options" role="group" aria-label="Choose a décor colour theme">'+colorSets.map((set,index)=>'<button type="button" class="decor-color-set-option" data-decor-color-set="'+esc(set.id)+'" data-item-id="'+esc(item.id)+'" aria-pressed="'+String(index===0)+'">'+esc(set.name)+'</button>').join("")+'</div></div>':"";
        const description=hasConfiguredColorSets&&firstColorSet?.description?firstColorSet.description:(item.description||"");
        return '<article class="card decor-service-feed-card'+(cateringBooking?' catering-service-feed-card':'')+'"><div class="decor-service-feed-title"><h3>'+titleButton+'</h3></div><button type="button" class="item-open decor-service-feed-open" data-open-product="'+esc(item.id)+'"'+setAttribute+' aria-label="View '+esc(item.name)+' photos, description and booking details"><div class="art decor-photo-carousel">'+decorArtwork+'</div></button><div class="decor-service-feed-details">'+colorPicker+'<p class="decor-service-description" data-decor-color-description="'+esc(item.id)+'"'+(description?'':' hidden')+'>'+esc(description)+'</p><div class="decor-service-prices"><strong class="decor-service-price">'+esc(window.StoreNestBookings.priceLabel(item,business))+'</strong>'+(bookingFee?'<span class="decor-service-fee">'+esc(bookingFee)+'</span>':'')+'</div><div class="service-action-row">'+actionButton+whatsapp+'</div><p class="service-disclaimer">Date and final quotation confirmed by the business.</p></div></article>';
@@ -2959,10 +2968,10 @@ const cardForItem=item=>{
      const visibleArtwork=isFashionCard&&count>1?fashionArtwork:artwork;
      return '<article class="card"><button type="button" class="item-open'+(isFashionCard&&count>1?' fashion-photo-carousel':'')+'" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos, videos and details"><div class="art">'+visibleArtwork+'</div></button><div class="item-body"><h3>'+titleButton+'</h3><div class="item-bottom"><span class="price">'+esc(service?window.StoreNestBookings.priceLabel(item,business):storefrontProductPriceLabel(item))+'</span>'+(service?'<div class="service-action-row">':'')+actionButton+(service?whatsapp+'</div>':"")+'</div>'+(service?'<div class="service-disclaimer">'+(bookingFee?'<strong>'+esc(bookingFee)+'</strong><br>':"")+'Date and final quotation confirmed by the business</div>':"")+'</div></article>';
    };
-   const cardGridClass=items=>items.some(item=>window.StoreNestCategoryId(business.category)==="events-decor"&&window.StoreNestBookings.isBookingOffer(item,business))?"grid decor-booking-feed-grid":"grid";
+   const cardGridClass=items=>items.some(item=>["events-decor","beauty"].includes(businessCategoryId)&&window.StoreNestBookings.isBookingOffer(item,business))?"grid decor-booking-feed-grid":"grid";
    const hasProducts=availableItems.some(item=>item.item_type==="product");
    const hasServices=availableItems.some(item=>item.item_type==="service");
-   const catalogueLabel=window.StoreNestCategoryId(business.category)==="events-decor"||hasServices?"Services":"Products";
+   const catalogueLabel=businessCategoryId==="events-decor"||hasServices||(!availableItems.length&&businessCategoryId==="beauty")?"Services":"Products";
    const sectionStyles=["auto","menu","showcase","portfolio","catalogue","booking"];
    // Only owner-created sections count as categories. Never manufacture a
    // "Products & Services" category for stores with no categories.
