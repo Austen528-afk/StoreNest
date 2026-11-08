@@ -2241,7 +2241,7 @@ function storefrontProductPriceLabel(item){
   }
  }
  if(!prices.length)return money(item.price);
- return (prices.length>1?"From ":"")+money(Math.min(...prices));
+ return money(Math.min(...prices));
 }
 function storefrontSelectedFashionPrice(item,colorSetId=null,sizeId=null){
  if(!isStorefrontFashionProduct(item))return storefrontProductPriceLabel(item);
@@ -2250,7 +2250,7 @@ function storefrontSelectedFashionPrice(item,colorSetId=null,sizeId=null){
  if(group?.priceMode==="fixed"&&selected)return money(selected.price);
  if(group?.priceMode==="fixed"&&group.options.length){
   const prices=group.options.map(option=>Number(option.price)).filter(price=>Number.isFinite(price)&&price>=0);
-  if(prices.length)return (prices.length>1?"From ":"")+money(Math.min(...prices));
+  if(prices.length)return money(Math.min(...prices));
  }
  return money(set?.price??item.price);
 }
