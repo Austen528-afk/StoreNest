@@ -1228,10 +1228,11 @@ body[data-store-category="fashion"] #catalog .art:has(img) img{
   <div id="galleryBookingDetails" class="gallery-booking-details"><p id="galleryDescription" class="gallery-description"></p><div id="galleryServiceFee" class="gallery-service-fee" hidden></div></div>
   <div id="galleryProductActionRow" class="gallery-product-action-row" hidden><strong id="galleryProductPrice" class="gallery-price"></strong></div>
   <div id="galleryFashionColors" class="gallery-fashion-colors" hidden><div class="gallery-fashion-colors-heading"><strong>Colour</strong><span id="galleryFashionColorSelected"></span></div><div id="galleryFashionColorOptions" class="gallery-fashion-color-options" role="radiogroup" aria-label="Choose a colour"></div></div>
+  <div id="galleryFashionSizes" class="gallery-fashion-colors" hidden><div class="gallery-fashion-colors-heading"><strong>Size</strong><span id="galleryFashionSizeSelected">Choose a size</span></div><div id="galleryFashionSizeOptions" class="gallery-fashion-color-options" role="radiogroup" aria-label="Choose a size"></div></div>
+  <p id="galleryOptionsError" class="gallery-options-error" role="alert" hidden></p>
   <div id="galleryCustomization" class="gallery-customization" hidden>
    <div id="galleryChoiceGroups"></div>
    <label class="gallery-notes-label">Special instructions (optional)<textarea id="galleryNotes" maxlength="200" rows="2" placeholder="e.g. No onions, less salt"></textarea></label>
-   <p id="galleryOptionsError" class="gallery-options-error" role="alert" hidden></p>
   </div>
   <div class="gallery-bottom" id="galleryBottom"><span id="galleryPosition"></span><div id="galleryDots" class="gallery-dots"></div><div id="galleryServiceActionRow" class="gallery-action-row"><strong id="galleryServicePrice" class="gallery-price"></strong><div class="gallery-actions"><button id="galleryAdd" class="add" type="button">＋ Add</button><a id="galleryWhatsApp" class="service-whatsapp" target="_blank" rel="noopener noreferrer" hidden aria-label="Contact business on WhatsApp"><span aria-hidden="true">💬</span> WhatsApp</a></div></div></div>
   </div>
@@ -1243,9 +1244,9 @@ body[data-store-category="fashion"] #catalog .art:has(img) img{
 <script>
 "use strict";
 const CONFIG={url:"https://cypbjzbagezdelmemuhb.supabase.co",key:"sb_publishable_8W8zyYtggQMWoFlnxrzoVA_BUKjQ9va"};
-const FASHION_COLOR_GROUP_ID="fashion-color";
+const FASHION_COLOR_GROUP_ID="fashion-color",FASHION_SIZE_GROUP_ID="fashion-size";
 const cart=new Map();
-let storefrontClient=null,availableItems=[],toastTimer=null,activeGalleryItem=null,galleryIndex=0,galleryReturnFocus=null,activePublicBusiness=null,galleryEditCartKey=null,activeGalleryDecorSetId=null,activeGalleryFashionColorId=null,activePublicSections=[];
+let storefrontClient=null,availableItems=[],toastTimer=null,activeGalleryItem=null,galleryIndex=0,galleryReturnFocus=null,activePublicBusiness=null,galleryEditCartKey=null,activeGalleryDecorSetId=null,activeGalleryFashionColorId=null,activeGalleryFashionSizeId=null,activePublicSections=[];
 let checkoutPendingCode=null,checkoutVerifiedUser=null,checkoutVerifiedProfile=null,checkoutPendingPassword="",checkoutAuthMode="signup";
 const $=id=>document.getElementById(id);
 const returnCategoryId=new URLSearchParams(location.search).get("returnCategory");
@@ -1906,7 +1907,7 @@ function renderGalleryScale(group){
 }
 function renderGalleryOptions(item,initialSelection={}){
  const container=$("galleryCustomization"),list=$("galleryChoiceGroups");
- const groups=window.StoreNestBookings.isBookingOffer(item,activePublicBusiness)?[]:window.StoreNestOptions.normalize(item.customization_options).filter(group=>group.id!==FASHION_COLOR_GROUP_ID);
+ const groups=window.StoreNestBookings.isBookingOffer(item,activePublicBusiness)?[]:window.StoreNestOptions.normalize(item.customization_options).filter(group=>group.id!==FASHION_COLOR_GROUP_ID&&group.id!==FASHION_SIZE_GROUP_ID);
  galleryOptionSelections={};
  container.hidden=!groups.length;
  $("galleryOptionsError").hidden=true;
@@ -1955,9 +1956,31 @@ function renderGalleryOptions(item,initialSelection={}){
  }
 }
 
+function storefrontFashionSizeGroup(item){
+ if(!isStorefrontFashionProduct(item))return null;
+ return window.StoreNestOptions.normalize(item?.customization_options).find(group=>group.id===FASHION_SIZE_GROUP_ID)||null;
+}
+function renderGalleryFashionSizes(item,initialId=null){
+ const root=$("galleryFashionSizes"),options=$("galleryFashionSizeOptions"),group=storefrontFashionSizeGroup(item);
+ root.hidden=!group?.options.length;options.replaceChildren();
+ if(!group?.options.length){activeGalleryFashionSizeId=null;return}
+ const selected=group.options.find(option=>option.id===initialId)||null;
+ activeGalleryFashionSizeId=selected?.id||null;
+ $("galleryFashionSizeSelected").textContent=selected?.name||"Choose a size (required)";
+ options.innerHTML=group.options.map(option=>'<button type="button" class="gallery-fashion-color-option" role="radio" aria-checked="' +(option.id===activeGalleryFashionSizeId?'true':'false')+'" data-fashion-size-id="' +esc(option.id)+'">' +esc(option.name)+'</button>').join("");
+}
+$("galleryFashionSizeOptions").addEventListener("click",event=>{
+ const button=event.target.closest("[data-fashion-size-id]");if(!button||!activeGalleryItem)return;
+ const group=storefrontFashionSizeGroup(activeGalleryItem),selected=group?.options.find(option=>option.id===button.dataset.fashionSizeId);if(!selected)return;
+ activeGalleryFashionSizeId=selected.id;
+ $("galleryFashionSizeSelected").textContent=selected.name;
+ $("galleryFashionSizeOptions").querySelectorAll("[data-fashion-size-id]").forEach(option=>option.setAttribute("aria-checked",option.dataset.fashionSizeId===selected.id?"true":"false"));
+ $("galleryOptionsError").hidden=true;updateGalleryOptionsPrice();
+});
 function gallerySelectionForQuote(){
  const selection=copyProductSelection(galleryOptionSelections);
  if(isStorefrontFashionOffering(activeGalleryItem)&&activeGalleryFashionColorId)selection[FASHION_COLOR_GROUP_ID]=[activeGalleryFashionColorId];
+ if(storefrontFashionSizeGroup(activeGalleryItem)&&activeGalleryFashionSizeId)selection[FASHION_SIZE_GROUP_ID]=[activeGalleryFashionSizeId];
  return selection;
 }
 function updateGalleryOptionsPrice(){
@@ -2009,6 +2032,9 @@ function openProductGallery(id,trigger,cartKey=null){
  const savedFashionColorId=editRow?.selection?.[FASHION_COLOR_GROUP_ID]?.[0];
  activeGalleryFashionColorId=availableFashionColors.some(set=>set.id===savedFashionColorId)?savedFashionColorId:(availableFashionColors[0]?.id||null);
  renderGalleryFashionColors(item,activeGalleryFashionColorId);
+ const sizeGroup=storefrontFashionSizeGroup(item),savedFashionSizeId=editRow?.selection?.[FASHION_SIZE_GROUP_ID]?.[0];
+ activeGalleryFashionSizeId=sizeGroup?.options.some(option=>option.id===savedFashionSizeId)?savedFashionSizeId:null;
+ renderGalleryFashionSizes(item,activeGalleryFashionSizeId);
  const availableDecorSets=isStorefrontDecorOffering(item)?storefrontDecorColorSets(item):[];
  const requestedDecorSet=trigger?.dataset?.decorSetId;
  activeGalleryDecorSetId=availableDecorSets.some(set=>set.id===requestedDecorSet)?requestedDecorSet:(Array.isArray(item.decor_color_sets)&&item.decor_color_sets.length?availableDecorSets[0]?.id||null:null);
@@ -2057,7 +2083,7 @@ function selectDecorColorSetOnCard(card,item,set){
  if(width)track.scrollTo({left:targetIndex*width,behavior:"smooth"});
 }
 
-function closeProductGallery(){$("galleryTrack").querySelectorAll("video").forEach(video=>{video.pause();video.removeAttribute("src");video.load()});$("galleryTrack").replaceChildren();$("galleryDialog").hidden=true;document.body.style.overflow="";activeGalleryItem=null;activeGalleryDecorSetId=null;activeGalleryFashionColorId=null;galleryEditCartKey=null;galleryReturnFocus?.focus()}
+function closeProductGallery(){$("galleryTrack").querySelectorAll("video").forEach(video=>{video.pause();video.removeAttribute("src");video.load()});$("galleryTrack").replaceChildren();$("galleryDialog").hidden=true;document.body.style.overflow="";activeGalleryItem=null;activeGalleryDecorSetId=null;activeGalleryFashionColorId=null;activeGalleryFashionSizeId=null;galleryEditCartKey=null;galleryReturnFocus?.focus()}
 $("galleryClose").addEventListener("click",closeProductGallery);
 $("galleryDialog").addEventListener("click",event=>{if(event.target===$("galleryDialog"))closeProductGallery()});
 
@@ -2072,7 +2098,8 @@ function handleGalleryAdd(){
  if(!quote.valid){
   $("galleryOptionsError").hidden=false;
   $("galleryOptionsError").textContent=quote.error?.message||"Choose your options.";
-  $("galleryChoiceGroups").querySelector('[data-group-id="'+quote.error?.id+'"]')?.scrollIntoView({block:"nearest"});
+  const errorTarget=quote.error?.id===FASHION_SIZE_GROUP_ID?$("galleryFashionSizes"):quote.error?.id===FASHION_COLOR_GROUP_ID?$("galleryFashionColors"):$("galleryChoiceGroups").querySelector('[data-group-id="'+quote.error?.id+'"]');
+  errorTarget?.scrollIntoView({block:"nearest"});
   return;
  }
  closeProductGallery();
