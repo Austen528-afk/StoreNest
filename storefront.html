@@ -2138,20 +2138,28 @@ function storefrontFashionSizeGroup(item){
  if(!isStorefrontFashionProduct(item))return null;
  return window.StoreNestOptions.normalize(item?.customization_options).find(group=>group.id===FASHION_SIZE_GROUP_ID)||null;
 }
+function storefrontProductPriceLabel(item){
+ const group=storefrontFashionSizeGroup(item);
+ const prices=group?.priceMode==="fixed"?group.options.map(option=>Number(option.price)).filter(price=>Number.isFinite(price)&&price>=0):[];
+ return prices.length?"From "+money(Math.min(...prices)):money(item.price);
+}
+function storefrontFashionSizeDisplayLabel(option,group){
+ return group?.priceMode==="fixed"?option.name+" · "+money(option.price):option.name;
+}
 function renderGalleryFashionSizes(item,initialId=null){
  const root=$("galleryFashionSizes"),options=$("galleryFashionSizeOptions"),group=storefrontFashionSizeGroup(item);
  root.hidden=!group?.options.length;options.replaceChildren();
  if(!group?.options.length){activeGalleryFashionSizeId=null;return}
  const selected=group.options.find(option=>option.id===initialId)||null;
  activeGalleryFashionSizeId=selected?.id||null;
- $("galleryFashionSizeSelected").textContent=selected?.name||"Choose a size (required)";
- options.innerHTML=group.options.map(option=>'<button type="button" class="gallery-fashion-color-option" role="radio" aria-checked="' +(option.id===activeGalleryFashionSizeId?'true':'false')+'" data-fashion-size-id="' +esc(option.id)+'">' +esc(option.name)+'</button>').join("");
+ $("galleryFashionSizeSelected").textContent=selected?storefrontFashionSizeDisplayLabel(selected,group):"Choose a size (required)";
+ options.innerHTML=group.options.map(option=>'<button type="button" class="gallery-fashion-color-option" role="radio" aria-checked="' +(option.id===activeGalleryFashionSizeId?'true':'false')+'" data-fashion-size-id="' +esc(option.id)+'">' +esc(storefrontFashionSizeDisplayLabel(option,group))+'</button>').join("");
 }
 $("galleryFashionSizeOptions").addEventListener("click",event=>{
  const button=event.target.closest("[data-fashion-size-id]");if(!button||!activeGalleryItem)return;
  const group=storefrontFashionSizeGroup(activeGalleryItem),selected=group?.options.find(option=>option.id===button.dataset.fashionSizeId);if(!selected)return;
  activeGalleryFashionSizeId=selected.id;
- $("galleryFashionSizeSelected").textContent=selected.name;
+ $("galleryFashionSizeSelected").textContent=storefrontFashionSizeDisplayLabel(selected,group);
  $("galleryFashionSizeOptions").querySelectorAll("[data-fashion-size-id]").forEach(option=>option.setAttribute("aria-checked",option.dataset.fashionSizeId===selected.id?"true":"false"));
  $("galleryOptionsError").hidden=true;updateGalleryOptionsPrice();
 });
@@ -2236,7 +2244,7 @@ function openProductGallery(id,trigger,cartKey=null){
  $("galleryProductAdd").dataset.addItem=id;
  $("galleryAdd").dataset.addItem=id;
  $("galleryProductAdd").textContent=editRow?"Save changes":"＋ Add";
- $("galleryProductPrice").textContent=money(item.price);
+ $("galleryProductPrice").textContent=storefrontProductPriceLabel(item);
  $("galleryServicePrice").textContent=window.StoreNestBookings.priceLabel(item,activePublicBusiness);
  $("galleryAdd").textContent=isBookingOffer?"Request booking":"＋ Add";
  renderGalleryOptions(item,editRow?.selection||{});
@@ -2657,7 +2665,7 @@ function renderPublishedStorefront(root,client,business,items,storefrontSections
        const description=hasConfiguredColorSets&&firstColorSet?.description?firstColorSet.description:(item.description||"");
        return '<article class="card decor-service-feed-card'+(cateringBooking?' catering-service-feed-card':'')+'"><div class="decor-service-feed-title"><h3>'+titleButton+'</h3></div><button type="button" class="item-open decor-service-feed-open" data-open-product="'+esc(item.id)+'"'+setAttribute+' aria-label="View '+esc(item.name)+' photos, description and booking details"><div class="art decor-photo-carousel">'+decorArtwork+'</div></button><div class="decor-service-feed-details">'+colorPicker+'<p class="decor-service-description" data-decor-color-description="'+esc(item.id)+'"'+(description?'':' hidden')+'>'+esc(description)+'</p><div class="decor-service-prices"><strong class="decor-service-price">'+esc(window.StoreNestBookings.priceLabel(item,business))+'</strong>'+(bookingFee?'<span class="decor-service-fee">'+esc(bookingFee)+'</span>':'')+'</div><div class="service-action-row">'+actionButton+whatsapp+'</div><p class="service-disclaimer">Date and final quotation confirmed by the business.</p></div></article>';
      }
-     return '<article class="card"><button type="button" class="item-open" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos, videos and details"><div class="art">'+artwork+'</div></button><div class="item-body"><h3>'+titleButton+'</h3><div class="item-bottom"><span class="price">'+esc(service?window.StoreNestBookings.priceLabel(item,business):money(item.price))+'</span>'+(service?'<div class="service-action-row">':'')+actionButton+(service?whatsapp+'</div>':"")+'</div>'+(service?'<div class="service-disclaimer">'+(bookingFee?'<strong>'+esc(bookingFee)+'</strong><br>':"")+'Date and final quotation confirmed by the business</div>':"")+'</div></article>';
+     return '<article class="card"><button type="button" class="item-open" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos, videos and details"><div class="art">'+artwork+'</div></button><div class="item-body"><h3>'+titleButton+'</h3><div class="item-bottom"><span class="price">'+esc(service?window.StoreNestBookings.priceLabel(item,business):storefrontProductPriceLabel(item))+'</span>'+(service?'<div class="service-action-row">':'')+actionButton+(service?whatsapp+'</div>':"")+'</div>'+(service?'<div class="service-disclaimer">'+(bookingFee?'<strong>'+esc(bookingFee)+'</strong><br>':"")+'Date and final quotation confirmed by the business</div>':"")+'</div></article>';
    };
    const cardGridClass=items=>items.some(item=>window.StoreNestCategoryId(business.category)==="events-decor"&&window.StoreNestBookings.isBookingOffer(item,business))?"grid decor-booking-feed-grid":"grid";
    const hasProducts=availableItems.some(item=>item.item_type==="product");
