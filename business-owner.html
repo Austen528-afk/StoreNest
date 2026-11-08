@@ -1332,7 +1332,7 @@ function syncFashionSizePricingUI(){
  const enabled=isFashionProduct()&&Boolean(toggle?.checked);
  fashionSizePricesEnabled=enabled;
  if(input){input.required=!usesBookingPricing()&&!enabled;input.readOnly=enabled;input.placeholder=enabled?"Calculated":"0.00"}
- if(label)label.innerHTML=enabled?"Lowest size price (ZAR) <em>*</em>":"Price (ZAR) <em>*</em>";
+ if(label)label.innerHTML=enabled?"Lowest size price (ZAR)":"Price (ZAR) <em>*</em>";
  if(help)help.hidden=!enabled;
  if(enabled&&input){
   const prices=editedFashionSizes.map(size=>String(size.price??"").trim());
@@ -1433,6 +1433,8 @@ function syncItemPricingFields(){const booking=usesBookingPricing();$("itemPrice
 $("itemType").addEventListener("change",syncItemPricingFields);
 $("itemCategory").addEventListener("change",syncDecorColorSetEditor);
 function ownerItemPriceLabel(item){
+ const sizeGroup=window.StoreNestOptions.normalize(item?.customization_options).find(group=>group.id==="fashion-size");
+ if(sizeGroup?.priceMode==="fixed"&&sizeGroup.options.length)return "From "+formatOrderMoney(Math.min(...sizeGroup.options.map(option=>option.price)));
  if(!isCateringDecorStore())return formatOrderMoney(item.price);
  const min=item.price_range_min,max=item.price_range_max;
  if(min!=null&&max!=null&&Number(min)!==Number(max))return formatOrderMoney(min)+" – "+formatOrderMoney(max);
