@@ -324,13 +324,13 @@ html[data-theme="dark"] .overall-orders-refresh{background:#233a30;color:#b1ecd2
 <body data-page-kind="marketplace">
 <div class="wrap">
 <header class="top"><div class="logo">store<span>nest.</span></div><div class="top-actions"><button class="install-btn" id="installBtn" type="button">Install app</button><button class="page-refresh-button" id="pageRefreshButton" type="button" aria-label="Refresh page" title="Refresh page"><svg aria-hidden="true" viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.4 6.3"/><path d="M20 4v7h-7"/></svg></button>
-<a class="top-icon-button" href="/customer-account.html" aria-label="Customer profile" title="Profile">
-<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20c.7-3.7 3.1-5.6 7-5.6s6.3 1.9 7 5.6"></path></svg></a>
+<a class="top-icon-button" id="globalBasketButton" href="/basket.html" aria-label="Open your marketplace basket" title="Basket">
+<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 12H4L5 8ZM9 9V6a3 3 0 0 1 6 0v3"></path></svg><span class="order-notification-badge" id="globalBagCount" aria-live="polite" hidden></span></a>
 <button class="top-icon-button" id="overallBookingsButton" type="button" aria-label="My bookings" title="My bookings">
 <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5"></rect><path d="M7.5 3.5v4M16.5 3.5v4M3.5 10h17m-12 5 2.4 2.4 4.8-5"></path></svg><span class="order-notification-badge" id="overallBookingsBadge" aria-hidden="true" hidden></span></button>
 <button class="top-icon-button" id="overallOrdersButton" type="button" aria-label="My orders" title="My orders">
 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h8l4 4V20a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 20V5a1.5 1.5 0 0 1 1.5-1.5Z"></path><path d="M15 3.5V8h4M8.5 12h7M8.5 15.5h7"></path></svg><span class="order-notification-badge" id="overallOrdersBadge" aria-hidden="true" hidden></span></button>
-<div class="menu-container" id="menuContainer"><button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="siteMenu"><span></span><span></span><span></span></button><nav class="site-menu" id="siteMenu" aria-label="StoreNest menu" hidden><button class="menu-action" id="menuAccountAction" type="button">Sign in</button><a class="menu-action" href="/customer-account.html?mode=signup">Sign up</a><a class="menu-action" href="/customer-account.html?mode=settings">Settings</a><a class="menu-register" href="/business-owner.html">Register as business owner <span aria-hidden="true">→</span></a><button class="theme-switch" data-theme-toggle type="button" aria-label="Switch to dark mode" aria-pressed="false"><span class="theme-switch-icon" aria-hidden="true">☾</span><span class="theme-switch-label">Dark mode</span></button><p class="menu-feedback" id="menuFeedback" role="status" aria-live="polite" hidden></p></nav></div></div></header>
+<div class="menu-container" id="menuContainer"><button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="siteMenu"><span></span><span></span><span></span></button><nav class="site-menu" id="siteMenu" aria-label="StoreNest menu" hidden><a class="menu-action" href="/customer-account.html">Profile</a><button class="menu-action" id="menuAccountAction" type="button">Sign in</button><a class="menu-action" href="/customer-account.html?mode=signup">Sign up</a><a class="menu-action" href="/customer-account.html?mode=settings">Settings</a><a class="menu-register" href="/business-owner.html">Register as business owner <span aria-hidden="true">→</span></a><button class="theme-switch" data-theme-toggle type="button" aria-label="Switch to dark mode" aria-pressed="false"><span class="theme-switch-icon" aria-hidden="true">☾</span><span class="theme-switch-label">Dark mode</span></button><p class="menu-feedback" id="menuFeedback" role="status" aria-live="polite" hidden></p></nav></div></div></header>
 <div id="installHint" class="install-hint" role="status" aria-live="polite"></div>
 <section class="search-row" role="search" aria-label="Search StoreNest">
   <form class="search-form" id="storeSearchForm">
@@ -1248,4 +1248,18 @@ const initialMarketplaceCategory=new URLSearchParams(location.search).get("marke
 if(initialMarketplaceCategory&&MARKETPLACE_CATEGORIES.some(row=>row[0]===initialMarketplaceCategory)){
  browseMarketplaceCategory(initialMarketplaceCategory,{historyMode:"none"});
 }
+
+const GLOBAL_BASKET_STORAGE_KEY="storenest:global-basket:v1";
+function refreshGlobalBasketBadge(){
+ const badge=document.getElementById("globalBagCount");
+ if(!badge)return;
+ let rows=[];
+ try{const saved=JSON.parse(localStorage.getItem(GLOBAL_BASKET_STORAGE_KEY)||"[]");rows=Array.isArray(saved)?saved:[]}catch(_){}
+ const quantity=rows.reduce((sum,row)=>sum+Math.max(0,Math.floor(Number(row?.quantity)||0)),0);
+ badge.textContent=quantity>99?"99+":String(quantity);
+ badge.hidden=quantity===0;
+}
+window.addEventListener("storage",event=>{if(event.key===GLOBAL_BASKET_STORAGE_KEY)refreshGlobalBasketBadge()});
+window.addEventListener("storenest:cart-updated",refreshGlobalBasketBadge);
+refreshGlobalBasketBadge();
 </script></body></html>
