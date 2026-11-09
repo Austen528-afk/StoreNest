@@ -80,7 +80,6 @@ async function prefillBookingCustomerDetails(form,requestId){
   const user=data?.session?.user;
   if(!user||!isCurrentRequest())return;
   const metadata=user.user_metadata||{};
-  fillIfEmpty("customer_name",metadata.profile_name,metadata.full_name,metadata.name);
   fillIfEmpty("contact_phone",user.phone,metadata.contact_phone,metadata.phone);
   fillIfEmpty("contact_email",user.email,metadata.contact_email,metadata.email);
   const profile=await window.StoreNestCustomerAuth?.getProfile(user.id);
