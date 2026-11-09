@@ -713,15 +713,15 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
  #galleryDialog.gallery-booking-style .gallery-actions :is(.add,.service-whatsapp){flex:1 1 0;min-width:0;text-align:center}
 }
 
-/* Catering & Decor category booking cards override owner section styles.
+/* Catering & Decor and Local Services booking cards override owner section styles.
    On phones, stack the title, image, then description and booking details. */
-body[data-store-category="events-decor"] #catalog .grid.decor-booking-feed-grid{
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .grid.decor-booking-feed-grid{
  display:grid;
  grid-template-columns:minmax(0,1fr);
  justify-content:stretch;
  gap:24px
 }
-body[data-store-category="events-decor"] #catalog .decor-service-feed-card{
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-feed-card{
  display:grid;
  grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);
  grid-template-rows:auto minmax(0,1fr);
@@ -733,25 +733,25 @@ body[data-store-category="events-decor"] #catalog .decor-service-feed-card{
  border-radius:8px;
  overflow:hidden
 }
-body[data-store-category="events-decor"] #catalog .catering-service-feed-card{
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .catering-service-feed-card{
  grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);
  min-height:460px
 }
-body[data-store-category="events-decor"] #catalog .decor-service-feed-title{
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-feed-title{
  grid-area:title;
  min-width:0;
  padding:22px clamp(20px,3vw,42px) 10px;
  background:var(--canvas,#f8f6f1)
 }
-body[data-store-category="events-decor"] #catalog .decor-service-feed-title h3{margin:0;min-width:0}
-body[data-store-category="events-decor"] #catalog .decor-service-feed-title .item-title-open{
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-feed-title h3{margin:0;min-width:0}
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-feed-title .item-title-open{
  font-size:clamp(22px,2.5vw,34px);
  line-height:1.2;
  font-weight:760;
  white-space:normal;
  text-overflow:clip
 }
-body[data-store-category="events-decor"] #catalog .decor-service-feed-card .decor-service-feed-open{
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-feed-card .decor-service-feed-open{
  grid-area:image;
  display:block;
  width:100%;
@@ -762,7 +762,7 @@ body[data-store-category="events-decor"] #catalog .decor-service-feed-card .deco
  padding:0;
  overflow:hidden
 }
-body[data-store-category="events-decor"] #catalog .decor-service-feed-card .art{
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-feed-card .art{
  display:block;
  width:100%;
  height:100%;
@@ -772,7 +772,7 @@ body[data-store-category="events-decor"] #catalog .decor-service-feed-card .art{
  background:var(--surface,#eeeae3);
  overflow:hidden
 }
-body[data-store-category="events-decor"] #catalog .decor-service-feed-card .art :is(img,video){
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-feed-card .art :is(img,video){
  display:block;
  width:100%;
  height:100%;
@@ -780,7 +780,7 @@ body[data-store-category="events-decor"] #catalog .decor-service-feed-card .art 
  max-height:none;
  object-fit:cover
 }
-body[data-store-category="events-decor"] #catalog .decor-service-feed-card .art .decor-photo-count{
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-feed-card .art .decor-photo-count{
  top:13px;
  right:13px;
  bottom:auto;
@@ -788,7 +788,7 @@ body[data-store-category="events-decor"] #catalog .decor-service-feed-card .art 
  padding:5px 10px;
  background:#171a18c9
 }
-body[data-store-category="events-decor"] #catalog .decor-photo-track{
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-photo-track{
  display:flex;
  width:100%;
  height:100%;
@@ -802,8 +802,8 @@ body[data-store-category="events-decor"] #catalog .decor-photo-track{
  scrollbar-width:none;
  touch-action:pan-x pan-y
 }
-body[data-store-category="events-decor"] #catalog .decor-photo-track::-webkit-scrollbar{display:none}
-body[data-store-category="events-decor"] #catalog .decor-photo-slide{
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-photo-track::-webkit-scrollbar{display:none}
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-photo-slide{
  flex:0 0 100%;
  width:100%;
  height:100%;
@@ -812,7 +812,7 @@ body[data-store-category="events-decor"] #catalog .decor-photo-slide{
  scroll-snap-align:start;
  scroll-snap-stop:always
 }
-body[data-store-category="events-decor"] #catalog .decor-photo-placeholder{
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-photo-placeholder{
  display:grid;
  width:100%;
  height:100%;
@@ -820,8 +820,8 @@ body[data-store-category="events-decor"] #catalog .decor-photo-placeholder{
  color:var(--muted,#6d6157);
  font-size:48px
 }
-body[data-store-category="events-decor"] #catalog .decor-photo-count{pointer-events:none}
-body[data-store-category="events-decor"] #catalog .decor-service-feed-details{
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-photo-count{pointer-events:none}
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-feed-details{
  grid-area:details;
  display:grid;
  align-content:center;
@@ -830,7 +830,7 @@ body[data-store-category="events-decor"] #catalog .decor-service-feed-details{
  padding:10px clamp(20px,3vw,42px) 28px;
  background:var(--canvas,#f8f6f1)
 }
-body[data-store-category="events-decor"] #catalog .decor-service-description{
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-description{
  margin:0;
  color:var(--ink,#342e27);
  font-size:15px;
@@ -838,80 +838,80 @@ body[data-store-category="events-decor"] #catalog .decor-service-description{
  white-space:pre-line;
  overflow-wrap:anywhere
 }
-body[data-store-category="events-decor"] #catalog .decor-color-set-picker{display:grid;gap:7px;min-width:0}
-body[data-store-category="events-decor"] #catalog .decor-color-set-label{color:var(--muted,#6d6157);font-size:11px;font-weight:750}
-body[data-store-category="events-decor"] #catalog .decor-color-set-options{display:flex;flex-wrap:wrap;gap:5px 9px}
-body[data-store-category="events-decor"] #catalog .decor-color-set-option{border:0;border-radius:8px;background:transparent;color:var(--ink,#342e27);padding:6px 9px;font:inherit;font-size:12px;font-weight:650;cursor:pointer}
-body[data-store-category="events-decor"] #catalog .decor-color-set-option[aria-pressed="true"]{background:#dff4e9;color:#205f50;font-weight:800}
-body[data-store-category="events-decor"] #catalog .decor-color-set-option:focus-visible{outline:2px solid #27856d;outline-offset:2px}
-body[data-store-category="events-decor"] #catalog .decor-service-description[hidden]{display:none!important}
-body[data-store-category="events-decor"] #catalog .decor-service-prices{display:grid;gap:4px}
-body[data-store-category="events-decor"] #catalog .decor-service-price{
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-color-set-picker{display:grid;gap:7px;min-width:0}
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-color-set-label{color:var(--muted,#6d6157);font-size:11px;font-weight:750}
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-color-set-options{display:flex;flex-wrap:wrap;gap:5px 9px}
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-color-set-option{border:0;border-radius:8px;background:transparent;color:var(--ink,#342e27);padding:6px 9px;font:inherit;font-size:12px;font-weight:650;cursor:pointer}
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-color-set-option[aria-pressed="true"]{background:#dff4e9;color:#205f50;font-weight:800}
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-color-set-option:focus-visible{outline:2px solid #27856d;outline-offset:2px}
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-description[hidden]{display:none!important}
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-prices{display:grid;gap:4px}
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-price{
  color:var(--ink,#342e27);
  font-size:clamp(24px,2.8vw,36px);
  line-height:1.2;
  font-weight:780
 }
-body[data-store-category="events-decor"] #catalog .decor-service-fee{
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-fee{
  color:var(--muted,#6d6157);
  font-size:13px;
  line-height:1.5;
  font-weight:650
 }
-body[data-store-category="events-decor"] #catalog .decor-service-feed-card .service-action-row{
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-feed-card .service-action-row{
  display:flex;
  align-items:center;
  gap:10px;
  min-width:0;
  width:100%
 }
-body[data-store-category="events-decor"] #catalog .decor-service-feed-card .service-action-row :is(.add,.service-whatsapp){
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-feed-card .service-action-row :is(.add,.service-whatsapp){
  flex:1 1 0;
  min-width:0;
  white-space:normal;
  text-align:center
 }
-body[data-store-category="events-decor"] #catalog .decor-service-feed-card .service-action-row .add{background:#205f50}
-body[data-store-category="events-decor"] #catalog .decor-service-feed-card .service-disclaimer{
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-feed-card .service-action-row .add{background:#205f50}
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-feed-card .service-disclaimer{
  margin:0;
  color:var(--muted,#6d6157);
  font-size:12px;
  line-height:1.5
 }
 @media(max-width:750px){
- body[data-store-category="events-decor"] #catalog .grid.decor-booking-feed-grid{
+ body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .grid.decor-booking-feed-grid{
   grid-template-columns:minmax(0,1fr);
   max-width:600px;
   margin-left:auto;
   margin-right:auto;
   gap:18px
  }
- body[data-store-category="events-decor"] #catalog .decor-service-feed-card{
+ body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-feed-card{
   grid-template-columns:minmax(0,1fr);
   grid-template-rows:auto auto auto;
   grid-template-areas:"title" "image" "details";
   min-height:0
  }
- body[data-store-category="events-decor"] #catalog .decor-service-feed-title{padding:16px 18px 12px}
- body[data-store-category="events-decor"] #catalog .decor-service-feed-title .item-title-open{font-size:20px}
- body[data-store-category="events-decor"] #catalog .decor-service-feed-card .decor-service-feed-open{height:auto}
- body[data-store-category="events-decor"] #catalog .decor-service-feed-card .art{
+ body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-feed-title{padding:16px 18px 12px}
+ body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-feed-title .item-title-open{font-size:20px}
+ body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-feed-card .decor-service-feed-open{height:auto}
+ body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-feed-card .art{
   width:100%;
   height:auto;
   min-height:0;
   aspect-ratio:4/5
  }
- body[data-store-category="events-decor"] #catalog .catering-service-feed-card .art{aspect-ratio:4/3}
- body[data-store-category="events-decor"] #catalog .decor-service-feed-details{
+ body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .catering-service-feed-card .art{aspect-ratio:4/3}
+ body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-feed-details{
   align-content:start;
   gap:13px;
   padding:16px 18px 20px
  }
- body[data-store-category="events-decor"] #catalog .decor-service-feed-card .service-action-row{gap:8px}
+ body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-feed-card .service-action-row{gap:8px}
 }
 @media(max-width:380px){
- body[data-store-category="events-decor"] #catalog .decor-service-feed-card .service-action-row{flex-wrap:wrap}
- body[data-store-category="events-decor"] #catalog .decor-service-feed-card .service-action-row :is(.add,.service-whatsapp){flex-basis:100%}
+ body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-feed-card .service-action-row{flex-wrap:wrap}
+ body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-feed-card .service-action-row :is(.add,.service-whatsapp){flex-basis:100%}
 }
 
 /* Catering & Decor photo sets open as a clean, full-screen image viewer. */
@@ -1234,19 +1234,19 @@ body[data-store-category="home-living"] #catalog .art:has(img) img{
 </div>
 <div id="bookingBackdrop" class="booking-backdrop" hidden>
  <section class="booking-panel" role="dialog" aria-modal="true" aria-labelledby="bookingTitle">
-  <div class="booking-top"><div><small>BOOKING ENQUIRY</small><h2 id="bookingTitle">Request a booking</h2><p>Tell the business about your event. No payment is required.</p></div><button type="button" id="bookingClose" class="booking-close" aria-label="Close booking request">×</button></div>
+  <div class="booking-top"><div><small id="bookingEyebrow">BOOKING ENQUIRY</small><h2 id="bookingTitle">Request a booking</h2><p id="bookingIntro">Tell the business about your event. No payment is required.</p></div><button type="button" id="bookingClose" class="booking-close" aria-label="Close booking request">×</button></div>
   <div class="booking-package"><strong id="bookingPackageName"></strong><div class="booking-package-values"><span id="bookingPackagePrice"></span><span id="bookingPackageFee" hidden></span><span id="bookingPackageOptionPrice" hidden></span></div><div id="bookingPackageOptions" class="booking-package-options" hidden></div></div>
   <form id="bookingRequestForm">
    <div class="booking-form-grid">
     <label>Your name <em>*</em><input name="customer_name" required minlength="2" maxlength="100" autocomplete="name" placeholder="Full name"></label>
-    <label>Event date <em>*</em><input name="event_date" type="date" required></label>
+    <label><span id="bookingDateFieldText">Event date</span> <em>*</em><input name="event_date" type="date" required></label>
     <label>Phone number <input name="contact_phone" type="tel" maxlength="40" autocomplete="tel" placeholder="e.g. 07..."></label>
     <label>Email address <input name="contact_email" type="email" maxlength="160" autocomplete="email" placeholder="you@example.com"></label>
-    <label class="booking-wide">Venue or event location <em>*</em><input name="event_location" required minlength="2" maxlength="180" placeholder="Town, area and venue"></label>
-    <label>Estimated guests (optional)<input name="guest_count" type="number" min="1" max="100000" placeholder="e.g. 50"></label>
-    <label class="booking-wide">Requirements or special requests<textarea name="notes" rows="3" maxlength="1500" placeholder="Occasion, theme, colours, setup time, or catering needs"></textarea></label>
+    <label class="booking-wide"><span id="bookingLocationFieldText">Venue or event location</span> <em>*</em><input name="event_location" required minlength="2" maxlength="180" placeholder="Town, area and venue"></label>
+    <label><span id="bookingQuantityFieldText">Estimated guests (optional)</span><input name="guest_count" type="number" min="1" max="100000" placeholder="e.g. 50"></label>
+    <label class="booking-wide"><span id="bookingNotesFieldText">Requirements or special requests</span><textarea name="notes" rows="3" maxlength="1500" placeholder="Occasion, theme, colours, setup time, or catering needs"></textarea></label>
    </div>
-   <p class="booking-help">Provide a phone number or email. Your contact details will be visible only to this business. Availability and the final quotation must be confirmed by the owner.</p>
+   <p class="booking-help" id="bookingHelp">Provide a phone number or email. Your contact details will be visible only to this business. Availability and the final quotation must be confirmed by the owner.</p>
    <p id="bookingFormError" class="booking-error" role="alert" hidden></p>
    <div class="booking-actions"><button type="button" id="bookingCancel" class="booking-secondary">Cancel</button><button type="submit" class="booking-submit" id="bookingSubmit">Send request →</button></div>
   </form>
@@ -2431,7 +2431,7 @@ function openProductGallery(id,trigger,cartKey=null){
  const item=availableItems.find(row=>row.id===id);if(!item)return;
  const isBookingOffer=window.StoreNestBookings.isBookingOffer(item,activePublicBusiness);
  const businessCategoryId=window.StoreNestCategoryId(activePublicBusiness?.category);
- const isDecorBooking=isBookingOffer&&businessCategoryId==="events-decor";
+ const isEditorialBooking=isBookingOffer&&["events-decor","local-services"].includes(businessCategoryId);
  const isPersonalServices=businessCategoryId==="beauty";
  const isHomeLiving=businessCategoryId==="home-living";
  const editRow=cartKey?cart.get(cartKey):null;
@@ -2458,8 +2458,8 @@ function openProductGallery(id,trigger,cartKey=null){
   const firstSetIndex=entries.findIndex(entry=>entry.decorPhotoSetId===activeGalleryDecorSetId);
   galleryIndex=Number.isInteger(requestedPhotoIndex)&&entries[requestedPhotoIndex]?.decorPhotoSetId===activeGalleryDecorSetId?requestedPhotoIndex:Math.max(firstSetIndex,0);
  }
- $("galleryDialog").classList.toggle("gallery-booking-style",isDecorBooking);
- $("galleryDialog").classList.toggle("gallery-photo-only",isDecorBooking&&!hasStorefrontBookingOptions(item));
+ $("galleryDialog").classList.toggle("gallery-booking-style",isEditorialBooking);
+ $("galleryDialog").classList.toggle("gallery-photo-only",isEditorialBooking&&!hasStorefrontBookingOptions(item));
  $("galleryDialog").classList.toggle("gallery-fashion-style",isStorefrontFashionProduct(item));
  $("galleryDialog").classList.toggle("gallery-home-living-style",isHomeLiving);
  $("galleryDialog").classList.toggle("gallery-personal-services",isPersonalServices);
@@ -2468,9 +2468,9 @@ function openProductGallery(id,trigger,cartKey=null){
  const galleryDescription=$("galleryDescription");galleryDescription.textContent=item.description||"";galleryDescription.hidden=!String(item.description||"").trim();
  if(isStorefrontFashionProduct(item))updateFashionColorDescription(item,activeGalleryFashionColorId);
  $("galleryServiceFee").textContent=bookingFee;$("galleryServiceFee").hidden=!bookingFee;
- $("galleryBookingDetails").hidden=isDecorBooking&&!String(item.description||"").trim()&&!bookingFee&&!hasStorefrontBookingOptions(item);
+ $("galleryBookingDetails").hidden=isEditorialBooking&&!String(item.description||"").trim()&&!bookingFee&&!hasStorefrontBookingOptions(item);
  const galleryBottom=$("galleryBottom"),overlayPager=$("galleryOverlayPager");
- if(isDecorBooking)overlayPager.append($("galleryPosition"));
+ if(isEditorialBooking)overlayPager.append($("galleryPosition"));
  else galleryBottom.prepend($("galleryPosition"));
  overlayPager.append($("galleryDots"));
  $("galleryProductActionRow").hidden=isBookingOffer;
@@ -2491,7 +2491,7 @@ function openProductGallery(id,trigger,cartKey=null){
  const photos=galleryPhotos(item);
  renderGallerySlides();
  if(photos.length)showGalleryImage("auto");else{$("galleryPosition").textContent="No pictures yet";$("galleryPosition").hidden=false;$("galleryDots").hidden=true}
- $("galleryDialog").hidden=false;const mobileGalleryViewport=window.matchMedia("(max-width:820px), (pointer:coarse) and (max-width:1100px)").matches;document.body.style.overflow=isDecorBooking?"hidden":(mobileGalleryViewport?"":"hidden");$("galleryClose").focus();if(photos.length)requestAnimationFrame(()=>{if(!$("galleryDialog").hidden&&activeGalleryItem===item)showGalleryImage("auto")});
+ $("galleryDialog").hidden=false;const mobileGalleryViewport=window.matchMedia("(max-width:820px), (pointer:coarse) and (max-width:1100px)").matches;document.body.style.overflow=isEditorialBooking?"hidden":(mobileGalleryViewport?"":"hidden");$("galleryClose").focus();if(photos.length)requestAnimationFrame(()=>{if(!$("galleryDialog").hidden&&activeGalleryItem===item)showGalleryImage("auto")});
 }
 
 function selectDecorColorSetOnCard(card,item,set){
@@ -2992,7 +2992,10 @@ function renderPublishedStorefront(root,client,business,items,storefrontSections
    const logo=safeUrl(business.logo_url);
 const cardForItem=item=>{
      const mediaEntries=galleryMediaEntries(item),service=window.StoreNestBookings.isBookingOffer(item,business);
-     const decorBooking=service&&window.StoreNestCategoryId(business.category)==="events-decor";
+     const itemCategoryId=window.StoreNestCategoryId(business.category);
+     const decorBooking=service&&itemCategoryId==="events-decor";
+     const localServiceBooking=service&&itemCategoryId==="local-services";
+     const editorialServiceBooking=decorBooking||localServiceBooking;
      const cateringBooking=decorBooking&&isStorefrontCateringOffering(item);
      const hasDecorColorSets=decorBooking&&isStorefrontDecorOffering(item);
      const colorSets=hasDecorColorSets?storefrontDecorColorSets(item):[];
@@ -3004,12 +3007,12 @@ const cardForItem=item=>{
      const displayedEntries=hasDecorColorSets&&colorSets.length?colorSets.flatMap(set=>set.entries.map(entry=>({...entry,decorPhotoSetId:set.id,decorPhotoSetName:set.name}))):fashionEntries.length?fashionEntries:mediaEntries;
      const media=displayedEntries.map(entry=>entry.url),firstEntry=displayedEntries[0],first=firstEntry?.url||"",count=media.length;
      const bookingFee=service?window.StoreNestBookings.bookingFeeLabel(item,business):"";
-     const action=service?"Request booking":"Add";
+     const action=service?(localServiceBooking?"Request service":"Request booking"):"Add";
      const whatsapp=service?serviceWhatsAppAction(business,item):"";
      const setAttribute=hasConfiguredColorSets&&firstColorSet?' data-decor-set-id="'+esc(firstColorSet.id)+'"':"";
      const initialSetName=hasConfiguredColorSets&&firstColorSet?firstColorSet.name:"";
      const titleButton='<button class="item-title-open" type="button" data-open-product="'+esc(item.id)+'"'+setAttribute+' title="'+esc(item.name)+'" aria-label="View details for '+esc(item.name)+'">'+esc(item.name)+'</button>';
-     const artwork=(first?(isProductVideo(first)?'<video data-catalog-preview data-src="'+esc(first)+'" muted loop playsinline preload="none" aria-label="'+esc(item.name)+' video"></video>':'<img src="'+esc(first)+'"'+catalogResponsiveAttributes(firstEntry,decorBooking?"(max-width: 600px) 100vw, (max-width: 750px) 600px, 50vw":"(max-width: 750px) 50vw, (max-width: 1000px) 33vw, 25vw")+' alt="'+esc(item.name)+'" loading="lazy" decoding="async">'):service?"✦":"▧")+(count>1?'<span class="photo-count'+(decorBooking?' decor-photo-count':'')+'">'+(decorBooking?'1 / '+count:'▧ '+count+' media')+'</span>':'');
+     const artwork=(first?(isProductVideo(first)?'<video data-catalog-preview data-src="'+esc(first)+'" muted loop playsinline preload="none" aria-label="'+esc(item.name)+' video"></video>':'<img src="'+esc(first)+'"'+catalogResponsiveAttributes(firstEntry,editorialServiceBooking?"(max-width: 600px) 100vw, (max-width: 750px) 600px, 50vw":"(max-width: 750px) 50vw, (max-width: 1000px) 33vw, 25vw")+' alt="'+esc(item.name)+'" loading="lazy" decoding="async">'):service?"✦":"▧")+(count>1?'<span class="photo-count'+(editorialServiceBooking?' decor-photo-count':'')+'">'+(editorialServiceBooking?'1 / '+count:'▧ '+count+' media')+'</span>':'');
      const decorArtwork=count?(
        '<div class="decor-photo-track" data-decor-photo-track role="group" aria-roledescription="carousel" aria-label="'+esc(item.name)+' photo gallery">'+
        displayedEntries.map((entry,index)=>{
@@ -3035,15 +3038,15 @@ const cardForItem=item=>{
        (count>1?'<span class="photo-count fashion-photo-count" data-fashion-photo-count aria-live="polite" aria-atomic="true">1 / '+count+'</span>':'')
      ):'';
      const actionButton='<button class="add" type="button" data-add-item="'+esc(item.id)+'"'+(hasConfiguredColorSets?' data-decor-color-set-name="'+esc(initialSetName)+'"':"")+' aria-label="'+(service?"Request booking for ":"Add ")+esc(item.name)+(service?"":" to basket")+'">'+(service?"":'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>')+action+'</button>';
-     if(decorBooking){
+     if(editorialServiceBooking){
        const colorPicker=hasConfiguredColorSets&&colorSets.length?'<div class="decor-color-set-picker" data-decor-color-picker="'+esc(item.id)+'"><span class="decor-color-set-label">Colour theme</span><div class="decor-color-set-options" role="group" aria-label="Choose a décor colour theme">'+colorSets.map((set,index)=>'<button type="button" class="decor-color-set-option" data-decor-color-set="'+esc(set.id)+'" data-item-id="'+esc(item.id)+'" aria-pressed="'+String(index===0)+'">'+esc(set.name)+'</button>').join("")+'</div></div>':"";
        const description=hasConfiguredColorSets&&firstColorSet?.description?firstColorSet.description:(item.description||"");
-       return '<article class="card decor-service-feed-card'+(cateringBooking?' catering-service-feed-card':'')+'"><div class="decor-service-feed-title"><h3>'+titleButton+'</h3></div><button type="button" class="item-open decor-service-feed-open" data-open-product="'+esc(item.id)+'"'+setAttribute+' aria-label="View '+esc(item.name)+' photos, description and booking details"><div class="art decor-photo-carousel">'+decorArtwork+'</div></button><div class="decor-service-feed-details">'+colorPicker+'<p class="decor-service-description" data-decor-color-description="'+esc(item.id)+'"'+(description?'':' hidden')+'>'+esc(description)+'</p><div class="decor-service-prices"><strong class="decor-service-price">'+esc(window.StoreNestBookings.priceLabel(item,business))+'</strong>'+(bookingFee?'<span class="decor-service-fee">'+esc(bookingFee)+'</span>':'')+'</div><div class="service-action-row">'+actionButton+whatsapp+'</div><p class="service-disclaimer">Date and final quotation confirmed by the business.</p></div></article>';
+       return '<article class="card decor-service-feed-card'+(cateringBooking?' catering-service-feed-card':'')+'"><div class="decor-service-feed-title"><h3>'+titleButton+'</h3></div><button type="button" class="item-open decor-service-feed-open" data-open-product="'+esc(item.id)+'"'+setAttribute+' aria-label="View '+esc(item.name)+' photos, description and booking details"><div class="art decor-photo-carousel">'+decorArtwork+'</div></button><div class="decor-service-feed-details">'+colorPicker+'<p class="decor-service-description" data-decor-color-description="'+esc(item.id)+'"'+(description?'':' hidden')+'>'+esc(description)+'</p><div class="decor-service-prices"><strong class="decor-service-price">'+esc(window.StoreNestBookings.priceLabel(item,business))+'</strong>'+(bookingFee?'<span class="decor-service-fee">'+esc(bookingFee)+'</span>':'')+'</div><div class="service-action-row">'+actionButton+whatsapp+'</div><p class="service-disclaimer">'+(localServiceBooking?"Preferred date and final quote confirmed by the business.":"Date and final quotation confirmed by the business.")+'</p></div></article>';
      }
      const visibleArtwork=isFashionCard&&count>1?fashionArtwork:artwork;
      return '<article class="card"><button type="button" class="item-open'+(isFashionCard&&count>1?' fashion-photo-carousel':'')+'" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos, videos and details"><div class="art">'+visibleArtwork+'</div></button><div class="item-body"><h3>'+titleButton+'</h3><div class="item-bottom"><span class="price">'+esc(service?window.StoreNestBookings.priceLabel(item,business):storefrontProductPriceLabel(item))+'</span>'+(service?'<div class="service-action-row">':'')+actionButton+(service?whatsapp+'</div>':"")+'</div>'+(service?'<div class="service-disclaimer">'+(bookingFee?'<strong>'+esc(bookingFee)+'</strong><br>':"")+'Date and final quotation confirmed by the business</div>':"")+'</div></article>';
    };
-   const cardGridClass=items=>items.some(item=>window.StoreNestCategoryId(business.category)==="events-decor"&&window.StoreNestBookings.isBookingOffer(item,business))?"grid decor-booking-feed-grid":"grid";
+   const cardGridClass=items=>items.some(item=>["events-decor","local-services"].includes(window.StoreNestCategoryId(business.category))&&window.StoreNestBookings.isBookingOffer(item,business))?"grid decor-booking-feed-grid":"grid";
    const hasProducts=availableItems.some(item=>item.item_type==="product");
    const hasServices=availableItems.some(item=>item.item_type==="service");
    const catalogueLabel=window.StoreNestCategoryId(business.category)==="events-decor"||hasServices?"Services":"Products";
