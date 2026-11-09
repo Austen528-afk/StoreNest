@@ -578,6 +578,7 @@
     setAvatar(state.refs.threadAvatar, displayName, mode === "customer" ? active.business && active.business.logo_url : "");
     const loggedIn = Boolean(state.user);
     state.refs.authNote.hidden = loggedIn;
+    state.refs.composeWrap.hidden = false;
     state.refs.compose.hidden = !loggedIn;
     if (!loggedIn && mode === "customer") {
       state.refs.authNote.replaceChildren();

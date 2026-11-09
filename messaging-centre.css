@@ -113,3 +113,8 @@
 .sn-message-toast-arrow{color:#24a986;font-size:27px;font-weight:400;line-height:1}
 @keyframes sn-message-toast-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:760px){.sn-message-head-actions{gap:5px}.sn-message-notifications{min-height:30px;padding:0 8px;font-size:9px}.sn-message-toast-host{right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px))}}
+
+.sn-message-main{overflow:hidden}
+.sn-message-thread{overflow:hidden}
+.sn-message-thread-scroll{flex:1 1 0;min-height:0}
+.sn-message-composer-wrap{display:block;flex:0 0 auto;visibility:visible}
