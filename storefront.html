@@ -575,22 +575,7 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
 .gallery-scale-name small{font-size:10px;line-height:1.35;color:#708376}
 .gallery-choice-scale .gallery-scale{min-width:0;padding-top:0}
 @media(max-width:600px){.gallery-choice-scale-row{grid-template-columns:minmax(88px,.8fr) minmax(0,2.2fr);column-gap:8px}.gallery-scale-name strong{font-size:12px}.gallery-scale-name small{font-size:9px}}
-/* Text-only choices for sauce levels; only the selected choice gets a mint highlight. */
-.gallery-choice-sauce-scale{border-top:0;padding-top:9px}
-.gallery-choice-sauce-scale .gallery-choice-scale-row{grid-template-columns:minmax(130px,.8fr) minmax(0,2.2fr);align-items:center;column-gap:14px}
-.gallery-choice-sauce-scale .gallery-scale-name small{display:none}
-.gallery-choice-sauce-scale .gallery-scale{min-width:0;overflow:visible;padding:0}
-.gallery-choice-sauce-scale .gallery-scale-options{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-width:0!important}
-.gallery-choice-sauce-scale .gallery-scale-options:before{display:none}
-.gallery-choice-sauce-scale .gallery-scale-option{position:relative;flex:0 1 auto;min-width:0;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:0;padding:5px 8px;border:0;border-radius:6px;background:transparent;color:#405849;font-size:14px;font-weight:700;white-space:nowrap}
-.gallery-choice-sauce-scale .gallery-scale-dot{display:none}
-.gallery-choice-sauce-scale .gallery-scale-label{font-size:14px;line-height:1.25;overflow-wrap:normal}
-.gallery-choice-sauce-scale .gallery-scale-option:has(input:checked){background:#e5f6ed;color:#1e654a}
-@media(max-width:600px){
- .gallery-choice-sauce-scale .gallery-choice-scale-row{grid-template-columns:minmax(0,1fr);align-items:start;row-gap:5px}
- .gallery-choice-sauce-scale .gallery-scale-options{justify-content:flex-start;flex-wrap:wrap;gap:8px 12px}
- .gallery-choice-sauce-scale .gallery-scale-option{flex:0 1 auto;padding:4px 6px}
-}
+
 .gallery-notes-label{display:flex;flex-direction:column;gap:8px;font-size:12px;font-weight:700;color:var(--ink,#22392d);margin-top:12px}
 .gallery-notes-label textarea{width:100%;min-height:60px;padding:10px 11px;border:1px solid #cbded1;border-radius:10px;background:#fff;color:#263c2d;font:inherit;font-weight:400;resize:vertical}
 .gallery-options-error{font-size:12px;color:#a23327;background:#fff0eb;border-radius:8px;padding:9px 11px;margin:10px 0 0}
@@ -2159,14 +2144,13 @@ document.addEventListener("pointercancel",finishGalleryImagePointer);
 let galleryOptionSelections={};
 function renderGalleryScale(group){
  const count=group.options.length;
- const sauceGroup=/\bsauce\b/i.test(group.name);
  const selected=group.options.find(option=>option.id===group.defaultOptionId)||group.options[Math.floor(count/2)]||null;
  const selectedIndex=Math.max(0,selected?group.options.findIndex(option=>option.id===selected.id):0);
  galleryOptionSelections[group.id]=selected?[selected.id]:[];
  const inset=count?50/count:0,trackWidth=count?100-(100/count):100;
  const progress=count>1?selectedIndex/(count-1)*100:0;
  const groupHint=(group.required?"Required":"Optional")+" · Selected: "+(selected?selected.name:"Choose a level");
- return '<fieldset class="gallery-choice-group gallery-choice-scale'+(sauceGroup?' gallery-choice-sauce-scale':'')+'" data-group-id="'+esc(group.id)+'" data-scale-default-id="'+esc(selected?selected.id:"")+'" data-scale-default-label="'+esc(selected?selected.name:"")+'" data-scale-required="'+(group.required?"true":"false")+'">'+
+ return '<fieldset class="gallery-choice-group gallery-choice-scale" data-group-id="'+esc(group.id)+'" data-scale-default-id="'+esc(selected?selected.id:"")+'" data-scale-default-label="'+esc(selected?selected.name:"")+'" data-scale-required="'+(group.required?"true":"false")+'">'+
   '<legend class="gallery-scale-sr-only">'+esc(group.name)+'. '+esc(groupHint)+'</legend>'+
   '<div class="gallery-choice-scale-row">'+
    '<div class="gallery-scale-name"><strong>'+esc(group.name)+'</strong><small data-scale-status>'+esc(groupHint)+'</small></div>'+
