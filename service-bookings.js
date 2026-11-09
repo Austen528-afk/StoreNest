@@ -205,7 +205,7 @@ $("bookingRequestForm").addEventListener("submit",async e=>{
    :"Your request was sent to the business. Track its progress under My Bookings on the StoreNest home page. A request is not a confirmed reservation.";
   $("bookingDone").focus();
  }catch(err){
-  errorBox.textContent="Unable to send this booking enquiry. Please check your details and try again.";
+  errorBox.textContent=isLocalServiceOffer(activeItem,business)?"Unable to send this service request. Please check your details and try again.":"Unable to send this booking enquiry. Please check your details and try again.";
   errorBox.hidden=false;console.warn("Service booking request:",err);
  }finally{submit.disabled=false;submit.textContent="Send request →"}
 });
