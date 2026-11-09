@@ -1261,8 +1261,8 @@ body[data-store-category="home-living"] #catalog .art:has(img) img{
   <div class="gallery-stage"><div id="galleryTrack" class="gallery-track" role="region" aria-label="Product photos" aria-roledescription="carousel" tabindex="0"></div><div id="galleryOverlayPager" class="gallery-overlay-pager" role="group" aria-label="Media gallery navigation"></div></div>
   <div id="galleryBookingDetails" class="gallery-booking-details"><p id="galleryDescription" class="gallery-description"></p><div id="galleryServiceFee" class="gallery-service-fee" hidden></div><div id="galleryServiceOptionEstimate" class="gallery-service-option-estimate" hidden></div></div>
   <div id="galleryProductActionRow" class="gallery-product-action-row" hidden><strong id="galleryProductPrice" class="gallery-price"></strong></div>
-  <div id="galleryFashionColors" class="gallery-fashion-colors" hidden><div class="gallery-fashion-colors-heading"><strong>Colour</strong><span id="galleryFashionColorSelected"></span></div><div id="galleryFashionColorOptions" class="gallery-fashion-color-options" role="radiogroup" aria-label="Choose a colour"></div></div>
-  <div id="galleryFashionSizes" class="gallery-fashion-colors" hidden><div class="gallery-fashion-colors-heading"><strong>Size</strong><span id="galleryFashionSizeSelected">Choose a size</span></div><div id="galleryFashionSizeOptions" class="gallery-fashion-color-options" role="radiogroup" aria-label="Choose a size"></div></div>
+  <div id="galleryFashionColors" class="gallery-fashion-colors" hidden><div class="gallery-fashion-colors-heading"><strong id="galleryFashionVariantHeading">Colour</strong><span id="galleryFashionColorSelected"></span></div><div id="galleryFashionColorOptions" class="gallery-fashion-color-options" role="radiogroup" aria-label="Choose a colour"></div></div>
+  <div id="galleryFashionSizes" class="gallery-fashion-colors" hidden><div class="gallery-fashion-colors-heading"><strong id="galleryFashionSizeHeading">Size</strong><span id="galleryFashionSizeSelected">Choose a size</span></div><div id="galleryFashionSizeOptions" class="gallery-fashion-color-options" role="radiogroup" aria-label="Choose a size"></div></div>
   <p id="galleryOptionsError" class="gallery-options-error" role="alert" hidden></p>
   <div id="galleryCustomization" class="gallery-customization" hidden>
    <div id="galleryChoiceGroups"></div>
@@ -1343,14 +1343,22 @@ function storefrontDecorColorSets(item){
 }
 function storefrontFashionColorSets(item){
  const entries=galleryMediaEntries(item),byUrl=new Map(entries.map(entry=>[entry.url,entry]));
- const defaultVariantLabel=window.StoreNestCategoryId?.(activePublicBusiness?.category)==="home-living"?"Variant":"Colour";
+ const defaultVariantLabel=storefrontVariantGroupLabel(item);
  const source=Array.isArray(item?.fashion_color_sets)?item.fashion_color_sets:[];
- const legacySizeGroup=window.StoreNestOptions.normalize(item?.customization_options).find(group=>group.id===FASHION_SIZE_GROUP_ID);
+ const rawLegacySizeGroup=(Array.isArray(item?.customization_options)?item.customization_options:[]).find(group=>group?.id===FASHION_SIZE_GROUP_ID)||null;
+ const legacySizeGroup=rawLegacySizeGroup?window.StoreNestOptions.normalize([rawLegacySizeGroup])[0]||null:null;
+ const legacySizes=(legacySizeGroup?.options||[]).map((option,index)=>{
+  const rawOption=(Array.isArray(rawLegacySizeGroup?.options)?rawLegacySizeGroup.options:[]).find(raw=>raw?.id===option.id)||rawLegacySizeGroup?.options?.[index];
+  const rawPrice=rawOption?.price,hasPrice=rawPrice!==null&&rawPrice!==undefined&&String(rawPrice).trim()!=="";
+  const price=hasPrice?Number(rawPrice):null;
+  return {id:option.id,name:option.name,price:Number.isFinite(price)&&price>=0?price:null};
+ });
  const sets=source.map((raw,index)=>{
   const urls=(Array.isArray(raw?.media_urls)?raw.media_urls:[]).map(value=>typeof value==="string"?value:value?.url).filter(url=>typeof url==="string");
   const hasOwnSizes=Array.isArray(raw?.sizes),sizeSource=hasOwnSizes?raw.sizes:(legacySizeGroup?.options||[]);
   const sizes=sizeSource.map((size,sizeIndex)=>{
-   const rawPrice=hasOwnSizes?size?.price:legacySizeGroup?.priceMode==="fixed"?size?.price:null;
+   const rawLegacyOption=!hasOwnSizes?((Array.isArray(rawLegacySizeGroup?.options)?rawLegacySizeGroup.options:[]).find(rawOption=>rawOption?.id===size?.id)||rawLegacySizeGroup?.options?.[sizeIndex]):null;
+   const rawPrice=hasOwnSizes?size?.price:legacySizeGroup?.priceMode==="fixed"?rawLegacyOption?.price:null;
    const hasPrice=rawPrice!==null&&rawPrice!==undefined&&String(rawPrice).trim()!=="";
    const price=hasPrice?Number(rawPrice):null;
    return {id:String(size?.id||("fashion-size-"+index+"-"+sizeIndex)),name:String(size?.name||"").trim(),price:Number.isFinite(price)&&price>=0?price:null};
@@ -1375,9 +1383,14 @@ function storefrontFashionColorSets(item){
   sets[0].entries.push(...entries.filter(entry=>!assigned.has(entry.url)));
   return sets;
  }
- return entries.length?[{id:"fashion-default-colour",name:defaultVariantLabel+" 1",description:"",price:null,priceBySize:legacySizeGroup?.priceMode==="fixed",sizes:(legacySizeGroup?.options||[]).map(option=>({id:option.id,name:option.name,price:option.price})),entries}]:[];
+ return entries.length?[{id:"fashion-default-colour",name:defaultVariantLabel+" 1",description:"",price:null,priceBySize:legacySizeGroup?.priceMode==="fixed",sizes:legacySizes,entries}]:[];
 }
-function isStorefrontFashionProduct(item){return ["fashion","home-living"].includes(window.StoreNestCategoryId?.(activePublicBusiness?.category))&&item?.item_type==="product"}
+function isStorefrontFashionProduct(item){return ["fashion","home-living","groceries"].includes(window.StoreNestCategoryId?.(activePublicBusiness?.category))&&item?.item_type==="product"}
+function isStorefrontGroceryProduct(item){return isStorefrontFashionProduct(item)&&window.StoreNestCategoryId?.(activePublicBusiness?.category)==="groceries"}
+function storefrontUsesGenericVariants(item){return isStorefrontFashionProduct(item)&&window.StoreNestCategoryId?.(activePublicBusiness?.category)!=="fashion"}
+function storefrontVariantGroupLabel(item){return storefrontUsesGenericVariants(item)?"Variant":"Colour"}
+function storefrontSizeGroupLabel(item){return isStorefrontGroceryProduct(item)?"Pack size":"Size"}
+function storefrontSizeChoicePlaceholder(item){return isStorefrontGroceryProduct(item)?"Choose a pack size (required)":"Choose a size (required)"}
 function isStorefrontFashionOffering(item){return isStorefrontFashionProduct(item)&&storefrontFashionColorSets(item).length>1}
 function galleryViewEntries(item){
  if(isStorefrontDecorOffering(item)){
@@ -2047,6 +2060,8 @@ function updateGalleryPosition(){
 
 function renderGalleryFashionColors(item,initialId=null){
  const root=$("galleryFashionColors"),options=$("galleryFashionColorOptions"),sets=isStorefrontFashionProduct(item)?storefrontFashionColorSets(item):[];
+ $("galleryFashionVariantHeading").textContent=storefrontVariantGroupLabel(item);
+ options.setAttribute("aria-label","Choose a "+storefrontVariantGroupLabel(item).toLowerCase());
  root.hidden=sets.length<2;options.replaceChildren();
  if(!sets.length){activeGalleryFashionColorId=null;$("galleryFashionColorSelected").textContent="";return}
  const selected=sets.find(set=>set.id===initialId)||sets[0];activeGalleryFashionColorId=selected.id;
@@ -2247,7 +2262,7 @@ function storefrontFashionSizeGroup(item,colorSetId=null){
   const hasBase=(set.price!==null&&set.price!==undefined&&String(set.price).trim()!=="")||(set.sharedBasePrice!==null&&set.sharedBasePrice!==undefined&&String(set.sharedBasePrice).trim()!=="")||Number(item?.price)>0;
   const hasSizePrices=Boolean(set.priceBySize)||set.sizes.some(size=>size.price!==null&&size.price!==undefined&&String(size.price).trim()!=="");
   const fixedPrices=hasSizePrices||hasBase;
-  return {id:FASHION_SIZE_GROUP_ID,name:"Size",selection:"single",required:true,max:1,priceMode:fixedPrices?"fixed":"additional",
+  return {id:FASHION_SIZE_GROUP_ID,name:storefrontSizeGroupLabel(item),selection:"single",required:true,max:1,priceMode:fixedPrices?"fixed":"additional",
    options:set.sizes.map(size=>{
     const raw=size.price,hasPrice=raw!==null&&raw!==undefined&&String(raw).trim()!=="";
     const price=hasPrice?Number(raw):hasBase&&Number.isFinite(base)&&base>=0?base:0;
@@ -2257,7 +2272,7 @@ function storefrontFashionSizeGroup(item,colorSetId=null){
  const rawSharedGroup=(Array.isArray(item?.customization_options)?item.customization_options:[]).find(group=>group?.id===FASHION_SIZE_GROUP_ID)||null;
  const sharedGroup=rawSharedGroup?window.StoreNestOptions.normalize([rawSharedGroup])[0]||null:null;
  if(!sharedGroup)return null;
- if(sharedGroup.priceMode==="fixed")return {...sharedGroup,options:sharedGroup.options.map((option,index)=>{
+ if(sharedGroup.priceMode==="fixed")return {...sharedGroup,name:storefrontSizeGroupLabel(item),options:sharedGroup.options.map((option,index)=>{
   const rawOption=(Array.isArray(rawSharedGroup.options)?rawSharedGroup.options:[]).find(row=>row?.id===option.id)||rawSharedGroup.options?.[index];
   const hasPrice=rawOption?.price!==null&&rawOption?.price!==undefined&&String(rawOption.price).trim()!=="";
   return {...option,price:hasPrice?option.price:set?.price??set?.sharedBasePrice??item.price??0};
@@ -2301,11 +2316,13 @@ function updateFashionColorDescription(item,colorSetId){
 }
 function renderGalleryFashionSizes(item,initialId=null){
  const root=$("galleryFashionSizes"),options=$("galleryFashionSizeOptions"),group=storefrontFashionSizeGroup(item,activeGalleryFashionColorId);
+ $("galleryFashionSizeHeading").textContent=storefrontSizeGroupLabel(item);
+ options.setAttribute("aria-label","Choose a "+storefrontSizeGroupLabel(item).toLowerCase());
  root.hidden=!group?.options.length;options.replaceChildren();
  if(!group?.options.length){activeGalleryFashionSizeId=null;$("galleryFashionSizeSelected").textContent="";return}
  const selected=group.options.find(option=>option.id===initialId)||null;
  activeGalleryFashionSizeId=selected?.id||null;
- $("galleryFashionSizeSelected").textContent=selected?storefrontFashionSizeDisplayLabel(selected):"Choose a size (required)";
+ $("galleryFashionSizeSelected").textContent=selected?storefrontFashionSizeDisplayLabel(selected):storefrontSizeChoicePlaceholder(item);
  options.innerHTML=group.options.map(option=>'<button type="button" class="gallery-fashion-color-option" role="radio" aria-checked="' +(option.id===activeGalleryFashionSizeId?'true':'false')+'" data-fashion-size-id="' +esc(option.id)+'">' +esc(option.name)+'</button>').join("");
 }
 $("galleryFashionSizeOptions").addEventListener("click",event=>{
