@@ -393,9 +393,8 @@
     }
     state.refs.textarea.value = "";
     state.refs.send.disabled = true;
-    state.refs.textarea.focus({ preventScroll: true });
+    if (loggedIn) state.refs.textarea.focus({ preventScroll: true });
     loadThreadMessages(state, mode).catch(function (error) { messageStatus(state, error.message, true); });
-    if (active.conversation && active.conversation.id) markIncomingRead(state, active.conversation, mode).catch(function () {});
   }
   async function sendMessage(state, mode, event) {
     event.preventDefault();
@@ -452,6 +451,7 @@
       if (mode === "customer") {
         clearTimeout(state.searchTimer);
         const query = state.refs.search.value.trim();
+        textError(state, "");
         state.searchTimer = setTimeout(function () { searchBusinesses(query); }, 240);
       } else {
         state.search = state.refs.search.value.trim();
