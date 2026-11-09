@@ -667,7 +667,8 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
 /* Catering & Decor detail view: title, full media, then one booking details area. */
 .gallery-booking-details{display:contents}
 .gallery-booking-details[hidden]{display:none!important}
-.gallery-overlay-pager{display:none}
+.gallery-overlay-pager{position:absolute;inset:0;display:block;z-index:3;pointer-events:none;background:transparent;border:0}
+.gallery-overlay-pager .gallery-dots{position:absolute;left:0;right:0;bottom:12px;justify-content:center;pointer-events:auto;background:transparent;border:0;box-shadow:none}
 #galleryDialog.gallery-booking-style .gallery-panel{background:var(--canvas,#f8f6f1);color:var(--ink,#342e27)}
 #galleryDialog.gallery-booking-style .gallery-top{position:sticky;top:0;z-index:5;background:var(--surface,#fff);border-bottom:1px solid var(--border,#e8e1d6)}
 #galleryDialog.gallery-booking-style .gallery-top h2{font-size:clamp(20px,3vw,26px);line-height:1.2;font-weight:760}
@@ -2427,12 +2428,9 @@ function openProductGallery(id,trigger,cartKey=null){
  $("galleryServiceFee").textContent=bookingFee;$("galleryServiceFee").hidden=!bookingFee;
  $("galleryBookingDetails").hidden=isDecorBooking&&!String(item.description||"").trim()&&!bookingFee&&!hasStorefrontBookingOptions(item);
  const galleryBottom=$("galleryBottom"),overlayPager=$("galleryOverlayPager");
- if(isDecorBooking)overlayPager.append($("galleryPosition"),$("galleryDots"));
- else{
-  galleryBottom.prepend($("galleryPosition"));
-  if(isStorefrontFashionProduct(item))overlayPager.append($("galleryDots"));
-  else galleryBottom.prepend($("galleryDots"));
- }
+ if(isDecorBooking)overlayPager.append($("galleryPosition"));
+ else galleryBottom.prepend($("galleryPosition"));
+ overlayPager.append($("galleryDots"));
  $("galleryProductActionRow").hidden=isBookingOffer;
  $("galleryServiceActionRow").hidden=!isBookingOffer;
  $("galleryTotalBar").hidden=isBookingOffer;
