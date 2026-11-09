@@ -4,8 +4,10 @@
   const CUSTOMER_TABLE = "storefront_conversations";
   const MESSAGE_TABLE = "storefront_messages";
   const isOwnerPage = Boolean(document.querySelector('[data-section-view="messages"]'));
-  const customer = { root: null, client: null, user: null, profileName: "Customer", active: null, rows: [], businessById: new Map(), channel: null, timer: null, searchTimer: null, searchToken: 0, previousOverflow: "" };
-  const owner = { root: null, client: null, user: null, active: null, rows: [], business: null, businessId: null, channel: null, authSubscription: null, timer: null, loading: false, search: "" };
+  const customer = { root: null, client: null, user: null, profileName: "Customer", active: null, rows: [], businessById: new Map(), channel: null, authSubscription: null, timer: null, searchTimer: null, searchToken: 0, previousOverflow: "", pendingConversationId: null };
+  const owner = { root: null, client: null, user: null, active: null, rows: [], business: null, businessId: null, channel: null, authSubscription: null, timer: null, loading: false, search: "", pendingConversationId: null };
+  let notificationRegistrationPromise = null;
+  let messageToastTimer = null;
 
   function byId(id) { return document.getElementById(id); }
   function make(tag, className, value) {
@@ -69,7 +71,8 @@
     return '<section class="sn-message-app" data-mode="' + mode + '">' +
       '<aside class="sn-message-list-pane">' +
         '<header class="sn-message-list-head"><div><h2>' + title + '</h2><p>' + subtitle + '</p></div>' +
-          (customerMode ? '<button class="sn-message-close" type="button" aria-label="Close messages">×</button>' : '') +
+          '<div class="sn-message-head-actions"><button class="sn-message-notifications" type="button" aria-label="Enable message notifications">Enable alerts</button>' +
+          (customerMode ? '<button class="sn-message-close" type="button" aria-label="Close messages">×</button>' : '') + '</div>' +
         '</header>' +
         '<label class="sn-message-search-wrap"><span class="sn-message-search-icon" aria-hidden="true">⌕</span><input class="sn-message-search" type="search" autocomplete="off" placeholder="' + placeholder + '" aria-label="' + placeholder + '"></label>' +
         '<div class="sn-message-error" role="status" aria-live="polite" hidden></div>' +
@@ -109,6 +112,7 @@
       authNote: root.querySelector(".sn-message-auth-note"),
       status: root.querySelector(".sn-message-status"),
       close: root.querySelector(".sn-message-close"),
+      notifications: root.querySelector(".sn-message-notifications"),
       back: root.querySelector(".sn-message-back")
     };
   }
@@ -261,6 +265,7 @@
       if (refreshed) customer.active.conversation = refreshed;
     }
     renderList(customer, "customer");
+    openPendingConversation(customer, "customer");
   }
   async function loadOwnerConversations() {
     if (!owner.client || !owner.user) {
@@ -293,6 +298,7 @@
       if (refreshed) owner.active.conversation = refreshed;
     }
     renderList(owner, "owner");
+    openPendingConversation(owner, "owner");
   }
   async function refreshOwnerBadge() {
     if (!owner.client || !owner.user) return;
@@ -312,6 +318,195 @@
       badge.textContent = count > 99 ? "99+" : String(count);
       badge.hidden = count < 1;
     });
+  }
+  function ensureNotificationServiceWorker() {
+    if (!("serviceWorker" in navigator)) return Promise.resolve(null);
+    if (!notificationRegistrationPromise) {
+      notificationRegistrationPromise = navigator.serviceWorker.register("/sw.js").then(function (registration) {
+        return registration.active ? registration : navigator.serviceWorker.ready;
+      }).catch(function () { return null; });
+    }
+    return notificationRegistrationPromise;
+  }
+  function updateNotificationButton(button) {
+    if (!button) return;
+    if (!("Notification" in window)) {
+      button.textContent = "Alerts unavailable";
+      button.disabled = true;
+      button.title = "This browser does not support notifications.";
+      return;
+    }
+    const permission = Notification.permission;
+    button.disabled = permission === "granted";
+    button.textContent = permission === "granted" ? "Alerts on" : permission === "denied" ? "Alerts blocked" : "Enable alerts";
+    button.title = permission === "denied" ? "Allow notifications for StoreNest in your browser settings." : permission === "granted" ? "StoreNest notifications are enabled on this device." : "Allow pop-up notifications for new messages and read receipts.";
+  }
+  async function enableMessageNotifications() {
+    if (!("Notification" in window)) {
+      showMessageToast("Notifications unavailable", "This browser does not support desktop notifications.");
+      return;
+    }
+    if (Notification.permission === "denied") {
+      showMessageToast("Notifications are blocked", "Allow notifications for StoreNest in your browser or device settings.");
+      return;
+    }
+    try {
+      const permission = Notification.permission === "granted" ? "granted" : await Notification.requestPermission();
+      document.querySelectorAll(".sn-message-notifications").forEach(updateNotificationButton);
+      if (permission === "granted") {
+        await ensureNotificationServiceWorker();
+        showMessageToast("Notifications enabled", "You’ll get pop-up alerts for new messages and when your message is viewed.");
+      }
+    } catch (error) {
+      showMessageToast("Could not enable notifications", error.message || "Check your browser notification settings.");
+    }
+  }
+  function showMessageToast(title, body, mode, conversationId) {
+    let host = byId("storenestMessageToast");
+    if (!host) {
+      host = make("div", "sn-message-toast-host");
+      host.id = "storenestMessageToast";
+      host.setAttribute("aria-live", "polite");
+      host.setAttribute("aria-atomic", "true");
+      document.body.appendChild(host);
+    }
+    host.replaceChildren();
+    const toast = make("button", "sn-message-toast");
+    toast.type = "button";
+    const copy = make("span", "sn-message-toast-copy");
+    copy.appendChild(make("strong", "sn-message-toast-title", title));
+    copy.appendChild(make("span", "sn-message-toast-body", String(body || "").slice(0, 180)));
+    toast.appendChild(copy);
+    toast.appendChild(make("span", "sn-message-toast-arrow", "›"));
+    if (mode && conversationId) toast.addEventListener("click", function () { focusMessageConversation(mode, conversationId); });
+    host.appendChild(toast);
+    clearTimeout(messageToastTimer);
+    messageToastTimer = setTimeout(function () { host.replaceChildren(); }, 7000);
+  }
+  function showDesktopMessageNotification(title, body, mode, conversationId, eventKey) {
+    if (!("Notification" in window) || Notification.permission !== "granted") return Promise.resolve(false);
+    const options = {
+      body: String(body || "").slice(0, 180),
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      tag: "storenest-message-" + eventKey,
+      renotify: true,
+      data: { type: "storenest-message", mode: mode, conversationId: conversationId }
+    };
+    return ensureNotificationServiceWorker().then(function (registration) {
+      if (registration && registration.showNotification) return registration.showNotification(title, options).then(function () { return true; });
+      const notification = new Notification(title, options);
+      notification.onclick = function () { window.focus(); focusMessageConversation(mode, conversationId); notification.close(); };
+      return true;
+    }).catch(function () { return false; });
+  }
+  function notificationConversationVisible(state, mode, conversationId) {
+    if (document.visibilityState !== "visible" || !state.refs || !state.active || !state.active.conversation) return false;
+    if (state.active.conversation.id !== conversationId || state.refs.thread.hidden) return false;
+    if (mode === "customer") return Boolean(customer.root && !customer.root.hidden);
+    const section = document.querySelector('[data-section-view="messages"]');
+    return Boolean(section && !section.hidden);
+  }
+  function claimMessageNotification(userId, key) {
+    const storageKey = "storenest:message-notifications:" + userId;
+    const now = Date.now();
+    try {
+      const stored = JSON.parse(localStorage.getItem(storageKey) || "{}");
+      const recent = stored && typeof stored === "object" ? stored : {};
+      if (now - Number(recent[key] || 0) < 30000) return false;
+      Object.keys(recent).forEach(function (oldKey) {
+        if (now - Number(recent[oldKey] || 0) >= 30000) delete recent[oldKey];
+      });
+      recent[key] = now;
+      const keys = Object.keys(recent);
+      while (keys.length > 30) delete recent[keys.shift()];
+      localStorage.setItem(storageKey, JSON.stringify(recent));
+    } catch (_) {}
+    return true;
+  }
+  async function notificationConversation(state, mode, message) {
+    let row = (state.rows || []).find(function (conversation) { return conversation.id === message.conversation_id; }) || null;
+    if (!row && state.client) {
+      const result = await state.client.from(CUSTOMER_TABLE)
+        .select("id,business_id,customer_id,customer_label,created_at,updated_at,last_message_at,last_message_preview,last_message_sender_id")
+        .eq("id", message.conversation_id).maybeSingle();
+      if (!result.error) row = result.data;
+    }
+    if (mode === "owner") return { row: row, name: row && row.customer_label || "Customer" };
+    let business = row && row.business || state.businessById.get(row && row.business_id);
+    if (!business && row && row.business_id && state.client) {
+      const result = await state.client.from("businesses").select("id,name,slug,category,location,logo_url").eq("id", row.business_id).maybeSingle();
+      if (!result.error) business = result.data;
+      if (business) state.businessById.set(business.id, business);
+    }
+    return { row: row, business: business, name: business && business.name || "StoreNest business" };
+  }
+  async function processMessageNotification(state, mode, payload) {
+    const message = payload && payload.new;
+    if (!state.user || !message || !message.id || !message.conversation_id) return;
+    let kind = "";
+    if (payload.eventType === "INSERT" && message.sender_id !== state.user.id) kind = "message";
+    else if (payload.eventType === "UPDATE" && message.sender_id === state.user.id && message.read_at) kind = "viewed";
+    if (!kind || notificationConversationVisible(state, mode, message.conversation_id)) return;
+    if (document.visibilityState !== "visible" && (!("Notification" in window) || Notification.permission !== "granted")) return;
+    const eventKey = kind === "viewed"
+      ? "viewed:" + message.conversation_id + ":" + message.read_at
+      : "message:" + message.id;
+    if (!claimMessageNotification(state.user.id, eventKey)) return;
+    const context = await notificationConversation(state, mode, message);
+    const title = kind === "viewed" ? context.name + " viewed your message" : "New message from " + context.name;
+    const body = kind === "viewed" ? "Your message was seen." : String(message.body || "You have a new message.").slice(0, 180);
+    if (document.visibilityState === "visible") showMessageToast(title, body, mode, message.conversation_id);
+    else await showDesktopMessageNotification(title, body, mode, message.conversation_id, eventKey);
+  }
+  function focusMessageConversation(mode, conversationId) {
+    if (!conversationId) return;
+    if (mode === "owner" && isOwnerPage) {
+      owner.pendingConversationId = conversationId;
+      const nav = document.querySelector('.side-link[data-section="messages"]');
+      if (nav) nav.click();
+      else openOwnerInbox().catch(function () {});
+      return;
+    }
+    if (mode === "customer" && !isOwnerPage) {
+      customer.pendingConversationId = conversationId;
+      openCustomerCentre().catch(function (error) { console.error("StoreNest Chat Centre:", error); });
+    }
+  }
+  function openPendingConversation(state, mode) {
+    if (!state.pendingConversationId) return;
+    const row = (state.rows || []).find(function (conversation) { return conversation.id === state.pendingConversationId; });
+    if (!row) return;
+    state.pendingConversationId = null;
+    const business = mode === "customer" ? (row.business || {}) : (state.business || {});
+    openThread(state, mode, { conversation: row, business: business });
+  }
+  function handleNotificationRoute() {
+    const params = new URLSearchParams(location.search);
+    const conversationId = params.get("storenestMessageConversation");
+    const mode = params.get("storenestMessageMode");
+    if (!conversationId) return;
+    params.delete("storenestMessageConversation");
+    params.delete("storenestMessageMode");
+    const query = params.toString();
+    history.replaceState(history.state, "", location.pathname + (query ? "?" + query : "") + location.hash);
+    if (mode === "owner" && isOwnerPage) {
+      owner.pendingConversationId = conversationId;
+      const nav = document.querySelector('.side-link[data-section="messages"]');
+      if (nav) nav.click();
+      else openOwnerInbox().catch(function () {});
+    } else if (mode !== "owner" && !isOwnerPage) {
+      customer.pendingConversationId = conversationId;
+      openCustomerCentre().catch(function () {});
+    }
+  }
+  function listenForNotificationClicks() {
+    if (!("serviceWorker" in navigator)) return;
+    navigator.serviceWorker.addEventListener("message", function (event) {
+      const message = event.data;
+      if (message && message.type === "storenest:open-message") focusMessageConversation(message.mode, message.conversationId);
+    });
+    ensureNotificationServiceWorker().catch(function () {});
   }
   async function loadBusiness(businessId) {
     if (!owner.client || !businessId) return null;
@@ -472,6 +667,10 @@
     });
     if (state.refs.back) state.refs.back.addEventListener("click", function () { state.refs.app.classList.remove("is-thread-open"); });
     if (state.refs.close) state.refs.close.addEventListener("click", closeCustomerCentre);
+    if (state.refs.notifications) {
+      updateNotificationButton(state.refs.notifications);
+      state.refs.notifications.addEventListener("click", function () { enableMessageNotifications(); });
+    }
   }
   function makeCustomerShell() {
     if (customer.root) return;
@@ -513,6 +712,7 @@
       }
       await loadCustomerInbox();
       ensureCustomerRealtime();
+      openPendingConversation(customer, "customer");
       customer.refs.search.focus({ preventScroll: true });
     } catch (error) {
       textError(customer, error.message || "Messages are unavailable right now.");
@@ -524,10 +724,6 @@
     customer.root.hidden = true;
     document.body.style.overflow = customer.previousOverflow || "";
     customer.refs.app.classList.remove("is-thread-open");
-    if (customer.channel && customer.client) {
-      customer.client.removeChannel(customer.channel);
-      customer.channel = null;
-    }
   }
   function ensureCustomerRealtime() {
     if (!customer.client || !customer.user || customer.channel) return;
@@ -536,6 +732,7 @@
         queueCustomerRefresh(payload);
       })
       .on("postgres_changes", { event: "*", schema: "public", table: MESSAGE_TABLE }, function (payload) {
+        processMessageNotification(customer, "customer", payload).catch(function () {});
         queueCustomerRefresh(payload);
       })
       .subscribe();
@@ -622,6 +819,7 @@
         queueOwnerRefresh();
       })
       .on("postgres_changes", { event: "*", schema: "public", table: MESSAGE_TABLE }, function (payload) {
+        processMessageNotification(owner, "owner", payload).catch(function () {});
         queueOwnerRefresh(payload);
       })
       .subscribe();
@@ -674,7 +872,57 @@
       }
     });
   }
+  function applyCustomerSession(user) {
+    const previousId = customer.user && customer.user.id;
+    const nextId = user && user.id;
+    if (previousId !== nextId && customer.channel && customer.client) {
+      customer.client.removeChannel(customer.channel);
+      customer.channel = null;
+    }
+    customer.user = user || null;
+    customer.profileName = customer.user
+      ? String(customer.user.user_metadata && (customer.user.user_metadata.profile_name || customer.user.user_metadata.full_name || customer.user.user_metadata.name) || "Customer").trim().slice(0, 100)
+      : "Customer";
+    if (!customer.user) {
+      customer.rows = [];
+      customer.active = null;
+      if (customer.refs) renderList(customer, "customer");
+      return;
+    }
+    const userId = customer.user.id;
+    ensureCustomerRealtime();
+    setTimeout(async function () {
+      if (!customer.user || customer.user.id !== userId) return;
+      try {
+        const profile = await window.StoreNestCustomerAuth.getProfile(userId);
+        if (profile && profile.profile_name && customer.user && customer.user.id === userId) customer.profileName = profile.profile_name;
+      } catch (_) {}
+      loadCustomerInbox().catch(function () {});
+    }, 0);
+  }
+  async function startCustomerWatch() {
+    if (isOwnerPage || !window.StoreNestCustomerAuth) return;
+    makeCustomerShell();
+    try {
+      customer.client = await window.StoreNestCustomerAuth.getClient();
+      if (!customer.authSubscription) {
+        const listener = customer.client.auth.onAuthStateChange(function (_event, session) {
+          setTimeout(function () { applyCustomerSession(session && session.user || null); }, 0);
+        });
+        customer.authSubscription = listener.data && listener.data.subscription || null;
+      }
+      const auth = await customer.client.auth.getUser();
+      applyCustomerSession(auth.data && auth.data.user || null);
+    } catch (error) {
+      console.warn("StoreNest customer message notifications are unavailable:", error.message || error);
+    }
+  }
   function initCustomerEvents() {
+    listenForNotificationClicks();
+    if (!isOwnerPage) startCustomerWatch().catch(function () {});
+    window.addEventListener("storenest:customer-identity-change", function () {
+      if (customer.user) applyCustomerSession(customer.user);
+    });
     window.addEventListener("storenest:open-chat-centre", function () {
       if (isOwnerPage) {
         const nav = document.querySelector('.side-link[data-section="messages"]');
@@ -684,7 +932,7 @@
       openCustomerCentre().catch(function (error) { console.error("StoreNest Chat Centre:", error); });
     });
     window.addEventListener("focus", function () {
-      if (customer.root && !customer.root.hidden && customer.user) loadCustomerInbox().catch(function () {});
+      if (customer.user) loadCustomerInbox().catch(function () {});
     });
     document.addEventListener("keydown", function (event) {
       if (event.key === "Escape" && customer.root && !customer.root.hidden) closeCustomerCentre();
@@ -698,13 +946,14 @@
     startOwnerWatch();
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", function () {
-      initCustomerEvents();
-      watchSearchPage();
-    }, { once: true });
-  } else {
+  function initializeMessagingCentre() {
     initCustomerEvents();
     watchSearchPage();
+    handleNotificationRoute();
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializeMessagingCentre, { once: true });
+  } else {
+    initializeMessagingCentre();
   }
 })();
