@@ -31,8 +31,8 @@
         transition: transform .16s ease, box-shadow .16s ease;
       }
       .storenest-chat-launcher svg {
-        width: 25px;
-        height: 25px;
+        width: 29px;
+        height: 29px;
         fill: none;
         stroke: currentColor;
         stroke-width: 1.8;
