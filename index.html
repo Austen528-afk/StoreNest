@@ -381,6 +381,7 @@ html[data-theme="dark"] .customer-booking-detail-fields strong,html[data-theme="
 <script src="/theme.js"></script>
 <script src="/categories.js"></script>
 <script src="/customer-auth.js"></script>
+  <link rel="stylesheet" href="/messaging-centre.css">
 </head>
 <body data-page-kind="marketplace">
 <div class="wrap">
@@ -1560,5 +1561,5 @@ function refreshGlobalBasketBadge(){
 window.addEventListener("storage",event=>{if(event.key===GLOBAL_BASKET_STORAGE_KEY)refreshGlobalBasketBadge()});
 window.addEventListener("storenest:cart-updated",refreshGlobalBasketBadge);
 refreshGlobalBasketBadge();
-</script><script src="/chat-launcher.js" defer></script>
+</script><script src="/messaging-centre.js" defer></script><script src="/chat-launcher.js" defer></script>
 </body></html>
