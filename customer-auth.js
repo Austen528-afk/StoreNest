@@ -205,6 +205,13 @@
       .select("user_id,profile_name,place,exact_address,contact_email,contact_phone,created_at,updated_at")
       .single();
     if (error) throw error;
+    const userMetadata = {
+      ...(user.user_metadata || {}),
+      profile_name: profileName,
+      full_name: profileName
+    };
+    const metadataResult = await client.auth.updateUser({ data: userMetadata });
+    if (metadataResult.error) console.warn("StoreNest profile name fallback sync failed:", metadataResult.error.message);
     return data;
   }
 
