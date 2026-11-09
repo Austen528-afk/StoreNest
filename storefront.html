@@ -686,6 +686,9 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
 /* Keep fashion photo dots directly over the photo with no backing panel or frame. */
 #galleryDialog.gallery-fashion-style .gallery-overlay-pager{position:absolute;inset:0;display:block;z-index:3;pointer-events:none;background:transparent;border:0}
 #galleryDialog.gallery-fashion-style .gallery-dots{position:absolute;left:0;right:0;bottom:12px;justify-content:center;pointer-events:auto;background:transparent;border:0;box-shadow:none}
+/* Personal Services shows the computed total and photo dots without duplicate price or page-count rows. */
+#galleryDialog.gallery-personal-services #galleryProductActionRow,
+#galleryDialog.gallery-personal-services #galleryPosition{display:none!important}
 /* Hide only the requested fashion summary rows; keep the selectable sizes visible. */
 #galleryDialog.gallery-fashion-style #galleryProductActionRow,
 #galleryDialog.gallery-fashion-style #galleryFashionColors .gallery-fashion-colors-heading,
@@ -2394,6 +2397,7 @@ function openProductGallery(id,trigger,cartKey=null){
  const item=availableItems.find(row=>row.id===id);if(!item)return;
  const isBookingOffer=window.StoreNestBookings.isBookingOffer(item,activePublicBusiness);
  const isDecorBooking=isBookingOffer&&window.StoreNestCategoryId(activePublicBusiness?.category)==="events-decor";
+ const isPersonalServices=window.StoreNestCategoryId(activePublicBusiness?.category)==="beauty";
  const editRow=cartKey?cart.get(cartKey):null;
  activeGalleryItem=item;galleryReturnFocus=trigger;galleryIndex=0;galleryPhotoOnlyReturn=false;galleryEditCartKey=editRow?cartKey:null;
  const availableFashionColors=isStorefrontFashionProduct(item)?storefrontFashionColorSets(item):[];
@@ -2421,6 +2425,7 @@ function openProductGallery(id,trigger,cartKey=null){
  $("galleryDialog").classList.toggle("gallery-booking-style",isDecorBooking);
  $("galleryDialog").classList.toggle("gallery-photo-only",isDecorBooking&&!hasStorefrontBookingOptions(item));
  $("galleryDialog").classList.toggle("gallery-fashion-style",isStorefrontFashionProduct(item));
+ $("galleryDialog").classList.toggle("gallery-personal-services",isPersonalServices);
  const bookingFee=isBookingOffer?window.StoreNestBookings.bookingFeeLabel(item,activePublicBusiness):"";
  $("galleryTitle").textContent=item.name;
  const galleryDescription=$("galleryDescription");galleryDescription.textContent=item.description||"";galleryDescription.hidden=!String(item.description||"").trim();
