@@ -48,7 +48,10 @@ function render(){
  const visibleRows=ownerBookingsHistoryMode?historyRows:activeRows;
  const pending=activeRows.filter(r=>r.status==="pending").length;
  if(heading)heading.textContent=ownerBookingsHistoryMode?"Booking history":"Bookings & enquiries";
- if(description)description.textContent=ownerBookingsHistoryMode?"Completed and declined booking requests are kept here for your records.":"Review event dates, customer requirements and active service booking requests.";
+ const localServiceBusiness=window.StoreNestCategoryId?.(activeBusiness?.category)==="local-services";
+ if(description)description.textContent=ownerBookingsHistoryMode
+  ?"Completed and declined booking requests are kept here for your records."
+  :(localServiceBusiness?"Review preferred service dates, customer requirements and active service requests.":"Review event dates, customer requirements and active service booking requests.");
  if(historyButton){historyButton.textContent=ownerBookingsHistoryMode?"← Active bookings":"▤ History";historyButton.setAttribute("aria-pressed",String(ownerBookingsHistoryMode))}
  if(summary){
   summary.textContent=ownerBookingsHistoryMode
@@ -70,7 +73,7 @@ function render(){
   const product=items.find(i=>i.id===r.item_id);
   const itemName=product?.name||"Service package";
   const pricing=[];
-  if(product&&window.StoreNestCategoryId?.(activeBusiness?.category)==="events-decor"){
+  if(product&&(window.StoreNestCategoryId?.(activeBusiness?.category)==="events-decor"||(localServiceBusiness&&product.item_type==="service"))){
    const min=product.price_range_min,max=product.price_range_max;
    if(min!=null&&max!=null&&Number(min)!==Number(max))pricing.push(money(min)+" – "+money(max));
    else{const single=min??max??(Number(product.price)>0?product.price:null);pricing.push(single==null?"Price on request":money(single))}
@@ -95,12 +98,12 @@ function render(){
   card.innerHTML=
    '<div class="booking-request-top"><div><div class="booking-request-title">'+esc(itemName)+'</div><div class="booking-request-meta">Requested by '+esc(r.customer_name)+' · '+esc(submitted)+'</div></div><span class="booking-request-status '+esc(r.status)+'">'+esc(status)+'</span></div>'+
    '<div class="booking-request-details">'+
-   '<div><small>Event date</small><strong>'+esc(r.event_date)+'</strong></div>'+
-   '<div><small>Venue / location</small><strong>'+esc(r.event_location)+'</strong></div>'+
+   '<div><small>'+(localServiceBusiness?"Preferred date":"Event date")+'</small><strong>'+esc(r.event_date)+'</strong></div>'+
+   '<div><small>'+(localServiceBusiness?"Service location":"Venue / location")+'</small><strong>'+esc(r.event_location)+'</strong></div>'+
    '<div><small>Customer</small><strong>'+esc(r.customer_name)+'</strong></div>'+
    '<div><small>Contact</small><strong>'+contact.join(" · ")+'</strong></div>'+
    (pricing.length?'<div><small>Booking pricing</small><strong>'+esc(pricing.join(" · "))+'</strong></div>':'')+
-   (r.guest_count?'<div><small>Estimated guests</small><strong>'+esc(r.guest_count)+'</strong></div>':'')+
+   (r.guest_count?'<div><small>'+(localServiceBusiness?"Quantity":"Estimated guests")+'</small><strong>'+esc(r.guest_count)+'</strong></div>':'')+
    '</div>'+
    (r.notes?'<div class="booking-request-notes"><small>Selections &amp; requirements</small><p>'+esc(r.notes)+'</p></div>':'')+
    (actions?'<div class="booking-request-actions">'+actions+'</div>':'');

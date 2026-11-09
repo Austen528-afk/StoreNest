@@ -21,7 +21,8 @@ function todayLocalDate(){
  return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
 }
 function isBookingOffer(item,context=business){return isService(item)||window.StoreNestCategoryId?.(context?.category)==="events-decor"}
-function usesOptionalBookingPricing(item,context=business){return window.StoreNestCategoryId?.(context?.category)==="events-decor"}
+function isLocalServiceOffer(item,context=business){return window.StoreNestCategoryId?.(context?.category)==="local-services"&&isService(item)}
+function usesOptionalBookingPricing(item,context=business){const category=window.StoreNestCategoryId?.(context?.category);return category==="events-decor"||(category==="local-services"&&isService(item))}
 function priceLabel(item,context=business){
  if(!isBookingOffer(item,context))return money(item?.price);
  if(!usesOptionalBookingPricing(item,context))return "From "+money(item?.price);
@@ -55,7 +56,7 @@ function setContext(nextClient,nextBusiness,items){
  document.body.dataset.catalogMode=serviceOnly?"services":"mixed";
  if(serviceOnly){
   const footer=document.querySelector(".footer span:last-child");
-  if(footer)footer.textContent="Request a booking · No payment taken until the business confirms the details";
+  if(footer)footer.textContent=window.StoreNestCategoryId?.(business?.category)==="local-services"?"Request a service · No payment taken until the business confirms the details":"Request a booking · No payment taken until the business confirms the details";
  }
 }
 async function prefillBookingCustomerDetails(form,requestId){
@@ -102,6 +103,21 @@ function open(item,trigger,options={}){
  activeBookingEstimatedPrice=Number.isFinite(Number(options?.estimatedPrice))&&Number(options.estimatedPrice)>=0?Number(options.estimatedPrice):null;
  const requestId=++bookingPrefillRequest;
  const form=$("bookingRequestForm");form.reset();form.hidden=false;
+ const localService=isLocalServiceOffer(item,business);
+ $("bookingEyebrow").textContent=localService?"SERVICE REQUEST":"BOOKING ENQUIRY";
+ $("bookingTitle").textContent=localService?"Request a service":"Request a booking";
+ $("bookingIntro").textContent=localService?"Tell the business what service you need and when. No payment is required.":"Tell the business about your event. No payment is required.";
+ $("bookingClose").setAttribute("aria-label",localService?"Close service request":"Close booking request");
+ $("bookingDateFieldText").textContent=localService?"Preferred date":"Event date";
+ $("bookingLocationFieldText").textContent=localService?"Service address or location":"Venue or event location";
+ $("bookingQuantityFieldText").textContent=localService?"Quantity (optional)":"Estimated guests (optional)";
+ $("bookingNotesFieldText").textContent=localService?"Service details or special requests":"Requirements or special requests";
+ form.elements.namedItem("event_location").placeholder=localService?"Town, area and service address":"Town, area and venue";
+ form.elements.namedItem("guest_count").placeholder=localService?"e.g. 1":"e.g. 50";
+ form.elements.namedItem("notes").placeholder=localService?"Describe the service you need, any issue and helpful details.":"Occasion, theme, colours, setup time, or catering needs";
+ $("bookingHelp").textContent=localService
+  ?"Provide a phone number or email. Your contact details will be visible only to this business. The business will confirm availability and the final price."
+  :"Provide a phone number or email. Your contact details will be visible only to this business. Availability and the final quotation must be confirmed by the owner.";
  $("bookingSuccess").hidden=true;$("bookingFormError").hidden=true;
  $("bookingPackageName").textContent=item.name;
  const baseLabel=priceLabel(item),selectionBox=$("bookingPackageOptions"),optionPrice=$("bookingPackageOptionPrice");
@@ -184,10 +200,12 @@ $("bookingRequestForm").addEventListener("submit",async e=>{
   window.dispatchEvent(new Event("storenest:booking-created"));
   form.hidden=true;$("bookingSuccess").hidden=false;
   const message=$("bookingSuccess").querySelector("p");
-  if(message)message.textContent="Your request was sent to the business. Track its progress under My Bookings on the StoreNest home page. A request is not a confirmed reservation.";
+  if(message)message.textContent=isLocalServiceOffer(activeItem,business)
+   ?"Your service request was sent to the business. Track its progress under My Bookings on the StoreNest home page. The business will confirm the appointment."
+   :"Your request was sent to the business. Track its progress under My Bookings on the StoreNest home page. A request is not a confirmed reservation.";
   $("bookingDone").focus();
  }catch(err){
-  errorBox.textContent="Unable to send this booking enquiry. Please check your details and try again.";
+  errorBox.textContent=isLocalServiceOffer(activeItem,business)?"Unable to send this service request. Please check your details and try again.":"Unable to send this booking enquiry. Please check your details and try again.";
   errorBox.hidden=false;console.warn("Service booking request:",err);
  }finally{submit.disabled=false;submit.textContent="Send request →"}
 });
