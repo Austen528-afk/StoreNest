@@ -914,6 +914,38 @@ body:is([data-store-category="events-decor"],[data-store-category="local-service
  body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-feed-card .service-action-row :is(.add,.service-whatsapp){flex-basis:100%}
 }
 
+/* Keep Local Services actions inside the phone card width. The 750px breakpoint
+   matches the stacked service-card layout above, including phones in landscape. */
+@media(max-width:750px){
+ body[data-store-category="local-services"] #catalog .decor-service-feed-card .service-action-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  align-items:stretch;
+  justify-items:stretch;
+  gap:8px;
+  min-width:0
+ }
+ body[data-store-category="local-services"] #catalog .decor-service-feed-card .service-action-row :is(.add,.service-whatsapp){
+  display:flex;
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  min-height:48px;
+  height:auto;
+  padding:12px 14px;
+  box-sizing:border-box;
+  flex:none;
+  line-height:1.25;
+  white-space:normal;
+  overflow-wrap:anywhere
+ }
+ body[data-store-category="local-services"] .footer span:last-child{
+  max-width:calc(100% - 78px);
+  line-height:1.5;
+  overflow-wrap:anywhere
+ }
+}
+
 /* Catering & Decor photo sets open as a clean, full-screen image viewer. */
 #galleryDialog.gallery-photo-only{
  inset:0;
