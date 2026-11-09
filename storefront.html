@@ -1358,10 +1358,13 @@ function storefrontFashionColorSets(item){
   const hasSizePrices=sizes.some(size=>size.price!==null);
   const rawSetPrice=raw?.price,hasSetPrice=rawSetPrice!==null&&rawSetPrice!==undefined&&String(rawSetPrice).trim()!=="";
   const setPrice=hasSetPrice?Number(rawSetPrice):null;
+  const rawSharedBase=raw?.sharedBasePrice,hasSharedBase=rawSharedBase!==null&&rawSharedBase!==undefined&&String(rawSharedBase).trim()!=="";
+  const sharedBase=hasSharedBase?Number(rawSharedBase):null;
   return {
    id:String(raw?.id||"fashion-colour-"+(index+1)),name:String(raw?.name||"").trim()||defaultVariantLabel+" "+(index+1),
    description:String(raw?.description||"").trim(),
    price:Number.isFinite(setPrice)&&setPrice>=0?setPrice:null,
+   sharedBasePrice:Number.isFinite(sharedBase)&&sharedBase>=0?sharedBase:null,
    priceBySize:hasSizePrices||raw?.priceBySize===true||(!hasOwnSizes&&legacySizeGroup?.priceMode==="fixed"),
    sizes,
    entries:urls.map(url=>byUrl.get(url)).filter(Boolean)
@@ -2240,15 +2243,26 @@ function storefrontFashionSizeGroup(item,colorSetId=null){
  if(!isStorefrontFashionProduct(item))return null;
  const sets=storefrontFashionColorSets(item),set=sets.find(row=>row.id===colorSetId)||sets[0];
  if(set?.sizes?.length){
+  const baseValue=set.price??set.sharedBasePrice??item.price,base=Number(baseValue);
+  const hasBase=(set.price!==null&&set.price!==undefined&&String(set.price).trim()!=="")||(set.sharedBasePrice!==null&&set.sharedBasePrice!==undefined&&String(set.sharedBasePrice).trim()!=="")||Number(item?.price)>0;
   const hasSizePrices=Boolean(set.priceBySize)||set.sizes.some(size=>size.price!==null&&size.price!==undefined&&String(size.price).trim()!=="");
-  return {id:FASHION_SIZE_GROUP_ID,name:"Size",selection:"single",required:true,max:1,priceMode:hasSizePrices?"fixed":"additional",
+  const fixedPrices=hasSizePrices||hasBase;
+  return {id:FASHION_SIZE_GROUP_ID,name:"Size",selection:"single",required:true,max:1,priceMode:fixedPrices?"fixed":"additional",
    options:set.sizes.map(size=>{
     const raw=size.price,hasPrice=raw!==null&&raw!==undefined&&String(raw).trim()!=="";
-    const price=hasPrice?Number(raw):Number(set.price??item.price??0);
+    const price=hasPrice?Number(raw):hasBase&&Number.isFinite(base)&&base>=0?base:0;
     return {id:size.id,name:size.name,price:Number.isFinite(price)&&price>=0?price:0};
    })};
  }
- return window.StoreNestOptions.normalize(item?.customization_options).find(group=>group.id===FASHION_SIZE_GROUP_ID)||null;
+ const rawSharedGroup=(Array.isArray(item?.customization_options)?item.customization_options:[]).find(group=>group?.id===FASHION_SIZE_GROUP_ID)||null;
+ const sharedGroup=rawSharedGroup?window.StoreNestOptions.normalize([rawSharedGroup])[0]||null:null;
+ if(!sharedGroup)return null;
+ if(sharedGroup.priceMode==="fixed")return {...sharedGroup,options:sharedGroup.options.map((option,index)=>{
+  const rawOption=(Array.isArray(rawSharedGroup.options)?rawSharedGroup.options:[]).find(row=>row?.id===option.id)||rawSharedGroup.options?.[index];
+  const hasPrice=rawOption?.price!==null&&rawOption?.price!==undefined&&String(rawOption.price).trim()!=="";
+  return {...option,price:hasPrice?option.price:set?.price??set?.sharedBasePrice??item.price??0};
+ })};
+ return sharedGroup;
 }
 function storefrontProductPriceLabel(item){
  if(!isStorefrontFashionProduct(item))return money(item.price);
@@ -2257,7 +2271,7 @@ function storefrontProductPriceLabel(item){
   const group=storefrontFashionSizeGroup(item,set.id);
   if(group?.priceMode==="fixed"&&group.options.length)prices.push(...group.options.map(option=>Number(option.price)).filter(price=>Number.isFinite(price)&&price>=0));
   else{
-   const raw=set.price??item.price,value=Number(raw);
+   const raw=set.price??set.sharedBasePrice??item.price,value=Number(raw);
    if(Number.isFinite(value)&&value>=0)prices.push(value);
   }
  }
@@ -2273,7 +2287,7 @@ function storefrontSelectedFashionPrice(item,colorSetId=null,sizeId=null){
   const prices=group.options.map(option=>Number(option.price)).filter(price=>Number.isFinite(price)&&price>=0);
   if(prices.length)return money(Math.min(...prices));
  }
- return money(set?.price??item.price);
+ return money(set?.price??set?.sharedBasePrice??item.price);
 }
 function storefrontFashionSizeDisplayLabel(option){
  const raw=String(option?.name??"").trim(),key=raw.toUpperCase();
@@ -2317,7 +2331,7 @@ function quoteItemForFashionSelection(item,selection={}){
  const selectedSizeId=selection?.[FASHION_SIZE_GROUP_ID]?.[0]||(item===activeGalleryItem?activeGalleryFashionSizeId:null);
  const selectedSize=sizes?.options.find(option=>option.id===selectedSizeId);
  const fixedPrices=sizes?.priceMode==="fixed"?sizes.options.map(option=>Number(option.price)).filter(price=>Number.isFinite(price)&&price>=0):[];
- const configuredBase=Number(set?.price??item.price);
+ const configuredBase=Number(set?.price??set?.sharedBasePrice??item.price);
  const base=!selectedSize&&fixedPrices.length?Math.min(...fixedPrices):configuredBase;
  const customization_options=window.StoreNestOptions.normalize(item?.customization_options).filter(group=>group.id!==FASHION_SIZE_GROUP_ID);
  if(sizes?.options.length)customization_options.push(sizes);
