@@ -1960,7 +1960,7 @@ function drawFashionSizesForSet(card,set){
  const setWord=isHomeLivingProduct()?"variant":"colour";
  const heading=document.createElement("div");heading.className="decor-color-sets-heading";
  const headingText=document.createElement("div"),title=document.createElement("strong"),note=document.createElement("small");
- title.textContent="Sizes and pricing";note.textContent=fashionSetUsesSharedSizes(set)?"This "+setWord+" uses the shared sizes and prices above.":"Set sizes for this "+setWord+". Blank prices use its base price."
+ title.textContent="Sizes and pricing";note.textContent=fashionSetUsesSharedSizes(set)?"This "+setWord+" uses the shared sizes and prices above.":"Set sizes for this "+setWord+". Blank prices use its base price.";
  headingText.append(title,note);heading.append(headingText);
  if(fashionSetUsesSharedSizes(set)){
   const edit=document.createElement("button");edit.type="button";edit.className="outline-button fashion-shared-size-use";edit.textContent="Set different sizes and prices for this "+setWord;edit.dataset.customizeFashionSizes=set.id;
