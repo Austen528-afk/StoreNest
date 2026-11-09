@@ -776,8 +776,8 @@ html[data-theme="dark"] #itemMediaQualityNote[data-warning="true"]{color:#f4c27e
   <div class="field"><label for="itemBookingFeeMax">Booking fee up to (ZAR)</label><div class="price-input"><span>R</span><input id="itemBookingFeeMax" type="number" min="0" step="0.01" placeholder="Optional"></div></div>
  </div>
 </div><div id="cateringServiceNote" class="catering-service-note full-field" hidden><strong>Catering service</strong><span>Customers will send their event date, venue and guest count with a booking request. Use the description for general service information; confirm the service scope and final details with the customer.</span></div><div class="field"><label for="itemCategory">Category</label><div class="category-input"><select id="itemCategory"><option value="">No category</option></select><button type="button" id="addCategoryButton" aria-label="Add category">＋</button></div></div><div class="field full-field" id="itemDescriptionField"><label id="itemDescriptionLabel" for="itemDescription">Description</label><textarea id="itemDescription" rows="3" maxlength="500" placeholder="Describe your item"></textarea></div>
-<div id="fashionSharedSizesEditor" class="fashion-shared-settings full-field" hidden><div class="fashion-shared-heading"><div><strong>Shared clothing defaults</strong><small>Set the description, sizes and prices once for every colour. A colour can use its own sizes and description below.</small></div></div><div id="fashionSharedDescriptionSlot"></div><div class="fashion-shared-size-panel"><div class="fashion-shared-size-heading"><strong>Shared sizes and prices</strong><small>These apply to colours using shared sizes. Add a separate size set to any colour that needs different sizes or prices.</small></div><div id="fashionSharedSizePresets" class="fashion-size-presets"></div><div class="fashion-size-add-row"><input id="fashionSharedSizeInput" type="text" maxlength="200" placeholder="e.g. 28, 30, 32 or 38, 39, 40" aria-label="Enter shared clothing sizes"><button type="button" id="addFashionSharedSizes" class="outline-button">Add sizes</button></div><div id="fashionSharedSizesList" class="fashion-size-chips fashion-size-chips-priced"></div></div></div>
-<div id="itemMediaField" class="field full-field"><label id="itemMediaLabel" for="itemMedia">Product photos, GIFs & short videos (up to 12)</label><input id="itemMedia" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"><small>Images/GIFs: max 10 MB. MP4/WebM videos: max 20 MB and 30 seconds. First file is the cover.</small><small id="itemMediaQualityNote" class="media-quality-note" role="status" aria-live="polite">Original photos are preserved. New photos get responsive storefront sizes.</small><div id="itemMediaGallery" class="owner-gallery"></div></div><div id="decorColorSetsEditor" class="decor-color-sets-editor full-field" hidden><div class="decor-color-sets-heading"><div><strong>Décor colour sets</strong><small>Group photos of the same setup by colour theme. Each set can have its own optional description.</small></div><button type="button" id="addDecorColorSet" class="outline-button">+ Add colour set</button></div><div id="decorColorSetsList"></div><small class="decor-color-sets-note">Upload up to 12 pictures across all colour sets. The first picture in the first set is the main storefront photo.</small></div><div id="fashionColorSetsEditor" class="decor-color-sets-editor full-field" hidden><div class="decor-color-sets-heading"><div><strong>Clothing colour variants</strong><small>Add each colour of this clothing item and upload its photos. Customers can choose a colour before adding it to their basket.</small></div><button type="button" id="addFashionColorSet" class="outline-button">+ Add colour</button></div><div id="fashionColorSetsList"></div><small class="decor-color-sets-note">Upload up to 12 pictures across all colours. The first picture in the first colour is the storefront cover.</small></div><!-- Clothing sizes and prices can be shared above or configured for each colour. --><div class="field"><label for="itemAvailability">Availability</label><select id="itemAvailability"><option value="true">Available</option><option value="false">Unavailable</option></select></div><div class="field"><label for="itemOrder">Display order</label><input id="itemOrder" type="number" min="0" step="1" value="0"></div></div>
+<div id="fashionSharedSizesEditor" class="fashion-shared-settings full-field" hidden><div class="fashion-shared-heading"><div><strong>Shared product defaults</strong><small>Set the description, sizes and prices once for every colour. A colour can use its own sizes and description below.</small></div></div><div id="fashionSharedDescriptionSlot"></div><div class="fashion-shared-size-panel"><div class="fashion-shared-size-heading"><strong>Shared sizes and prices</strong><small>These apply to colours using shared sizes. Add a separate size set to any colour that needs different sizes or prices.</small></div><div id="fashionSharedSizePresets" class="fashion-size-presets"></div><div class="fashion-size-add-row"><input id="fashionSharedSizeInput" type="text" maxlength="200" placeholder="e.g. 28, 30, 32 or 38, 39, 40" aria-label="Enter shared product sizes"><button type="button" id="addFashionSharedSizes" class="outline-button">Add sizes</button></div><div id="fashionSharedSizesList" class="fashion-size-chips fashion-size-chips-priced"></div></div></div>
+<div id="itemMediaField" class="field full-field"><label id="itemMediaLabel" for="itemMedia">Product photos, GIFs & short videos (up to 12)</label><input id="itemMedia" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"><small>Images/GIFs: max 10 MB. MP4/WebM videos: max 20 MB and 30 seconds. First file is the cover.</small><small id="itemMediaQualityNote" class="media-quality-note" role="status" aria-live="polite">Original photos are preserved. New photos get responsive storefront sizes.</small><div id="itemMediaGallery" class="owner-gallery"></div></div><div id="decorColorSetsEditor" class="decor-color-sets-editor full-field" hidden><div class="decor-color-sets-heading"><div><strong>Décor colour sets</strong><small>Group photos of the same setup by colour theme. Each set can have its own optional description.</small></div><button type="button" id="addDecorColorSet" class="outline-button">+ Add colour set</button></div><div id="decorColorSetsList"></div><small class="decor-color-sets-note">Upload up to 12 pictures across all colour sets. The first picture in the first set is the main storefront photo.</small></div><div id="fashionColorSetsEditor" class="decor-color-sets-editor full-field" hidden><div class="decor-color-sets-heading"><div><strong>Product colour variants</strong><small>Add each colour of this product and upload its photos. Customers can choose a colour before adding it to their basket.</small></div><button type="button" id="addFashionColorSet" class="outline-button">+ Add colour</button></div><div id="fashionColorSetsList"></div><small class="decor-color-sets-note">Upload up to 12 pictures across all colours. The first picture in the first variant is the storefront cover.</small></div><!-- Product sizes and prices can be shared above or configured for each colour variant. --><div class="field"><label for="itemAvailability">Availability</label><select id="itemAvailability"><option value="true">Available</option><option value="false">Unavailable</option></select></div><div class="field"><label for="itemOrder">Display order</label><input id="itemOrder" type="number" min="0" step="1" value="0"></div></div>
 <div id="itemOptionsEditor" class="item-options-editor">
   <div class="item-options-heading"><div><strong>Customizations &amp; options</strong><small>Create choice groups such as dye levels. You can add an optional extra price to any choice.</small></div>
   <div class="item-options-actions"><button type="button" id="addScaleGroup" class="outline-button">+ Add scale</button><button type="button" id="addCustomizationGroup" class="outline-button">+ Add choice group</button></div></div>
@@ -1344,7 +1344,8 @@ function isDecorOffering(){
  // Hide the colour-set editor only when the selected section explicitly identifies catering.
  return usesBookingPricing()&&$("itemType").value==="service"&&!/cater/.test(name);
 }
-function isFashionProduct(){return window.StoreNestCategoryId?.(currentBusiness?.category)==="fashion"&&$("itemType").value==="product"}
+function isHomeLivingProduct(){return window.StoreNestCategoryId?.(currentBusiness?.category)==="home-living"&&$("itemType").value==="product"}
+function isFashionProduct(){return ["fashion","home-living"].includes(window.StoreNestCategoryId?.(currentBusiness?.category))&&$("itemType").value==="product"}
 function fashionPriceValue(raw){
  const text=String(raw??"").trim();if(!text)return null;
  const value=Number(text);
@@ -1386,7 +1387,7 @@ function validateFashionSizePricing(){
  if(!isFashionProduct())return null;
  const prices=[],sharedSets=editedFashionColorSets.filter(fashionSetUsesSharedSizes);
  if(sharedSets.length){
-  if(!editedFashionSharedSizes.length)throw Error("Add shared clothing sizes or set sizes for each colour.");
+  if(!editedFashionSharedSizes.length)throw Error("Add shared product sizes or set sizes for each colour.");
   for(const size of editedFashionSharedSizes){
    const raw=String(size.price??"").trim(),price=fashionPriceValue(raw);
    if(raw&&price===null)throw Error("Enter a valid total price for shared size "+size.name+".");
@@ -1414,7 +1415,7 @@ function validateFashionSizePricing(){
  }
  return prices.length?Math.min(...prices):null;
 }
-function fashionColourLabel(set,index){return String(set?.name||"").trim()||"Colour "+(index+1)}
+function fashionColourLabel(set,index){const fallback=isHomeLivingProduct()?"Variant ":"Colour ";return String(set?.name||"").trim()||fallback+(index+1)}
 function fashionColourOptionGroup(sets){return {id:FASHION_COLOR_GROUP_ID,name:"Colour",selection:"single",required:true,max:1,options:sets.map((set,index)=>({id:set.id,name:fashionColourLabel(set,index),price:0}))}}
 function newFashionSizeId(setId=""){return "fashion-size-"+String(setId||"set").replace(/[^a-zA-Z0-9_-]/g,"").slice(0,32)+"-"+(window.crypto?.randomUUID?.()||Date.now()+"-"+Math.random().toString(36).slice(2))}
 function addFashionSizeForSet(setId,value){return addFashionSizesForSet(setId,[value])}
@@ -1956,12 +1957,13 @@ function drawDecorColorSetEditor(){
 }
 function drawFashionSizesForSet(card,set){
  const section=document.createElement("div");section.className="fashion-set-sizes";
+ const setWord=isHomeLivingProduct()?"variant":"colour";
  const heading=document.createElement("div");heading.className="decor-color-sets-heading";
  const headingText=document.createElement("div"),title=document.createElement("strong"),note=document.createElement("small");
- title.textContent="Sizes and pricing";note.textContent=fashionSetUsesSharedSizes(set)?"This colour uses the shared sizes and prices above.":"Set sizes for this colour. Blank prices use its colour base price.";
+ title.textContent="Sizes and pricing";note.textContent=fashionSetUsesSharedSizes(set)?"This "+setWord+" uses the shared sizes and prices above.":"Set sizes for this "+setWord+". Blank prices use its base price.";
  headingText.append(title,note);heading.append(headingText);
  if(fashionSetUsesSharedSizes(set)){
-  const edit=document.createElement("button");edit.type="button";edit.className="outline-button fashion-shared-size-use";edit.textContent="Set different sizes and prices for this colour";edit.dataset.customizeFashionSizes=set.id;
+  const edit=document.createElement("button");edit.type="button";edit.className="outline-button fashion-shared-size-use";edit.textContent="Set different sizes and prices for this "+setWord;edit.dataset.customizeFashionSizes=set.id;
   section.append(heading,edit);card.append(section);return;
  }
  if(editedFashionSharedSizes.length){
@@ -1980,7 +1982,7 @@ function drawFashionSizesForSet(card,set){
  input.addEventListener("keydown",event=>{if(event.key==="Enter"){event.preventDefault();event.stopPropagation();addFashionCustomSizesForSet(set.id,input)}});
  addRow.append(input,add);section.append(addRow);
  const list=document.createElement("div");list.className="fashion-size-chips fashion-size-chips-priced";list.dataset.fashionSizeList=set.id;
- if(!set.sizes.length){const empty=document.createElement("small");empty.className="decor-color-set-empty";empty.textContent="No sizes added for this colour.";list.append(empty)}
+ if(!set.sizes.length){const empty=document.createElement("small");empty.className="decor-color-set-empty";empty.textContent="No sizes added for this "+setWord;list.append(empty)}
  for(const size of set.sizes){
   const chip=document.createElement("div");chip.className="fashion-size-chip fashion-size-chip-priced";
   const label=document.createElement("strong");label.textContent=size.name;
@@ -1995,21 +1997,22 @@ function drawFashionSizesForSet(card,set){
 }
 function drawFashionColorSetEditor(){
  const root=$("fashionColorSetsList");root.replaceChildren();
+ const homeLiving=isHomeLivingProduct(),variantWord=homeLiving?"variant":"colour";
  editedFashionColorSets.forEach((set,index)=>{
   const card=document.createElement("section");card.className="decor-color-set-card";card.dataset.fashionSetCard=set.id;
   const head=document.createElement("div");head.className="decor-color-set-head";
   const title=document.createElement("h4");title.textContent=fashionColourLabel(set,index);
-  const remove=document.createElement("button");remove.type="button";remove.className="decor-color-set-remove";remove.textContent="×";remove.title="Remove this colour";remove.setAttribute("aria-label","Remove colour "+(index+1));remove.disabled=editedFashionColorSets.length<2;remove.dataset.removeFashionSet=set.id;
+  const remove=document.createElement("button");remove.type="button";remove.className="decor-color-set-remove";remove.textContent="×";remove.title="Remove this "+variantWord;remove.setAttribute("aria-label","Remove "+variantWord+" "+(index+1));remove.disabled=editedFashionColorSets.length<2;remove.dataset.removeFashionSet=set.id;
   head.append(title,remove);
   const fields=document.createElement("div");fields.className="decor-color-set-fields";
-  const nameLabel=document.createElement("label");nameLabel.textContent="Colour name (optional)";
-  const nameInput=document.createElement("input");nameInput.type="text";nameInput.maxLength=80;nameInput.placeholder="e.g. Black, White, Brown";nameInput.value=set.name;nameInput.dataset.fashionSetName=set.id;nameLabel.append(nameInput);fields.append(nameLabel);
-  const descriptionLabel=document.createElement("label");descriptionLabel.textContent="Colour description (optional)";
-  const description=document.createElement("textarea");description.maxLength=500;description.placeholder="Overrides the shared description for this colour";description.value=set.description||"";description.dataset.fashionSetDescription=set.id;descriptionLabel.append(description);fields.append(descriptionLabel);
-  const priceLabel=document.createElement("label");priceLabel.textContent="Colour base price (optional if every size has a price)";priceLabel.hidden=fashionSetUsesSharedSizes(set);
+  const nameLabel=document.createElement("label");nameLabel.textContent=homeLiving?"Variant name (optional)":"Colour name (optional)";
+  const nameInput=document.createElement("input");nameInput.type="text";nameInput.maxLength=80;nameInput.placeholder=homeLiving?"e.g. Natural oak, cream linen, matte black":"e.g. Black, White, Brown";nameInput.value=set.name;nameInput.dataset.fashionSetName=set.id;nameLabel.append(nameInput);fields.append(nameLabel);
+  const descriptionLabel=document.createElement("label");descriptionLabel.textContent=homeLiving?"Variant description (optional)":"Colour description (optional)";
+  const description=document.createElement("textarea");description.maxLength=500;description.placeholder="Overrides the shared description for this "+variantWord;description.value=set.description||"";description.dataset.fashionSetDescription=set.id;descriptionLabel.append(description);fields.append(descriptionLabel);
+  const priceLabel=document.createElement("label");priceLabel.textContent=(homeLiving?"Variant":"Colour")+" base price (optional if every size has a price)";priceLabel.hidden=fashionSetUsesSharedSizes(set);
   const priceInput=document.createElement("input");priceInput.type="number";priceInput.min="0";priceInput.max="100000";priceInput.step="0.01";priceInput.placeholder="Fallback for blank size prices";priceInput.value=set.price??"";priceInput.dataset.fashionSetPrice=set.id;priceLabel.append(priceInput);fields.append(priceLabel);
   const uploadLabel=document.createElement("label");uploadLabel.className="decor-color-set-upload";
-  const uploadText=document.createElement("span");uploadText.textContent="Upload photos for this colour";
+  const uploadText=document.createElement("span");uploadText.textContent="Upload photos for this "+variantWord;
   const upload=document.createElement("input");upload.type="file";upload.multiple=true;upload.accept="image/jpeg,image/png,image/webp,image/gif";upload.dataset.fashionSetUpload=set.id;
   uploadLabel.append(uploadText,upload);
   const gallery=document.createElement("div");gallery.className="owner-gallery";gallery.dataset.fashionSetGallery=set.id;
@@ -2027,7 +2030,7 @@ function addFashionSharedSizes(values){
  if(!added.length){showToast("No new sizes were added. Check for duplicates or the 16-size limit.",true);return false}
  if(!hadSharedSizes)editedFashionColorSets.forEach(set=>{if(!set.sizes.length)set.useSharedSizes=true});
  drawFashionSharedSizeEditor();drawFashionColorSetEditor();syncFashionSizePricingUI();
- showToast(added.join(", ")+" added to shared clothing sizes.");
+ showToast(added.join(", ")+" added to shared "+(isHomeLivingProduct()?"product":"clothing")+" sizes.");
  return true;
 }
 function addFashionCustomSharedSizes(input){
@@ -2096,7 +2099,7 @@ $("fashionSharedSizeInput").addEventListener("keydown",event=>{
 });
 $("addFashionColorSet").addEventListener("click",()=>{
  if(!isFashionProduct())return;
- if(editedFashionColorSets.length>=12){showToast("You can add up to 12 colours.",true);return}
+ if(editedFashionColorSets.length>=12){showToast("You can add up to 12 "+(isHomeLivingProduct()?"variants":"colours")+".",true);return}
  const set=newFashionColorSet();set.useSharedSizes=editedFashionSharedSizes.length>0;editedFashionColorSets.push(set);
  drawFashionColorSetEditor();syncFashionSizePricingUI();drawOwnerGallery();
 });
@@ -2138,11 +2141,11 @@ $("fashionColorSetsList").addEventListener("click",event=>{
 $("fashionColorSetsList").addEventListener("change",async event=>{
  const input=event.target.closest("[data-fashion-set-upload]");if(!input)return;
  const setId=input.dataset.fashionSetUpload,files=[...input.files];if(!files.length)return;
- if(galleryEntries.length+files.length>12){showToast("Maximum 12 pictures across all colours.",true);input.value="";return}
+ if(galleryEntries.length+files.length>12){showToast("Maximum 12 pictures across all "+(isHomeLivingProduct()?"variants":"colours")+".",true);input.value="";return}
  try{
   const staged=[];
   for(const file of files){
-   if(!file.type.startsWith("image/"))throw Error("Clothing colour variants accept pictures only.");
+   if(!file.type.startsWith("image/"))throw Error("Product colour variants accept pictures only.");
    validateProductMedia(file);staged.push({file,dimensions:await catalogImageDimensions(file)});
   }
   for(const {file,dimensions} of staged){
