@@ -683,17 +683,17 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
 #galleryDialog.gallery-booking-style .gallery-dots{position:absolute;left:0;right:0;bottom:13px;justify-content:center;pointer-events:auto}
 #galleryDialog.gallery-booking-style .gallery-dots button{background:#fffD;box-shadow:0 1px 5px #0005}
 #galleryDialog.gallery-booking-style .gallery-dots button.active{background:var(--accent,#27856d)}
-/* Keep fashion photo dots directly over the photo with no backing panel or frame. */
-#galleryDialog.gallery-fashion-style .gallery-overlay-pager{position:absolute;inset:0;display:block;z-index:3;pointer-events:none;background:transparent;border:0}
-#galleryDialog.gallery-fashion-style .gallery-dots{position:absolute;left:0;right:0;bottom:12px;justify-content:center;pointer-events:auto;background:transparent;border:0;box-shadow:none}
+/* Clothes and Home & Living share the photo-first product detail layout. */
+#galleryDialog:is(.gallery-fashion-style,.gallery-home-living-style) .gallery-overlay-pager{position:absolute;inset:0;display:block;z-index:3;pointer-events:none;background:transparent;border:0}
+#galleryDialog:is(.gallery-fashion-style,.gallery-home-living-style) .gallery-dots{position:absolute;left:0;right:0;bottom:12px;justify-content:center;pointer-events:auto;background:transparent;border:0;box-shadow:none}
 /* Personal Services shows the computed total and photo dots without duplicate price or page-count rows. */
 #galleryDialog.gallery-personal-services #galleryProductActionRow,
 #galleryDialog.gallery-personal-services #galleryPosition{display:none!important}
-/* Hide only the requested fashion summary rows; keep the selectable sizes visible. */
-#galleryDialog.gallery-fashion-style #galleryProductActionRow,
+/* Hide the duplicate price and pager rows in the clothes and Home & Living layout. */
+#galleryDialog:is(.gallery-fashion-style,.gallery-home-living-style) #galleryProductActionRow,
 #galleryDialog.gallery-fashion-style #galleryFashionColors .gallery-fashion-colors-heading,
-#galleryDialog.gallery-fashion-style #galleryPosition{display:none!important}
-#galleryDialog.gallery-fashion-style #galleryBottom{height:0;min-height:0;margin:0;padding:0;overflow:hidden}
+#galleryDialog:is(.gallery-fashion-style,.gallery-home-living-style) #galleryPosition{display:none!important}
+#galleryDialog:is(.gallery-fashion-style,.gallery-home-living-style) #galleryBottom{height:0;min-height:0;margin:0;padding:0;overflow:hidden}
 #galleryDialog.gallery-fashion-style #galleryFashionSizes:not([hidden]){display:block!important}
 #galleryDialog.gallery-fashion-style #galleryFashionSizes[hidden]{display:none!important}
 #galleryDialog.gallery-booking-style .gallery-booking-details{display:block;padding:17px 22px 0;background:var(--canvas,#f8f6f1);border-top:1px solid var(--border,#e8e1d6)}
@@ -2396,8 +2396,10 @@ $("galleryChoiceGroups").addEventListener("change",event=>{
 function openProductGallery(id,trigger,cartKey=null){
  const item=availableItems.find(row=>row.id===id);if(!item)return;
  const isBookingOffer=window.StoreNestBookings.isBookingOffer(item,activePublicBusiness);
- const isDecorBooking=isBookingOffer&&window.StoreNestCategoryId(activePublicBusiness?.category)==="events-decor";
- const isPersonalServices=window.StoreNestCategoryId(activePublicBusiness?.category)==="beauty";
+ const businessCategoryId=window.StoreNestCategoryId(activePublicBusiness?.category);
+ const isDecorBooking=isBookingOffer&&businessCategoryId==="events-decor";
+ const isPersonalServices=businessCategoryId==="beauty";
+ const isHomeLiving=businessCategoryId==="home-living";
  const editRow=cartKey?cart.get(cartKey):null;
  activeGalleryItem=item;galleryReturnFocus=trigger;galleryIndex=0;galleryPhotoOnlyReturn=false;galleryEditCartKey=editRow?cartKey:null;
  const availableFashionColors=isStorefrontFashionProduct(item)?storefrontFashionColorSets(item):[];
@@ -2425,6 +2427,7 @@ function openProductGallery(id,trigger,cartKey=null){
  $("galleryDialog").classList.toggle("gallery-booking-style",isDecorBooking);
  $("galleryDialog").classList.toggle("gallery-photo-only",isDecorBooking&&!hasStorefrontBookingOptions(item));
  $("galleryDialog").classList.toggle("gallery-fashion-style",isStorefrontFashionProduct(item));
+ $("galleryDialog").classList.toggle("gallery-home-living-style",isHomeLiving);
  $("galleryDialog").classList.toggle("gallery-personal-services",isPersonalServices);
  const bookingFee=isBookingOffer?window.StoreNestBookings.bookingFeeLabel(item,activePublicBusiness):"";
  $("galleryTitle").textContent=item.name;
