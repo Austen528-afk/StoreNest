@@ -1588,7 +1588,7 @@ function ownerItemPriceLabel(item){
  const single=min??max??(Number(item.price)>0?item.price:null);
  return single!=null?formatOrderMoney(single):"Request a quote";
 }
-function nextItemDisplayOrder(excludeId=null){const orders=businessItems.filter(candidate=>excludeId==null||String(candidate.id)!==String(excludeId)).map(candidate=>Number(candidate.display_order)).filter(order=>Number.isFinite(order)&&order>=0);return orders.length?Math.max(...orders)+1:0} function openItemModal(item){
+function nextItemDisplayOrder(excludeId=null){const remaining=businessItems.filter(candidate=>excludeId==null||String(candidate.id)!==String(excludeId));const orders=remaining.map(candidate=>candidate.display_order).filter(value=>value!=null&&String(value).trim()!=="").map(Number).filter(order=>Number.isFinite(order)&&order>=0);return Math.max(remaining.length,orders.length?Math.max(...orders)+1:0)} function openItemModal(item){
  try{
   const form=$("itemForm");if(!form)throw new Error("Product editor is unavailable.");
   form.reset();fashionSizePricesEnabled=false;fashionSharedBasePrice="";$("fashionSharedBasePrice").value="";editedFashionSharedSizes=[];$("itemId").value=item?.id||"";$("itemModalTitle").textContent=item?"Edit item":"Add an item";
