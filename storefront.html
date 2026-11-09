@@ -1082,7 +1082,7 @@ body[data-store-category="events-decor"] #catalog .decor-service-feed-card .serv
  }
 }
 
-/* Fashion & Accessories product photos keep their own proportions and heights. */
+/* Fashion and Home & Living product photos keep their own proportions and heights. */
 body[data-store-category="fashion"] #catalog .art:has(img),
 body[data-store-category="home-living"] #catalog .art:has(img){
  height:auto;
@@ -1112,7 +1112,7 @@ body[data-store-category="home-living"] #catalog .art:has(img) img{
  height:0;
 }
 
-/* Fashion product photo strips stay swipeable and keep each image's own ratio. */
+/* Fashion and Home & Living product photo strips stay swipeable and keep each image's own ratio. */
 #catalog .item-open.fashion-photo-carousel{overflow:hidden;touch-action:pan-x pan-y;user-select:none;-webkit-user-select:none}
 #catalog .fashion-photo-carousel .art:has(.fashion-photo-track){display:block;width:100%;height:auto;min-height:0;aspect-ratio:auto;overflow:hidden}
 #catalog .fashion-photo-track{display:flex;width:100%;height:auto;min-width:0;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;scrollbar-width:none;touch-action:pan-x pan-y;align-items:flex-start}
@@ -1343,6 +1343,7 @@ function storefrontDecorColorSets(item){
 }
 function storefrontFashionColorSets(item){
  const entries=galleryMediaEntries(item),byUrl=new Map(entries.map(entry=>[entry.url,entry]));
+ const defaultVariantLabel=window.StoreNestCategoryId?.(activePublicBusiness?.category)==="home-living"?"Variant":"Colour";
  const source=Array.isArray(item?.fashion_color_sets)?item.fashion_color_sets:[];
  const legacySizeGroup=window.StoreNestOptions.normalize(item?.customization_options).find(group=>group.id===FASHION_SIZE_GROUP_ID);
  const sets=source.map((raw,index)=>{
@@ -1358,7 +1359,7 @@ function storefrontFashionColorSets(item){
   const rawSetPrice=raw?.price,hasSetPrice=rawSetPrice!==null&&rawSetPrice!==undefined&&String(rawSetPrice).trim()!=="";
   const setPrice=hasSetPrice?Number(rawSetPrice):null;
   return {
-   id:String(raw?.id||"fashion-colour-"+(index+1)),name:String(raw?.name||"").trim()||"Colour "+(index+1),
+   id:String(raw?.id||"fashion-colour-"+(index+1)),name:String(raw?.name||"").trim()||defaultVariantLabel+" "+(index+1),
    description:String(raw?.description||"").trim(),
    price:Number.isFinite(setPrice)&&setPrice>=0?setPrice:null,
    priceBySize:hasSizePrices||raw?.priceBySize===true||(!hasOwnSizes&&legacySizeGroup?.priceMode==="fixed"),
@@ -1371,7 +1372,7 @@ function storefrontFashionColorSets(item){
   sets[0].entries.push(...entries.filter(entry=>!assigned.has(entry.url)));
   return sets;
  }
- return entries.length?[{id:"fashion-default-colour",name:"Colour 1",description:"",price:null,priceBySize:legacySizeGroup?.priceMode==="fixed",sizes:(legacySizeGroup?.options||[]).map(option=>({id:option.id,name:option.name,price:option.price})),entries}]:[];
+ return entries.length?[{id:"fashion-default-colour",name:defaultVariantLabel+" 1",description:"",price:null,priceBySize:legacySizeGroup?.priceMode==="fixed",sizes:(legacySizeGroup?.options||[]).map(option=>({id:option.id,name:option.name,price:option.price})),entries}]:[];
 }
 function isStorefrontFashionProduct(item){return ["fashion","home-living"].includes(window.StoreNestCategoryId?.(activePublicBusiness?.category))&&item?.item_type==="product"}
 function isStorefrontFashionOffering(item){return isStorefrontFashionProduct(item)&&storefrontFashionColorSets(item).length>1}
