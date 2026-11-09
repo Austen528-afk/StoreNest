@@ -2431,6 +2431,7 @@ function openProductGallery(id,trigger,cartKey=null){
  const item=availableItems.find(row=>row.id===id);if(!item)return;
  const isBookingOffer=window.StoreNestBookings.isBookingOffer(item,activePublicBusiness);
  const businessCategoryId=window.StoreNestCategoryId(activePublicBusiness?.category);
+ const isLocalServiceBooking=isBookingOffer&&businessCategoryId==="local-services";
  const isEditorialBooking=isBookingOffer&&["events-decor","local-services"].includes(businessCategoryId);
  const isPersonalServices=businessCategoryId==="beauty";
  const isHomeLiving=businessCategoryId==="home-living";
@@ -2481,7 +2482,7 @@ function openProductGallery(id,trigger,cartKey=null){
  $("galleryProductAdd").textContent=editRow?"Save changes":"＋ Add";
  $("galleryProductPrice").textContent=storefrontProductPriceLabel(item);
  $("galleryServicePrice").textContent=window.StoreNestBookings.priceLabel(item,activePublicBusiness);
- $("galleryAdd").textContent=isBookingOffer?"Request booking":"＋ Add";
+ $("galleryAdd").textContent=isBookingOffer?(isLocalServiceBooking?"Request a service":"Request booking"):"＋ Add";
  renderGalleryOptions(item,editRow?.selection||{});
  if(editRow)$("galleryNotes").value=editRow.note||"";
  updateGalleryOptionsPrice();
@@ -3037,7 +3038,7 @@ const cardForItem=item=>{
        '</div>'+
        (count>1?'<span class="photo-count fashion-photo-count" data-fashion-photo-count aria-live="polite" aria-atomic="true">1 / '+count+'</span>':'')
      ):'';
-     const actionButton='<button class="add" type="button" data-add-item="'+esc(item.id)+'"'+(hasConfiguredColorSets?' data-decor-color-set-name="'+esc(initialSetName)+'"':"")+' aria-label="'+(service?"Request booking for ":"Add ")+esc(item.name)+(service?"":" to basket")+'">'+(service?"":'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>')+action+'</button>';
+     const actionButton='<button class="add" type="button" data-add-item="'+esc(item.id)+'"'+(hasConfiguredColorSets?' data-decor-color-set-name="'+esc(initialSetName)+'"':"")+' aria-label="'+(service?(localServiceBooking?"Request service for ":"Request booking for "):"Add ")+esc(item.name)+(service?"":" to basket")+'">'+(service?"":'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>')+action+'</button>';
      if(editorialServiceBooking){
        const colorPicker=hasConfiguredColorSets&&colorSets.length?'<div class="decor-color-set-picker" data-decor-color-picker="'+esc(item.id)+'"><span class="decor-color-set-label">Colour theme</span><div class="decor-color-set-options" role="group" aria-label="Choose a décor colour theme">'+colorSets.map((set,index)=>'<button type="button" class="decor-color-set-option" data-decor-color-set="'+esc(set.id)+'" data-item-id="'+esc(item.id)+'" aria-pressed="'+String(index===0)+'">'+esc(set.name)+'</button>').join("")+'</div></div>':"";
        const description=hasConfiguredColorSets&&firstColorSet?.description?firstColorSet.description:(item.description||"");
