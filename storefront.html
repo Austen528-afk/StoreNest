@@ -1083,13 +1083,15 @@ body[data-store-category="events-decor"] #catalog .decor-service-feed-card .serv
 }
 
 /* Fashion & Accessories product photos keep their own proportions and heights. */
-body[data-store-category="fashion"] #catalog .art:has(img){
+body[data-store-category="fashion"] #catalog .art:has(img),
+body[data-store-category="home-living"] #catalog .art:has(img){
  height:auto;
  min-height:0;
  aspect-ratio:auto;
  align-items:flex-start;
 }
-body[data-store-category="fashion"] #catalog .art:has(img) img{
+body[data-store-category="fashion"] #catalog .art:has(img) img,
+body[data-store-category="home-living"] #catalog .art:has(img) img{
  display:block;
  width:100%;
  height:auto!important;
@@ -1371,7 +1373,7 @@ function storefrontFashionColorSets(item){
  }
  return entries.length?[{id:"fashion-default-colour",name:"Colour 1",description:"",price:null,priceBySize:legacySizeGroup?.priceMode==="fixed",sizes:(legacySizeGroup?.options||[]).map(option=>({id:option.id,name:option.name,price:option.price})),entries}]:[];
 }
-function isStorefrontFashionProduct(item){return window.StoreNestCategoryId?.(activePublicBusiness?.category)==="fashion"&&item?.item_type==="product"}
+function isStorefrontFashionProduct(item){return ["fashion","home-living"].includes(window.StoreNestCategoryId?.(activePublicBusiness?.category))&&item?.item_type==="product"}
 function isStorefrontFashionOffering(item){return isStorefrontFashionProduct(item)&&storefrontFashionColorSets(item).length>1}
 function galleryViewEntries(item){
  if(isStorefrontDecorOffering(item)){
@@ -2964,7 +2966,7 @@ const cardForItem=item=>{
      const colorSets=hasDecorColorSets?storefrontDecorColorSets(item):[];
      const hasConfiguredColorSets=hasDecorColorSets&&Array.isArray(item.decor_color_sets)&&item.decor_color_sets.length>0;
      const firstColorSet=colorSets[0]||null;
-     const isFashionCard=window.StoreNestCategoryId(business.category)==="fashion"&&item.item_type==="product";
+     const isFashionCard=["fashion","home-living"].includes(window.StoreNestCategoryId(business.category))&&item.item_type==="product";
      const fashionSets=isFashionCard?storefrontFashionColorSets(item):[];
      const fashionEntries=fashionSets.flatMap(set=>set.entries.map((entry,index)=>({...entry,fashionColorId:set.id,fashionColorName:set.name,fashionColorPhotoIndex:index})));
      const displayedEntries=hasDecorColorSets&&colorSets.length?colorSets.flatMap(set=>set.entries.map(entry=>({...entry,decorPhotoSetId:set.id,decorPhotoSetName:set.name}))):fashionEntries.length?fashionEntries:mediaEntries;
