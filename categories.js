@@ -13,9 +13,9 @@ const categories=Object.freeze([
  Object.freeze({id:"beauty",label:"Personal Services",emoji:"💇"}),
  Object.freeze({id:"home-living",label:"Home & Living",emoji:"🏠"}),
  Object.freeze({id:"groceries",label:"Groceries & Essentials",emoji:"🛒"}),
- Object.freeze({id:"local-services",label:"Local Services",emoji:"🛠️"}),
+ Object.freeze({id:"local-services",label:"Other Services",emoji:"🛠️"}),
  Object.freeze({id:"gifts-occasions",label:"Gifts & Occasions",emoji:"🎁"}),
- Object.freeze({id:"other",label:"Other Businesses",emoji:"🏪"})
+ Object.freeze({id:"other",label:"Other products",emoji:"🏪"})
 ]);
 const legacy=Object.freeze({
  "Food & Drink":"food-drink",
