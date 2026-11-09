@@ -1319,12 +1319,16 @@ function optionsForSave(){
 }
 
 function isCateringDecorStore(){return window.StoreNestCategoryId?.(currentBusiness?.category)==="events-decor"}
-function usesBookingPricing(){return isCateringDecorStore()}
+function isLocalServicesStore(){return window.StoreNestCategoryId?.(currentBusiness?.category)==="local-services"}
+function usesBookingPricing(itemType=$("itemType").value){
+ const category=window.StoreNestCategoryId?.(currentBusiness?.category);
+ return category==="events-decor"||(category==="local-services"&&itemType==="service");
+}
 function ownerDecorSectionName(){
  const section=businessCategories.find(row=>row.id===$("itemCategory").value);
  return String(section?.name||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
 }
-function isCateringOffering(){return usesBookingPricing()&&/cater/.test(ownerDecorSectionName())}
+function isCateringOffering(){return isCateringDecorStore()&&/cater/.test(ownerDecorSectionName())}
 function syncCateringServiceEditor(){
  const active=isCateringOffering()&&$("itemType").value==="service";
  const note=$("cateringServiceNote"),subtitle=$("itemModalSubtitle"),modalTitle=$("itemModalTitle"),descriptionLabel=$("itemDescriptionLabel"),description=$("itemDescription"),mediaLabel=$("itemMediaLabel"),priceTitle=$("bookingPricingTitle"),priceHelp=$("bookingPricingHelp");
@@ -1338,11 +1342,23 @@ function syncCateringServiceEditor(){
  if(priceTitle)priceTitle.textContent=active?"Catering pricing (optional)":"Booking pricing (optional)";
  if(priceHelp)priceHelp.textContent=active?"Enter one service price or both for a range. The booking fee is optional too. Leave either blank if you prefer to confirm it after discussing the event.":"Enter one amount for a single price or both for a range. Price and booking fee are optional; leave prices blank to quote after discussing the event.";
 }
+function isLocalServiceOffering(){return isLocalServicesStore()&&$("itemType").value==="service"}
+function syncLocalServiceEditor(){
+ if(!isLocalServiceOffering())return;
+ const subtitle=$("itemModalSubtitle"),modalTitle=$("itemModalTitle"),descriptionLabel=$("itemDescriptionLabel"),description=$("itemDescription"),mediaLabel=$("itemMediaLabel"),priceTitle=$("bookingPricingTitle"),priceHelp=$("bookingPricingHelp");
+ if(modalTitle)modalTitle.textContent=$("itemId").value?"Edit service":"Add service";
+ if(subtitle)subtitle.textContent="Set up a local service customers can request and book.";
+ if(descriptionLabel)descriptionLabel.textContent="Service description";
+ if(description)description.placeholder="Describe the service, the work you do and the area you cover.";
+ if(mediaLabel)mediaLabel.textContent="Service photos, GIFs & short videos (up to 12)";
+ if(priceTitle)priceTitle.textContent="Service pricing (optional)";
+ if(priceHelp)priceHelp.textContent="Enter one service price or a range. The booking fee is optional; leave prices blank to confirm them after discussing the request.";
+}
 function isDecorOffering(){
  const name=ownerDecorSectionName();
  // Décor is the default for services in this combined marketplace category.
  // Hide the colour-set editor only when the selected section explicitly identifies catering.
- return usesBookingPricing()&&$("itemType").value==="service"&&!/cater/.test(name);
+ return isCateringDecorStore()&&$("itemType").value==="service"&&!/cater/.test(name);
 }
 function isHomeLivingProduct(){return window.StoreNestCategoryId?.(currentBusiness?.category)==="home-living"&&$("itemType").value==="product"}
 function isGroceryProduct(){return window.StoreNestCategoryId?.(currentBusiness?.category)==="groceries"&&$("itemType").value==="product"}
@@ -1463,6 +1479,7 @@ function newDecorColorSet(name){
 }
 function syncDecorColorSetEditor(){
  syncCateringServiceEditor();
+ syncLocalServiceEditor();
  syncFashionSharedEditor();
  syncFashionSizePricingUI();
  const decorEnabled=isDecorOffering(),fashionEnabled=isFashionProduct(),decorEditor=$("decorColorSetsEditor"),fashionEditor=$("fashionColorSetsEditor"),mediaField=$("itemMediaField");
@@ -1565,7 +1582,7 @@ function ownerItemPriceLabel(item){
   return fallback===null?[]:[fallback];
  });
  if(variantPrices.length)return "From "+formatOrderMoney(Math.min(...variantPrices));
- if(!isCateringDecorStore())return formatOrderMoney(item.price);
+ if(!usesBookingPricing(item?.item_type))return formatOrderMoney(item.price);
  const min=item.price_range_min,max=item.price_range_max;
  if(min!=null&&max!=null&&Number(min)!==Number(max))return formatOrderMoney(min)+" – "+formatOrderMoney(max);
  const single=min??max??(Number(item.price)>0?item.price:null);
@@ -1575,10 +1592,10 @@ function openItemModal(item){
  try{
   const form=$("itemForm");if(!form)throw new Error("Product editor is unavailable.");
   form.reset();fashionSizePricesEnabled=false;fashionSharedBasePrice="";$("fashionSharedBasePrice").value="";editedFashionSharedSizes=[];$("itemId").value=item?.id||"";$("itemModalTitle").textContent=item?"Edit item":"Add an item";
-  const itemType=item?.item_type||(isCateringDecorStore()?"service":"product");$("itemType").value=itemType;
+  const itemType=item?.item_type||((isCateringDecorStore()||isLocalServicesStore())?"service":"product");$("itemType").value=itemType;
   $("itemName").value=item?.name||"";$("itemPrice").value=item?.price??"";
   const hasSavedPriceRange=item?.price_range_min!=null||item?.price_range_max!=null;
-  const legacyStart=isCateringDecorStore()&&!hasSavedPriceRange&&Number(item?.price)>0?item.price:"";
+  const legacyStart=usesBookingPricing(itemType)&&!hasSavedPriceRange&&Number(item?.price)>0?item.price:"";
   $("itemPriceRangeMin").value=item?.price_range_min??legacyStart;
   $("itemPriceRangeMax").value=item?.price_range_max??"";
   const hasSavedBookingFeeRange=item?.booking_fee_min!=null||item?.booking_fee_max!=null;
