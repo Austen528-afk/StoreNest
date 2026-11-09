@@ -1,4 +1,4 @@
-const CACHE_NAME="storenest-shell-v37";
+const CACHE_NAME="storenest-shell-v38";
 const SHELL=["/","/index.html","/business-owner.html","/storefront.html","/categories.js","/product-customization.js","/owner-order-viewer.js","/owner-order-viewer.css","/owner-bookings.js","/owner-bookings.css","/service-bookings.js","/service-bookings.css","/theme.css","/console.css","/theme.js","/manifest.webmanifest","/icons/icon-192.png","/icons/icon-512.png","/assets/install-iphone-share.svg","/assets/install-iphone-home-screen.svg","/assets/install-iphone-confirm.svg"];
 self.addEventListener("install",event=>{
  event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(SHELL)));
