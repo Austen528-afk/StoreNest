@@ -573,6 +573,7 @@ html[data-theme="dark"] #itemOptionsEditor small{color:#afc4b6}
 <link rel="stylesheet" href="/theme.css">
 <link rel="stylesheet" href="/owner-bookings.css">
 <link rel="stylesheet" href="/owner-order-viewer.css">
+<link rel="stylesheet" href="/payments-dashboard.css">
 <script src="/theme.js"></script>
 <script src="/categories.js"></script>
 <script src="/product-customization.js"></script>
@@ -756,7 +757,45 @@ html[data-theme="dark"] #itemMediaQualityNote[data-warning="true"]{color:#f4c27e
   <div id="ownerOrdersSummary" class="owner-orders-summary" hidden></div>
   <div id="ownerOrdersList" class="owner-orders-list"></div>
   <div id="ownerOrdersEmpty" class="empty-state" hidden><span>▤</span><strong>No orders yet</strong><p>Customer orders will appear here after checkout. Each order shows the items, selected options, customer contact and payment status.</p></div>
-</section><section class="dashboard-section" data-section-view="bookings" hidden><div class="section-heading owner-orders-heading"><div><h3 id="ownerBookingsHeading">Bookings &amp; enquiries</h3><p id="ownerBookingsDescription">Review request dates, customer requirements and active service bookings.</p></div><div class="owner-orders-controls"><button type="button" id="ownerBookingsHistory" class="outline-button owner-orders-history" aria-pressed="false">▤ History</button></div></div><div id="ownerBookingsSummary" class="bookings-summary">Loading booking requests…</div><div id="ownerBookingsList" class="bookings-list"></div><div id="ownerBookingsEmpty" class="empty-state" hidden><span>▣</span><strong>No active booking requests</strong><p>New customer booking requests will appear here. Finished requests are available in History.</p></div></section><section class="dashboard-section" id="messagesSection" data-section-view="messages" hidden><div class="section-heading"><div><h3>Messages</h3><p>Private conversations with customers who contact your business through StoreNest.</p></div></div><div id="ownerMessageCentre"></div></section><section class="dashboard-section coming-section" data-section-view="customers" hidden><div class="section-heading"><div><h3>Customers</h3><p>Customer records are created through real order or booking activity.</p></div></div><div class="empty-state"><span>♙</span><strong>No customer records yet</strong><p>Customer information will appear here after customer workflows are available.</p></div></section><section class="dashboard-section coming-section" data-section-view="payments" hidden><div class="section-heading"><div><h3>Payments &amp; Earnings</h3><p>Track online payments, StoreNest transaction fees and business payouts once payments are enabled.</p></div></div><div class="empty-state"><span aria-hidden="true">◎</span><strong>Payments are not enabled yet</strong><p>StoreNest is not processing live transactions yet. Once secure checkout and payout integrations are available, your verified sales, transaction fees, processing charges, net earnings and payouts will appear here.</p></div></section><section class="dashboard-section coming-section" data-section-view="analytics" hidden><div class="section-heading"><div><h3>Analytics</h3><p>Business-specific insights from real storefront activity.</p></div></div><div class="empty-state"><span>⌁</span><strong>No analytics yet</strong><p>Visits and product views will appear here when public storefront tracking is connected.</p></div></section>
+</section><section class="dashboard-section" data-section-view="bookings" hidden><div class="section-heading owner-orders-heading"><div><h3 id="ownerBookingsHeading">Bookings &amp; enquiries</h3><p id="ownerBookingsDescription">Review request dates, customer requirements and active service bookings.</p></div><div class="owner-orders-controls"><button type="button" id="ownerBookingsHistory" class="outline-button owner-orders-history" aria-pressed="false">▤ History</button></div></div><div id="ownerBookingsSummary" class="bookings-summary">Loading booking requests…</div><div id="ownerBookingsList" class="bookings-list"></div><div id="ownerBookingsEmpty" class="empty-state" hidden><span>▣</span><strong>No active booking requests</strong><p>New customer booking requests will appear here. Finished requests are available in History.</p></div></section><section class="dashboard-section" id="messagesSection" data-section-view="messages" hidden><div class="section-heading"><div><h3>Messages</h3><p>Private conversations with customers who contact your business through StoreNest.</p></div></div><div id="ownerMessageCentre"></div></section><section class="dashboard-section coming-section" data-section-view="customers" hidden><div class="section-heading"><div><h3>Customers</h3><p>Customer records are created through real order or booking activity.</p></div></div><div class="empty-state"><span>♙</span><strong>No customer records yet</strong><p>Customer information will appear here after customer workflows are available.</p></div></section><section class="dashboard-section payments-dashboard-section" id="paymentsDashboard" data-section-view="payments" hidden>
+  <div class="section-heading">
+    <div><h3>Payments &amp; Earnings</h3><p>Review sample sales, pending balances and transaction activity. Live payment tracking will appear once secure payments and payouts are enabled.</p></div>
+    <div class="payments-date-label" aria-label="Sample reporting month, November 2026"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M8 14h3"/></svg><span>November 2026</span></div>
+  </div>
+  <div class="payments-demo-note" role="note"><span class="payments-demo-label">Sample preview</span><span>These illustrative figures are not live StoreNest transactions or payable balances.</span></div>
+  <div class="payments-kpi-grid" aria-label="Sample financial summary">
+    <div class="payments-kpi"><span class="payments-kpi-label">Total Sales</span><span class="payments-kpi-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 8h14l1 12H4L5 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg></span><strong class="payments-kpi-value">R50,000</strong></div>
+    <div class="payments-kpi"><span class="payments-kpi-label">Net Earnings</span><span class="payments-kpi-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12H5a2 2 0 0 1-2-2V7Z"/><path d="M3 9h18M16 14h2"/></svg></span><strong class="payments-kpi-value">R48,500</strong></div>
+    <div class="payments-kpi"><span class="payments-kpi-label">Pending Payments</span><span class="payments-kpi-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><strong class="payments-kpi-value">R2,000</strong></div>
+    <div class="payments-kpi"><span class="payments-kpi-label">Available Balance</span><span class="payments-kpi-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></svg></span><strong class="payments-kpi-value">R46,500</strong></div>
+  </div>
+  <div class="payments-overview-grid">
+    <article class="payments-panel payments-chart-panel" aria-labelledby="paymentsEarningsHeading">
+      <div class="payments-panel-heading"><h4 id="paymentsEarningsHeading">Earnings Overview</h4><label class="sr-only" for="paymentsPeriod">Chart period</label><select class="payments-period-select" id="paymentsPeriod"><option value="week">This week</option><option value="month">This month</option><option value="thirty">Last 30 days</option></select></div>
+      <div class="payments-chart-wrap" id="paymentsChart" aria-live="polite"></div>
+      <div class="payments-chart-legend" aria-hidden="true"><span><i class="payments-legend-dot payments-legend-sales"></i>Sales</span><span><i class="payments-legend-dot payments-legend-earnings"></i>Net earnings</span></div>
+    </article>
+    <article class="payments-panel payments-balance-panel" aria-labelledby="paymentsBalanceHeading">
+      <div class="payments-panel-heading"><h4 id="paymentsBalanceHeading">Payment &amp; Balance Status</h4></div>
+      <div class="payments-balance-list">
+        <div class="payments-balance-item"><span class="payments-balance-label">Awaiting Release</span><strong class="payments-balance-value">R2,000</strong><span class="payments-balance-note">Pending settlement</span></div>
+        <div class="payments-balance-item"><span class="payments-balance-label">Available</span><strong class="payments-balance-value">R46,500</strong><span class="payments-balance-note">Eligible for payout</span></div>
+        <div class="payments-balance-item"><span class="payments-balance-label">Paid Out</span><strong class="payments-balance-value">R0</strong><span class="payments-balance-note">Transferred to bank</span></div>
+      </div>
+    </article>
+    <article class="payments-panel payments-transactions-panel" aria-labelledby="paymentsTransactionsHeading">
+      <div class="payments-panel-heading"><h4 id="paymentsTransactionsHeading">Recent Transactions</h4></div>
+      <label class="sr-only" for="paymentsTransactionSearch">Search sample transactions by date, ID, amount or status</label>
+      <input class="payments-search" id="paymentsTransactionSearch" type="search" placeholder="Search date or ID…" autocomplete="off">
+      <div class="payments-transactions" id="paymentsTransactions" aria-live="polite"></div>
+    </article>
+  </div>
+  <div class="payments-financial-insights" aria-labelledby="paymentsInsightsHeading">
+    <h4 class="payments-insights-heading" id="paymentsInsightsHeading">Financial Insights</h4>
+    <div class="payments-insights-grid"><div class="payments-insight"><span class="payments-insight-label">Completed Orders</span><strong class="payments-insight-value">128</strong></div><div class="payments-insight"><span class="payments-insight-label">Average Order Value</span><strong class="payments-insight-value">R390.63</strong></div><div class="payments-insight"><span class="payments-insight-label">Sales Growth</span><strong class="payments-insight-value">+12%</strong></div><div class="payments-insight"><span class="payments-insight-label">Refunded Amount</span><strong class="payments-insight-value">R0</strong></div></div>
+  </div>
+  <p class="payments-sample-footnote">Interactive sample dashboard. StoreNest is not processing live payments yet, so these figures do not represent business income, money owed or funds available for payout.</p>
+</section><section class="dashboard-section coming-section" data-section-view="analytics" hidden><div class="section-heading"><div><h3>Analytics</h3><p>Business-specific insights from real storefront activity.</p></div></div><div class="empty-state"><span>⌁</span><strong>No analytics yet</strong><p>Visits and product views will appear here when public storefront tracking is connected.</p></div></section>
     </main>
   </div>
   <div class="mobile-nav-backdrop" id="mobileNavBackdrop" hidden></div>
@@ -2417,6 +2456,7 @@ if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.ser
 document.getElementById("pageRefreshButton")?.addEventListener("click",()=>window.location.reload());
 </script>
 <script src="/owner-order-viewer.js"></script>
+<script src="/payments-dashboard.js"></script>
 <script src="/messaging-centre.js"></script>
 <script src="/chat-launcher.js" defer></script>
 </body>
