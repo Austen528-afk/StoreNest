@@ -2992,7 +2992,7 @@ function renderPublishedStorefront(root,client,business,items,storefrontSections
    activePublicBusiness=business;activePublicSections=storefrontSections||[];
    availableItems=items.filter(item=>item?.is_available!==false);
    restoreCurrentStoreBasket(business);
-   window.StoreNestBookings.setContext(client,business,availableItems);
+   if(client)window.StoreNestBookings.setContext(client,business,availableItems);
    // Do not add dashboard preview frames to customer browsing history.
    try{
      const key="storenest:recent-businesses:v1";
@@ -3162,13 +3162,14 @@ async function load(){
  }
  if(!slug){root.innerHTML='<div class="notice">This storefront link is incomplete.</div>';return}
  let renderedCache=false;
- try{
-   if(!window.supabase)await new Promise((resolve,reject)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0";s.onload=resolve;s.onerror=reject;document.head.append(s)});
-   const client=storefrontClient=await window.StoreNestCustomerAuth.getClient();
-   // Display the last public snapshot while a fresh request runs in the background.
-   const cached=readStorefrontSnapshot(slug);
-   if(cached){renderPublishedStorefront(root,client,cached.business,cached.items,cached.sections);renderedCache=true}
-   const response=await client.from("businesses").select("id,name,slug,category,description,logo_url,location,phone,email,website,is_published,storefront_config").eq("slug",slug).eq("is_published",true).maybeSingle();
+  try{
+    // Paint a recently prefetched storefront before auth and fresh data finish loading.
+    const cached=readStorefrontSnapshot(slug);
+    if(cached){renderPublishedStorefront(root,null,cached.business,cached.items,cached.sections);renderedCache=true}
+    if(!window.supabase)await new Promise((resolve,reject)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0";s.onload=resolve;s.onerror=reject;document.head.append(s)});
+    const client=storefrontClient=await window.StoreNestCustomerAuth.getClient();
+    if(cached)window.StoreNestBookings.setContext(client,cached.business,availableItems);
+    const response=await client.from("businesses").select("id,name,slug,category,description,logo_url,location,phone,email,website,is_published,storefront_config").eq("slug",slug).eq("is_published",true).maybeSingle();
    if(response.error)throw response.error;
    const business=response.data;
    if(!business){
