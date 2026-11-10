@@ -10,7 +10,7 @@
  const LEGACY_IMPORTED_KEY=STORAGE_PREFIX+"legacy-imported";
  const MAX_BUSINESSES=120;
  const listeners=new Set();
- const emptyState=()=>({version:1,categories:{},businesses:{}});
+ const emptyState=()=>({version:1,categories:{},businesses:{},businessHistoryClearedAt:null});
  const storage={
   get(key){try{return root.localStorage?.getItem(key)||null}catch{return null}},
   set(key,value){try{root.localStorage?.setItem(key,value);return true}catch{return false}},
@@ -56,6 +56,7 @@
  function normalizeState(value){
   const output=emptyState();
   if(!value||typeof value!=="object")return output;
+  output.businessHistoryClearedAt=iso(value.businessHistoryClearedAt)||null;
   const categories=value.categories&&typeof value.categories==="object"?value.categories:{};
   for(const id of Object.keys(categories).sort()){
    if(!validId(id))continue;
@@ -116,6 +117,19 @@
     let item=null;
     for(const source of sources)item=mergeEntry(item,source[type][id],id,isBusiness?"business":"category");
     if(item&&(item.lastVisitedAt||item.visitUpdatedAt||item.pinnedAt||item.pinUpdatedAt))merged[type][id]=item;
+   }
+  }
+  const clearTimes=sources.map(source=>stampTime(source.businessHistoryClearedAt));
+  const clearTime=Math.max(0,...clearTimes);
+  if(clearTime){
+   merged.businessHistoryClearedAt=new Date(clearTime).toISOString();
+   for(const entry of Object.values(merged.businesses)){
+    const updateTime=stampTime(entry.visitUpdatedAt||entry.lastVisitedAt);
+    const wasPinnedAtClear=!!entry.pinnedAt&&stampTime(entry.pinUpdatedAt||entry.pinnedAt)<=clearTime;
+    if(entry.lastVisitedAt&&updateTime<clearTime){
+     if(wasPinnedAtClear)entry.visitUpdatedAt=merged.businessHistoryClearedAt;
+     else{entry.lastVisitedAt=null;entry.visitUpdatedAt=merged.businessHistoryClearedAt}
+    }
    }
   }
   return normalizeState(merged);
@@ -281,15 +295,22 @@
   commit();return true;
  }
  function clearBusinessHistory(){
-  let changed=false;
+  const previous=stampTime(state.businessHistoryClearedAt);
+  let newest=Math.max(Date.now(),previous+1);
   for(const row of Object.values(state.businesses)){
-   if(row.lastVisitedAt&&!row.pinnedAt){
-    const at=nextTimestamp(row);
-    row.lastVisitedAt=null;row.visitUpdatedAt=at;changed=true;
+   newest=Math.max(newest,stampTime(row.visitUpdatedAt)+1,stampTime(row.pinUpdatedAt)+1);
+  }
+  const at=new Date(newest).toISOString();
+  state.businessHistoryClearedAt=at;
+  for(const row of Object.values(state.businesses)){
+   if(row.pinnedAt){
+    if(row.lastVisitedAt)row.visitUpdatedAt=at;
+   }else if(row.lastVisitedAt){
+    row.lastVisitedAt=null;row.visitUpdatedAt=at;
    }
   }
-  if(changed)commit();
-  return changed;
+  commit();
+  return true;
  }
  function hasActivity(value){
   const normalized=normalizeState(value);
