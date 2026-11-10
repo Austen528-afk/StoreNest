@@ -689,19 +689,7 @@ function prefetchVisibleStorefrontLinks(root){
  storefrontLinkObservers.set(root,observer);
  links.forEach(link=>observer.observe(link));
 }
-for(const root of [resultRoot,recentGrid]){
- if(!root)continue;
- root.addEventListener("pointerover",prefetchStorefrontOnIntent,{passive:true});
- root.addEventListener("focusin",prefetchStorefrontOnIntent);
- root.addEventListener("touchstart",prefetchStorefrontOnIntent,{passive:true});
- if("MutationObserver" in window){
-  const observer=new MutationObserver(()=>prefetchVisibleStorefrontLinks(root));
-  observer.observe(root,{childList:true,subtree:true});
-  storefrontRootObservers.set(root,observer);
- }
-}
-prefetchVisibleStorefrontLinks(resultRoot);
-prefetchVisibleStorefrontLinks(recentGrid);
+
 
 function marketplaceBusinessCard(b,items){
  const esc=escapeResult,params=new URLSearchParams({slug:b.slug});
@@ -843,6 +831,19 @@ const RECENT_BUSINESSES_KEY="storenest:recent-businesses:v1";
 const recentSection=document.getElementById("recentBusinesses");
 const recentGrid=document.getElementById("recentBusinessGrid");
 const clearRecentButton=document.getElementById("clearRecentBusinesses");
+for(const root of [resultRoot,recentGrid]){
+ if(!root)continue;
+ root.addEventListener("pointerover",prefetchStorefrontOnIntent,{passive:true});
+ root.addEventListener("focusin",prefetchStorefrontOnIntent);
+ root.addEventListener("touchstart",prefetchStorefrontOnIntent,{passive:true});
+ if("MutationObserver" in window){
+  const observer=new MutationObserver(()=>prefetchVisibleStorefrontLinks(root));
+  observer.observe(root,{childList:true,subtree:true});
+  storefrontRootObservers.set(root,observer);
+ }
+}
+prefetchVisibleStorefrontLinks(resultRoot);
+prefetchVisibleStorefrontLinks(recentGrid);
 let recentFallback=[];
 function safeBusiness(b){
   if(!b||typeof b!=="object")return null;
