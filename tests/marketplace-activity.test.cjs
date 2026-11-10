@@ -111,6 +111,11 @@ test("categories sort by recency, pin state, and stable default order", () => {
   ordered = ids(api.sortCategories(categories));
   assert.equal(ordered[0], "food-drink");
   assert.equal(ordered.indexOf("groceries") < ordered.indexOf("electronics"), true);
+
+  api.toggleCategoryPin("fashion");
+  api.toggleCategoryPin("electronics");
+  ordered = ids(api.sortCategories(categories));
+  assert.deepEqual(ordered.slice(0, 3), ["food-drink", "electronics", "fashion"]);
 });
 
 test("business visits reorder without duplicates and preserve pins through clearing", () => {
@@ -160,6 +165,7 @@ test("account preferences synchronize across devices and stay isolated by user",
   deviceA.api.recordCategory("fashion");
   deviceA.api.recordBusiness({ slug: "a-store", name: "A Store" });
   deviceA.api.toggleBusinessPin("a-store");
+  deviceA.api.recordBusiness({ slug: "b-store", name: "B Store" });
   await deviceA.api.flush();
   assert.ok(userStore.get("user-a").user_metadata.storenest_marketplace_activity_v1);
 
@@ -169,7 +175,7 @@ test("account preferences synchronize across devices and stay isolated by user",
   await deviceB.api.ready();
   assert.equal(deviceB.api.isCategoryPinned("fashion"), false);
   assert.equal(deviceB.api.isBusinessPinned("a-store"), true);
-  assert.deepEqual(plain(deviceB.api.getBusinesses()).map(row => row.slug), ["a-store"]);
+  assert.deepEqual(plain(deviceB.api.getBusinesses()).map(row => row.slug), ["a-store", "b-store"]);
 
   deviceB.api.recordCategory("electronics");
   await deviceB.api.flush();
@@ -177,6 +183,13 @@ test("account preferences synchronize across devices and stay isolated by user",
   assert.deepEqual(ids(deviceA.api.sortCategories([
     ["food-drink", "Food"], ["electronics", "Electronics"], ["fashion", "Fashion"]
   ])), ["electronics", "fashion", "food-drink"]);
+
+  deviceA.api.clearBusinessHistory();
+  await deviceA.api.flush();
+  deviceB.api.recordBusiness({ slug: "gamma-store", name: "Gamma Store" });
+  await deviceB.api.flush();
+  assert.deepEqual(plain(deviceB.api.getBusinesses()).map(row => row.slug), ["a-store", "gamma-store"]);
+  assert.equal(plain(deviceB.api.getBusinesses()).some(row => row.slug === "b-store"), false);
 
   clientB.emit("SIGNED_OUT", null);
   await pause();
