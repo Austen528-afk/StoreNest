@@ -80,7 +80,8 @@ function authClient(userStore, initialUserId) {
 
 test("categories sort by recency, pin state, and stable default order", () => {
   clock = Date.parse("2026-11-10T12:00:00.000Z");
-  const api = createEnvironment().api;
+  const environment = createEnvironment();
+  const api = environment.api;
   const categories = [
     ["food-drink", "Food"],
     ["electronics", "Electronics"],
