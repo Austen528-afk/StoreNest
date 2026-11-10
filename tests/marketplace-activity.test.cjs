@@ -18,8 +18,7 @@ function plain(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
-function createEnvironment() {
-  const values = new Map();
+function createEnvironment(values = new Map()) {
   const localStorage = {
     getItem(key) { return values.has(key) ? values.get(key) : null; },
     setItem(key, value) { values.set(key, String(value)); },
@@ -116,11 +115,15 @@ test("categories sort by recency, pin state, and stable default order", () => {
   api.toggleCategoryPin("electronics");
   ordered = ids(api.sortCategories(categories));
   assert.deepEqual(ordered.slice(0, 3), ["food-drink", "electronics", "fashion"]);
+
+  const reopened = createEnvironment(environment.values).api;
+  assert.deepEqual(ids(reopened.sortCategories(categories)), ordered);
 });
 
 test("business visits reorder without duplicates and preserve pins through clearing", () => {
   clock = Date.parse("2026-11-10T12:00:00.000Z");
-  const api = createEnvironment().api;
+  const environment = createEnvironment();
+  const api = environment.api;
   const alpha = { slug: "alpha-store", name: "Alpha", category: "food-drink", location: "Town" };
   const beta = { slug: "beta-store", name: "Beta", category: "fashion", location: "Town" };
   const gamma = { slug: "gamma-store", name: "Gamma", category: "electronics", location: "Town" };
@@ -149,6 +152,10 @@ test("business visits reorder without duplicates and preserve pins through clear
   api.removeBusinessVisit("gamma-store");
   assert.equal(api.isBusinessPinned("gamma-store"), true);
   assert.equal(api.getBusinesses().some(row => row.slug === "gamma-store"), true);
+
+  const reopened = createEnvironment(environment.values).api;
+  assert.equal(reopened.isBusinessPinned("gamma-store"), true);
+  assert.deepEqual(plain(reopened.getBusinesses()).map(row => row.slug), ["gamma-store", "alpha-store"]);
 });
 
 test("account preferences synchronize across devices and stay isolated by user", async () => {
