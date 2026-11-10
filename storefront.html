@@ -1308,6 +1308,7 @@ body[data-store-category="home-living"] #catalog .art:has(img) img{
 </div>
 <script src="/service-bookings.js"></script>
 <script src="/customer-auth.js"></script>
+<script src="/marketplace-activity.js"></script>
 <script>
 "use strict";
 const CONFIG={url:"https://cypbjzbagezdelmemuhb.supabase.co",key:"sb_publishable_8W8zyYtggQMWoFlnxrzoVA_BUKjQ9va"};
@@ -3161,11 +3162,19 @@ async function load(){
   root.innerHTML='<div class="notice">Your item selection expired. Return to your basket and select the items again.</div>';return;
  }
  if(!slug){root.innerHTML='<div class="notice">This storefront link is incomplete.</div>';return}
- let renderedCache=false;
-  try{
+ let renderedCache=false,storefrontVisitRecorded=false;
+ const recordStorefrontVisit=business=>{
+  if(storefrontVisitRecorded||!business?.slug)return;
+  storefrontVisitRecorded=true;
+  window.StoreNestMarketplaceActivity?.recordBusiness({
+   slug:business.slug,name:business.name,category:window.StoreNestCategoryLabel?.(business.category)||business.category,
+   location:business.location,logo_url:business.logo_url
+  });
+ };
+ try{
     // Paint a recently prefetched storefront before auth and fresh data finish loading.
     const cached=readStorefrontSnapshot(slug);
-    if(cached){renderPublishedStorefront(root,null,cached.business,cached.items,cached.sections);renderedCache=true}
+    if(cached){renderPublishedStorefront(root,null,cached.business,cached.items,cached.sections);renderedCache=true;recordStorefrontVisit(cached.business)}
     if(!window.supabase)await new Promise((resolve,reject)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0";s.onload=resolve;s.onerror=reject;document.head.append(s)});
     const client=storefrontClient=await window.StoreNestCustomerAuth.getClient();
     if(cached)window.StoreNestBookings.setContext(client,cached.business,availableItems);
@@ -3177,6 +3186,7 @@ async function load(){
      root.innerHTML='<div class="notice">This storefront is unavailable. It may be unpublished or the link may have changed.</div>';
      return;
    }
+   recordStorefrontVisit(business);
    // Catalogue and category metadata are independent once the business ID is known.
    const [catalog,sectionResult]=await Promise.all([
      client.from("business_items").select("id,name,item_type,description,price,price_range_min,price_range_max,booking_fee,booking_fee_min,booking_fee_max,image_url,media_urls,decor_color_sets,fashion_color_sets,category_id,customization_options,is_available").eq("business_id",business.id).order("display_order").order("created_at",{ascending:false}),
