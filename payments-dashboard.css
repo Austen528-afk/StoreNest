@@ -45,7 +45,8 @@
 .payments-transaction{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;gap:5px 12px;padding:8px 3px}
 .payments-transaction-id,.payments-transaction-amount{color:var(--st-text,#1d2c24);font-size:12px}
 .payments-transaction-id{font-weight:700}.payments-transaction-amount{grid-column:2;grid-row:1;font-weight:700}.payments-transaction-status{grid-column:1/-1;font-size:11px}
-.payments-transaction-status.is-paid{color:#198754}.payments-transaction-status.is-pending{color:#a97616}
+.payments-transaction-status.is-paid{color:#198754}.payments-transaction-status.is-pending{color:#a97616}.payments-transaction-status.is-other{color:#8a5c67}
+.payments-kpi-value#paymentsAvailableBalance{font-size:clamp(15px,1.6vw,20px);letter-spacing:-.02em}
 .payments-transactions-empty{margin:18px 2px;color:var(--st-muted,#718078);font-size:12px}
 .payments-financial-insights{margin-top:27px}.payments-insights-heading{margin:0 0 14px}
 .payments-insights-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
