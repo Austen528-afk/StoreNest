@@ -27,7 +27,7 @@ test("completed sales exclude cancellations and refunded orders; payment status 
  assert.equal(summary.refunded,20);
  assert.equal(summary.averageOrderValue,265/3);
  assert.equal(summary.netEarnings,null);
- assert.equal(summary.pendingPayments,null);
+ assert.equal(summary.pendingPayments,30);
  assert.equal(paymentStatusLabel(orders[0]),"Collection payment not recorded");
  assert.equal(paymentStatusLabel(orders[2]),"Card preview; no payment processed");
  assert.equal(paymentStatusLabel(orders[1]),"Marked paid (not provider-verified)");
@@ -40,6 +40,7 @@ test("period filters include today, week, month, year and custom inclusive dates
  assert.equal(daily.completedCount,2);
  const week=summarizeOrders(businessA,"week",now);
  assert.equal(week.totalSales,265);
+ assert.equal(week.pendingPayments,30);
  const year=summarizeOrders(businessA,"year",now);
  assert.equal(year.totalSales,265);
  assert.equal(year.salesGrowth,"New");
@@ -107,6 +108,8 @@ test("dashboard keeps business scoping and provides the requested operational co
  assert.match(html,/payments-dashboard\.js\?v=46/);
  assert.match(html,/updateViaCache:"none"/);
  assert.match(script,/storenest:owner-open-order/);
+ assert.match(script,/function isPendingCollectionPayment/);
+ assert.match(script,/paymentsPendingPayments",formatCurrency\(data.pendingPayments\)/);
  assert.match(html,/storenest:owner-open-order/);
  assert.match(serviceWorker,/storenest-shell-v46/);
  assert.match(serviceWorker,/\.then\(\(\)=>self\.skipWaiting\(\)\)/);
