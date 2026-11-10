@@ -1,5 +1,5 @@
-const CACHE_NAME="storenest-shell-v42";
-const SHELL=["/","/index.html","/business-owner.html","/storefront.html","/basket.html","/customer-account.html","/messaging-centre.js","/messaging-centre.css","/chat-launcher.js","/customer-auth.js","/categories.js","/marketplace-activity.js","/product-customization.js","/owner-order-viewer.js","/owner-order-viewer.css","/owner-bookings.js","/owner-bookings.css","/service-bookings.js","/service-bookings.css","/theme.css","/console.css","/theme.js","/manifest.webmanifest","/icons/icon-192.png","/icons/icon-512.png","/assets/install-iphone-share.svg","/assets/install-iphone-home-screen.svg","/assets/install-iphone-confirm.svg"];
+const CACHE_NAME="storenest-shell-v43";
+const SHELL=["/","/index.html","/business-owner.html","/storefront.html","/basket.html","/customer-account.html","/messaging-centre.js","/messaging-centre.css","/chat-launcher.js","/customer-auth.js","/categories.js","/marketplace-activity.js","/payments-dashboard.js","/payments-dashboard.css","/product-customization.js","/owner-order-viewer.js","/owner-order-viewer.css","/owner-bookings.js","/owner-bookings.css","/service-bookings.js","/service-bookings.css","/theme.css","/console.css","/theme.js","/manifest.webmanifest","/icons/icon-192.png","/icons/icon-512.png","/assets/install-iphone-share.svg","/assets/install-iphone-home-screen.svg","/assets/install-iphone-confirm.svg"];
 self.addEventListener("install",event=>{
  event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(SHELL)));
  self.skipWaiting();
