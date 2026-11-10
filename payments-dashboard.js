@@ -33,6 +33,7 @@ function sum(rows){return rows.reduce((total,row)=>total+row.subtotal,0)}
 function isCompletedOrder(order){return order.status==="completed"}
 function isQualifyingSale(order){return isCompletedOrder(order)&&order.payment_status!=="refunded"}
 function isRecordedPaid(order){return order.payment_status==="paid"&&order.status!=="cancelled"&&order.payment_status!=="refunded"}
+function isPendingCollectionPayment(order){return order.payment_method==="pay_on_collection"&&order.payment_status==="unpaid"&&["new","accepted","preparing","prepared","ready"].includes(order.status)}
 function isRefunded(order){return order.payment_status==="refunded"}
 function inRange(order,range){const day=localDay(order.created_at);return Boolean(day&&range&&day>=range.start&&day<range.end)}
 function dateRange(period,custom,now){
@@ -69,8 +70,8 @@ function summarizeOrders(input,period,now,custom){
  const orders=(Array.isArray(input)?input:[]).map(normalizeOrder).filter(Boolean),range=dateRange(period||"week",custom,now||new Date());
  if(!range)return {valid:false,orderCount:0,completedCount:0,totalSales:0,recordedPaid:0,refunded:0,averageOrderValue:0,netEarnings:null,pendingPayments:null,availableBalance:null,awaitingRelease:null,paidOut:null,salesGrowth:"—",previousSales:0,previousCompletedCount:0};
  const current=rangeRows(orders,range),previous=rangeRows(orders,{start:range.previousStart,end:range.previousEnd});
- const completed=current.filter(isCompletedOrder),sales=completed.filter(isQualifyingSale),totalSales=sum(sales),recordedPaid=sum(current.filter(isRecordedPaid)),refunded=sum(current.filter(isRefunded));
- return {valid:true,orderCount:current.length,completedCount:completed.length,totalSales,recordedPaid,refunded,averageOrderValue:sales.length?totalSales/sales.length:0,netEarnings:null,pendingPayments:null,availableBalance:null,awaitingRelease:null,paidOut:null,salesGrowth:growthLabel(totalSales,salesValue(previous)),previousSales:salesValue(previous),previousCompletedCount:previous.filter(isCompletedOrder).length,orders:current,range};
+ const completed=current.filter(isCompletedOrder),sales=completed.filter(isQualifyingSale),totalSales=sum(sales),recordedPaid=sum(current.filter(isRecordedPaid)),pendingPayments=sum(current.filter(isPendingCollectionPayment)),refunded=sum(current.filter(isRefunded));
+ return {valid:true,orderCount:current.length,completedCount:completed.length,totalSales,recordedPaid,pendingPayments,refunded,averageOrderValue:sales.length?totalSales/sales.length:0,netEarnings:null,availableBalance:null,awaitingRelease:null,paidOut:null,salesGrowth:growthLabel(totalSales,salesValue(previous)),previousSales:salesValue(previous),previousCompletedCount:previous.filter(isCompletedOrder).length,orders:current,range};
 }
 function chartSlots(period,now,custom){
  const range=dateRange(period,custom,now);if(!range)return [];
@@ -179,7 +180,7 @@ function render(doc){
  }else{
   text(d,"paymentsTotalSales",formatCurrency(data.totalSales));
   text(d,"paymentsNetEarnings","—");
-  text(d,"paymentsPendingPayments","—");
+  text(d,"paymentsPendingPayments",formatCurrency(data.pendingPayments));
   text(d,"paymentsAvailableBalance","—");
   text(d,"paymentsAwaitingBalance","—");
   text(d,"paymentsPayoutBalance","—");
@@ -189,14 +190,14 @@ function render(doc){
   text(d,"paymentsSalesGrowth",data.salesGrowth);
   text(d,"paymentsRefundedAmount",formatCurrency(data.refunded));
   text(d,"paymentsNetEarningsNote",data.recordedPaid?"Payments are marked paid in order records, but fees are not recorded.":"No order is marked paid; actual collection is not recorded.");
-  text(d,"paymentsPendingPaymentsNote","Unpaid/pending order labels do not verify an amount still owed.");
+  text(d,"paymentsPendingPaymentsNote","Active pay-on-collection orders marked unpaid; completed orders and card previews are excluded.");
   text(d,"paymentsAvailableBalanceNote","No connected StoreNest settlement balance.");
   text(d,"paymentsAwaitingBalanceNote","StoreNest escrow/release tracking is not enabled.");
   text(d,"paymentsPayoutBalanceNote","No connected settlement account.");
   text(d,"paymentsPaidOutNote","No payout ledger is connected.");
   const salesCount=data.orders.filter(isQualifyingSale).length,paidCount=data.orders.filter(isRecordedPaid).length;
   text(d,"paymentsDataNote",data.orderCount+" order record"+(data.orderCount===1?"":"s")+" in "+PERIODS[key].toLowerCase()+" for "+(state.businessName||"this business")+" · "+salesCount+" completed, non-refunded order"+(salesCount===1?"":"s")+" · "+paidCount+" marked paid.");
-  text(d,"paymentsDataFootnote","Total Sales is completed, non-refunded order value by order date. Card checkout is preview-only and pay-on-collection payments are not recorded. Refunded Amount uses the full subtotal of orders marked refunded; partial-refund amounts, provider fees, escrow releases and payouts have no ledger.");
+  text(d,"paymentsDataFootnote","Total Sales is completed, non-refunded order value by order date. Pending Payments sums active pay-on-collection orders marked unpaid in this period; completed unpaid history and unprocessed card previews are excluded. Refunded Amount uses the full subtotal of orders marked refunded; partial-refund amounts, provider fees, escrow releases and payouts have no ledger.");
   if(chart)chart.innerHTML=buildChartSvg(key,state.orders,new Date(),custom);
  }
  text(d,"paymentsAwaitingBalanceLabel","Awaiting Release");text(d,"paymentsPayoutBalanceLabel","Available");text(d,"paymentsPaidOutLabel","Paid Out");
