@@ -3,7 +3,7 @@ const assert=require("node:assert/strict");
 const test=require("node:test");
 const fs=require("node:fs");
 const path=require("node:path");
-const {formatCurrency,summarizeOrders,filterOrders,chartValues,buildChartSvg,renderTransactions,paymentStatusLabel}=require("../payments-dashboard.js");
+const {formatCurrency,summarizeOrders,filterOrders,chartSlots,chartValues,buildChartSvg,renderTransactions,paymentStatusLabel}=require("../payments-dashboard.js");
 
 const now=new Date(2026,10,10,12,0,0);
 const at=(day,hour=9)=>new Date(2026,10,day,hour).toISOString();
@@ -47,18 +47,27 @@ test("period filters include today, week, month, year and custom inclusive dates
  assert.equal(custom.totalSales,265);
  assert.equal(custom.completedCount,3);
  assert.equal(summarizeOrders(businessA,"custom",now,{start:"2026-11-11",end:"2026-11-10"}).valid,false);
+ assert.equal(chartSlots("week",now).length,2,"week-to-date chart must not plot future days as zero sales");
 });
 
-test("business-scoped rows reconcile the DINOS historical order total",()=>{
- const dinos=Array.from({length:14},(_,i)=>({id:"dinos-collection-"+i,business_id:"dinos",status:"completed",payment_status:"unpaid",payment_method:"pay_on_collection",subtotal:i===13?64:58,created_at:at(8)}));
- dinos.push({id:"dinos-card-preview",business_id:"dinos",status:"completed",payment_status:"pending",payment_method:"card",subtotal:25,created_at:at(8)});
+test("DINOS historical sales and daily chart reconcile without future dates",()=>{
+ const dinos=[];
+ const savedDailyTotals=[[5,4,420,"unpaid"],[6,8,348,"unpaid"],[7,1,25,"pending"],[8,1,25,"unpaid"],[10,1,25,"unpaid"]];
+ for(const [day,count,total,paymentStatus] of savedDailyTotals){
+  for(let i=0;i<count;i++)dinos.push({id:"dinos-"+day+"-"+i,business_id:"dinos",status:"completed",payment_status:paymentStatus,payment_method:paymentStatus==="pending"?"card":"pay_on_collection",subtotal:total/count,created_at:at(day)});
+ }
  const scoped=dinos.filter(row=>row.business_id==="dinos");
  const summary=summarizeOrders(scoped,"month",now);
  assert.equal(summary.orderCount,15);
  assert.equal(summary.completedCount,15);
  assert.equal(summary.totalSales,843);
  assert.equal(summary.recordedPaid,0);
- assert.equal(chartValues(scoped,"month",now).sales.reduce((a,b)=>a+b,0),843);
+ assert.equal(summary.awaitingRelease,null,"order value is not an escrow or release balance");
+ const chart=chartValues(scoped,"month",now);
+ assert.equal(chart.slots.length,10);
+ assert.deepEqual(chart.sales,[0,0,0,0,420,348,25,25,0,25]);
+ assert.equal(chart.sales.reduce((a,b)=>a+b,0),summary.totalSales);
+ assert.deepEqual(chart.slots.filter(slot=>slot.label).map(slot=>slot.label),["01 Nov","05 Nov","10 Nov"]);
 });
 
 test("chart and date/ID search use recorded order rows only",()=>{
@@ -90,12 +99,17 @@ test("transaction list is clickable, sorted by saved timestamp and pages older r
 test("dashboard keeps business scoping and provides the requested operational controls",()=>{
  const html=fs.readFileSync(path.join(__dirname,"..","business-owner.html"),"utf8");
  const script=fs.readFileSync(path.join(__dirname,"..","payments-dashboard.js"),"utf8");
+ const serviceWorker=fs.readFileSync(path.join(__dirname,"..","sw.js"),"utf8");
  const viewer=fs.readFileSync(path.join(__dirname,"..","owner-order-viewer.js"),"utf8");
  for(const id of ["paymentsTotalSales","paymentsNetEarnings","paymentsPendingPayments","paymentsAvailableBalance","paymentsPeriod","paymentsCustomStart","paymentsCustomEnd","paymentsTransactionSearch","paymentsTransactions","paymentsRangeLabel"])assert.match(html,new RegExp('id="'+id+'"'));
  for(const period of ["today","week","month","year","custom"])assert.match(html,new RegExp('option value="'+period+'"'));
  assert.match(html,/\.eq\("business_id",businessId\)/);
+ assert.match(html,/payments-dashboard\.js\?v=46/);
+ assert.match(html,/updateViaCache:"none"/);
  assert.match(script,/storenest:owner-open-order/);
  assert.match(html,/storenest:owner-open-order/);
+ assert.match(serviceWorker,/storenest-shell-v46/);
+ assert.match(serviceWorker,/\.then\(\(\)=>self\.skipWaiting\(\)\)/);
  assert.match(viewer,/Payment status is taken from the saved order record/);
  assert.doesNotMatch(script,/demo|sample|R\s?50,?000|\[\s*\d+\s*,\s*\d+/i);
 });
