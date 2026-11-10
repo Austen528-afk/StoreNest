@@ -759,42 +759,43 @@ html[data-theme="dark"] #itemMediaQualityNote[data-warning="true"]{color:#f4c27e
   <div id="ownerOrdersEmpty" class="empty-state" hidden><span>▤</span><strong>No orders yet</strong><p>Customer orders will appear here after checkout. Each order shows the items, selected options, customer contact and payment status.</p></div>
 </section><section class="dashboard-section" data-section-view="bookings" hidden><div class="section-heading owner-orders-heading"><div><h3 id="ownerBookingsHeading">Bookings &amp; enquiries</h3><p id="ownerBookingsDescription">Review request dates, customer requirements and active service bookings.</p></div><div class="owner-orders-controls"><button type="button" id="ownerBookingsHistory" class="outline-button owner-orders-history" aria-pressed="false">▤ History</button></div></div><div id="ownerBookingsSummary" class="bookings-summary">Loading booking requests…</div><div id="ownerBookingsList" class="bookings-list"></div><div id="ownerBookingsEmpty" class="empty-state" hidden><span>▣</span><strong>No active booking requests</strong><p>New customer booking requests will appear here. Finished requests are available in History.</p></div></section><section class="dashboard-section" id="messagesSection" data-section-view="messages" hidden><div class="section-heading"><div><h3>Messages</h3><p>Private conversations with customers who contact your business through StoreNest.</p></div></div><div id="ownerMessageCentre"></div></section><section class="dashboard-section coming-section" data-section-view="customers" hidden><div class="section-heading"><div><h3>Customers</h3><p>Customer records are created through real order or booking activity.</p></div></div><div class="empty-state"><span>♙</span><strong>No customer records yet</strong><p>Customer information will appear here after customer workflows are available.</p></div></section><section class="dashboard-section payments-dashboard-section" id="paymentsDashboard" data-section-view="payments" hidden>
   <div class="section-heading">
-    <div><h3>Payments &amp; Earnings</h3><p>Review recorded order totals and payment statuses for this business.</p></div>
-    <div class="payments-date-label" aria-label="All dates in recorded order history"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M8 14h3"/></svg><span>All order history</span></div>
+    <div><h3>Payments &amp; Earnings</h3><p>Review business order value and the payment information StoreNest has actually recorded.</p></div>
+    <div class="payments-date-label" aria-label="Selected reporting period"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M8 14h3"/></svg><span id="paymentsRangeLabel">This month</span></div>
   </div>
-  <div class="payments-demo-note" role="status"><span class="payments-demo-label">Historical data</span><span id="paymentsDataNote">Order history will appear here when the dashboard opens.</span></div>
+  <div class="payments-data-note" role="status"><span class="payments-data-badge">Historical data</span><span id="paymentsDataNote">Order history will appear here when the dashboard opens.</span></div>
   <div class="payments-kpi-grid" aria-label="Financial summary from recorded orders">
-    <div class="payments-kpi"><span class="payments-kpi-label">Completed Order Value</span><span class="payments-kpi-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 8h14l1 12H4L5 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg></span><strong id="paymentsCompletedValue" class="payments-kpi-value">R0.00</strong></div>
-    <div class="payments-kpi"><span class="payments-kpi-label">Recorded as Paid</span><span class="payments-kpi-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12H5a2 2 0 0 1-2-2V7Z"/><path d="M3 9h18M16 14h2"/></svg></span><strong id="paymentsRecordedPaid" class="payments-kpi-value">R0.00</strong></div>
-    <div class="payments-kpi"><span class="payments-kpi-label">Unpaid / Pending Orders</span><span class="payments-kpi-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><strong id="paymentsUnpaidPending" class="payments-kpi-value">R0.00</strong></div>
-    <div class="payments-kpi"><span class="payments-kpi-label">Available Balance</span><span class="payments-kpi-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></svg></span><strong id="paymentsAvailableBalance" class="payments-kpi-value">Not tracked</strong></div>
+    <div class="payments-kpi"><span class="payments-kpi-label">Total Sales</span><span class="payments-kpi-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 8h14l1 12H4L5 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg></span><strong id="paymentsTotalSales" class="payments-kpi-value">—</strong><small class="payments-kpi-note">Completed order value; collection is not verified.</small></div>
+    <div class="payments-kpi"><span class="payments-kpi-label">Net Earnings</span><span class="payments-kpi-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12H5a2 2 0 0 1-2-2V7Z"/><path d="M3 9h18M16 14h2"/></svg></span><strong id="paymentsNetEarnings" class="payments-kpi-value">—</strong><small class="payments-kpi-note" id="paymentsNetEarningsNote">Payment fee data is not connected.</small></div>
+    <div class="payments-kpi"><span class="payments-kpi-label">Pending Payments</span><span class="payments-kpi-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><strong id="paymentsPendingPayments" class="payments-kpi-value">—</strong><small class="payments-kpi-note" id="paymentsPendingPaymentsNote">Provider-confirmed payments are not connected.</small></div>
+    <div class="payments-kpi"><span class="payments-kpi-label">Available Balance</span><span class="payments-kpi-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></svg></span><strong id="paymentsAvailableBalance" class="payments-kpi-value">—</strong><small class="payments-kpi-note" id="paymentsAvailableBalanceNote">No settlement balance is available.</small></div>
   </div>
   <div class="payments-overview-grid">
     <article class="payments-panel payments-chart-panel" aria-labelledby="paymentsEarningsHeading">
-      <div class="payments-panel-heading"><h4 id="paymentsEarningsHeading">Order Activity</h4><label class="sr-only" for="paymentsPeriod">Chart period</label><select class="payments-period-select" id="paymentsPeriod"><option value="week">This week</option><option value="month">This month</option><option value="thirty">Last 30 days</option></select></div>
+      <div class="payments-panel-heading"><h4 id="paymentsEarningsHeading">Earnings Overview</h4><label class="sr-only" for="paymentsPeriod">Reporting period</label><select class="payments-period-select" id="paymentsPeriod"><option value="today">Today</option><option value="week">This week</option><option value="month" selected>This month</option><option value="year">This year</option><option value="custom">Custom range</option></select></div>
+      <div class="payments-custom-range" id="paymentsCustomFields" hidden><label>From <input id="paymentsCustomStart" type="date" aria-label="Custom range start date"></label><label>To <input id="paymentsCustomEnd" type="date" aria-label="Custom range end date"></label></div>
       <div class="payments-chart-wrap" id="paymentsChart" aria-live="polite"></div>
-      <div class="payments-chart-legend" aria-hidden="true"><span><i class="payments-legend-dot payments-legend-sales"></i>Completed order value</span><span><i class="payments-legend-dot payments-legend-earnings"></i>Recorded as paid</span></div>
+      <div class="payments-chart-legend" aria-hidden="true"><span><i class="payments-legend-dot payments-legend-sales"></i>Completed order value</span><span><i class="payments-legend-dot payments-legend-earnings"></i>Order records marked paid</span></div>
     </article>
     <article class="payments-panel payments-balance-panel" aria-labelledby="paymentsBalanceHeading">
       <div class="payments-panel-heading"><h4 id="paymentsBalanceHeading">Payment &amp; Balance Status</h4></div>
       <div class="payments-balance-list">
-        <div class="payments-balance-item"><span class="payments-balance-label">Unpaid / pending</span><strong id="paymentsAwaitingBalance" class="payments-balance-value">R0.00</strong><span class="payments-balance-note">Payment not recorded</span></div>
-        <div class="payments-balance-item"><span class="payments-balance-label">Available balance</span><strong id="paymentsPayoutBalance" class="payments-balance-value">Not tracked</strong><span class="payments-balance-note">Payout tracking not enabled</span></div>
-        <div class="payments-balance-item"><span class="payments-balance-label">Paid out</span><strong id="paymentsPaidOut" class="payments-balance-value">Not tracked</strong><span class="payments-balance-note">No payout records</span></div>
+        <div class="payments-balance-item"><span class="payments-balance-label" id="paymentsAwaitingBalanceLabel">Awaiting Release</span><strong id="paymentsAwaitingBalance" class="payments-balance-value">—</strong><span class="payments-balance-note" id="paymentsAwaitingBalanceNote">StoreNest release tracking is not enabled.</span></div>
+        <div class="payments-balance-item"><span class="payments-balance-label" id="paymentsPayoutBalanceLabel">Available</span><strong id="paymentsPayoutBalance" class="payments-balance-value">—</strong><span class="payments-balance-note" id="paymentsPayoutBalanceNote">No settlement account is connected.</span></div>
+        <div class="payments-balance-item"><span class="payments-balance-label" id="paymentsPaidOutLabel">Paid Out</span><strong id="paymentsPaidOut" class="payments-balance-value">—</strong><span class="payments-balance-note" id="paymentsPaidOutNote">Payout records are not available.</span></div>
       </div>
     </article>
     <article class="payments-panel payments-transactions-panel" aria-labelledby="paymentsTransactionsHeading">
-      <div class="payments-panel-heading"><h4 id="paymentsTransactionsHeading">Recent Orders</h4></div>
-      <label class="sr-only" for="paymentsTransactionSearch">Search orders by date, ID, amount or payment status</label>
+      <div class="payments-panel-heading"><h4 id="paymentsTransactionsHeading">Recent Transactions</h4></div>
+      <label class="sr-only" for="paymentsTransactionSearch">Search order records by date or order ID</label>
       <input class="payments-search" id="paymentsTransactionSearch" type="search" placeholder="Search date or order ID…" autocomplete="off">
       <div class="payments-transactions" id="paymentsTransactions" aria-live="polite"></div>
     </article>
   </div>
   <div class="payments-financial-insights" aria-labelledby="paymentsInsightsHeading">
     <h4 class="payments-insights-heading" id="paymentsInsightsHeading">Financial Insights</h4>
-    <div class="payments-insights-grid"><div class="payments-insight"><span class="payments-insight-label">Completed Orders</span><strong id="paymentsCompletedOrders" class="payments-insight-value">0</strong></div><div class="payments-insight"><span class="payments-insight-label">Average Order Value</span><strong id="paymentsAverageOrderValue" class="payments-insight-value">R0.00</strong></div><div class="payments-insight"><span class="payments-insight-label">Sales Growth</span><strong id="paymentsSalesGrowth" class="payments-insight-value">0%</strong></div><div class="payments-insight"><span class="payments-insight-label">Refunded Amount</span><strong id="paymentsRefundedAmount" class="payments-insight-value">R0.00</strong></div></div>
+    <div class="payments-insights-grid"><div class="payments-insight"><span class="payments-insight-label">Completed Orders</span><strong id="paymentsCompletedOrders" class="payments-insight-value">—</strong></div><div class="payments-insight"><span class="payments-insight-label">Average Order Value</span><strong id="paymentsAverageOrderValue" class="payments-insight-value">—</strong></div><div class="payments-insight"><span class="payments-insight-label">Sales Growth</span><strong id="paymentsSalesGrowth" class="payments-insight-value">—</strong></div><div class="payments-insight"><span class="payments-insight-label">Refunded Amount</span><strong id="paymentsRefundedAmount" class="payments-insight-value">—</strong></div></div>
   </div>
-  <p class="payments-sample-footnote"><span id="paymentsDataFootnote">Completed order value can include pay-on-collection orders. Fees, available payouts and paid-out transfers are not inferred.</span></p>
+  <p class="payments-footnote"><span id="paymentsDataFootnote">Order completion is separate from payment confirmation. StoreNest does not yet have a connected payment, fee, refund, escrow or payout ledger.</span></p>
 </section><section class="dashboard-section coming-section" data-section-view="analytics" hidden><div class="section-heading"><div><h3>Analytics</h3><p>Business-specific insights from real storefront activity.</p></div></div><div class="empty-state"><span>⌁</span><strong>No analytics yet</strong><p>Visits and product views will appear here when public storefront tracking is connected.</p></div></section>
     </main>
   </div>
@@ -831,7 +832,7 @@ html[data-theme="dark"] #itemMediaQualityNote[data-warning="true"]{color:#f4c27e
 </div>
 </section>
 </main>
-<footer class="footer"><span>StoreNest · Building the future of local commerce</span><span>No live orders or payments</span></footer>
+<footer class="footer"><span>StoreNest · Building the future of local commerce</span><span>Orders are recorded; payments and payouts are not enabled.</span></footer>
 </div>
 <script src="/owner-bookings.js"></script>
 <script>
@@ -1652,12 +1653,12 @@ function nextItemDisplayOrder(excludeId=null){const remaining=businessItems.filt
   if($("itemModal")?.hidden)throw new Error("The edit form could not be opened.");
  }catch(error){console.error("StoreNest item edit error",error);showToast("Could not open the item editor: "+friendlyError(error),true)}
 }
-function setDashboardSection(name){
+function setDashboardSection(name,options){
  document.querySelectorAll("[data-section-view]").forEach(section=>section.hidden=section.dataset.sectionView!==name);
  document.querySelectorAll(".side-link[data-section]").forEach(button=>button.classList.toggle("active",button.dataset.section===name));
  $("mobileNavLabel").textContent=({overview:"Overview",storefront:"My Storefront",items:"Products & Services",orders:"Orders",bookings:"Bookings",messages:"Messages",customers:"Customers",payments:"Payments & Earnings",analytics:"Analytics",settings:"Business Settings"})[name]||"Overview";
  $("mobileNavList").hidden=true;$("mobileNavToggle").setAttribute("aria-expanded","false");$("workspace").scrollTop=0;
- if(name==="orders")loadBusinessOrders();
+ if(name==="orders"&&!options?.skipOrderLoad)loadBusinessOrders();
  if(name==="payments")loadBusinessPayments();
  if(name==="messages")window.dispatchEvent(new CustomEvent("storenest:owner-messages-open"));
 }
@@ -1835,6 +1836,7 @@ async function loadBusinessPayments(){
  window.dispatchEvent(new CustomEvent("storenest:owner-payments-loading",{detail:{businessId:businessId}}));
  try{
   const client=await loadAuth(),fetched=[],pageSize=500;
+  ensureOwnerOrdersRealtime(client,businessId);
   for(let offset=0;;offset+=pageSize){
    const {data,error}=await client.from("storefront_orders")
     .select("id,business_id,status,payment_status,payment_method,subtotal,created_at")
@@ -1852,6 +1854,31 @@ async function loadBusinessPayments(){
   window.dispatchEvent(new CustomEvent("storenest:owner-payments-error",{detail:{businessId:businessId}}));
  }
 }
+window.addEventListener("storenest:owner-payments-reload",event=>{
+ const businessId=String(event.detail?.businessId||"");
+ if(businessId&&String(currentBusiness?.id||"")===businessId&&!$("paymentsDashboard")?.hidden)void loadBusinessPayments();
+});
+async function openOwnerOrderFromPayments(orderId,businessId){
+ const id=String(orderId||""),business=String(businessId||"");
+ if(!id||!business||String(currentBusiness?.id||"")!==business)return;
+ const known=ownerOrdersRows.find(row=>String(row.id)===id&&String(row.business_id)===business);
+ ownerOrdersHistoryMode=["completed","cancelled"].includes(String(known?.status||""));
+ setDashboardSection("orders",{skipOrderLoad:true});
+ await loadBusinessOrders();
+ if(String(currentBusiness?.id||"")!==business)return;
+ const order=ownerOrdersRows.find(row=>String(row.id)===id&&String(row.business_id)===business);
+ if(!order){showToast("The corresponding order could not be found for this business.",true);return}
+ ownerOrdersHistoryMode=["completed","cancelled"].includes(String(order.status||""));
+ renderBusinessOrders(ownerOrdersRows);
+ document.querySelector('[data-owner-order-view="'+CSS.escape(id)+'"]')?.click();
+}
+window.addEventListener("storenest:owner-open-order",event=>{
+ const detail=event.detail||{};
+ void openOwnerOrderFromPayments(detail.orderId,detail.businessId).catch(error=>{
+  console.error("StoreNest transaction order details could not be opened:",error);
+  showToast("Could not open the order details. Try again from Orders.",true);
+ });
+});
 async function loadBusinessOrders(){
  const list=$("ownerOrdersList"),summary=$("ownerOrdersSummary"),empty=$("ownerOrdersEmpty");
  if(!currentBusiness){resetOwnerOrdersRealtime();list.replaceChildren();summary.hidden=true;empty.hidden=false;return}

@@ -22,6 +22,7 @@
   const ref=String(order.id).replace(/-/g,"").slice(0,8).toUpperCase();
   const statusLabels={new:"Awaiting acceptance",accepted:"Order received",preparing:"In progress",prepared:"Prepared",ready:"Ready for collection",completed:"Collected",cancelled:"Cancelled"};
   const payment=order.payment_method==="card"?"Pay with card":"Pay on collection";
+  const paymentRecord=order.payment_status==="paid"?"Marked paid in order record":order.payment_status==="pending"&&order.payment_method==="card"?"Card payment not processed (preview)":order.payment_status==="pending"?"Payment status pending":order.payment_status==="unpaid"?"Payment not recorded":order.payment_status==="failed"?"Payment failed":order.payment_status==="refunded"?"Refund recorded":"Payment status unavailable";
   const status=statusLabels[order.status]||"New";
   const items=Array.isArray(order.items)?order.items:[];
   title.textContent="Order #"+ref;
@@ -48,7 +49,8 @@
   const submitted=new Date(order.created_at);
   const dateLabel=Number.isNaN(submitted.getTime())?"":submitted.toLocaleString("en-ZA",{dateStyle:"medium",timeStyle:"short"});
   body.innerHTML=
-   '<div class="owner-order-viewer-tags"><span>'+html(status)+'</span><span>'+html(payment)+'</span>'+(dateLabel?'<span>'+html(dateLabel)+'</span>':"")+'</div>'+
+   '<div class="owner-order-viewer-tags"><span>'+html(status)+'</span><span>'+html(payment)+'</span><span>'+html(paymentRecord)+'</span>'+(dateLabel?'<span>'+html(dateLabel)+'</span>':"")+'</div>'+
+   '<p class="owner-order-viewer-payment-note">Payment status is taken from the saved order record. No provider transaction, fee amount, partial-refund, escrow or payout entry is attached to this order.</p>'+
    '<section class="owner-order-viewer-customer"><strong>'+html(order.customer_name||"Customer")+'</strong>'+
    (phone?'<div>Phone: <a href="tel:'+html(phone.replace(/[^0-9+]/g,""))+'">'+html(phone)+'</a></div>':"")+
    (email?'<div>Email: <a href="mailto:'+encodeURIComponent(email)+'">'+html(email)+'</a></div>':"")+
