@@ -380,19 +380,34 @@ html[data-theme="dark"] .customer-booking-detail-fields strong,html[data-theme="
 .marketplace-category-entry{position:relative;min-width:0}
 .marketplace-category-entry>.marketplace-category-button{width:100%;height:100%;padding-right:42px}
 .marketplace-category-entry.is-pinned>.marketplace-category-button{border-color:#c4e5d2}
-.marketplace-category-pin,.recent-pin{display:grid;place-items:center;color:#c1cbc4;background:transparent;border:0;border-radius:7px;opacity:1;cursor:pointer;transition:background .15s,color .15s}
-.marketplace-category-pin{position:absolute;top:8px;right:8px;width:28px;height:28px;padding:0}
-.marketplace-category-pin svg,.recent-pin svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
-.marketplace-category-pin:hover,.recent-pin:hover{background:transparent;color:#c1cbc4}
-.marketplace-category-pin[aria-pressed="true"],.recent-pin[aria-pressed="true"]{background:transparent;color:#228d73}
-.marketplace-category-pin[aria-pressed="true"] svg,.recent-pin[aria-pressed="true"] svg{stroke-width:2}
-.marketplace-category-pin[aria-pressed="true"] svg path,.recent-pin[aria-pressed="true"] svg path{fill:#a8dfbf}
-.marketplace-category-pin:focus-visible,.recent-pin:focus-visible,.recent-remove:focus-visible{outline:2px solid #31ac8e;outline-offset:2px}
+.marketplace-category-menu-toggle,.recent-pin{display:grid;place-items:center;background:transparent;border:0;border-radius:7px;cursor:pointer;transition:background .15s,color .15s,opacity .15s}
+.marketplace-category-menu-toggle{position:absolute;top:8px;right:8px;z-index:3;width:28px;height:28px;padding:0;color:#aebbb2;opacity:.68}
+.marketplace-category-menu-toggle svg{width:14px;height:14px;fill:currentColor}
+.marketplace-category-menu-toggle:hover{color:#718178;opacity:1;background:transparent}
+.marketplace-category-menu-toggle:focus-visible,.marketplace-category-menu [data-tag-category]:focus-visible,.recent-pin:focus-visible,.recent-remove:focus-visible{outline:2px solid #31ac8e;outline-offset:2px}
+.marketplace-category-menu{position:absolute;top:39px;right:8px;z-index:8;min-width:126px;padding:5px;background:#fff;border:1px solid #dbe8df;border-radius:9px;box-shadow:0 8px 20px rgba(24,50,38,.16)}
+.marketplace-category-menu[hidden]{display:none}
+.marketplace-category-menu [data-tag-category]{display:flex;align-items:center;gap:9px;width:100%;min-height:36px;padding:7px 9px;border:0;border-radius:6px;background:transparent;color:#30443a;font:inherit;text-align:left;cursor:pointer}
+.marketplace-category-menu [data-tag-category]:hover{background:#f0f7f3}
+.marketplace-category-menu [data-tag-category] svg{width:15px;height:15px;flex:0 0 15px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.marketplace-category-menu [data-tag-category] svg circle{fill:#fff}
+.marketplace-category-menu [data-tag-category][aria-checked="true"]{color:#228d73}
+.marketplace-category-menu [data-tag-category][aria-checked="true"] svg path{fill:#a8dfbf;stroke:#228d73}
+.recent-pin{color:#c1cbc4;opacity:1}
+.recent-pin svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.recent-pin:hover{background:transparent;color:#c1cbc4}
+.recent-pin[aria-pressed="true"]{background:transparent;color:#228d73}
+.recent-pin[aria-pressed="true"] svg{stroke-width:2}
+.recent-pin[aria-pressed="true"] svg path{fill:#a8dfbf}
 .recent-entry.is-pinned{border-color:#c4e5d2;background:#f8fcf9}
 .recent-card{padding-right:78px}
 .recent-actions{position:absolute;top:8px;right:8px;z-index:2;display:flex;gap:4px}
 .recent-actions .recent-pin,.recent-actions .recent-remove{flex:0 0 30px;width:30px;height:30px;margin:0;padding:0}
 @media(max-width:490px){.recent-card{padding-right:78px}}
+html[data-theme="dark"] .marketplace-category-menu{background:#1d2a24;border-color:#35483d;box-shadow:0 8px 20px rgba(0,0,0,.38)}
+html[data-theme="dark"] .marketplace-category-menu [data-tag-category]{color:#e8f3ec}
+html[data-theme="dark"] .marketplace-category-menu [data-tag-category]:hover{background:#2a3c33}
+html[data-theme="dark"] .marketplace-category-menu [data-tag-category] svg circle{fill:#1d2a24}
 </style>
 <link rel="stylesheet" href="/theme.css">
 <script src="/theme.js"></script>
@@ -553,6 +568,8 @@ const categorySection=document.getElementById("marketplaceCategories");
 const categoryGrid=document.getElementById("marketplaceCategoryGrid");
 const MARKETPLACE_CATEGORIES=window.StoreNestCategories.map(c=>[c.id,c.label,c.iconSvg||c.emoji]);
 const MARKETPLACE_PIN_ICON='<svg aria-hidden="true" viewBox="0 0 24 24"><path d="m16 3 5 5-4 1-4 4 2 4-1 1-4-5-6 6-1-1 6-6-5-4 1-1 4 2 4-4 1-4Z"/></svg>';
+const MARKETPLACE_MORE_ICON='<svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>';
+const MARKETPLACE_TAG_ICON='<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L3.42 13.4A2 2 0 0 1 2.83 12V4a2 2 0 0 1 2-2h8a2 2 0 0 1 1.41.59l6.35 6.35a3.16 3.16 0 0 1 0 4.47Z"/><circle cx="8" cy="8" r="1.5"/></svg>';
 const MARKETPLACE_CATEGORY_DESCRIPTIONS={
  "food-drink":{overview:"Ready-to-eat food, snacks, baked goods, desserts and beverages prepared or sold by local businesses.",examples:["Kota shops","Restaurants & takeaways","Home cooks","Bakeries","Juice & drinks sellers"]},
  "events-decor":{overview:"Businesses that prepare food for gatherings, decorate venues or provide event setup and hire services.",examples:["Caterers","Party decorators","Wedding setups","Tent & chair hire","Balloon decorators"]},
@@ -581,10 +598,18 @@ let activeMarketplaceCategory=null;
 function renderMarketplaceCategories(){
  const ordered=window.StoreNestMarketplaceActivity?.sortCategories(MARKETPLACE_CATEGORIES)||MARKETPLACE_CATEGORIES;
  categoryGrid.innerHTML=ordered.map(([id,label,iconMarkup])=>{
-  const pinned=!!window.StoreNestMarketplaceActivity?.isCategoryPinned(id);
-  const action=pinned?"Unpin ":"Pin ";
-  return '<div class="marketplace-category-entry'+(pinned?' is-pinned':'')+'"><button type="button" class="marketplace-category-button'+(activeMarketplaceCategory===id?' active':'')+'" data-market-category="'+id+'"><span class="category-icon" aria-hidden="true">'+iconMarkup+'</span><strong>'+escapeResult(label)+'</strong></button><button type="button" class="marketplace-category-pin" data-pin-category="'+id+'" aria-pressed="'+pinned+'" aria-label="'+action+escapeResult(label)+'" title="'+action+escapeResult(label)+'">'+MARKETPLACE_PIN_ICON+'</button></div>';
+  const tagged=!!window.StoreNestMarketplaceActivity?.isCategoryPinned(id);
+  const menuId="marketplace-category-menu-"+id;
+  const safeLabel=escapeResult(label);
+  return '<div class="marketplace-category-entry'+(tagged?' is-pinned':'')+'"><button type="button" class="marketplace-category-button'+(activeMarketplaceCategory===id?' active':'')+'" data-market-category="'+id+'"><span class="category-icon" aria-hidden="true">'+iconMarkup+'</span><strong>'+safeLabel+'</strong></button><button type="button" class="marketplace-category-menu-toggle" data-category-menu-toggle="'+id+'" aria-haspopup="menu" aria-expanded="false" aria-controls="'+menuId+'" aria-label="Category options for '+safeLabel+'" title="Category options">'+MARKETPLACE_MORE_ICON+'</button><div class="marketplace-category-menu" id="'+menuId+'" role="menu" hidden><button type="button" role="menuitemcheckbox" data-tag-category="'+id+'" aria-checked="'+tagged+'" aria-label="'+(tagged?'Remove tag from ':'Tag ')+safeLabel+'" title="'+(tagged?'Remove tag':'Tag category')+'">'+MARKETPLACE_TAG_ICON+'<span>Tag</span></button></div></div>';
  }).join("");
+}
+function closeMarketplaceCategoryMenus(){
+ categoryGrid.querySelectorAll(".marketplace-category-menu-toggle[aria-expanded=\"true\"]").forEach(toggle=>{
+  toggle.setAttribute("aria-expanded","false");
+  const menu=document.getElementById(toggle.getAttribute("aria-controls"));
+  if(menu)menu.hidden=true;
+ });
 }
 function resetMarketplaceBrowse({updateHistory=true}={}){
  activeMarketplaceCategory=null;categorySection.hidden=false;renderMarketplaceCategories();setSearchActive(false);renderRecentBusinesses();
@@ -597,10 +622,32 @@ function resetMarketplaceBrowse({updateHistory=true}={}){
  }
 }
 categoryGrid.addEventListener("click",event=>{
- const pin=event.target.closest("[data-pin-category]");
- if(pin){event.preventDefault();event.stopPropagation();window.StoreNestMarketplaceActivity?.toggleCategoryPin(pin.dataset.pinCategory);return}
+ const toggle=event.target.closest("[data-category-menu-toggle]");
+ if(toggle){
+  event.preventDefault();event.stopPropagation();
+  const menu=document.getElementById(toggle.getAttribute("aria-controls"));
+  const opening=toggle.getAttribute("aria-expanded")!=="true";
+  closeMarketplaceCategoryMenus();
+  if(opening&&menu){menu.hidden=false;toggle.setAttribute("aria-expanded","true");menu.querySelector("[data-tag-category]")?.focus()}
+  return;
+ }
+ const tag=event.target.closest("[data-tag-category]");
+ if(tag){
+  event.preventDefault();event.stopPropagation();
+  window.StoreNestMarketplaceActivity?.toggleCategoryPin(tag.dataset.tagCategory);
+  return;
+ }
+ closeMarketplaceCategoryMenus();
  const btn=event.target.closest("[data-market-category]");
  if(btn)browseMarketplaceCategory(btn.dataset.marketCategory);
+});
+document.addEventListener("click",event=>{
+ if(!categoryGrid.contains(event.target))closeMarketplaceCategoryMenus();
+});
+document.addEventListener("keydown",event=>{
+ if(event.key!=="Escape")return;
+ const toggle=categoryGrid.querySelector(".marketplace-category-menu-toggle[aria-expanded=\"true\"]");
+ if(toggle){event.preventDefault();closeMarketplaceCategoryMenus();toggle.focus()}
 });
 function marketplaceItemHref(b,item){
  const params=new URLSearchParams({slug:b.slug});
