@@ -169,7 +169,7 @@ test("account preferences synchronize across devices and stay isolated by user",
   await deviceB.api.ready();
   assert.equal(deviceB.api.isCategoryPinned("fashion"), false);
   assert.equal(deviceB.api.isBusinessPinned("a-store"), true);
-  assert.deepEqual(deviceB.plain(api.getBusinesses()).map(row => row.slug), ["a-store"]);
+  assert.deepEqual(plain(deviceB.api.getBusinesses()).map(row => row.slug), ["a-store"]);
 
   deviceB.api.recordCategory("electronics");
   await deviceB.api.flush();
