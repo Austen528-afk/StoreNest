@@ -122,21 +122,21 @@ test("business visits reorder without duplicates and preserve pins through clear
 
   api.recordBusiness(alpha);
   api.recordBusiness(beta);
-  assert.deepEqual(api.getBusinesses().map(row => row.slug), ["beta-store", "alpha-store"]);
+  assert.deepEqual(plain(api.getBusinesses()).map(row => row.slug), ["beta-store", "alpha-store"]);
   api.recordBusiness(alpha);
-  assert.deepEqual(api.getBusinesses().map(row => row.slug), ["alpha-store", "beta-store"]);
+  assert.deepEqual(plain(api.getBusinesses()).map(row => row.slug), ["alpha-store", "beta-store"]);
   assert.equal(api.getBusinesses().length, 2);
 
   api.toggleBusinessPin("alpha-store");
   const preservedVisit = api.getBusinesses().find(row => row.slug === "alpha-store").lastVisitedAt;
   api.clearBusinessHistory();
-  assert.deepEqual(api.getBusinesses().map(row => row.slug), ["alpha-store"]);
+  assert.deepEqual(plain(api.getBusinesses()).map(row => row.slug), ["alpha-store"]);
   assert.equal(api.isBusinessPinned("alpha-store"), true);
   assert.equal(api.getBusinesses()[0].lastVisitedAt, preservedVisit);
 
   api.recordBusiness(gamma);
   api.toggleBusinessPin("alpha-store");
-  const ordered = api.getBusinesses().map(row => row.slug);
+  const ordered = plain(api.getBusinesses()).map(row => row.slug);
   assert.deepEqual(ordered, ["gamma-store", "alpha-store"]);
   assert.equal(api.getBusinesses().some(row => row.slug === "beta-store"), false);
 
@@ -169,7 +169,7 @@ test("account preferences synchronize across devices and stay isolated by user",
   await deviceB.api.ready();
   assert.equal(deviceB.api.isCategoryPinned("fashion"), false);
   assert.equal(deviceB.api.isBusinessPinned("a-store"), true);
-  assert.deepEqual(deviceB.api.getBusinesses().map(row => row.slug), ["a-store"]);
+  assert.deepEqual(deviceB.plain(api.getBusinesses()).map(row => row.slug), ["a-store"]);
 
   deviceB.api.recordCategory("electronics");
   await deviceB.api.flush();
