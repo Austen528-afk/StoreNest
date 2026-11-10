@@ -7,7 +7,10 @@
   let clientPromise = null;
 
   async function getClient() {
-    if (window.StoreNestCustomerClient) return window.StoreNestCustomerClient;
+    if (window.StoreNestCustomerClient) {
+      window.StoreNestMarketplaceActivity?.connect(window.StoreNestCustomerClient);
+      return window.StoreNestCustomerClient;
+    }
     if (!clientPromise) {
       clientPromise = (async () => {
         if (!window.supabase) {
@@ -28,6 +31,7 @@
             storageKey: "storenest-customer-auth-v1"
           }
         });
+        window.StoreNestMarketplaceActivity?.connect(window.StoreNestCustomerClient);
         return window.StoreNestCustomerClient;
       })().catch(error => {
         clientPromise = null;
