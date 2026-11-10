@@ -376,11 +376,27 @@ html[data-theme="dark"] .customer-booking-detail-fields>div{background:#25382f}
 html[data-theme="dark"] .customer-booking-detail-fields strong,html[data-theme="dark"] .customer-booking-detail-fields a,html[data-theme="dark"] .customer-booking-detail-notes p{color:#edf6ef}
 @media(max-width:410px){.top-actions{gap:3px}.top-icon-button{width:36px;height:38px}.top-icon-button svg{width:19px;height:19px}}
 @media(max-width:350px){#pageRefreshButton{display:none}}
+
+.marketplace-category-entry{position:relative;min-width:0}
+.marketplace-category-entry>.marketplace-category-button{width:100%;height:100%;padding-right:42px}
+.marketplace-category-entry.is-pinned>.marketplace-category-button{border-color:#c4e5d2}
+.marketplace-category-pin,.recent-pin{display:grid;place-items:center;color:#829389;background:transparent;border:0;border-radius:7px;opacity:.8;cursor:pointer;transition:background .15s,color .15s,opacity .15s}
+.marketplace-category-pin{position:absolute;top:8px;right:8px;width:28px;height:28px;padding:0}
+.marketplace-category-pin svg,.recent-pin svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.marketplace-category-pin:hover,.recent-pin:hover{background:#f0faf4;color:#378b70;opacity:1}
+.marketplace-category-pin[aria-pressed="true"],.recent-pin[aria-pressed="true"]{background:#dff3e8;color:#228d73;opacity:1}
+.marketplace-category-pin:focus-visible,.recent-pin:focus-visible,.recent-remove:focus-visible{outline:2px solid #31ac8e;outline-offset:2px}
+.recent-entry.is-pinned{border-color:#c4e5d2;background:#f8fcf9}
+.recent-card{padding-right:78px}
+.recent-actions{position:absolute;top:8px;right:8px;z-index:2;display:flex;gap:4px}
+.recent-actions .recent-pin,.recent-actions .recent-remove{flex:0 0 30px;width:30px;height:30px;margin:0;padding:0}
+@media(max-width:490px){.recent-card{padding-right:78px}}
 </style>
 <link rel="stylesheet" href="/theme.css">
 <script src="/theme.js"></script>
 <script src="/categories.js"></script>
 <script src="/customer-auth.js"></script>
+<script src="/marketplace-activity.js"></script>
   <link rel="stylesheet" href="/messaging-centre.css">
 </head>
 <body data-page-kind="marketplace">
@@ -407,8 +423,8 @@ html[data-theme="dark"] .customer-booking-detail-fields strong,html[data-theme="
   <section id="recentBusinesses" class="recent-businesses" aria-labelledby="recentHeading">
     <div class="recent-heading">
       <div>
-        <h2 id="recentHeading">Recently searched businesses</h2>
-        <p>Your saved business history stays here until you remove it.</p>
+        <h2 id="recentHeading">Recently visited businesses</h2>
+        <p>Businesses you open appear here, with your pinned favourites kept at the top.</p>
       </div>
       <button id="clearRecentBusinesses" class="clear-recent" type="button" hidden>Clear history</button>
     </div>
@@ -534,6 +550,7 @@ const resultRoot=document.getElementById("searchResults");
 const categorySection=document.getElementById("marketplaceCategories");
 const categoryGrid=document.getElementById("marketplaceCategoryGrid");
 const MARKETPLACE_CATEGORIES=window.StoreNestCategories.map(c=>[c.id,c.label,c.iconSvg||c.emoji]);
+const MARKETPLACE_PIN_ICON='<svg aria-hidden="true" viewBox="0 0 24 24"><path d="m16 3 5 5-4 1-4 4 2 4-1 1-4-5-6 6-1-1 6-6-5-4 1-1 4 2 4-4 1-4Z"/></svg>';
 const MARKETPLACE_CATEGORY_DESCRIPTIONS={
  "food-drink":{overview:"Ready-to-eat food, snacks, baked goods, desserts and beverages prepared or sold by local businesses.",examples:["Kota shops","Restaurants & takeaways","Home cooks","Bakeries","Juice & drinks sellers"]},
  "events-decor":{overview:"Businesses that prepare food for gatherings, decorate venues or provide event setup and hire services.",examples:["Caterers","Party decorators","Wedding setups","Tent & chair hire","Balloon decorators"]},
@@ -559,7 +576,14 @@ function marketplaceCategoryControls(id){
  '<section class="category-description-panel" id="categoryDescriptionPanel" aria-label="About '+title+'"'+(expanded?'':' hidden')+'><strong>What belongs in '+title+'?</strong><p>'+escapeResult(details.overview)+'</p><div class="category-description-examples"><strong>Examples:</strong>'+details.examples.map(example=>'<span>'+escapeResult(example)+'</span>').join("")+'</div></section>';
 }
 let activeMarketplaceCategory=null;
-function renderMarketplaceCategories(){categoryGrid.innerHTML=MARKETPLACE_CATEGORIES.map(([id,label,iconMarkup])=>'<button type="button" class="marketplace-category-button'+(activeMarketplaceCategory===id?' active':'')+'" data-market-category="'+id+'"><span class="category-icon" aria-hidden="true">'+iconMarkup+'</span><strong>'+label+'</strong></button>').join("")}
+function renderMarketplaceCategories(){
+ const ordered=window.StoreNestMarketplaceActivity?.sortCategories(MARKETPLACE_CATEGORIES)||MARKETPLACE_CATEGORIES;
+ categoryGrid.innerHTML=ordered.map(([id,label,iconMarkup])=>{
+  const pinned=!!window.StoreNestMarketplaceActivity?.isCategoryPinned(id);
+  const action=pinned?"Unpin ":"Pin ";
+  return '<div class="marketplace-category-entry'+(pinned?' is-pinned':'')+'"><button type="button" class="marketplace-category-button'+(activeMarketplaceCategory===id?' active':'')+'" data-market-category="'+id+'"><span class="category-icon" aria-hidden="true">'+iconMarkup+'</span><strong>'+escapeResult(label)+'</strong></button><button type="button" class="marketplace-category-pin" data-pin-category="'+id+'" aria-pressed="'+pinned+'" aria-label="'+action+escapeResult(label)+'" title="'+action+escapeResult(label)+'">'+MARKETPLACE_PIN_ICON+'</button></div>';
+ }).join("");
+}
 function resetMarketplaceBrowse({updateHistory=true}={}){
  activeMarketplaceCategory=null;categorySection.hidden=false;renderMarketplaceCategories();setSearchActive(false);renderRecentBusinesses();
  if(updateHistory){
@@ -570,7 +594,12 @@ function resetMarketplaceBrowse({updateHistory=true}={}){
   }
  }
 }
-categoryGrid.addEventListener("click",event=>{const btn=event.target.closest("[data-market-category]");if(btn)browseMarketplaceCategory(btn.dataset.marketCategory)});
+categoryGrid.addEventListener("click",event=>{
+ const pin=event.target.closest("[data-pin-category]");
+ if(pin){event.preventDefault();event.stopPropagation();window.StoreNestMarketplaceActivity?.toggleCategoryPin(pin.dataset.pinCategory);return}
+ const btn=event.target.closest("[data-market-category]");
+ if(btn)browseMarketplaceCategory(btn.dataset.marketCategory);
+});
 function marketplaceItemHref(b,item){
  const params=new URLSearchParams({slug:b.slug});
  if(item.category_id)params.set("category",item.category_id);
@@ -781,6 +810,7 @@ function renderCategorySnapshot(id,category,snapshot){
 }
 async function browseMarketplaceCategory(id,{historyMode="push"}={}){
  const category=MARKETPLACE_CATEGORIES.find(row=>row[0]===id);if(!category)return;
+ window.StoreNestMarketplaceActivity?.recordCategory(id);
  if(historyMode!=="none"){
   const url=new URL(location.href);
   if(url.searchParams.get("marketCategory")!==id){
@@ -827,7 +857,6 @@ resultRoot.addEventListener("click",e=>{
 renderMarketplaceCategories();
 const STORE_SEARCH={url:"https://cypbjzbagezdelmemuhb.supabase.co",key:"sb_publishable_8W8zyYtggQMWoFlnxrzoVA_BUKjQ9va"};
 let searchClient=null,searchClientPromise=null,searchCounter=0,lastSearchResults=[];
-const RECENT_BUSINESSES_KEY="storenest:recent-businesses:v1";
 const recentSection=document.getElementById("recentBusinesses");
 const recentGrid=document.getElementById("recentBusinessGrid");
 const clearRecentButton=document.getElementById("clearRecentBusinesses");
@@ -844,7 +873,6 @@ for(const root of [resultRoot,recentGrid]){
 }
 prefetchVisibleStorefrontLinks(resultRoot);
 prefetchVisibleStorefrontLinks(recentGrid);
-let recentFallback=[];
 function safeBusiness(b){
   if(!b||typeof b!=="object")return null;
   const slug=String(b.slug||"").slice(0,90);
@@ -852,29 +880,18 @@ function safeBusiness(b){
   const logo=String(b.logo_url||"").trim();
   return {slug,name:String(b.name||"").slice(0,120),category:window.StoreNestCategoryLabel(b.category).slice(0,100),location:String(b.location||"").slice(0,120),logo_url:/^https:\/\//i.test(logo)?logo.slice(0,1024):""};
 }
-function recentBusinessList(){
-  try{
-    const raw=JSON.parse(localStorage.getItem(RECENT_BUSINESSES_KEY)||"[]");
-    return Array.isArray(raw)?raw.map(safeBusiness).filter(Boolean):[];
-  }catch{return recentFallback.slice()}
-}
-function storeRecentList(list){
-  recentFallback=list.slice();
-  try{localStorage.setItem(RECENT_BUSINESSES_KEY,JSON.stringify(recentFallback))}catch{}
-}
-function rememberBusiness(b){
-  const business=safeBusiness(b);if(!business||!business.name)return;
-  storeRecentList([business,...recentBusinessList().filter(other=>other.slug!==business.slug)]);
-  renderRecentBusinesses();
-}
 function businessAvatar(b){
  const img=b.logo_url?'<img src="'+escapeResult(b.logo_url)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':escapeResult(b.name.slice(0,1).toUpperCase()||"S");
  return img;
 }
 function renderRecentBusinesses(){
- const rows=recentBusinessList();
+ const rows=window.StoreNestMarketplaceActivity?.getBusinesses()||[];
  clearRecentButton.hidden=rows.length===0;
- recentGrid.innerHTML=rows.length?rows.map(b=>'<div class="recent-entry"><a class="recent-card" href="/storefront.html?slug='+encodeURIComponent(b.slug)+'"><span class="recent-avatar">'+businessAvatar(b)+'</span><span class="recent-text"><strong>'+escapeResult(b.name)+'</strong><small>'+escapeResult([b.category,b.location].filter(Boolean).join(" · ")||"View storefront")+'</small></span><span class="recent-go" aria-hidden="true">→</span></a><button type="button" class="recent-remove" data-remove-slug="'+escapeResult(b.slug)+'" aria-label="Remove '+escapeResult(b.name)+' from recent businesses" title="Remove from recent businesses">&times;</button></div>').join(""):'<div class="recent-empty">No recent businesses yet. Search for a business and open its storefront to find it here next time.</div>';
+ recentGrid.innerHTML=rows.length?rows.map(b=>{
+  const pinned=!!b.pinnedAt,action=pinned?"Unpin ":"Pin ";
+  const safeName=escapeResult(b.name);
+  return '<div class="recent-entry'+(pinned?' is-pinned':'')+'"><a class="recent-card" data-business-slug="'+escapeResult(b.slug)+'" href="/storefront.html?slug='+encodeURIComponent(b.slug)+'"><span class="recent-avatar">'+businessAvatar(b)+'</span><span class="recent-text"><strong>'+safeName+'</strong><small>'+escapeResult([b.category,b.location].filter(Boolean).join(" · ")||"View storefront")+'</small></span><span class="recent-go" aria-hidden="true">→</span></a><div class="recent-actions"><button type="button" class="recent-pin" data-pin-business="'+escapeResult(b.slug)+'" aria-pressed="'+pinned+'" aria-label="'+action+safeName+'" title="'+action+safeName+'">'+MARKETPLACE_PIN_ICON+'</button><button type="button" class="recent-remove" data-remove-slug="'+escapeResult(b.slug)+'" aria-label="Remove visit history for '+safeName+'" title="Remove visit history">&times;</button></div></div>';
+ }).join(""):'<div class="recent-empty">No visited businesses yet. Open a storefront to find it here next time.</div>';
 }
 function setSearchActive(active){
  recentSection.hidden=active;
@@ -882,31 +899,27 @@ function setSearchActive(active){
  if(!active)categorySection.hidden=false;
 }
 clearRecentButton.addEventListener("click",()=>{
- if(!confirm("Remove all businesses from your recent list?"))return;
- storeRecentList([]);
+ if(!confirm("Clear unpinned business visit history? Pinned businesses will stay here."))return;
+ window.StoreNestMarketplaceActivity?.clearBusinessHistory();
  renderRecentBusinesses();
 });
-window.addEventListener("pageshow",()=>{if(!storeSearchInput.value.trim())renderRecentBusinesses()});
-window.addEventListener("storage",event=>{if(event.key===RECENT_BUSINESSES_KEY)renderRecentBusinesses()});
+window.addEventListener("pageshow",renderRecentBusinesses);
 recentGrid.addEventListener("click",event=>{
+ const pin=event.target.closest("button[data-pin-business]");
+ if(pin){
+  event.preventDefault();event.stopPropagation();
+  window.StoreNestMarketplaceActivity?.toggleBusinessPin(pin.dataset.pinBusiness);
+  return;
+ }
  const remove=event.target.closest("button[data-remove-slug]");
  if(remove){
-   event.preventDefault();
-   event.stopPropagation();
-   storeRecentList(recentBusinessList().filter(b=>b.slug!==remove.dataset.removeSlug));
-   renderRecentBusinesses();
-   return;
+  event.preventDefault();event.stopPropagation();
+  window.StoreNestMarketplaceActivity?.removeBusinessVisit(remove.dataset.removeSlug);
  }
- const link=event.target.closest("a.recent-card");
- if(!link)return;
- const business=recentBusinessList().find(b=>link.getAttribute("href")==="/storefront.html?slug="+encodeURIComponent(b.slug));
- if(business)rememberBusiness(business);
 });
-resultRoot.addEventListener("click",event=>{
- const link=event.target.closest("a[data-business-slug]");
- if(!link)return;
- const business=lastSearchResults.find(row=>row.slug===link.dataset.businessSlug);
- if(business)rememberBusiness(business);
+window.StoreNestMarketplaceActivity?.subscribe(()=>{
+ renderMarketplaceCategories();
+ renderRecentBusinesses();
 });
 renderRecentBusinesses();
 function escapeResult(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
