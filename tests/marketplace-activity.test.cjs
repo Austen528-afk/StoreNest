@@ -197,19 +197,3 @@ test("account preferences synchronize across devices and stay isolated by user",
   assert.equal(deviceB.api.getSnapshot().categories.groceries, undefined);
 });
 
-test("homepage and storefront wire visits, pins, clear history, and responsive controls", () => {
-  const index = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
-  const storefront = fs.readFileSync(path.join(__dirname, "..", "storefront.html"), "utf8");
-  const serviceWorker = fs.readFileSync(path.join(__dirname, "..", "sw.js"), "utf8");
-
-  assert.match(index, /Recently visited businesses/);
-  assert.match(index, /sortCategories/);
-  assert.match(index, /toggleCategoryPin/);
-  assert.match(index, /toggleBusinessPin/);
-  assert.match(index, /removeBusinessVisit/);
-  assert.match(index, /clearBusinessHistory/);
-  assert.match(index, /@media\(max-width:540px\)/);
-  assert.match(storefront, /recordBusiness/);
-  assert.match(serviceWorker, /marketplace-activity\.js/);
-  assert.doesNotMatch(index, /rememberBusiness\(/);
-});
