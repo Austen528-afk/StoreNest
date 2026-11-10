@@ -1,12 +1,10 @@
-const CACHE_NAME="storenest-shell-v45";
+const CACHE_NAME="storenest-shell-v46";
 const SHELL=["/","/index.html","/business-owner.html","/storefront.html","/basket.html","/customer-account.html","/messaging-centre.js","/messaging-centre.css","/chat-launcher.js","/customer-auth.js","/categories.js","/marketplace-activity.js","/payments-dashboard.js","/payments-dashboard.css","/product-customization.js","/owner-order-viewer.js","/owner-order-viewer.css","/owner-bookings.js","/owner-bookings.css","/service-bookings.js","/service-bookings.css","/theme.css","/console.css","/theme.js","/manifest.webmanifest","/icons/icon-192.png","/icons/icon-512.png","/assets/install-iphone-share.svg","/assets/install-iphone-home-screen.svg","/assets/install-iphone-confirm.svg"];
 self.addEventListener("install",event=>{
- event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(SHELL)));
- self.skipWaiting();
+ event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting()));
 });
 self.addEventListener("activate",event=>{
- event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE_NAME).map(key=>caches.delete(key)))));
- self.clients.claim();
+ event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim()));
 });
 self.addEventListener("notificationclick",event=>{
  const notification=event.notification,data=notification.data||{};

@@ -75,10 +75,16 @@ function summarizeOrders(input,period,now,custom){
 function chartSlots(period,now,custom){
  const range=dateRange(period,custom,now);if(!range)return [];
  if(period==="today")return [{start:range.start,end:range.end,label:"Today"}];
- if(period==="week")return Array.from({length:7},(_,i)=>{const start=addDays(range.start,i);return {start,end:addDays(start,1),label:dateLabel(start,{weekday:"short"})}});
+ if(period==="week"){
+  const days=Math.max(1,Math.min(7,Math.round((range.end-range.start)/DAY)));
+  return Array.from({length:days},(_,i)=>{const start=addDays(range.start,i);return {start,end:addDays(start,1),label:dateLabel(start,{weekday:"short"})}});
+ }
  if(period==="month"){
-  const elapsed=Math.round((range.end-range.start)/DAY),count=Math.min(7,elapsed);
-  return Array.from({length:count},(_,i)=>{const first=Math.floor(i*elapsed/count),after=Math.floor((i+1)*elapsed/count),start=addDays(range.start,first);return {start,end:addDays(range.start,after),label:dateLabel(start,{day:"numeric",month:"short"})}});
+  const elapsed=Math.max(1,Math.round((range.end-range.start)/DAY));
+  return Array.from({length:elapsed},(_,i)=>{
+   const start=addDays(range.start,i),day=start.getDate(),showLabel=i===0||day%5===0||i===elapsed-1;
+   return {start,end:addDays(start,1),label:showLabel?dateLabel(start,{day:"numeric",month:"short"}):""};
+  });
  }
  if(period==="year"){
   const count=(localDay(now)||localDay(new Date())).getMonth()+1;
@@ -111,7 +117,7 @@ function buildChartSvg(period,orders,now,custom){
  if(salesTotal>0)out+='<path d="'+path(sales)+'" class="payments-chart-line payments-chart-sales"/>';
  if(paidTotal>0)out+='<path d="'+path(paid)+'" class="payments-chart-line payments-chart-earnings"/>';
  sales.forEach((point,i)=>{if(salesTotal>0)out+='<circle cx="'+point.x+'" cy="'+point.y+'" r="4.5" class="payments-chart-dot payments-chart-sales-dot"><title>Completed order value: '+formatCurrency(point.value)+'</title></circle>';if(paidTotal>0)out+='<circle cx="'+paid[i].x+'" cy="'+paid[i].y+'" r="4.5" class="payments-chart-dot payments-chart-earnings-dot"><title>Order records marked paid: '+formatCurrency(paid[i].value)+'</title></circle>'});
- data.slots.forEach((slot,i)=>{const x=data.slots.length===1?l+pw/2:l+i*pw/(data.slots.length-1);out+='<text x="'+x+'" y="'+(h-13)+'" text-anchor="middle" class="payments-chart-label payments-chart-x-label">'+esc(slot.label)+'</text>'});
+ data.slots.forEach((slot,i)=>{if(!slot.label)return;const x=data.slots.length===1?l+pw/2:l+i*pw/(data.slots.length-1);out+='<text x="'+x+'" y="'+(h-13)+'" text-anchor="middle" class="payments-chart-label payments-chart-x-label">'+esc(slot.label)+'</text>'});
  return out+'</svg>';
 }
 function paymentStatusLabel(order){
