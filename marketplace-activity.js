@@ -331,6 +331,13 @@
   syncInFlight=true;
   const ownerAtStart=activeUserId;
   try{
+   if(typeof authClient.auth.getUser==="function"){
+    const latest=await authClient.auth.getUser();
+    if(latest?.error)throw latest.error;
+    const latestUser=latest?.data?.user;
+    if(!latestUser||latestUser.id!==ownerAtStart||activeUserId!==ownerAtStart)return false;
+    activeUser=latestUser;
+   }
    const localSnapshot=normalizeState(state);
    const oldRemote=normalizeState(activeUser.user_metadata?.[REMOTE_KEY]);
    const merged=mergeStates(oldRemote,localSnapshot);
