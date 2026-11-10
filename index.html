@@ -597,6 +597,112 @@ function marketplaceMediaEntry(value){
  const url=marketplaceMediaUrl(source.url||source.image_url||source.src||source.path)||variants[0]?.url||"";
  return url?{url,width:Number(source.width)||0,variants}:null;
 }
+
+const STOREFRONT_PRELOAD_CACHE_PREFIX="storenest:public-store:v2:";
+const STOREFRONT_PRELOAD_CACHE_MAX_AGE=90*1000;
+const storefrontPreloadRequests=new Map(),storefrontImagePreloads=new Map();
+const storefrontLinkObservers=new WeakMap(),storefrontRootObservers=new WeakMap();
+function readPrefetchedStorefront(slug){
+ try{
+  const value=JSON.parse(sessionStorage.getItem(STOREFRONT_PRELOAD_CACHE_PREFIX+slug)||"null");
+  if(value?.business?.slug!==slug||!Array.isArray(value.items)||!Array.isArray(value.sections)||Date.now()-value.savedAt>STOREFRONT_PRELOAD_CACHE_MAX_AGE)return null;
+  return value;
+ }catch{return null}
+}
+function warmStorefrontImages(slug,business,items){
+ const config=business?.storefront_config||{},candidates=[business?.logo_url];
+ if(!config.heroIsVideo&&!/\.(?:mp4|webm)(?:[?#]|$)/i.test(String(config.hero||"")))candidates.push(config.hero);
+ for(const item of (Array.isArray(items)?items:[]).filter(row=>row?.is_available!==false).slice(0,3)){
+  const entry=marketplaceMediaEntry(item.image_url)||marketplaceMediaEntry(item.media_urls?.[0]);
+  if(!entry||/\.(?:mp4|webm)(?:[?#]|$)/i.test(entry.url))continue;
+  candidates.push(entry.variants.find(variant=>variant.width>=480)?.url||entry.url);
+ }
+ const images=[];
+ for(const url of [...new Set(candidates.map(marketplaceMediaUrl).filter(value=>value&&!/\.(?:mp4|webm)(?:[?#]|$)/i.test(value)))]){
+  const image=new Image();image.decoding="async";image.fetchPriority="low";image.src=url;images.push(image);
+ }
+ if(images.length){
+  storefrontImagePreloads.set(slug,images);
+  while(storefrontImagePreloads.size>6)storefrontImagePreloads.delete(storefrontImagePreloads.keys().next().value);
+ }
+}
+function prefetchStorefrontSnapshot(slug){
+ slug=String(slug||"").trim();
+ if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))return Promise.resolve(null);
+ const cached=readPrefetchedStorefront(slug);
+ if(cached){warmStorefrontImages(slug,cached.business,cached.items);return Promise.resolve(cached)}
+ if(storefrontPreloadRequests.has(slug))return storefrontPreloadRequests.get(slug);
+ const request=(async()=>{
+  const client=await getSearchClient();
+  const {data:business,error:businessError}=await client.from("businesses")
+   .select("id,name,slug,category,description,logo_url,location,phone,email,website,is_published,storefront_config")
+   .eq("slug",slug).eq("is_published",true).maybeSingle();
+  if(businessError)throw businessError;
+  if(!business){
+   try{sessionStorage.removeItem(STOREFRONT_PRELOAD_CACHE_PREFIX+slug)}catch{}
+   return null;
+  }
+  const [catalog,sectionResult]=await Promise.all([
+   client.from("business_items")
+    .select("id,name,item_type,description,price,price_range_min,price_range_max,booking_fee,booking_fee_min,booking_fee_max,image_url,media_urls,decor_color_sets,fashion_color_sets,category_id,customization_options,is_available")
+    .eq("business_id",business.id).order("display_order").order("created_at",{ascending:false}),
+   client.from("business_categories")
+    .select("id,name,description,display_style,display_order")
+    .eq("business_id",business.id).order("display_order").order("name")
+  ]);
+  if(catalog.error)throw catalog.error;
+  if(sectionResult.error)throw sectionResult.error;
+  const snapshot={savedAt:Date.now(),business,items:catalog.data||[],sections:sectionResult.data||[]};
+  try{sessionStorage.setItem(STOREFRONT_PRELOAD_CACHE_PREFIX+slug,JSON.stringify(snapshot))}catch{}
+  warmStorefrontImages(slug,snapshot.business,snapshot.items);
+  return snapshot;
+ })().catch(()=>null).finally(()=>storefrontPreloadRequests.delete(slug));
+ storefrontPreloadRequests.set(slug,request);
+ return request;
+}
+function storefrontSlugFromLink(link){
+ if(link?.dataset?.businessSlug)return link.dataset.businessSlug;
+ try{return new URL(link?.href||"",location.href).searchParams.get("slug")||""}catch{return ""}
+}
+function prefetchStorefrontOnIntent(event){
+ const link=event.target.closest?.("a[data-business-slug],a.recent-card");
+ if(!link||(event.type==="pointerover"&&event.relatedTarget&&link.contains(event.relatedTarget)))return;
+ prefetchStorefrontSnapshot(storefrontSlugFromLink(link));
+}
+function prefetchVisibleStorefrontLinks(root){
+ if(!root)return;
+ storefrontLinkObservers.get(root)?.disconnect();
+ const links=[...root.querySelectorAll("a[data-business-slug],a.recent-card")];
+ if(!links.length||navigator.connection?.saveData)return;
+ if(!("IntersectionObserver" in window)){
+  const first=links.find(link=>{const rect=link.getBoundingClientRect();return rect.bottom>=0&&rect.top<=innerHeight});
+  if(first)prefetchStorefrontSnapshot(storefrontSlugFromLink(first));
+  return;
+ }
+ const observer=new IntersectionObserver(entries=>{
+  for(const entry of entries){
+   if(!entry.isIntersecting||!entry.target.isConnected)continue;
+   observer.unobserve(entry.target);
+   prefetchStorefrontSnapshot(storefrontSlugFromLink(entry.target));
+  }
+ },{rootMargin:"280px 0px",threshold:0});
+ storefrontLinkObservers.set(root,observer);
+ links.forEach(link=>observer.observe(link));
+}
+for(const root of [resultRoot,recentGrid]){
+ if(!root)continue;
+ root.addEventListener("pointerover",prefetchStorefrontOnIntent,{passive:true});
+ root.addEventListener("focusin",prefetchStorefrontOnIntent);
+ root.addEventListener("touchstart",prefetchStorefrontOnIntent,{passive:true});
+ if("MutationObserver" in window){
+  const observer=new MutationObserver(()=>prefetchVisibleStorefrontLinks(root));
+  observer.observe(root,{childList:true,subtree:true});
+  storefrontRootObservers.set(root,observer);
+ }
+}
+prefetchVisibleStorefrontLinks(resultRoot);
+prefetchVisibleStorefrontLinks(recentGrid);
+
 function marketplaceBusinessCard(b,items){
  const esc=escapeResult,params=new URLSearchParams({slug:b.slug});
  if(b.section_id)params.set("category",b.section_id);
