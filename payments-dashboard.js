@@ -39,7 +39,7 @@ function comparisonRanges(period,now){
  return {currentStart:monday,currentEnd:tomorrow,previousStart,previousEnd:addDays(previousStart,elapsed)};
 }
 function summarizeOrders(input,period,now){
- const orders=(Array.isArray(input)?input:[]).map(normalizeOrder).filter(Boolean),completed=orders.filter(order=>order.status==="completed");
+ const orders=(Array.isArray(input)?input:[]).map(normalizeOrder).filter(Boolean),completed=orders.filter(order=>order.status==="completed"),completedSaleCount=orders.filter(isCompletedSale).length;
  const completedValue=orders.filter(isCompletedSale).reduce((sum,order)=>sum+order.subtotal,0);
  const recordedPaid=orders.filter(isRecordedPaid).reduce((sum,order)=>sum+order.subtotal,0);
  const unpaidOrPending=orders.filter(isUnpaidOrPending).reduce((sum,order)=>sum+order.subtotal,0);
@@ -50,7 +50,7 @@ function summarizeOrders(input,period,now){
  let salesGrowth="0%";
  if(previous===0&&current>0)salesGrowth="New";
  else if(previous>0){const change=(current-previous)/previous*100;salesGrowth=(change>0?"+":"")+Math.round(change)+"%"}
- return {orderCount:orders.length,completedCount:completed.length,completedValue,recordedPaid,unpaidOrPending,refunded,averageOrderValue:completed.length?completedValue/completed.length:0,salesGrowth};
+ return {orderCount:orders.length,completedCount:completed.length,completedValue,recordedPaid,unpaidOrPending,refunded,averageOrderValue:completedSaleCount?completedValue/completedSaleCount:0,salesGrowth};
 }
 function chartSlots(period,now){
  const today=localDay(now)||localDay(new Date());
