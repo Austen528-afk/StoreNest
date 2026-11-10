@@ -155,9 +155,14 @@
  state=mergeStates(state,readLegacyHistory());
  saveLocal();
 
- function nextTimestamp(entry){
-  const prior=Math.max(stampTime(entry?.visitUpdatedAt),stampTime(entry?.pinUpdatedAt));
-  return new Date(Math.max(Date.now(),prior+1)).toISOString();
+ function nextTimestamp(){
+  let latest=stampTime(state.businessHistoryClearedAt);
+  for(const collection of [state.categories,state.businesses]){
+   for(const entry of Object.values(collection)){
+    latest=Math.max(latest,stampTime(entry.visitUpdatedAt||entry.lastVisitedAt),stampTime(entry.pinUpdatedAt||entry.pinnedAt));
+   }
+  }
+  return new Date(Math.max(Date.now(),latest+1)).toISOString();
  }
  function notify(){
   const snapshot=getSnapshot();
