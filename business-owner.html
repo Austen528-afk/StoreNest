@@ -763,7 +763,6 @@ html[data-theme="dark"] #itemMediaQualityNote[data-warning="true"]{color:#f4c27e
     <div><h3>Payments &amp; Earnings</h3><p>Review business order value and the payment information StoreNest has actually recorded.</p></div>
     <div class="payments-date-label" aria-label="Selected reporting period"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M8 14h3"/></svg><span id="paymentsRangeLabel">This month</span></div>
   </div>
-  <div class="payments-data-note" role="status"><span class="payments-data-badge">Historical data</span><span id="paymentsDataNote">Order history will appear here when the dashboard opens.</span></div>
   <div class="payments-kpi-grid" aria-label="Financial summary from recorded orders">
     <div class="payments-kpi"><span class="payments-kpi-label">Total Sales</span><span class="payments-kpi-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 8h14l1 12H4L5 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg></span><strong id="paymentsTotalSales" class="payments-kpi-value">—</strong><small class="payments-kpi-note">Completed order value; collection is not verified.</small></div>
     <div class="payments-kpi"><span class="payments-kpi-label">Net Earnings</span><span class="payments-kpi-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12H5a2 2 0 0 1-2-2V7Z"/><path d="M3 9h18M16 14h2"/></svg></span><strong id="paymentsNetEarnings" class="payments-kpi-value">—</strong><small class="payments-kpi-note" id="paymentsNetEarningsNote">Payment fee data is not connected.</small></div>
@@ -2576,7 +2575,7 @@ if("serviceWorker" in navigator){let hadOwnerServiceWorker=Boolean(navigator.ser
 document.getElementById("pageRefreshButton")?.addEventListener("click",()=>window.location.reload());
 </script>
 <script src="/owner-order-viewer.js"></script>
-<script src="/payments-dashboard.js?v=46"></script>
+<script src="/payments-dashboard.js?v=47"></script>
 <script src="/analytics-engine.js"></script>
 <script src="/analytics-dashboard.js"></script>
 <script src="/messaging-centre.js"></script>
