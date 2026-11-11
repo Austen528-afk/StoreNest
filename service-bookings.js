@@ -92,6 +92,7 @@ async function prefillBookingCustomerDetails(form,requestId){
 }
 function open(item,trigger,options={}){
  if(!isBookingOffer(item,business)||!client||!business)return;
+ window.StoreNestAnalyticsTracker?.productView(business.id,item.id);
  activeItem=item;returnFocus=trigger||null;activeDecorColorSetName=String(options?.decorColorSetName||"").trim().slice(0,80);
  activeBookingOptions=(Array.isArray(options?.selectedOptions)?options.selectedOptions:[]).slice(0,12).map(row=>({
   group:String(row?.group||"").trim().slice(0,75),
@@ -155,6 +156,7 @@ $("bookingRequestForm").addEventListener("submit",async e=>{
  try{
   const payload={
    business_id:business.id,item_id:activeItem.id,
+   analytics_session_id:window.StoreNestAnalyticsTracker?.sessionId()||null,
    customer_name:String(d.get("customer_name")||"").trim(),
    contact_phone:phone||null,contact_email:email||null,
    event_date:String(d.get("event_date")||""),

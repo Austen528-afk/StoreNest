@@ -644,7 +644,7 @@ html[data-theme="dark"] body[data-page-kind="owner"] .owner-orders-message{borde
 #itemMediaQualityNote[data-warning="true"]{color:#a15c20;font-weight:700}
 html[data-theme="dark"] #itemMediaQualityNote[data-warning="true"]{color:#f4c27e}
 </style>
-  <link rel="stylesheet" href="/messaging-centre.css">
+  <link rel="stylesheet" href="/messaging-centre.css">\n  <link rel="stylesheet" href="/analytics-dashboard.css">
 </head>
 <body data-page-kind="owner">
 <div class="wrap">
@@ -796,7 +796,79 @@ html[data-theme="dark"] #itemMediaQualityNote[data-warning="true"]{color:#f4c27e
     <div class="payments-insights-grid"><div class="payments-insight"><span class="payments-insight-label">Completed Orders</span><strong id="paymentsCompletedOrders" class="payments-insight-value">—</strong></div><div class="payments-insight"><span class="payments-insight-label">Average Order Value</span><strong id="paymentsAverageOrderValue" class="payments-insight-value">—</strong></div><div class="payments-insight"><span class="payments-insight-label">Sales Growth</span><strong id="paymentsSalesGrowth" class="payments-insight-value">—</strong></div><div class="payments-insight"><span class="payments-insight-label">Refunded Amount</span><strong id="paymentsRefundedAmount" class="payments-insight-value">—</strong></div></div>
   </div>
   <p class="payments-footnote"><span id="paymentsDataFootnote">Order completion is separate from payment confirmation. StoreNest does not yet have a connected payment, fee, refund, escrow or payout ledger.</span></p>
-</section><section class="dashboard-section coming-section" data-section-view="analytics" hidden><div class="section-heading"><div><h3>Analytics</h3><p>Business-specific insights from real storefront activity.</p></div></div><div class="empty-state"><span>⌁</span><strong>No analytics yet</strong><p>Visits and product views will appear here when public storefront tracking is connected.</p></div></section>
+</section><section class="dashboard-section analytics-page" id="analyticsDashboard" data-section-view="analytics" hidden aria-labelledby="analyticsTitle">
+  <header class="analytics-header">
+    <div>
+      <h3 id="analyticsTitle">Analytics</h3>
+      <p>Understand what's working and what isn't.</p>
+      <span id="analyticsRangeLabel" class="analytics-range-label"></span>
+    </div>
+    <div class="analytics-header-controls">
+      <label class="analytics-period-control">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path></svg>
+        <span class="sr-only">Date range</span>
+        <select id="analyticsDateRange" aria-label="Analytics date range">
+          <option value="today">Today</option>
+          <option value="last7">Last 7 days</option>
+          <option value="last30" selected>Last 30 days</option>
+          <option value="month">This month</option>
+          <option value="last90">Last 90 days</option>
+          <option value="custom">Custom range</option>
+        </select>
+      </label>
+      <div id="analyticsCustomRange" class="analytics-custom-range" hidden>
+        <label><span class="sr-only">Start date</span><input id="analyticsCustomStart" type="date"></label>
+        <span aria-hidden="true">–</span>
+        <label><span class="sr-only">End date</span><input id="analyticsCustomEnd" type="date"></label>
+      </div>
+      <button id="analyticsRefresh" class="analytics-icon-button" type="button" aria-label="Refresh analytics" title="Refresh analytics">↻</button>
+    </div>
+  </header>
+  <p id="analyticsStatusMessage" class="analytics-status-message" role="status" aria-live="polite" hidden></p>
+  <div id="analyticsLoading" class="analytics-loading" role="status" hidden>Loading this business's analytics…</div>
+  <div id="analyticsError" class="analytics-error" role="alert" hidden>
+    <p data-error-copy></p>
+    <button id="analyticsRetry" type="button" class="outline-button">Try again</button>
+  </div>
+  <div id="analyticsContent" class="analytics-content" hidden>
+    <section id="analyticsSummary" class="analytics-summary-row" aria-label="Performance summary"></section>
+    <div class="analytics-main-grid">
+      <section class="analytics-card analytics-card-trends" aria-labelledby="analyticsTrendsTitle">
+        <div class="analytics-panel-heading">
+          <div><h4 id="analyticsTrendsTitle">Performance Trends</h4><p>Track your store's key metrics over time.</p></div>
+          <label class="analytics-metric-control-wrap"><span class="sr-only">Chart metric</span>
+            <select id="analyticsMetric" class="analytics-metric-control" aria-label="Chart metric">
+              <option value="orders" selected>Orders</option><option value="visits">Store Visits</option><option value="conversion">Conversion</option><option value="returning">Returning</option>
+            </select>
+          </label>
+        </div>
+        <div id="analyticsChart" class="analytics-chart-host" aria-live="polite"></div>
+      </section>
+      <section class="analytics-card" aria-labelledby="analyticsInsightsTitle">
+        <div class="analytics-panel-heading analytics-insights-head">
+          <div><h4 id="analyticsInsightsTitle">Smart Insights</h4><p>Key takeaways for your store.</p></div>
+          <button id="analyticsViewAllInsights" type="button" hidden aria-expanded="false">View all</button>
+        </div>
+        <div id="smartInsightList" class="analytics-insight-list" aria-live="polite"></div>
+      </section>
+    </div>
+    <p id="analyticsTrackingNote" class="analytics-tracking-note" hidden>StoreNest has no historical storefront session records. Tracking starts from the first visit after this update; earlier visits will not be estimated.</p>
+    <section class="analytics-explore-panel" aria-labelledby="analyticsExploreTitle">
+      <div class="analytics-explore-heading"><h4 id="analyticsExploreTitle">Explore Your Business</h4><p>Dive deeper into your store's performance and find new opportunities.</p></div>
+      <div id="analyticsExploreCards" class="analytics-explore-cards">
+        <button class="analytics-explore-card" type="button" data-analytics-view="customers"><span aria-hidden="true">♧</span><strong>Customers</strong><span aria-hidden="true">›</span></button>
+        <button class="analytics-explore-card" type="button" data-analytics-view="products"><span aria-hidden="true">◇</span><strong>Products</strong><span aria-hidden="true">›</span></button>
+        <button class="analytics-explore-card" type="button" data-analytics-view="orders"><span aria-hidden="true">🛒</span><strong>Orders</strong><span aria-hidden="true">›</span></button>
+        <button class="analytics-explore-card" type="button" data-analytics-view="operations"><span aria-hidden="true">✓</span><strong>Operations</strong><span aria-hidden="true">›</span></button>
+      </div>
+      <section id="analyticsBusinessDetail" class="analytics-business-detail" hidden aria-live="polite">
+        <div class="analytics-detail-title-row"><h4 id="analyticsBusinessDetailTitle"></h4><button id="analyticsBusinessBack" class="analytics-back-button" type="button">← Back</button></div>
+        <div id="analyticsBusinessDetailBody"></div>
+      </section>
+    </section>
+    <section id="analyticsInsightDetail" class="analytics-business-detail analytics-insight-detail" hidden aria-live="polite"></section>
+  </div>
+</section>
     </main>
   </div>
   <div class="mobile-nav-backdrop" id="mobileNavBackdrop" hidden></div>
@@ -2508,7 +2580,7 @@ if("serviceWorker" in navigator){let hadOwnerServiceWorker=Boolean(navigator.ser
 document.getElementById("pageRefreshButton")?.addEventListener("click",()=>window.location.reload());
 </script>
 <script src="/owner-order-viewer.js"></script>
-<script src="/payments-dashboard.js?v=46"></script>
+<script src="/payments-dashboard.js?v=46"></script>\n<script src="/analytics-engine.js"></script>\n<script src="/analytics-dashboard.js"></script>
 <script src="/messaging-centre.js"></script>
 <script src="/chat-launcher.js" defer></script>
 </body>

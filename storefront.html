@@ -1566,6 +1566,7 @@ function needsProductCustomization(item){
 function addProductToCart(item,selection={},note=""){
  const quote=quoteProduct(item,selection);
  if(!quote.valid)return quote;
+ window.StoreNestAnalyticsTracker?.cartAdd(activePublicBusiness?.id,item.id);
  const instructions=String(note||"").trim().slice(0,200);
  const key=productCartKey(item.id,selection,instructions);
  const existing=cart.get(key);
@@ -1958,12 +1959,14 @@ async function submitCheckout(event){
  }
  const payloads=orderGroups.map(group=>({
   id:crypto.randomUUID(),business_id:group.businessId,tracking_token:crypto.randomUUID(),
+  analytics_session_id:window.StoreNestAnalyticsTracker?.sessionId()||null,
   customer_name:profile.profile_name,contact_phone:phone,contact_email:email,payment_method:paymentMethod,
   items:group.rows.map(row=>({
    item_id:row.itemId||row.item_id,quantity:Number(row.quantity),
    selection:row.selection||{},note:String(row.note||"")
   }))
  }));
+ payloads.forEach(payload=>window.StoreNestAnalyticsTracker?.checkoutStart(payload.business_id));
  const button=$("placeOrderButton");button.disabled=true;button.textContent=multiStoreCheckout?"Sending orders…":"Sending order…";
  try{
   // One API request inserts one row per store. The database prepares and validates
@@ -2463,6 +2466,7 @@ $("galleryChoiceGroups").addEventListener("change",event=>{
 
 function openProductGallery(id,trigger,cartKey=null){
  const item=availableItems.find(row=>row.id===id);if(!item)return;
+ window.StoreNestAnalyticsTracker?.productView(activePublicBusiness?.id,item.id);
  const isBookingOffer=window.StoreNestBookings.isBookingOffer(item,activePublicBusiness);
  const businessCategoryId=window.StoreNestCategoryId(activePublicBusiness?.category);
  const isLocalServiceBooking=isBookingOffer&&businessCategoryId==="local-services";
@@ -3187,6 +3191,7 @@ async function load(){
      return;
    }
    recordStorefrontVisit(business);
+   window.StoreNestAnalyticsTracker?.visit(business.id);
    // Catalogue and category metadata are independent once the business ID is known.
    const [catalog,sectionResult]=await Promise.all([
      client.from("business_items").select("id,name,item_type,description,price,price_range_min,price_range_max,booking_fee,booking_fee_min,booking_fee_max,image_url,media_urls,decor_color_sets,fashion_color_sets,category_id,customization_options,is_available").eq("business_id",business.id).order("display_order").order("created_at",{ascending:false}),
@@ -3210,6 +3215,7 @@ async function load(){
 syncCartBadge();
 load();
 </script>
+<script src="/storefront-analytics.js"></script>
 <script src="/messaging-centre.js" defer></script>
 <script src="/chat-launcher.js" defer></script>
 </body>
