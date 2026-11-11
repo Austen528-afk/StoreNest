@@ -805,6 +805,12 @@ html[data-theme="dark"] #itemMediaQualityNote[data-warning="true"]{color:#f4c27e
       <span id="analyticsRangeLabel" class="analytics-range-label"></span>
     </div>
     <div class="analytics-header-controls">
+      <nav id="analyticsExploreCards" class="analytics-explore-cards" aria-label="Explore analytics sections">
+        <button class="analytics-explore-card" type="button" data-analytics-view="customers"><span aria-hidden="true">♧</span><strong>Customers</strong><span aria-hidden="true">›</span></button>
+        <button class="analytics-explore-card" type="button" data-analytics-view="products"><span aria-hidden="true">◇</span><strong>Products</strong><span aria-hidden="true">›</span></button>
+        <button class="analytics-explore-card" type="button" data-analytics-view="orders"><span aria-hidden="true">🛒</span><strong>Orders</strong><span aria-hidden="true">›</span></button>
+        <button class="analytics-explore-card" type="button" data-analytics-view="operations"><span aria-hidden="true">✓</span><strong>Operations</strong><span aria-hidden="true">›</span></button>
+      </nav>
       <label class="analytics-period-control">
         <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path></svg>
         <span class="sr-only">Date range</span>
@@ -853,18 +859,9 @@ html[data-theme="dark"] #itemMediaQualityNote[data-warning="true"]{color:#f4c27e
         <div id="smartInsightList" class="analytics-insight-list" aria-live="polite"></div>
       </section>
     </div>
-    <section class="analytics-explore-panel" aria-labelledby="analyticsExploreTitle">
-      <div class="analytics-explore-heading"><h4 id="analyticsExploreTitle">Explore Your Business</h4><p>Dive deeper into your store's performance and find new opportunities.</p></div>
-      <div id="analyticsExploreCards" class="analytics-explore-cards">
-        <button class="analytics-explore-card" type="button" data-analytics-view="customers"><span aria-hidden="true">♧</span><strong>Customers</strong><span aria-hidden="true">›</span></button>
-        <button class="analytics-explore-card" type="button" data-analytics-view="products"><span aria-hidden="true">◇</span><strong>Products</strong><span aria-hidden="true">›</span></button>
-        <button class="analytics-explore-card" type="button" data-analytics-view="orders"><span aria-hidden="true">🛒</span><strong>Orders</strong><span aria-hidden="true">›</span></button>
-        <button class="analytics-explore-card" type="button" data-analytics-view="operations"><span aria-hidden="true">✓</span><strong>Operations</strong><span aria-hidden="true">›</span></button>
-      </div>
-      <section id="analyticsBusinessDetail" class="analytics-business-detail" hidden aria-live="polite">
-        <div class="analytics-detail-title-row"><h4 id="analyticsBusinessDetailTitle"></h4><button id="analyticsBusinessBack" class="analytics-back-button" type="button">← Back</button></div>
-        <div id="analyticsBusinessDetailBody"></div>
-      </section>
+    <section id="analyticsBusinessDetail" class="analytics-business-detail" hidden aria-live="polite">
+      <div class="analytics-detail-title-row"><h4 id="analyticsBusinessDetailTitle"></h4><button id="analyticsBusinessBack" class="analytics-back-button" type="button">← Back</button></div>
+      <div id="analyticsBusinessDetailBody"></div>
     </section>
     <section id="analyticsInsightDetail" class="analytics-business-detail analytics-insight-detail" hidden aria-live="polite"></section>
   </div>
