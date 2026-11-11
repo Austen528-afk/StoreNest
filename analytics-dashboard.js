@@ -226,7 +226,7 @@
 
   const VIEW_TREND_SETTINGS = Object.freeze({
     customers: { title: "Customer Trends", description: "Repeat purchases from identified customers.", metric: "returning" },
-    products: { title: "Product & Service Trends", description: "Unique product and service views over time.", metric: "product_views" },
+    products: { title: "Product or Service Trends", description: "Unique product and service views over time.", metric: "product_views" },
     orders: { title: "Order Trends", description: "Orders placed during the selected period.", metric: "orders" },
     operations: { title: "Operations Trends", description: "Booking requests received during the selected period.", metric: "bookings" }
   });
