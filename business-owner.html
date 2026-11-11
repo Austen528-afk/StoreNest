@@ -763,14 +763,20 @@ html[data-theme="dark"] #itemMediaQualityNote[data-warning="true"]{color:#f4c27e
   <header class="customer-header">
     <div><h3 id="customerTitle">Customers</h3><p>Understand customer behaviour, preferences, needs and purchasing habits.</p><span id="customerRangeLabel" class="customer-range-label"></span></div>
     <div class="customer-controls">
-      <nav class="customer-explore-nav" aria-label="Explore customer intelligence">
-        <button class="customer-explore-button" type="button" data-customer-view="overview" aria-label="Customer Overview" title="Customer Overview"><span aria-hidden="true">♧</span><strong>Overview</strong><span aria-hidden="true">›</span></button>
-        <button class="customer-explore-button" type="button" data-customer-view="behaviour" aria-label="Customer Behaviour" title="Customer Behaviour"><span aria-hidden="true">▥</span><strong>Behaviour</strong><span aria-hidden="true">›</span></button>
-        <button class="customer-explore-button" type="button" data-customer-view="preferences" aria-label="Customer Preferences" title="Customer Preferences"><span aria-hidden="true">◇</span><strong>Preferences</strong><span aria-hidden="true">›</span></button>
-        <button class="customer-explore-button" type="button" data-customer-view="habits" aria-label="Purchase Habits" title="Purchase Habits"><span aria-hidden="true">🛒</span><strong>Habits</strong><span aria-hidden="true">›</span></button>
-        <button class="customer-explore-button" type="button" data-customer-view="journey" aria-label="Customer Journey" title="Customer Journey"><span aria-hidden="true">⌁</span><strong>Journey</strong><span aria-hidden="true">›</span></button>
-        <button class="customer-explore-button" type="button" data-customer-view="retention" aria-label="Customer Retention" title="Customer Retention"><span aria-hidden="true">⟳</span><strong>Retention</strong><span aria-hidden="true">›</span></button>
-      </nav>
+      <div class="customer-explore-menu" id="customerExploreMenu">
+        <button class="customer-explore-toggle" id="customerExploreToggle" type="button" aria-expanded="false" aria-controls="customerExploreList">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"></path><path d="M3 6h.01M3 12h.01M3 18h.01"></path></svg>
+          <span>Explore</span><span class="customer-explore-chevron" aria-hidden="true">⌄</span>
+        </button>
+        <ul class="customer-explore-list" id="customerExploreList" aria-label="Customer intelligence sections" hidden>
+          <li><button class="customer-explore-option" type="button" data-customer-view="overview"><span class="customer-explore-option-icon" aria-hidden="true">♧</span><span><strong>Customer Overview</strong><small>New, returning and active customers</small></span></button></li>
+          <li><button class="customer-explore-option" type="button" data-customer-view="behaviour"><span class="customer-explore-option-icon" aria-hidden="true">▥</span><span><strong>Customer Behaviour</strong><small>Browsing, purchasing and engagement patterns</small></span></button></li>
+          <li><button class="customer-explore-option" type="button" data-customer-view="preferences"><span class="customer-explore-option-icon" aria-hidden="true">◇</span><span><strong>Customer Preferences</strong><small>Preferred products, categories and options</small></span></button></li>
+          <li><button class="customer-explore-option" type="button" data-customer-view="habits"><span class="customer-explore-option-icon" aria-hidden="true">🛒</span><span><strong>Purchase Habits</strong><small>Frequency, timing and paid order value</small></span></button></li>
+          <li><button class="customer-explore-option" type="button" data-customer-view="journey"><span class="customer-explore-option-icon" aria-hidden="true">⌁</span><span><strong>Customer Journey</strong><small>Discovery, product views, cart activity and orders</small></span></button></li>
+          <li><button class="customer-explore-option" type="button" data-customer-view="retention"><span class="customer-explore-option-icon" aria-hidden="true">⟳</span><span><strong>Customer Retention</strong><small>Which customers return and how often</small></span></button></li>
+        </ul>
+      </div>
       <label class="customer-period-control"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path></svg><span class="sr-only">Customer report date range</span><select id="customerDateRange" aria-label="Customer report date range"><option value="today">Today</option><option value="last7">Last 7 days</option><option value="last30" selected>Last 30 days</option><option value="month">This month</option><option value="last90">Last 90 days</option><option value="custom">Custom range</option></select></label>
       <div class="customer-custom-range" id="customerCustomRange" hidden><label><span class="sr-only">Start date</span><input id="customerCustomStart" type="date"></label><span aria-hidden="true">–</span><label><span class="sr-only">End date</span><input id="customerCustomEnd" type="date"></label></div>
       <button id="customerRefresh" class="customer-icon-button" type="button" aria-label="Refresh customer analytics" title="Refresh customer analytics">↻</button>

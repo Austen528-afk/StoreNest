@@ -50,6 +50,15 @@
 
   function element(id) { return $(id); }
 
+  function setExploreMenuOpen(open, returnFocus) {
+    const toggle = element("customerExploreToggle");
+    const list = element("customerExploreList");
+    if (!toggle || !list) return;
+    toggle.setAttribute("aria-expanded", String(Boolean(open)));
+    list.hidden = !open;
+    if (returnFocus) toggle.focus();
+  }
+
   function setText(id, value) {
     const node = element(id);
     if (node) node.textContent = value == null ? "" : String(value);
@@ -735,6 +744,11 @@
       }
     });
     element("customerDashboard")?.addEventListener("click", event => {
+      const exploreToggle = event.target.closest("#customerExploreToggle");
+      if (exploreToggle) {
+        setExploreMenuOpen(exploreToggle.getAttribute("aria-expanded") !== "true");
+        return;
+      }
       const metric = event.target.closest("[data-customer-metric]");
       if (metric) {
         state.metric = metric.dataset.customerMetric;
@@ -759,14 +773,21 @@
       const customer = event.target.closest("[data-customer-detail]");
       if (customer) { openCustomer(customer.dataset.customerDetail); return; }
       const view = event.target.closest("[data-customer-view]");
-      if (view) { openDetail(view.dataset.customerView); return; }
+      if (view) { setExploreMenuOpen(false, true); openDetail(view.dataset.customerView); return; }
       const action = event.target.closest("[data-customer-action]");
       if (!action) return;
       if (action.dataset.customerAction === "all-insights") openDetail("insights");
       else if (action.dataset.customerAction === "top-customers") openDetail("top-customers");
       else if (action.dataset.customerAction === "back") goBack();
     });
+    element("customerDashboard")?.addEventListener("keydown", event => {
+      if (event.key === "Escape" && element("customerExploreToggle")?.getAttribute("aria-expanded") === "true") {
+        event.preventDefault();
+        setExploreMenuOpen(false, true);
+      }
+    });
     document.addEventListener("click", event => {
+      if (!event.target.closest("#customerExploreMenu")) setExploreMenuOpen(false);
       const button = event.target.closest('[data-section="customers"]');
       if (button) window.setTimeout(() => { if (element("customerDashboard") && !element("customerDashboard").hidden) refresh(); }, 0);
     });
