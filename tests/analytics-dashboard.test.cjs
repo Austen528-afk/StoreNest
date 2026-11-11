@@ -44,6 +44,11 @@ test("successful Analytics loads render the calculated snapshot", () => {
   assert.equal(dashboardJs.includes('pageState({ loading: false, error: "" });\\n      render();'), false);
 });
 
+test("the dashboard does not show the tracking status strip above the metrics", () => {
+  assert.equal(dashboardJs.includes("StoreNest is not recording storefront sessions yet"), false);
+  assert.equal(dashboardJs.includes("Visit tracking is available, but same-session order attribution is not connected yet"), false);
+});
+
 test("owner page markup does not emit literal escaped newline text", () => {
   assert.equal(ownerHtml.includes('href="/messaging-centre.css">\\n  <link'), false);
   assert.equal(ownerHtml.includes('<script src="/payments-dashboard.js?v=46"></script>\\n<script'), false);
@@ -83,7 +88,7 @@ test("analytics schema restricts event reads and insight state to the owning bus
 });
 
 test("service worker activates the new dashboard assets in a fresh cache", () => {
-  assert.match(serviceWorker, /storenest-shell-v48/);
+  assert.match(serviceWorker, /storenest-shell-v49/);
   for (const asset of ["analytics-dashboard.css", "analytics-engine.js", "analytics-dashboard.js", "storefront-analytics.js"]) {
     assert.match(serviceWorker, new RegExp("/" + asset.replaceAll(".", "\\.")));
   }

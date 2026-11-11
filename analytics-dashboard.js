@@ -465,10 +465,6 @@
     const trackingNote = $("analyticsTrackingNote");
     const needsBookingAttribution = snapshot.items.some(item => String(item.item_type || "").toLowerCase() === "service");
     if (trackingNote) trackingNote.hidden = snapshot.eventsAvailable && snapshot.orderAttributionAvailable && (!needsBookingAttribution || snapshot.bookingAttributionAvailable);
-    if (!snapshot.eventsAvailable) setStatusMessage("StoreNest is not recording storefront sessions yet. Visit-based figures and recommendations are shown as unavailable, not zero.", false);
-    else if (!snapshot.orderAttributionAvailable) setStatusMessage("Visit tracking is available, but same-session order attribution is not connected yet.", false);
-    else if (needsBookingAttribution && !snapshot.bookingAttributionAvailable) setStatusMessage("Product tracking is connected. Same-session service booking attribution is not connected yet.", false);
-    else setStatusMessage("", false);
   }
 
   function onBusinessReady(event) {
