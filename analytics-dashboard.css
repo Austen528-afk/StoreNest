@@ -116,6 +116,36 @@
 .analytics-error .outline-button{min-height:34px}
 .analytics-content[hidden]{display:none!important}
 
+/* Keep the desktop Analytics view inside the dashboard viewport. */
+@media(min-width:1100px){
+  .workspace:has(#analyticsDashboard:not([hidden])){display:flex;flex-direction:column;overflow:hidden}
+  .analytics-page:not([hidden]){box-sizing:border-box;flex:1 1 auto;min-height:0;height:100%;padding:0;overflow:hidden}
+  .analytics-header{align-items:center;gap:12px;flex:0 0 auto;margin:0 0 8px}
+  .analytics-header p{margin-top:4px}
+  .analytics-header-controls{flex-wrap:nowrap;gap:6px;min-width:0}
+  .analytics-explore-cards{flex:0 1 496px;min-width:310px}
+  .analytics-period-control{min-height:40px;padding-inline:10px}
+  .analytics-icon-button{width:36px;height:36px}
+  .analytics-status-message:not([hidden]){flex:0 0 auto;margin:0 0 7px;padding:8px 10px}
+  .analytics-loading:not([hidden]),.analytics-error:not([hidden]){flex:1 1 auto;min-height:0;margin:0;overflow:auto}
+  .analytics-content:not([hidden]){display:flex;flex:1 1 auto;flex-direction:column;min-height:0;overflow:hidden}
+  .analytics-summary-row{flex:0 0 auto;margin-bottom:9px}
+  .analytics-summary-item{padding:clamp(7px,1vh,12px) 16px}
+  .analytics-summary-item>strong{font-size:clamp(20px,2.5vh,27px)}
+  .analytics-main-grid{display:grid;flex:1 1 auto;min-height:0;margin-bottom:0;gap:12px;grid-template-columns:minmax(0,1.75fr) minmax(250px,1fr);grid-template-rows:minmax(0,1fr)}
+  .analytics-card{display:flex;flex-direction:column;min-height:0;overflow:hidden;padding:clamp(11px,1.5vh,16px)}
+  .analytics-panel-heading{flex:0 0 auto;margin-bottom:6px}
+  .analytics-chart-host{flex:1 1 auto;min-height:0}
+  .analytics-chart-svg{max-height:100%}
+  .analytics-chart-empty,.analytics-insights-empty{flex:1 1 auto;min-height:0}
+  .analytics-insight-list{flex:1 1 auto;min-height:0;overflow-y:auto}
+  .analytics-business-detail:not([hidden]){flex:1 1 auto;min-height:0;margin:0;padding:14px;overflow:auto}
+  #analyticsDashboard:has(#analyticsBusinessDetail:not([hidden])) .analytics-summary-row,
+  #analyticsDashboard:has(#analyticsBusinessDetail:not([hidden])) .analytics-main-grid,
+  #analyticsDashboard:has(#analyticsInsightDetail:not([hidden])) .analytics-summary-row,
+  #analyticsDashboard:has(#analyticsInsightDetail:not([hidden])) .analytics-main-grid{display:none}
+}
+
 html[data-theme="dark"] .analytics-page{color:#e7efe9;--analytics-border:#2b423a;--analytics-soft:#142420}
 html[data-theme="dark"] .analytics-summary-row,html[data-theme="dark"] .analytics-card,html[data-theme="dark"] .analytics-business-detail,html[data-theme="dark"] .analytics-loading,html[data-theme="dark"] .analytics-error{background:#152320;border-color:#2b423a}
 html[data-theme="dark"] .analytics-header h3,html[data-theme="dark"] .analytics-summary-item>strong,html[data-theme="dark"] .analytics-panel-heading h4,html[data-theme="dark"] .analytics-insight-title,html[data-theme="dark"] .analytics-detail-title-row h4,html[data-theme="dark"] .analytics-detail-stat>strong,html[data-theme="dark"] .analytics-detail-heading h3{color:#eff6f1}
