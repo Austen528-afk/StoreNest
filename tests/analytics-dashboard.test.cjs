@@ -17,6 +17,7 @@ const storefrontHtml = read("storefront.html");
 const serviceBookingsJs = read("service-bookings.js");
 const trackerJs = read("storefront-analytics.js");
 const styles = read("analytics-dashboard.css");
+const dashboardJs = read("analytics-dashboard.js");
 const serviceWorker = read("sw.js");
 const migration = read("supabase/migrations/20261111104421_storefront_analytics.sql");
 const indexMigration = read("supabase/migrations/20261111104615_storefront_analytics_indexes.sql");
@@ -36,6 +37,16 @@ test("the existing owner dashboard contains one Analytics section with the four 
   assert.match(ownerHtml, /data-analytics-view="operations"/);
   assert.match(styles, /.analytics-summary-row\{[^}]*grid-template-columns:repeat\(4,minmax\(0,1fr\)\)[^}]*border:1px solid/);
   assert.doesNotMatch(styles, /.analytics-summary-item\{[^}]*border:/);
+});
+
+test("successful Analytics loads render the calculated snapshot", () => {
+  assert.match(dashboardJs, /render\\(currentSnapshot\\(\\)\\);/);
+  assert.doesNotMatch(dashboardJs, /^\\s*render\\(\\);\\s*$/m);
+});
+
+test("owner page markup does not emit literal escaped newline text", () => {
+  assert.equal(ownerHtml.includes('href="/messaging-centre.css">\\n  <link'), false);
+  assert.equal(ownerHtml.includes('<script src="/payments-dashboard.js?v=46"></script>\\n<script'), false);
 });
 
 test("storefront tracking runs only for public business content and records same-session order attribution", () => {
