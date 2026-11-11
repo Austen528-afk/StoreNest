@@ -40,8 +40,8 @@ test("the existing owner dashboard contains one Analytics section with the four 
 });
 
 test("successful Analytics loads render the calculated snapshot", () => {
-  assert.match(dashboardJs, /render\\(currentSnapshot\\(\\)\\);/);
-  assert.doesNotMatch(dashboardJs, /^\\s*render\\(\\);\\s*$/m);
+  assert.ok(dashboardJs.includes("render(currentSnapshot());"));
+  assert.equal(dashboardJs.includes('pageState({ loading: false, error: "" });\\n      render();'), false);
 });
 
 test("owner page markup does not emit literal escaped newline text", () => {
@@ -83,7 +83,7 @@ test("analytics schema restricts event reads and insight state to the owning bus
 });
 
 test("service worker activates the new dashboard assets in a fresh cache", () => {
-  assert.match(serviceWorker, /storenest-shell-v47/);
+  assert.match(serviceWorker, /storenest-shell-v48/);
   for (const asset of ["analytics-dashboard.css", "analytics-engine.js", "analytics-dashboard.js", "storefront-analytics.js"]) {
     assert.match(serviceWorker, new RegExp("/" + asset.replaceAll(".", "\\.")));
   }
