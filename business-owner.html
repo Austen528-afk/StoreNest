@@ -648,31 +648,44 @@ html[data-theme="dark"] #itemMediaQualityNote[data-warning="true"]{color:#f4c27e
   <link rel="stylesheet" href="/analytics-dashboard.css">
   <link rel="stylesheet" href="/customer-dashboard.css">
 <style>
-/* Collapse both header rows together while keeping a small way to restore them. */
+/* Collapse both header rows and reserve only a slim row for the reopen icon. */
 body[data-page-kind="owner"].workspace-header-collapsed .wrap:has(.auth-shell.dashboard-mode) > .top,
 body[data-page-kind="owner"].workspace-header-collapsed .auth-view[data-view="account"] > .dashboard-head{
   display:none!important;
 }
-.dashboard-header-reopen{
-  position:fixed;
-  top:calc(env(safe-area-inset-top,0px) + 10px);
-  right:12px;
-  z-index:120;
-  display:flex;
+.dashboard-header-collapsed-control{
+  display:none;
   align-items:center;
-  justify-content:center;
-  gap:5px;
-  min-height:36px;
-  padding:0 11px;
+  justify-content:flex-end;
+  flex:0 0 38px;
+  min-height:38px;
+  padding:4px 14px;
+}
+body[data-page-kind="owner"].workspace-header-collapsed .auth-view[data-view="account"] .dashboard-header-collapsed-control{
+  display:flex;
+}
+.dashboard-header-reopen{
+  width:30px;
+  height:30px;
+  display:grid;
+  place-items:center;
+  padding:0;
   border:1px solid #d4e4da;
-  border-radius:999px;
+  border-radius:50%;
   background:#fff;
   color:#1b3a2e;
-  box-shadow:0 5px 20px rgba(18,40,26,.18);
-  font:inherit;
-  font-size:11px;
-  font-weight:750;
+  box-shadow:0 2px 8px rgba(18,40,26,.12);
   cursor:pointer;
+  transition:background .15s,border-color .15s;
+}
+.dashboard-header-reopen svg{
+  width:16px;
+  height:16px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2;
+  stroke-linecap:round;
+  stroke-linejoin:round;
 }
 .dashboard-header-reopen[hidden]{display:none!important}
 .dashboard-header-reopen:hover{border-color:#9bcfb7;background:#f5fbf7}
@@ -771,7 +784,7 @@ html[data-theme="dark"] .dashboard-header-reopen:hover{background:#2d4540}
 <div class="message" role="status" aria-live="polite" hidden></div>
 </form>
 <div class="auth-view" data-view="account" id="accountDashboardView" hidden>
-  <button type="button" class="dashboard-header-reopen" id="dashboardHeaderReopen" aria-label="Show the StoreNest header" aria-controls="storeNestTopBar dashboardHead" aria-expanded="false" title="Show header">Show header <span aria-hidden="true">⌄</span></button>
+  <div class="dashboard-header-collapsed-control"><button type="button" class="dashboard-header-reopen" id="dashboardHeaderReopen" aria-label="Show the StoreNest header" aria-controls="storeNestTopBar dashboardHead" aria-expanded="false" title="Show header"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg></button></div>
   <div class="dashboard-head" id="dashboardHead"><div id="dashboardHeadDetails"><span class="eyebrow">BUSINESS WORKSPACE</span><h2 id="businessTitle">Your business</h2><div class="business-switcher"><label for="businessSelect">Current business</label><select id="businessSelect" aria-label="Select business"></select><button type="button" id="createBusinessButton" class="outline-button">+ Create business</button><button type="button" id="deleteBusinessButton" class="outline-button danger-outline-button" disabled>Delete store</button></div><p class="sub" id="dashboardWelcome">Here’s your business at a glance.</p></div><div class="head-actions"><button type="button" class="theme-switch theme-switch-header" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false"><span class="theme-switch-icon" aria-hidden="true">☾</span><span class="theme-switch-label">Dark mode</span></button><button type="button" class="icon-button" id="notificationsButton" aria-label="Notifications">♧</button><button type="button" class="avatar" id="profileButton" aria-label="Business profile">SN</button><button type="button" class="icon-button dashboard-head-toggle" id="dashboardHeadToggle" aria-label="Hide the StoreNest header" aria-controls="storeNestTopBar dashboardHead" aria-expanded="false" title="Hide header">⌃</button></div></div>
   <div class="dashboard-layout">
     <aside class="sidebar" id="dashboardSidebar" aria-label="Business dashboard navigation">
