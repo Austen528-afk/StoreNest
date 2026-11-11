@@ -64,6 +64,7 @@ test("category clicks update only the shared summary row and trends chart and re
   assert.doesNotMatch(handler, /renderInsights|smartInsightList|analytics-main-grid|hidden\s*=/);
   assert.match(dashboardJs, /setAnalyticsView\(state\.activeView === selectedView \? "" : selectedView\)/);
   assert.match(dashboardJs, /setAnalyticsView\(""\)/);
+  assert.match(dashboardJs, /querySelectorAll\("\[data-analytics-view\]"\)\.forEach\(button => \{\s*button\.addEventListener\("click"/);
   const navStart = ownerHtml.indexOf('id="analyticsExploreCards"');
   const navEnd = ownerHtml.indexOf("</nav>", navStart);
   assert.doesNotMatch(ownerHtml.slice(navStart, navEnd), /aria-pressed/);
@@ -133,7 +134,7 @@ test("analytics schema restricts event reads and insight state to the owning bus
 });
 
 test("service worker activates the new dashboard assets in a fresh cache", () => {
-  assert.match(serviceWorker, /storenest-shell-v54/);
+  assert.match(serviceWorker, /storenest-shell-v55/);
   for (const asset of ["analytics-dashboard.css", "analytics-engine.js", "analytics-dashboard.js", "storefront-analytics.js"]) {
     assert.match(serviceWorker, new RegExp("/" + asset.replaceAll(".", "\\.")));
   }
