@@ -25,7 +25,7 @@ const bookingMigration = read("supabase/migrations/20261111105224_service_bookin
 
 test("the existing owner dashboard contains one Analytics section with the four shared-row metrics", () => {
   assert.match(ownerHtml, /id="analyticsDashboard"[^>]*data-section-view="analytics"/);
-  for (const id of ["analyticsDateRange", "analyticsMetric", "analyticsSummary", "analyticsChart", "smartInsightList", "analyticsExploreCards", "analyticsBusinessBack", "analyticsTrendsDescription", "analyticsInsightDetail"]) {
+  for (const id of ["analyticsDateRange", "analyticsMetric", "analyticsSummary", "analyticsChart", "smartInsightList", "analyticsExploreMenu", "analyticsExploreToggle", "analyticsExploreList", "analyticsBusinessBack", "analyticsTrendsDescription", "analyticsInsightDetail"]) {
     assert.match(ownerHtml, new RegExp('id="' + id + '"'));
   }
   assert.match(ownerHtml, /analytics-dashboard.css/);
@@ -38,11 +38,12 @@ test("the existing owner dashboard contains one Analytics section with the four 
   assert.match(styles, /.analytics-summary-row\{[^}]*grid-template-columns:repeat\(4,minmax\(0,1fr\)\)[^}]*border:1px solid/);
   assert.doesNotMatch(styles, /.analytics-summary-item\{[^}]*border:/);
 });
-test("the four category buttons stay beside the timeframe and no extra category page is created", () => {
+test("Analytics categories stay in one Explore menu beside the timeframe", () => {
   const headerStart = ownerHtml.indexOf('<header class="analytics-header">');
   const headerEnd = ownerHtml.indexOf("</header>", headerStart);
   const header = ownerHtml.slice(headerStart, headerEnd);
-  assert.ok(header.indexOf('id="analyticsExploreCards"') < header.indexOf('id="analyticsDateRange"'));
+  assert.ok(header.indexOf('id="analyticsExploreMenu"') < header.indexOf('id="analyticsDateRange"'));
+  assert.match(ownerHtml, /id="analyticsExploreToggle"[^>]*aria-controls="analyticsExploreList"/);
   assert.equal((ownerHtml.match(/data-analytics-view=/g) || []).length, 4);
   assert.doesNotMatch(ownerHtml, /analytics-explore-panel|analyticsExploreTitle|Explore Your Business/);
   assert.doesNotMatch(ownerHtml, /analyticsBusinessDetail|analytics-view-summary|analytics-view-grid/);
@@ -83,8 +84,8 @@ test("category clicks update only the shared summary row and trends chart and re
   assert.match(dashboardJs, /setAnalyticsView\(state\.activeView === selectedView \? "" : selectedView\)/);
   assert.match(dashboardJs, /setAnalyticsView\(""\)/);
   assert.match(dashboardJs, /querySelectorAll\("\[data-analytics-view\]"\)\.forEach\(button => \{\s*button\.addEventListener\("click"/);
-  const navStart = ownerHtml.indexOf('id="analyticsExploreCards"');
-  const navEnd = ownerHtml.indexOf("</nav>", navStart);
+  const navStart = ownerHtml.indexOf('id="analyticsExploreMenu"');
+  const navEnd = ownerHtml.indexOf("</ul>", navStart);
   assert.doesNotMatch(ownerHtml.slice(navStart, navEnd), /aria-pressed/);
   assert.doesNotMatch(dashboardJs, /renderExplore|renderBusinessView|analyticsBusinessDetail/);
 });
@@ -152,7 +153,7 @@ test("analytics schema restricts event reads and insight state to the owning bus
 });
 
 test("service worker activates the new dashboard assets in a fresh cache", () => {
-  assert.match(serviceWorker, /storenest-shell-v59/);
+  assert.match(serviceWorker, /storenest-shell-v60/);
   for (const asset of ["analytics-dashboard.css", "analytics-engine.js", "analytics-dashboard.js", "customer-dashboard.css", "customer-intelligence-engine.js", "customer-dashboard.js", "storefront-analytics.js"]) {
     assert.match(serviceWorker, new RegExp("/" + asset.replaceAll(".", "\\.")));
   }
