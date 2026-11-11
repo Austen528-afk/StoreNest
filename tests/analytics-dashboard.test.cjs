@@ -49,6 +49,13 @@ test("the dashboard does not show the tracking status strip above the metrics", 
   assert.equal(dashboardJs.includes("Visit tracking is available, but same-session order attribution is not connected yet"), false);
 });
 
+test("the historical tracking note row is removed from Analytics entirely", () => {
+  assert.equal(ownerHtml.includes("analyticsTrackingNote"), false);
+  assert.equal(ownerHtml.includes("StoreNest has no historical storefront session records"), false);
+  assert.equal(dashboardJs.includes("analyticsTrackingNote"), false);
+  assert.doesNotMatch(styles, /analytics-tracking-note/);
+});
+
 test("owner page markup does not emit literal escaped newline text", () => {
   assert.equal(ownerHtml.includes('href="/messaging-centre.css">\\n  <link'), false);
   assert.equal(ownerHtml.includes('<script src="/payments-dashboard.js?v=46"></script>\\n<script'), false);
@@ -88,7 +95,7 @@ test("analytics schema restricts event reads and insight state to the owning bus
 });
 
 test("service worker activates the new dashboard assets in a fresh cache", () => {
-  assert.match(serviceWorker, /storenest-shell-v49/);
+  assert.match(serviceWorker, /storenest-shell-v50/);
   for (const asset of ["analytics-dashboard.css", "analytics-engine.js", "analytics-dashboard.js", "storefront-analytics.js"]) {
     assert.match(serviceWorker, new RegExp("/" + asset.replaceAll(".", "\\.")));
   }
