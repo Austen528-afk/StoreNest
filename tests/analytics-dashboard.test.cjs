@@ -83,7 +83,7 @@ test("category clicks update only the shared summary row and trends chart and re
   assert.doesNotMatch(handler, /renderInsights|smartInsightList|analytics-main-grid|hidden\s*=/);
   assert.match(dashboardJs, /setAnalyticsView\(state\.activeView === selectedView \? "" : selectedView\)/);
   assert.match(dashboardJs, /setAnalyticsView\(""\)/);
-  assert.match(dashboardJs, /querySelectorAll\("\[data-analytics-view\]"\)\.forEach\(button => \{\s*button\.addEventListener\("click"/);
+  assert.match(dashboardJs, /event\.target\.closest\("\[data-analytics-view\]"\)/);
   const navStart = ownerHtml.indexOf('id="analyticsExploreMenu"');
   const navEnd = ownerHtml.indexOf("</ul>", navStart);
   assert.doesNotMatch(ownerHtml.slice(navStart, navEnd), /aria-pressed/);
