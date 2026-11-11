@@ -111,7 +111,7 @@ test("dashboard keeps business scoping and provides the requested operational co
  assert.match(script,/function isPendingCollectionPayment/);
  assert.match(script,/paymentsPendingPayments",formatCurrency\(data.pendingPayments\)/);
  assert.match(html,/storenest:owner-open-order/);
- assert.match(serviceWorker,/storenest-shell-v56/);
+ assert.match(serviceWorker,/storenest-shell-v57/);
  assert.match(serviceWorker,/analytics-dashboard\.js/);
  assert.match(serviceWorker,/storefront-analytics\.js/);
  assert.match(serviceWorker,/\.then\(\(\)=>self\.skipWaiting\(\)\)/);

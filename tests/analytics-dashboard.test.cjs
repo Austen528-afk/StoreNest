@@ -134,8 +134,8 @@ test("analytics schema restricts event reads and insight state to the owning bus
 });
 
 test("service worker activates the new dashboard assets in a fresh cache", () => {
-  assert.match(serviceWorker, /storenest-shell-v56/);
-  for (const asset of ["analytics-dashboard.css", "analytics-engine.js", "analytics-dashboard.js", "storefront-analytics.js"]) {
+  assert.match(serviceWorker, /storenest-shell-v57/);
+  for (const asset of ["analytics-dashboard.css", "analytics-engine.js", "analytics-dashboard.js", "customer-dashboard.css", "customer-intelligence-engine.js", "customer-dashboard.js", "storefront-analytics.js"]) {
     assert.match(serviceWorker, new RegExp("/" + asset.replaceAll(".", "\\.")));
   }
   assert.match(serviceWorker, /\.then\(\(\)=>self\.skipWaiting\(\)\)/);
