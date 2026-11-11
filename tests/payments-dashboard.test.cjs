@@ -105,16 +105,25 @@ test("dashboard keeps business scoping and provides the requested operational co
  for(const id of ["paymentsTotalSales","paymentsNetEarnings","paymentsPendingPayments","paymentsAvailableBalance","paymentsPeriod","paymentsCustomStart","paymentsCustomEnd","paymentsTransactionSearch","paymentsTransactions","paymentsRangeLabel"])assert.match(html,new RegExp('id="'+id+'"'));
  for(const period of ["today","week","month","year","custom"])assert.match(html,new RegExp('option value="'+period+'"'));
  assert.match(html,/\.eq\("business_id",businessId\)/);
- assert.match(html,/payments-dashboard\.js\?v=46/);
+ assert.match(html,/payments-dashboard\.js\?v=47/);
  assert.match(html,/updateViaCache:"none"/);
  assert.match(script,/storenest:owner-open-order/);
  assert.match(script,/function isPendingCollectionPayment/);
  assert.match(script,/paymentsPendingPayments",formatCurrency\(data.pendingPayments\)/);
  assert.match(html,/storenest:owner-open-order/);
- assert.match(serviceWorker,/storenest-shell-v47/);
+ assert.match(serviceWorker,/storenest-shell-v56/);
  assert.match(serviceWorker,/analytics-dashboard\.js/);
  assert.match(serviceWorker,/storefront-analytics\.js/);
  assert.match(serviceWorker,/\.then\(\(\)=>self\.skipWaiting\(\)\)/);
  assert.match(viewer,/Payment status is taken from the saved order record/);
  assert.doesNotMatch(script,/demo|sample|R\s?50,?000|\[\s*\d+\s*,\s*\d+/i);
+});
+
+test("Payments & Earnings has no historical data strip above its KPI row",()=>{
+ const html=fs.readFileSync(path.join(__dirname,"..","business-owner.html"),"utf8");
+ const script=fs.readFileSync(path.join(__dirname,"..","payments-dashboard.js"),"utf8");
+ assert.doesNotMatch(html,/payments-data-note|paymentsDataNote|Historical data/);
+ assert.doesNotMatch(script,/paymentsDataNote/);
+ assert.match(html,/id="paymentsTotalSales"/);
+ assert.match(html,/id="paymentsDataFootnote"/);
 });

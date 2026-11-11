@@ -166,7 +166,6 @@ function render(doc){
   ["paymentsTotalSales","paymentsNetEarnings","paymentsPendingPayments","paymentsAvailableBalance","paymentsAwaitingBalance","paymentsPayoutBalance","paymentsPaidOut","paymentsCompletedOrders","paymentsAverageOrderValue","paymentsSalesGrowth","paymentsRefundedAmount"].forEach(id=>text(d,id,display));
   text(d,"paymentsNetEarningsNote","Payment fee data is not connected.");text(d,"paymentsPendingPaymentsNote","Provider-confirmed payments are not connected.");text(d,"paymentsAvailableBalanceNote","No settlement balance is available.");
   text(d,"paymentsAwaitingBalanceNote","StoreNest release tracking is not enabled.");text(d,"paymentsPayoutBalanceNote","No settlement account is connected.");text(d,"paymentsPaidOutNote","Payout records are not available.");
-  text(d,"paymentsDataNote",state.error?"Order history could not be loaded. Reopen Payments & Earnings to retry.":state.loading?"Loading this business's recorded orders…":"Order history will appear here when the dashboard opens.");
   text(d,"paymentsDataFootnote","Order completion is separate from payment confirmation. StoreNest does not yet have a connected payment, fee, refund, escrow or payout ledger.");
   if(chart)chart.innerHTML='<p class="payments-transactions-empty">'+(state.loading?"Loading order history…":"Order activity is not loaded yet.")+'</p>';
   if(list)list.innerHTML="";return;
@@ -175,7 +174,6 @@ function render(doc){
  if(!data.valid){
   ["paymentsTotalSales","paymentsNetEarnings","paymentsPendingPayments","paymentsCompletedOrders","paymentsAverageOrderValue","paymentsSalesGrowth","paymentsRefundedAmount"].forEach(id=>text(d,id,"—"));
   ["paymentsAvailableBalance","paymentsAwaitingBalance","paymentsPayoutBalance","paymentsPaidOut"].forEach(id=>text(d,id,"—"));
-  text(d,"paymentsDataNote","Choose a valid start and end date for this report.");
   if(chart)chart.innerHTML=buildChartSvg(key,state.orders,new Date(),custom);
  }else{
   text(d,"paymentsTotalSales",formatCurrency(data.totalSales));
@@ -195,8 +193,6 @@ function render(doc){
   text(d,"paymentsAwaitingBalanceNote","StoreNest escrow/release tracking is not enabled.");
   text(d,"paymentsPayoutBalanceNote","No connected settlement account.");
   text(d,"paymentsPaidOutNote","No payout ledger is connected.");
-  const salesCount=data.orders.filter(isQualifyingSale).length,paidCount=data.orders.filter(isRecordedPaid).length;
-  text(d,"paymentsDataNote",data.orderCount+" order record"+(data.orderCount===1?"":"s")+" in "+PERIODS[key].toLowerCase()+" for "+(state.businessName||"this business")+" · "+salesCount+" completed, non-refunded order"+(salesCount===1?"":"s")+" · "+paidCount+" marked paid.");
   text(d,"paymentsDataFootnote","Total Sales is completed, non-refunded order value by order date. Pending Payments sums active pay-on-collection orders marked unpaid in this period; completed unpaid history and unprocessed card previews are excluded. Refunded Amount uses the full subtotal of orders marked refunded; partial-refund amounts, provider fees, escrow releases and payouts have no ledger.");
   if(chart)chart.innerHTML=buildChartSvg(key,state.orders,new Date(),custom);
  }
