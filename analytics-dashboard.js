@@ -182,7 +182,7 @@
       state.error = "";
       state.loading = false;
       pageState({ loading: false, error: "" });
-      render();
+      render(currentSnapshot());
     } catch (error) {
       if (request !== state.request) return;
       state.loading = false;
