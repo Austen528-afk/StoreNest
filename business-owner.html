@@ -646,6 +646,7 @@ html[data-theme="dark"] #itemMediaQualityNote[data-warning="true"]{color:#f4c27e
 </style>
   <link rel="stylesheet" href="/messaging-centre.css">
   <link rel="stylesheet" href="/analytics-dashboard.css">
+  <link rel="stylesheet" href="/customer-dashboard.css">
 </head>
 <body data-page-kind="owner">
 <div class="wrap">
@@ -758,7 +759,60 @@ html[data-theme="dark"] #itemMediaQualityNote[data-warning="true"]{color:#f4c27e
   <div id="ownerOrdersSummary" class="owner-orders-summary" hidden></div>
   <div id="ownerOrdersList" class="owner-orders-list"></div>
   <div id="ownerOrdersEmpty" class="empty-state" hidden><span>▤</span><strong>No orders yet</strong><p>Customer orders will appear here after checkout. Each order shows the items, selected options, customer contact and payment status.</p></div>
-</section><section class="dashboard-section" data-section-view="bookings" hidden><div class="section-heading owner-orders-heading"><div><h3 id="ownerBookingsHeading">Bookings &amp; enquiries</h3><p id="ownerBookingsDescription">Review request dates, customer requirements and active service bookings.</p></div><div class="owner-orders-controls"><button type="button" id="ownerBookingsHistory" class="outline-button owner-orders-history" aria-pressed="false">▤ History</button></div></div><div id="ownerBookingsSummary" class="bookings-summary">Loading booking requests…</div><div id="ownerBookingsList" class="bookings-list"></div><div id="ownerBookingsEmpty" class="empty-state" hidden><span>▣</span><strong>No active booking requests</strong><p>New customer booking requests will appear here. Finished requests are available in History.</p></div></section><section class="dashboard-section" id="messagesSection" data-section-view="messages" hidden><div class="section-heading"><div><h3>Messages</h3><p>Private conversations with customers who contact your business through StoreNest.</p></div></div><div id="ownerMessageCentre"></div></section><section class="dashboard-section coming-section" data-section-view="customers" hidden><div class="section-heading"><div><h3>Customers</h3><p>Customer records are created through real order or booking activity.</p></div></div><div class="empty-state"><span>♙</span><strong>No customer records yet</strong><p>Customer information will appear here after customer workflows are available.</p></div></section><section class="dashboard-section payments-dashboard-section" id="paymentsDashboard" data-section-view="payments" hidden>
+</section><section class="dashboard-section" data-section-view="bookings" hidden><div class="section-heading owner-orders-heading"><div><h3 id="ownerBookingsHeading">Bookings &amp; enquiries</h3><p id="ownerBookingsDescription">Review request dates, customer requirements and active service bookings.</p></div><div class="owner-orders-controls"><button type="button" id="ownerBookingsHistory" class="outline-button owner-orders-history" aria-pressed="false">▤ History</button></div></div><div id="ownerBookingsSummary" class="bookings-summary">Loading booking requests…</div><div id="ownerBookingsList" class="bookings-list"></div><div id="ownerBookingsEmpty" class="empty-state" hidden><span>▣</span><strong>No active booking requests</strong><p>New customer booking requests will appear here. Finished requests are available in History.</p></div></section><section class="dashboard-section" id="messagesSection" data-section-view="messages" hidden><div class="section-heading"><div><h3>Messages</h3><p>Private conversations with customers who contact your business through StoreNest.</p></div></div><div id="ownerMessageCentre"></div></section><section class="dashboard-section customer-dashboard" id="customerDashboard" data-section-view="customers" hidden aria-labelledby="customerTitle">
+  <header class="customer-header">
+    <div><h3 id="customerTitle">Customers</h3><p>Understand customer behaviour, preferences, needs and purchasing habits.</p><span id="customerRangeLabel" class="customer-range-label"></span></div>
+    <div class="customer-controls">
+      <div class="customer-explore-menu" id="customerExploreMenu">
+        <button class="customer-explore-toggle" id="customerExploreToggle" type="button" aria-expanded="false" aria-controls="customerExploreList">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"></path><path d="M3 6h.01M3 12h.01M3 18h.01"></path></svg>
+          <span>Explore</span><span class="customer-explore-chevron" aria-hidden="true">⌄</span>
+        </button>
+        <ul class="customer-explore-list" id="customerExploreList" aria-label="Customer intelligence sections" hidden>
+          <li><button class="customer-explore-option" type="button" data-customer-view="overview"><span class="customer-explore-option-icon" aria-hidden="true">♧</span><span><strong>Customer Overview</strong><small>New, returning and active customers</small></span></button></li>
+          <li><button class="customer-explore-option" type="button" data-customer-view="behaviour"><span class="customer-explore-option-icon" aria-hidden="true">▥</span><span><strong>Customer Behaviour</strong><small>Browsing, purchasing and engagement patterns</small></span></button></li>
+          <li><button class="customer-explore-option" type="button" data-customer-view="preferences"><span class="customer-explore-option-icon" aria-hidden="true">◇</span><span><strong>Customer Preferences</strong><small>Preferred products, categories and options</small></span></button></li>
+          <li><button class="customer-explore-option" type="button" data-customer-view="habits"><span class="customer-explore-option-icon" aria-hidden="true">🛒</span><span><strong>Purchase Habits</strong><small>Frequency, timing and paid order value</small></span></button></li>
+          <li><button class="customer-explore-option" type="button" data-customer-view="journey"><span class="customer-explore-option-icon" aria-hidden="true">⌁</span><span><strong>Customer Journey</strong><small>Discovery, product views, cart activity and orders</small></span></button></li>
+          <li><button class="customer-explore-option" type="button" data-customer-view="retention"><span class="customer-explore-option-icon" aria-hidden="true">⟳</span><span><strong>Customer Retention</strong><small>Which customers return and how often</small></span></button></li>
+        </ul>
+      </div>
+      <label class="customer-period-control"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path></svg><span class="sr-only">Customer report date range</span><select id="customerDateRange" aria-label="Customer report date range"><option value="today">Today</option><option value="last7">Last 7 days</option><option value="last30" selected>Last 30 days</option><option value="month">This month</option><option value="last90">Last 90 days</option><option value="custom">Custom range</option></select></label>
+      <div class="customer-custom-range" id="customerCustomRange" hidden><label><span class="sr-only">Start date</span><input id="customerCustomStart" type="date"></label><span aria-hidden="true">–</span><label><span class="sr-only">End date</span><input id="customerCustomEnd" type="date"></label></div>
+      <button id="customerRefresh" class="customer-icon-button" type="button" aria-label="Refresh customer analytics" title="Refresh customer analytics">↻</button>
+    </div>
+  </header>
+  <p id="customerStatus" class="customer-status" role="status" aria-live="polite" hidden></p>
+  <div id="customerLoading" class="customer-loading" role="status" hidden>Loading this business’s customer activity…</div>
+  <div id="customerError" class="customer-error" role="alert" hidden></div>
+  <div id="customerSummaryRow" class="customer-summary-row" aria-label="Customer summary">
+    <article class="customer-summary-item"><span>Total Customers</span><strong id="customerTotal">—</strong><small id="customerTotalNote">All-time identified customers</small></article>
+    <article class="customer-summary-item"><span>Returning Customers</span><strong id="customerReturning">—</strong><small id="customerReturningNote">Identified purchasers in this period</small></article>
+    <article class="customer-summary-item"><span>Average Spend</span><strong id="customerAverageSpend">—</strong><small id="customerAverageSpendNote">Based on recorded paid orders</small></article>
+    <article class="customer-summary-item"><span>Repeat Purchase Rate</span><strong id="customerRepeatRate">—</strong><small id="customerRepeatRateNote">Returning identified purchasers</small></article>
+  </div>
+  <div id="customerMain" class="customer-main">
+    <div class="customer-overview-grid">
+      <article class="customer-panel customer-behaviour-panel" aria-labelledby="customerBehaviourHeading">
+        <div class="customer-panel-heading"><div><h4 id="customerBehaviourHeading">Customer Behaviour</h4><p>Customer activity over time.</p></div><span class="customer-panel-mark" aria-hidden="true">⌁</span></div>
+        <div class="customer-metric-tabs" role="group" aria-label="Customer chart metric"><button type="button" class="active" data-customer-metric="purchases" aria-pressed="true">Purchases</button><button type="button" data-customer-metric="visits" aria-pressed="false">Visits</button><button type="button" data-customer-metric="repeatRate" aria-pressed="false">Repeat Rate</button></div>
+        <div id="customerChart" class="customer-chart" role="img" aria-label="Customer activity chart"></div>
+        <p id="customerChartNote" class="customer-chart-note"></p>
+      </article>
+      <article class="customer-panel customer-insights-panel" aria-labelledby="customerInsightsHeading">
+        <div class="customer-panel-heading"><div><h4 id="customerInsightsHeading">Customer Insights</h4><p>Important discoveries about your customers.</p></div><button type="button" class="customer-link-button" data-customer-action="all-insights">View all</button></div>
+        <div id="customerInsightsList" class="customer-insights-list"></div>
+      </article>
+    </div>
+    <section class="customer-panel customer-top-panel" aria-labelledby="customerTopHeading">
+      <div class="customer-panel-heading"><div><h4 id="customerTopHeading">Top Customers</h4><p>Your most active identified purchasers in the selected period. Spend includes paid orders only.</p></div><button type="button" class="customer-link-button" data-customer-action="top-customers">View all</button></div>
+      <div class="customer-table-tools"><label class="customer-search"><span aria-hidden="true">⌕</span><input id="customerTopSearch" type="search" placeholder="Search customers…" autocomplete="off" aria-label="Search customers"></label><span id="customerTableCount" class="customer-table-count"></span></div>
+      <div class="customer-table-wrap"><table class="customer-table"><thead><tr><th scope="col"><button type="button" data-customer-sort="name">Customer</button></th><th scope="col"><button type="button" data-customer-sort="orders">Orders</button></th><th scope="col"><button type="button" data-customer-sort="paidSpend" title="Only orders marked paid are included">Total Spent</button></th><th scope="col"><button type="button" data-customer-sort="lastPurchase">Last Purchase</button></th><th scope="col">Status</th><th scope="col"><span class="sr-only">Open customer details</span></th></tr></thead><tbody id="customerTopBody"></tbody></table></div>
+      <p class="customer-data-note">Customers are identified from account IDs or contact details supplied with business orders and booking requests. Anonymous storefront visits are not counted as customers.</p>
+    </section>
+  </div>
+  <div id="customerDetailPanel" class="customer-detail-panel" hidden></div>
+</section><section class="dashboard-section payments-dashboard-section" id="paymentsDashboard" data-section-view="payments" hidden>
   <div class="section-heading">
     <div><h3>Payments &amp; Earnings</h3><p>Review business order value and the payment information StoreNest has actually recorded.</p></div>
     <div class="payments-date-label" aria-label="Selected reporting period"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M8 14h3"/></svg><span id="paymentsRangeLabel">This month</span></div>
@@ -2578,6 +2632,8 @@ document.getElementById("pageRefreshButton")?.addEventListener("click",()=>windo
 <script src="/payments-dashboard.js?v=47"></script>
 <script src="/analytics-engine.js"></script>
 <script src="/analytics-dashboard.js"></script>
+<script src="/customer-intelligence-engine.js"></script>
+<script src="/customer-dashboard.js"></script>
 <script src="/messaging-centre.js"></script>
 <script src="/chat-launcher.js" defer></script>
 </body>
