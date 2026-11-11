@@ -386,6 +386,15 @@
     if (back) back.hidden = !settings;
   }
 
+  function setAnalyticsExploreMenuOpen(open, returnFocus) {
+    const toggle = $("analyticsExploreToggle");
+    const list = $("analyticsExploreList");
+    if (!toggle || !list) return;
+    toggle.setAttribute("aria-expanded", String(Boolean(open)));
+    list.hidden = !open;
+    if (returnFocus) toggle.focus();
+  }
+
   function setAnalyticsView(view) {
     if (view && VIEW_TREND_SETTINGS[view]) {
       if (!state.activeView) state.defaultMetric = $("analyticsMetric")?.value || state.metric || "orders";
@@ -547,16 +556,28 @@
     $("analyticsViewAllInsights")?.addEventListener("click", () => { state.insightsExpanded = !state.insightsExpanded; if (state.loaded) renderInsights(currentSnapshot()); });
     $("analyticsRetry")?.addEventListener("click", () => { state.loaded = false; loadData(true); });
     $("analyticsRefresh")?.addEventListener("click", () => { state.loaded = false; loadData(true); });
-    const exploreCards = $("analyticsExploreCards");
-    if (exploreCards) {
-      exploreCards.querySelectorAll("[data-analytics-view]").forEach(button => {
-        button.addEventListener("click", event => {
-          event.preventDefault();
-          const selectedView = button.dataset.analyticsView;
-          setAnalyticsView(state.activeView === selectedView ? "" : selectedView);
-        });
-      });
-    }
+    $("analyticsDashboard")?.addEventListener("click", event => {
+      const toggle = event.target.closest("#analyticsExploreToggle");
+      if (toggle) {
+        setAnalyticsExploreMenuOpen(toggle.getAttribute("aria-expanded") !== "true");
+        return;
+      }
+      const option = event.target.closest("[data-analytics-view]");
+      if (option) {
+        event.preventDefault();
+        const selectedView = option.dataset.analyticsView;
+        setAnalyticsExploreMenuOpen(false, true);
+        setAnalyticsView(state.activeView === selectedView ? "" : selectedView);
+      }
+    });
+    root.document.addEventListener("click", event => {
+      if (!event.target.closest("#analyticsExploreMenu")) setAnalyticsExploreMenuOpen(false);
+    });
+    root.document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && $("analyticsExploreToggle")?.getAttribute("aria-expanded") === "true") {
+        setAnalyticsExploreMenuOpen(false, true);
+      }
+    });
     $("analyticsBusinessBack")?.addEventListener("click", event => { event.preventDefault(); setAnalyticsView(""); });
     $("analyticsInsightDetail")?.addEventListener("click", async event => {
       if (event.target.closest("[data-close-insight]")) {

@@ -858,12 +858,18 @@ html[data-theme="dark"] #itemMediaQualityNote[data-warning="true"]{color:#f4c27e
       <span id="analyticsRangeLabel" class="analytics-range-label"></span>
     </div>
     <div class="analytics-header-controls">
-      <nav id="analyticsExploreCards" class="analytics-explore-cards" aria-label="Explore analytics sections">
-        <button class="analytics-explore-card" type="button" data-analytics-view="customers"><span aria-hidden="true">♧</span><strong>Customers</strong><span aria-hidden="true">›</span></button>
-        <button class="analytics-explore-card" type="button" data-analytics-view="products"><span aria-hidden="true">◇</span><strong>Products</strong><span aria-hidden="true">›</span></button>
-        <button class="analytics-explore-card" type="button" data-analytics-view="orders"><span aria-hidden="true">🛒</span><strong>Orders</strong><span aria-hidden="true">›</span></button>
-        <button class="analytics-explore-card" type="button" data-analytics-view="operations"><span aria-hidden="true">✓</span><strong>Operations</strong><span aria-hidden="true">›</span></button>
-      </nav>
+      <div class="analytics-explore-menu" id="analyticsExploreMenu">
+        <button class="analytics-explore-toggle" id="analyticsExploreToggle" type="button" aria-expanded="false" aria-controls="analyticsExploreList">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"></path><path d="M3 6h.01M3 12h.01M3 18h.01"></path></svg>
+          <span>Explore</span><span class="analytics-explore-chevron" aria-hidden="true">⌄</span>
+        </button>
+        <ul class="analytics-explore-list" id="analyticsExploreList" aria-label="Analytics sections" hidden>
+          <li><button class="analytics-explore-option" type="button" data-analytics-view="customers"><span class="analytics-explore-option-icon" aria-hidden="true">♧</span><span><strong>Customers</strong><small>Returning customer patterns and trends</small></span></button></li>
+          <li><button class="analytics-explore-option" type="button" data-analytics-view="products"><span class="analytics-explore-option-icon" aria-hidden="true">◇</span><span><strong>Products</strong><small>Product and service views over time</small></span></button></li>
+          <li><button class="analytics-explore-option" type="button" data-analytics-view="orders"><span class="analytics-explore-option-icon" aria-hidden="true">🛒</span><span><strong>Orders</strong><small>Order volumes during the selected period</small></span></button></li>
+          <li><button class="analytics-explore-option" type="button" data-analytics-view="operations"><span class="analytics-explore-option-icon" aria-hidden="true">✓</span><span><strong>Operations</strong><small>Booking requests and operational activity</small></span></button></li>
+        </ul>
+      </div>
       <label class="analytics-period-control">
         <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path></svg>
         <span class="sr-only">Date range</span>
