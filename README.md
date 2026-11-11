@@ -27,7 +27,9 @@ Give every small business a simple online presence to showcase products or servi
 
 ## Status
 
-StoreNest now includes Supabase business-owner authentication, a private business dashboard, first-time business setup, owner-scoped product and service management, and public storefront pages. Orders, bookings, customer accounts, image storage and visit analytics are not implemented. No live payments are enabled.
+StoreNest includes Supabase business-owner authentication, a private business dashboard, first-time business setup, owner-scoped product and service management, public storefronts, orders, service booking requests, customer accounts, private storefront messaging, and media uploads. Payments & Earnings reads saved order records; no external payment provider is processing live card payments.
+
+The Analytics page combines stored orders and booking requests with first-party storefront session, item-view, cart, and checkout tracking. Tracking begins at rollout; historical visits are not backfilled. Same-session service view-to-booking rates use booking attribution. StoreNest does not yet store status-change timestamps, so response and preparation times are not estimated.
 
 ## Development principles
 
