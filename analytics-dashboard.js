@@ -24,6 +24,7 @@
     activeInsightKey: "",
     activeView: "",
     metric: "orders",
+    defaultMetric: "orders",
     period: "last30",
     custom: { start: "", end: "" }
   };
@@ -223,17 +224,81 @@
     return { label: change.label, tone: change.value > 0 ? "positive" : "negative" };
   }
 
-  function renderSummary(snapshot) {
+  const VIEW_TREND_SETTINGS = Object.freeze({
+    customers: { title: "Customer Trends", description: "Repeat purchases from identified customers.", metric: "returning" },
+    products: { title: "Product & Service Trends", description: "Unique product and service views over time.", metric: "product_views" },
+    orders: { title: "Order Trends", description: "Orders placed during the selected period.", metric: "orders" },
+    operations: { title: "Operations Trends", description: "Booking requests received during the selected period.", metric: "bookings" }
+  });
+
+  function renderSummary(snapshot, view) {
     const list = $("analyticsSummary");
     if (!list) return;
-    const conversion = snapshot.conversion.value;
-    const returning = snapshot.customers.returningRate;
-    const metrics = [
-      { label: "Store Visits", value: snapshot.visits == null ? "Not yet tracked" : number(snapshot.visits), change: metricChange(snapshot.visits, snapshot.previousVisits, "count"), hint: snapshot.eventsAvailable ? "Unique storefront sessions" : "Visit tracking is not connected yet" },
-      { label: "Orders", value: number(snapshot.ordersPlaced), change: metricChange(snapshot.ordersPlaced, snapshot.previousOrdersPlaced, "count"), hint: "Orders placed, including later cancellations" },
-      { label: "Conversion", value: conversion == null ? "—" : conversion.toFixed(1) + "%", change: metricChange(conversion, snapshot.previousConversion.value, "rate"), hint: snapshot.conversion.reason === "untracked" || !snapshot.orderAttributionAvailable ? "Not yet tracked" : snapshot.conversion.reason === "insufficient" ? "Needs 10 tracked sessions" : "Tracked sessions that submitted an order" },
-      { label: "Returning", value: returning == null ? "—" : returning.toFixed(1) + "%", change: metricChange(returning, snapshot.previousCustomers.returningRate, "rate"), hint: snapshot.customers.identifiedBuyers < 5 ? "Needs 5 identified purchasers" : "Identified purchasers with an earlier completed order" }
-    ];
+    const summaryMetric = (label, value, change, hint) => ({ label, value, change, hint });
+    let metrics;
+    if (view === "customers") {
+      const current = snapshot.customers;
+      const previous = snapshot.previousCustomers;
+      metrics = [
+        summaryMetric("Identified purchasers", number(current.identifiedBuyers), metricChange(current.identifiedBuyers, previous.identifiedBuyers, "count"), "Completed orders linked to customer accounts"),
+        summaryMetric("New purchasers", number(current.newBuyers), metricChange(current.newBuyers, previous.newBuyers, "count"), "First recorded completed purchase"),
+        summaryMetric("Returning purchasers", number(current.returningBuyers), metricChange(current.returningBuyers, previous.returningBuyers, "count"), "Had an earlier completed purchase"),
+        summaryMetric("Returning share", current.returningRate == null ? "—" : current.returningRate.toFixed(1) + "%", metricChange(current.returningRate, previous.returningRate, "rate"), current.identifiedBuyers < 5 ? "Needs 5 identified purchasers" : "Share of identified purchasers")
+      ];
+    } else if (view === "products") {
+      const itemViews = snapshot.eventTrackingAvailable
+        ? [...snapshot.productViews.values()].reduce((sum, sessions) => sum + sessions.size, 0)
+        : null;
+      const itemsWithViews = snapshot.eventTrackingAvailable
+        ? snapshot.items.filter(item => (snapshot.productViews.get(String(item.id)) || new Set()).size > 0).length
+        : null;
+      const demand = snapshot.items.reduce((sum, item) => {
+        const id = String(item.id || "");
+        return sum + (String(item.item_type || "").toLowerCase() === "service"
+          ? (snapshot.serviceBookingRequests.get(id) || 0)
+          : (snapshot.productPurchases.get(id) || 0));
+      }, 0);
+      metrics = [
+        summaryMetric("Products & services", number(snapshot.items.length), { label: "Current catalogue", tone: "neutral" }, "Items listed by this business"),
+        summaryMetric("Items with views", itemsWithViews == null ? "Not tracked" : number(itemsWithViews), { label: "Selected period", tone: "neutral" }, "Items opened by storefront visitors"),
+        summaryMetric("Unique item views", itemViews == null ? "Not tracked" : number(itemViews), { label: "Selected period", tone: "neutral" }, "Unique visitor sessions per item"),
+        summaryMetric("Orders / requests", number(demand), { label: "Selected period", tone: "neutral" }, "Completed units and booking requests")
+      ];
+    } else if (view === "orders") {
+      const completed = rows => rows.filter(row => row.status === "completed" && row.payment_status !== "refunded");
+      const cancelled = rows => rows.filter(row => row.status === "cancelled");
+      const currentCompleted = completed(snapshot.currentOrders);
+      const previousCompleted = completed(snapshot.previousOrders);
+      const currentCancelled = cancelled(snapshot.currentOrders);
+      const previousCancelled = cancelled(snapshot.previousOrders);
+      const currentAverage = currentCompleted.length ? currentCompleted.reduce((sum, row) => sum + row.subtotal, 0) / currentCompleted.length : null;
+      const previousAverage = previousCompleted.length ? previousCompleted.reduce((sum, row) => sum + row.subtotal, 0) / previousCompleted.length : null;
+      metrics = [
+        summaryMetric("Orders placed", number(snapshot.ordersPlaced), metricChange(snapshot.ordersPlaced, snapshot.previousOrdersPlaced, "count"), "Includes orders later cancelled"),
+        summaryMetric("Completed orders", number(currentCompleted.length), metricChange(currentCompleted.length, previousCompleted.length, "count"), "Refunded orders excluded"),
+        summaryMetric("Cancelled orders", number(currentCancelled.length), metricChange(currentCancelled.length, previousCancelled.length, "count"), "Included in orders placed"),
+        summaryMetric("Average order value", currentAverage == null ? "—" : money(currentAverage), metricChange(currentAverage, previousAverage, "count"), "Completed orders only")
+      ];
+    } else if (view === "operations") {
+      const countStatus = (rows, status) => rows.filter(row => row.status === status).length;
+      const bookingCount = (rows, status) => rows.filter(row => row.status === status).length;
+      metrics = [
+        summaryMetric("Orders completed", number(countStatus(snapshot.currentOrders, "completed")), metricChange(countStatus(snapshot.currentOrders, "completed"), countStatus(snapshot.previousOrders, "completed"), "count"), "Current recorded status"),
+        summaryMetric("Orders cancelled", number(countStatus(snapshot.currentOrders, "cancelled")), metricChange(countStatus(snapshot.currentOrders, "cancelled"), countStatus(snapshot.previousOrders, "cancelled"), "count"), "Current recorded status"),
+        summaryMetric("Booking requests", number(snapshot.currentBookings.length), { label: "Selected period", tone: "neutral" }, "Requests received during this period"),
+        summaryMetric("Pending bookings", number(bookingCount(snapshot.currentBookings, "pending")), { label: "Current status", tone: "neutral" }, "Awaiting a business response")
+      ];
+    } else {
+      const conversion = snapshot.conversion.value;
+      const returning = snapshot.customers.returningRate;
+      metrics = [
+        summaryMetric("Store Visits", snapshot.visits == null ? "Not yet tracked" : number(snapshot.visits), metricChange(snapshot.visits, snapshot.previousVisits, "count"), snapshot.eventTrackingAvailable ? "Unique storefront sessions" : "Visit tracking is not connected yet"),
+        summaryMetric("Orders", number(snapshot.ordersPlaced), metricChange(snapshot.ordersPlaced, snapshot.previousOrdersPlaced, "count"), "Orders placed, including later cancellations"),
+        summaryMetric("Conversion", conversion == null ? "—" : conversion.toFixed(1) + "%", metricChange(conversion, snapshot.previousConversion.value, "rate"), snapshot.conversion.reason === "untracked" || !snapshot.orderAttributionAvailable ? "Not yet tracked" : snapshot.conversion.reason === "insufficient" ? "Needs 10 tracked sessions" : "Tracked sessions that submitted an order"),
+        summaryMetric("Returning", returning == null ? "—" : returning.toFixed(1) + "%", metricChange(returning, snapshot.previousCustomers.returningRate, "rate"), snapshot.customers.identifiedBuyers < 5 ? "Needs 5 identified purchasers" : "Identified purchasers with an earlier completed order")
+      ];
+    }
+    list.setAttribute("aria-label", view ? view[0].toUpperCase() + view.slice(1) + " performance summary" : "Performance summary");
     list.innerHTML = metrics.map(metric => '<article class="analytics-summary-item"><span>' + escapeHtml(metric.label) + '</span><strong>' + escapeHtml(metric.value) + '</strong><small class="analytics-delta ' + metric.change.tone + '">' + escapeHtml(metric.change.label) + '</small><em>' + escapeHtml(metric.hint) + '</em></article>').join("");
   }
 
@@ -248,8 +313,10 @@
     const metric = $("analyticsMetric")?.value || state.metric;
     state.metric = metric;
     const series = engine.buildSeries(snapshot, metric);
-    const label = ({ orders: "Orders", visits: "Store visits", conversion: "Conversion", returning: "Returning customers" })[metric] || "Orders";
-    const tracked = metric === "visits" ? snapshot.eventsAvailable : metric !== "conversion" || (snapshot.eventsAvailable && snapshot.orderAttributionAvailable);
+    const label = ({ orders: "Orders", visits: "Store visits", conversion: "Conversion", returning: "Returning customers", product_views: "Unique item views", bookings: "Booking requests" })[metric] || "Orders";
+    const tracked = metric === "visits" || metric === "product_views"
+      ? snapshot.eventTrackingAvailable
+      : metric !== "conversion" || (snapshot.eventTrackingAvailable && snapshot.orderAttributionAvailable);
     if (!tracked) {
       host.innerHTML = '<div class="analytics-chart-empty"><strong>Not yet tracked</strong><span>Storefront sessions and order attribution will appear after tracking is connected. No historical visits are being estimated.</span></div>';
       return;
@@ -291,7 +358,8 @@
     if (path.trim()) svg += '<path class="analytics-chart-line" d="' + path.trim() + '"></path>';
     points.forEach(point => {
       if (point.y == null) return;
-      const title = dateLabel(point.row.start) + " — " + yValue(point.row.value, metric) + (metric === "visits" ? " sessions" : metric === "orders" ? " orders" : "");
+      const suffix = metric === "visits" ? " sessions" : metric === "orders" ? " orders" : metric === "product_views" ? " item views" : metric === "bookings" ? " booking requests" : "";
+      const title = dateLabel(point.row.start) + " — " + yValue(point.row.value, metric) + suffix;
       svg += '<circle class="analytics-chart-point" cx="' + point.x + '" cy="' + point.y + '" r="4"><title>' + escapeHtml(title) + '</title></circle>';
     });
     const labelIndexes = new Set([0, Math.floor((points.length - 1) / 2), points.length - 1]);
@@ -306,6 +374,35 @@
 
   function iconForInsight(type) {
     return ({ traffic_change: "↗", order_volume_change: "▤", product_view_order_rate: "◇", service_view_booking_rate: "▧", cancellation_rate: "!", returning_customer_decline: "↻", weekday_demand_pattern: "◷" })[type] || "✦";
+  }
+
+  function updateTrendHeading() {
+    const settings = VIEW_TREND_SETTINGS[state.activeView];
+    const title = $("analyticsTrendsTitle");
+    const description = $("analyticsTrendsDescription");
+    const back = $("analyticsBusinessBack");
+    if (title) title.textContent = settings ? settings.title : "Performance Trends";
+    if (description) description.textContent = settings ? settings.description : "Track your store's key metrics over time.";
+    if (back) back.hidden = !settings;
+  }
+
+  function setAnalyticsView(view) {
+    if (view && VIEW_TREND_SETTINGS[view]) {
+      if (!state.activeView) state.defaultMetric = $("analyticsMetric")?.value || state.metric || "orders";
+      state.activeView = view;
+      state.metric = VIEW_TREND_SETTINGS[view].metric;
+    } else {
+      state.activeView = "";
+      state.metric = state.defaultMetric || "orders";
+    }
+    const metricSelect = $("analyticsMetric");
+    if (metricSelect) metricSelect.value = state.metric;
+    updateTrendHeading();
+    if (state.loaded) {
+      const snapshot = currentSnapshot();
+      renderSummary(snapshot, state.activeView);
+      renderChart(snapshot);
+    }
   }
 
   function renderInsights(snapshot) {
@@ -330,164 +427,6 @@
 
   function statusLabel(status) {
     return ({ new: "New", viewed: "Viewed", action_taken: "Action taken", dismissed: "Dismissed" })[status] || "New";
-  }
-
-  function renderExplore(snapshot) {
-    const detail = $("analyticsBusinessDetail");
-    const cards = $("analyticsExploreCards");
-    const title = $("analyticsBusinessDetailTitle");
-    const body = $("analyticsBusinessDetailBody");
-    const back = $("analyticsBusinessBack");
-    if (!detail || !cards || !body) return;
-    const names = { customers: "Customers", products: "Products", orders: "Orders", operations: "Operations" };
-    cards.querySelectorAll("[data-analytics-view]").forEach(button => {
-      const selected = button.dataset.analyticsView === state.activeView;
-      button.classList.toggle("is-active", selected);
-      button.setAttribute("aria-pressed", selected ? "true" : "false");
-    });
-    cards.hidden = false;
-    if (!state.activeView) {
-      detail.hidden = true;
-      body.innerHTML = "";
-      return;
-    }
-    detail.hidden = false;
-    if (title) title.textContent = names[state.activeView] + " analytics";
-    if (back) {
-      back.hidden = false;
-      back.textContent = "← Default analytics";
-    }
-    body.innerHTML = renderBusinessView(snapshot, state.activeView);
-  }
-
-  function renderViewSummary(metrics, view) {
-    const names = { customers: "Customers", products: "Products", orders: "Orders", operations: "Operations" };
-    const items = metrics.map(metric =>
-      '<article class="analytics-summary-item"><span>' + escapeHtml(metric.label) + '</span><strong>' + escapeHtml(metric.value) + '</strong><small class="neutral">' + escapeHtml(metric.change) + '</small><em>' + escapeHtml(metric.hint) + '</em></article>'
-    ).join("");
-    return '<section class="analytics-summary-row analytics-view-summary" aria-label="' + escapeHtml(names[view] || "Analytics") + ' summary">' + items + '</section>';
-  }
-
-  function renderViewPanel(title, description, content) {
-    return '<section class="analytics-card analytics-view-panel"><div class="analytics-panel-heading"><div><h4>' + escapeHtml(title) + '</h4><p>' + escapeHtml(description) + '</p></div></div><div class="analytics-view-panel-body">' + content + '</div></section>';
-  }
-
-  function renderViewOutcome(label, count, total) {
-    const percent = total ? Math.max(0, Math.min(100, count / total * 100)) : 0;
-    return '<div class="analytics-outcome-row"><div><span>' + escapeHtml(label) + '</span><strong>' + number(count) + '</strong></div><div class="analytics-outcome-track"><span style="width:' + percent.toFixed(1) + '%"></span></div></div>';
-  }
-
-  function renderBusinessView(snapshot, view) {
-    const periodLabel = snapshot.range.label || "Selected period";
-    let metrics = [];
-    let leftTitle = "";
-    let leftDescription = "";
-    let leftContent = "";
-    let rightTitle = "";
-    let rightDescription = "";
-    let rightContent = "";
-
-    if (view === "customers") {
-      const buyers = snapshot.customers;
-      const rate = buyers.returningRate == null ? "—" : buyers.returningRate.toFixed(1) + "%";
-      metrics = [
-        { label: "Identified purchasers", value: number(buyers.identifiedBuyers), change: periodLabel, hint: "Completed, non-refunded orders" },
-        { label: "New purchasers", value: number(buyers.newBuyers), change: "First recorded purchase", hint: "No earlier completed order found" },
-        { label: "Returning purchasers", value: number(buyers.returningBuyers), change: "Purchased before", hint: "Linked customer accounts" },
-        { label: "Returning share", value: rate, change: "Of identified purchasers", hint: buyers.identifiedBuyers < 5 ? "Needs 5 identified purchasers" : "Based on completed purchases" }
-      ];
-      leftTitle = "Returning customer trend";
-      leftDescription = "Linked customers with earlier completed purchases.";
-      leftContent = renderCustomerDays(snapshot);
-      rightTitle = "Customer coverage";
-      rightDescription = "What these customer figures include.";
-      rightContent = '<div class="analytics-view-callout"><strong>How this is counted</strong><p>Guest checkouts without a linked customer account are excluded from retention calculations.</p><p>Customer names and contact details are not shown in Analytics.</p><p>' + (buyers.identifiedBuyers < 5 ? "The returning share will become more useful after at least five purchasers are identified." : "The returning share compares repeat purchasers with all identified purchasers.") + '</p></div>';
-    } else if (view === "products") {
-      const rows = snapshot.items.map(item => {
-        const id = String(item.id || "");
-        const isService = String(item.item_type || "").toLowerCase() === "service";
-        const viewers = snapshot.productViews.get(id);
-        const views = viewers ? viewers.size : 0;
-        const purchases = isService ? (snapshot.serviceBookingRequests.get(id) || 0) : (snapshot.productPurchases.get(id) || 0);
-        const sameSession = (isService ? snapshot.serviceBookingSessions : snapshot.productOrderSessions).get(id) || new Set();
-        const converted = viewers ? [...sameSession].filter(session => viewers.has(session)).length : 0;
-        const attributionAvailable = isService ? snapshot.bookingAttributionAvailable : snapshot.orderAttributionAvailable;
-        const rate = !attributionAvailable ? "Not tracked" : viewers && viewers.size >= 10 ? (converted / viewers.size * 100).toFixed(1) + "%" : "—";
-        return { item, views, purchases, rate, isService };
-      }).sort((a, b) => b.purchases - a.purchases || b.views - a.views || String(a.item.name).localeCompare(String(b.item.name)));
-      const totalViews = rows.reduce((sum, row) => sum + row.views, 0);
-      const totalDemand = rows.reduce((sum, row) => sum + row.purchases, 0);
-      const viewedItems = rows.filter(row => row.views > 0).length;
-      const tracking = !snapshot.eventsAvailable
-        ? "Item view tracking is not connected yet; new views will be counted after tracking is enabled."
-        : rows.some(row => row.isService) && !snapshot.bookingAttributionAvailable
-          ? "Views are unique sessions. Same-session booking attribution for services is not connected yet."
-          : "Views are unique sessions. Product demand uses completed units and service demand uses booking requests.";
-      const table = rows.length
-        ? '<div class="analytics-table-wrap"><table class="analytics-data-table"><thead><tr><th>Product or service</th><th>Views</th><th>Completed units / booking requests</th><th>View-to-order / booking rate</th></tr></thead><tbody>' + rows.map(row => '<tr><td><strong>' + escapeHtml(row.item.name || "Unnamed item") + '</strong><small>' + escapeHtml(row.item.item_type || "product") + (row.item.is_available ? " · Available" : " · Unavailable") + '</small></td><td>' + (snapshot.eventsAvailable ? number(row.views) : "Not tracked") + '</td><td>' + number(row.purchases) + '</td><td>' + escapeHtml(row.rate) + '</td></tr>').join("") + '</tbody></table></div>'
-        : '<div class="analytics-chart-empty"><strong>No products or services yet</strong><span>Add catalogue items to see their recorded performance here.</span></div>';
-      const topItem = rows.find(row => row.purchases > 0 || row.views > 0);
-      metrics = [
-        { label: "Products & services", value: number(rows.length), change: "Current catalogue", hint: "Items listed by this business" },
-        { label: "Items with views", value: snapshot.eventsAvailable ? number(viewedItems) : "Not tracked", change: "Unique item visitors", hint: "Tracking starts when connected" },
-        { label: "Unique item views", value: snapshot.eventsAvailable ? number(totalViews) : "Not tracked", change: periodLabel, hint: "Sessions counted per item" },
-        { label: "Orders / requests", value: number(totalDemand), change: periodLabel, hint: "Completed units and booking requests" }
-      ];
-      leftTitle = "Product and service performance";
-      leftDescription = "Compare recorded views, demand and conversion.";
-      leftContent = table;
-      rightTitle = "Top item signals";
-      rightDescription = "The highest recorded demand in this period.";
-      rightContent = topItem
-        ? '<div class="analytics-view-callout"><strong>' + escapeHtml(topItem.item.name || "Unnamed item") + '</strong><div class="analytics-view-kv"><span>' + (topItem.isService ? "Booking requests" : "Completed units") + '</span><b>' + number(topItem.purchases) + '</b></div><div class="analytics-view-kv"><span>Unique views</span><b>' + (snapshot.eventsAvailable ? number(topItem.views) : "Not tracked") + '</b></div><p>' + escapeHtml(tracking) + '</p></div>'
-        : '<div class="analytics-chart-empty"><strong>No item activity yet</strong><span>Recorded product and service activity will appear here.</span></div>';
-    } else if (view === "orders") {
-      const completed = snapshot.currentOrders.filter(row => row.status === "completed" && row.payment_status !== "refunded");
-      const cancelled = snapshot.currentOrders.filter(row => row.status === "cancelled");
-      const subtotal = completed.reduce((sum, row) => sum + row.subtotal, 0);
-      const average = completed.length ? money(subtotal / completed.length) : "—";
-      const completionRate = snapshot.ordersPlaced ? completed.length / snapshot.ordersPlaced * 100 : 0;
-      const other = Math.max(0, snapshot.ordersPlaced - completed.length - cancelled.length);
-      metrics = [
-        { label: "Orders placed", value: number(snapshot.ordersPlaced), change: periodLabel, hint: "Includes orders later cancelled" },
-        { label: "Completed orders", value: number(completed.length), change: "Current recorded status", hint: "Refunded orders excluded" },
-        { label: "Cancelled orders", value: number(cancelled.length), change: "Current recorded status", hint: "Included in orders placed" },
-        { label: "Average order value", value: average, change: "Completed orders only", hint: "Based on recorded subtotals" }
-      ];
-      leftTitle = "Order outcomes";
-      leftDescription = "Current status of orders placed in this period.";
-      leftContent = renderViewOutcome("Completed", completed.length, snapshot.ordersPlaced) + renderViewOutcome("Cancelled", cancelled.length, snapshot.ordersPlaced) + renderViewOutcome("Other statuses", other, snapshot.ordersPlaced) + '<p class="analytics-detail-note">Completed share: ' + (snapshot.ordersPlaced ? completionRate.toFixed(1) + "%" : "—") + '.</p>';
-      rightTitle = "Order value and tracking";
-      rightDescription = "How StoreNest records order performance.";
-      rightContent = '<div class="analytics-view-callout"><div class="analytics-view-kv"><span>Completed order subtotal</span><b>' + money(subtotal) + '</b></div><div class="analytics-view-kv"><span>Average completed order</span><b>' + average + '</b></div><p>Order values reflect recorded order rows. Analytics does not label unpaid orders as confirmed payments or treat pending orders as completed sales.</p></div>';
-    } else {
-      const completed = snapshot.currentOrders.filter(row => row.status === "completed").length;
-      const cancelled = snapshot.currentOrders.filter(row => row.status === "cancelled").length;
-      const bookingCounts = Object.fromEntries(["pending", "accepted", "declined", "completed"].map(status => [status, snapshot.bookings.filter(row => row.status === status && engine.localDate(row.created_at) >= snapshot.range.start && engine.localDate(row.created_at) < snapshot.range.end).length]));
-      const bookingCount = Object.values(bookingCounts).reduce((sum, count) => sum + count, 0);
-      metrics = [
-        { label: "Orders completed", value: number(completed), change: periodLabel, hint: "Current order status" },
-        { label: "Orders cancelled", value: number(cancelled), change: "Current order status", hint: "Latest recorded order state" },
-        { label: "Booking requests", value: number(bookingCount), change: periodLabel, hint: "Requests created in this period" },
-        { label: "Pending bookings", value: number(bookingCounts.pending), change: "Awaiting a response", hint: "Current booking status" }
-      ];
-      leftTitle = "Booking request status";
-      leftDescription = "Requests created in the selected period.";
-      leftContent = bookingCount
-        ? '<div class="analytics-status-bars">' + Object.entries(bookingCounts).map(([status, count]) => '<div><span>' + escapeHtml(status) + '</span><b>' + number(count) + '</b><i><em style="width:' + Math.min(100, bookingCount ? count / bookingCount * 100 : 0) + '%"></em></i></div>').join("") + '</div>'
-        : '<div class="analytics-chart-empty"><strong>No booking requests in this period</strong><span>Booking counts will appear when customers send an enquiry.</span></div>';
-      rightTitle = "Operational tracking";
-      rightDescription = "What this dashboard can measure today.";
-      rightContent = '<div class="analytics-view-callout"><div class="analytics-view-kv"><span>Orders completed</span><b>' + number(completed) + '</b></div><div class="analytics-view-kv"><span>Orders cancelled</span><b>' + number(cancelled) + '</b></div><p>StoreNest records the latest order and booking status, but not every status-change timestamp.</p><p>Response and preparation times are not estimated until those status changes can be tracked reliably.</p></div>';
-    }
-
-    return renderViewSummary(metrics, view) + '<div class="analytics-main-grid analytics-view-grid">' + renderViewPanel(leftTitle, leftDescription, leftContent) + renderViewPanel(rightTitle, rightDescription, rightContent) + '</div>';
-  }
-
-  function renderCustomerDays(snapshot) {
-    const series = engine.buildSeries(snapshot, "returning");
-    if (!series.some(row => row.value > 0)) return '<div class="analytics-chart-empty"><strong>Not enough returning-customer history yet</strong><span>Repeat purchases will appear as linked customer accounts build up history.</span></div>';
-    return '<div class="analytics-status-bars">' + series.map(row => '<div><span>' + escapeHtml(row.label) + '</span><b>' + number(row.value) + ' returning</b><i><em style="width:' + Math.min(100, row.value ? 100 : 0) + '%"></em></i></div>').join("") + '</div>';
   }
 
   async function saveInsightStatus(insight, nextStatus) {
@@ -542,10 +481,10 @@
     const range = snapshot.range;
     const rangeLabel = $("analyticsRangeLabel");
     if (rangeLabel && range) rangeLabel.textContent = dateLabel(range.start) + " – " + dateLabel(engine.addDays(range.end, -1));
-    renderSummary(snapshot);
+    renderSummary(snapshot, state.activeView);
     renderChart(snapshot);
     renderInsights(snapshot);
-    renderExplore(snapshot);
+    updateTrendHeading();
     renderInsightDetail(snapshot);
   }
 
@@ -566,6 +505,10 @@
       state.loaded = false;
       state.activeInsightKey = "";
       state.activeView = "";
+      state.metric = "orders";
+      state.defaultMetric = "orders";
+      if ($("analyticsMetric")) $("analyticsMetric").value = "orders";
+      updateTrendHeading();
       state.insightsExpanded = false;
       const section = root.document.querySelector('[data-section-view="analytics"]');
       if (section && !section.hidden) loadData(true);
@@ -596,7 +539,11 @@
     [$("analyticsCustomStart"), $("analyticsCustomEnd")].filter(Boolean).forEach(input => input.addEventListener("change", () => {
       if (state.businessId) { state.loaded = false; loadData(true); }
     }));
-    $("analyticsMetric")?.addEventListener("change", () => { state.metric = $("analyticsMetric").value; if (state.loaded) renderChart(currentSnapshot()); });
+    $("analyticsMetric")?.addEventListener("change", () => {
+      state.metric = $("analyticsMetric").value;
+      if (!state.activeView) state.defaultMetric = state.metric;
+      if (state.loaded) renderChart(currentSnapshot());
+    });
     $("analyticsViewAllInsights")?.addEventListener("click", () => { state.insightsExpanded = !state.insightsExpanded; if (state.loaded) renderInsights(currentSnapshot()); });
     $("analyticsRetry")?.addEventListener("click", () => { state.loaded = false; loadData(true); });
     $("analyticsRefresh")?.addEventListener("click", () => { state.loaded = false; loadData(true); });
@@ -604,12 +551,9 @@
       const button = event.target.closest("[data-analytics-view]");
       if (!button) return;
       const selectedView = button.dataset.analyticsView;
-      state.activeView = state.activeView === selectedView ? "" : selectedView;
-      state.activeInsightKey = "";
-      if ($("analyticsInsightDetail")) $("analyticsInsightDetail").hidden = true;
-      if (state.loaded) renderExplore(currentSnapshot());
+      setAnalyticsView(state.activeView === selectedView ? "" : selectedView);
     });
-    $("analyticsBusinessBack")?.addEventListener("click", event => { event.preventDefault(); state.activeView = ""; state.activeInsightKey = ""; if ($("analyticsInsightDetail")) $("analyticsInsightDetail").hidden = true; if (state.loaded) renderExplore(currentSnapshot()); });
+    $("analyticsBusinessBack")?.addEventListener("click", event => { event.preventDefault(); setAnalyticsView(""); });
     $("analyticsInsightDetail")?.addEventListener("click", async event => {
       if (event.target.closest("[data-close-insight]")) {
         state.activeInsightKey = "";

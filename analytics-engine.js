@@ -292,6 +292,17 @@
       let value = null;
       if (metric === "orders") value = orders.length;
       if (metric === "visits") value = visits ? visits.size : null;
+      if (metric === "product_views") {
+        if (snapshot.eventTrackingAvailable) {
+          const itemSessions = new Set(events
+            .filter(row => row.event_type === "product_view" && row.item_id && row.session_id)
+            .map(row => String(row.item_id) + "\u0000" + String(row.session_id)));
+          value = itemSessions.size;
+        }
+      }
+      if (metric === "bookings") {
+        value = (snapshot.bookings || []).filter(row => isWithin(row.created_at, bucket.start, bucket.end)).length;
+      }
       if (metric === "conversion") {
         if (snapshot.orderAttributionAvailable && visits && visits.size >= 1) {
           const converted = new Set(orders.map(row => row.analytics_session_id).filter(id => id && visits.has(id)));

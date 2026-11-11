@@ -806,10 +806,10 @@ html[data-theme="dark"] #itemMediaQualityNote[data-warning="true"]{color:#f4c27e
     </div>
     <div class="analytics-header-controls">
       <nav id="analyticsExploreCards" class="analytics-explore-cards" aria-label="Explore analytics sections">
-        <button class="analytics-explore-card" type="button" data-analytics-view="customers" aria-pressed="false"><span aria-hidden="true">♧</span><strong>Customers</strong><span aria-hidden="true">›</span></button>
-        <button class="analytics-explore-card" type="button" data-analytics-view="products" aria-pressed="false"><span aria-hidden="true">◇</span><strong>Products</strong><span aria-hidden="true">›</span></button>
-        <button class="analytics-explore-card" type="button" data-analytics-view="orders" aria-pressed="false"><span aria-hidden="true">🛒</span><strong>Orders</strong><span aria-hidden="true">›</span></button>
-        <button class="analytics-explore-card" type="button" data-analytics-view="operations" aria-pressed="false"><span aria-hidden="true">✓</span><strong>Operations</strong><span aria-hidden="true">›</span></button>
+        <button class="analytics-explore-card" type="button" data-analytics-view="customers"><span aria-hidden="true">♧</span><strong>Customers</strong><span aria-hidden="true">›</span></button>
+        <button class="analytics-explore-card" type="button" data-analytics-view="products"><span aria-hidden="true">◇</span><strong>Products</strong><span aria-hidden="true">›</span></button>
+        <button class="analytics-explore-card" type="button" data-analytics-view="orders"><span aria-hidden="true">🛒</span><strong>Orders</strong><span aria-hidden="true">›</span></button>
+        <button class="analytics-explore-card" type="button" data-analytics-view="operations"><span aria-hidden="true">✓</span><strong>Operations</strong><span aria-hidden="true">›</span></button>
       </nav>
       <label class="analytics-period-control">
         <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path></svg>
@@ -842,12 +842,15 @@ html[data-theme="dark"] #itemMediaQualityNote[data-warning="true"]{color:#f4c27e
     <div class="analytics-main-grid">
       <section class="analytics-card analytics-card-trends" aria-labelledby="analyticsTrendsTitle">
         <div class="analytics-panel-heading">
-          <div><h4 id="analyticsTrendsTitle">Performance Trends</h4><p>Track your store's key metrics over time.</p></div>
-          <label class="analytics-metric-control-wrap"><span class="sr-only">Chart metric</span>
+          <div><h4 id="analyticsTrendsTitle">Performance Trends</h4><p id="analyticsTrendsDescription">Track your store's key metrics over time.</p></div>
+          <div class="analytics-trend-controls">
+            <button id="analyticsBusinessBack" class="analytics-back-button analytics-overview-button" type="button" hidden>← Overview</button>
+            <label class="analytics-metric-control-wrap"><span class="sr-only">Chart metric</span>
             <select id="analyticsMetric" class="analytics-metric-control" aria-label="Chart metric">
-              <option value="orders" selected>Orders</option><option value="visits">Store Visits</option><option value="conversion">Conversion</option><option value="returning">Returning</option>
+              <option value="orders" selected>Orders</option><option value="visits">Store Visits</option><option value="conversion">Conversion</option><option value="returning">Returning</option><option value="product_views">Unique Item Views</option><option value="bookings">Booking Requests</option>
             </select>
-          </label>
+            </label>
+          </div>
         </div>
         <div id="analyticsChart" class="analytics-chart-host" aria-live="polite"></div>
       </section>
@@ -859,10 +862,6 @@ html[data-theme="dark"] #itemMediaQualityNote[data-warning="true"]{color:#f4c27e
         <div id="smartInsightList" class="analytics-insight-list" aria-live="polite"></div>
       </section>
     </div>
-    <section id="analyticsBusinessDetail" class="analytics-business-detail" hidden aria-live="polite">
-      <div class="analytics-detail-title-row"><h4 id="analyticsBusinessDetailTitle"></h4><button id="analyticsBusinessBack" class="analytics-back-button" type="button">← Default analytics</button></div>
-      <div id="analyticsBusinessDetailBody"></div>
-    </section>
     <section id="analyticsInsightDetail" class="analytics-business-detail analytics-insight-detail" hidden aria-live="polite"></section>
   </div>
 </section>

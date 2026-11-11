@@ -100,6 +100,26 @@ test("conversion requires enough tracked sessions and never invents a zero visit
   assert.ok(engine.buildSeries(trackedEmpty, "conversion").every(point => point.value === null));
 });
 
+test("product-view and booking chart series count activity within each day bucket", () => {
+  const events = [
+    visit("session-a", 10, { event_type: "product_view", item_id: "item-a" }),
+    visit("session-a", 10, { event_type: "product_view", item_id: "item-a" }),
+    visit("session-b", 10, { event_type: "product_view", item_id: "item-a" }),
+    visit("session-a", 10, { event_type: "product_view", item_id: "item-b" })
+  ];
+  const bookings = [
+    { id: "booking-1", business_id: businessId, item_id: "service-a", status: "pending", created_at: iso(10) },
+    { id: "booking-2", business_id: businessId, item_id: "service-a", status: "accepted", created_at: iso(9) }
+  ];
+  const tracked = engine.buildSnapshot({ businessId, orders: [], events, bookings, eventsAvailable: true, period: "last7", now });
+  assert.equal(engine.buildSeries(tracked, "product_views").reduce((sum, row) => sum + row.value, 0), 3);
+  assert.equal(engine.buildSeries(tracked, "bookings").reduce((sum, row) => sum + row.value, 0), 2);
+
+  const untracked = engine.buildSnapshot({ businessId, orders: [], events, bookings, eventsAvailable: false, period: "last7", now });
+  assert.ok(engine.buildSeries(untracked, "product_views").every(row => row.value === null));
+  assert.equal(engine.buildSeries(untracked, "bookings").reduce((sum, row) => sum + row.value, 0), 2);
+});
+
 test("returning customers use earlier completed non-refunded customer purchases and require a sample", () => {
   const recent = Array.from({ length: 5 }, (_, index) => order("current-" + index, {
     customer_user_id: "customer-" + index,
