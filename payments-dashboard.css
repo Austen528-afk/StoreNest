@@ -16,7 +16,7 @@
 .payments-kpi-value{grid-column:1/-1;color:var(--st-text,#15291f);font-size:23px;line-height:1.15;font-weight:800;letter-spacing:-.035em}
 .payments-kpi-note{grid-column:1/-1;margin-top:-6px;color:var(--st-muted,#87918c);font-size:10px;line-height:1.4}
 .payments-overview-grid{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(185px,.78fr) minmax(245px,1fr);gap:24px;align-items:start}
-.payments-panel{min-width:0}
+.payments-panel{min-width:0;box-sizing:border-box;padding:18px;border:1px solid var(--st-border,#d8e5dd);border-radius:20px;background:var(--st-panel,#fff)}
 .payments-panel-heading{min-height:34px;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
 .payments-panel-heading h4,.payments-insights-heading{margin:0;color:var(--st-text,#17362d);font-size:16px;line-height:1.35;font-weight:800;letter-spacing:-.02em}
 .payments-period-select{max-width:150px;min-height:38px;padding:7px 30px 7px 12px;border:1px solid var(--st-border,#d8e5dd);border-radius:999px;background:var(--st-panel,#fff);color:var(--st-text,#22342b);font:inherit;font-size:12px;cursor:pointer}
@@ -54,7 +54,7 @@
 .payments-transactions-empty{margin:18px 2px;color:var(--st-muted,#718078);font-size:12px}
 .payments-load-older{width:100%;min-height:34px;margin:2px 0 8px;padding:7px 9px;border:0;border-radius:8px;background:transparent;color:var(--st-accent,#168b70);font:inherit;font-size:11px;font-weight:750;text-align:left;cursor:pointer}
 .payments-load-older:hover{background:color-mix(in srgb,var(--st-mint,#60d6bd) 10%,transparent)}
-.payments-financial-insights{margin-top:27px}.payments-insights-heading{margin:0 0 14px}
+.payments-financial-insights{box-sizing:border-box;margin-top:27px;padding:18px;border:1px solid var(--st-border,#d8e5dd);border-radius:20px;background:var(--st-panel,#fff)}.payments-insights-heading{margin:0 0 14px}
 .payments-insights-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
 .payments-insight{min-width:0;display:grid;gap:9px}
 .payments-insight-label{color:var(--st-muted,#718078);font-size:12px}
@@ -74,7 +74,7 @@ html[data-theme="dark"] .payments-chart-dot{stroke:var(--st-bg,#111a1d)}
 .payments-chart-wrap{min-height:210px}.payments-chart-label{font-size:10px}.payments-chart-x-label{font-size:9px}
 .payments-chart-legend{font-size:12px}.payments-balance-list{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .payments-balance-item{gap:5px}.payments-balance-value{font-size:18px}.payments-balance-note{font-size:10px}
-.payments-transactions{max-height:260px}.payments-financial-insights{margin-top:25px}
+.payments-transactions{max-height:260px}.payments-financial-insights{margin-top:25px;padding:14px}
 .payments-insights-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 12px}.payments-insight-value{font-size:21px}
 }
 @media(max-width:420px){.payments-dashboard-section .section-heading{display:block}.payments-date-label{padding-top:8px}
