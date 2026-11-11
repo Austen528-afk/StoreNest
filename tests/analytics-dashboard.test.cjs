@@ -38,6 +38,15 @@ test("the existing owner dashboard contains one Analytics section with the four 
   assert.match(styles, /.analytics-summary-row\{[^}]*grid-template-columns:repeat\(4,minmax\(0,1fr\)\)[^}]*border:1px solid/);
   assert.doesNotMatch(styles, /.analytics-summary-item\{[^}]*border:/);
 });
+test("Explore buttons sit beside the timeframe and the separate Explore section is removed", () => {
+  const headerStart = ownerHtml.indexOf('<header class="analytics-header">');
+  const headerEnd = ownerHtml.indexOf("</header>", headerStart);
+  const header = ownerHtml.slice(headerStart, headerEnd);
+  assert.ok(header.indexOf('id="analyticsExploreCards"') < header.indexOf('id="analyticsDateRange"'));
+  assert.equal((ownerHtml.match(/data-analytics-view=/g) || []).length, 4);
+  assert.doesNotMatch(ownerHtml, /analytics-explore-panel|analyticsExploreTitle|Explore Your Business/);
+  assert.match(ownerHtml, /id="analyticsBusinessDetail"/);
+});
 
 test("successful Analytics loads render the calculated snapshot", () => {
   assert.ok(dashboardJs.includes("render(currentSnapshot());"));
@@ -95,7 +104,7 @@ test("analytics schema restricts event reads and insight state to the owning bus
 });
 
 test("service worker activates the new dashboard assets in a fresh cache", () => {
-  assert.match(serviceWorker, /storenest-shell-v50/);
+  assert.match(serviceWorker, /storenest-shell-v51/);
   for (const asset of ["analytics-dashboard.css", "analytics-engine.js", "analytics-dashboard.js", "storefront-analytics.js"]) {
     assert.match(serviceWorker, new RegExp("/" + asset.replaceAll(".", "\\.")));
   }
