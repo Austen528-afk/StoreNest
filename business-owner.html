@@ -647,10 +647,59 @@ html[data-theme="dark"] #itemMediaQualityNote[data-warning="true"]{color:#f4c27e
   <link rel="stylesheet" href="/messaging-centre.css">
   <link rel="stylesheet" href="/analytics-dashboard.css">
   <link rel="stylesheet" href="/customer-dashboard.css">
+<style>
+/* Collapse both header rows together while keeping a small way to restore them. */
+body[data-page-kind="owner"].workspace-header-collapsed .wrap:has(.auth-shell.dashboard-mode) > .top,
+body[data-page-kind="owner"].workspace-header-collapsed .auth-view[data-view="account"] > .dashboard-head{
+  display:none!important;
+}
+.dashboard-header-reopen{
+  position:fixed;
+  top:calc(env(safe-area-inset-top,0px) + 10px);
+  right:12px;
+  z-index:120;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  min-height:36px;
+  padding:0 11px;
+  border:1px solid #d4e4da;
+  border-radius:999px;
+  background:#fff;
+  color:#1b3a2e;
+  box-shadow:0 5px 20px rgba(18,40,26,.18);
+  font:inherit;
+  font-size:11px;
+  font-weight:750;
+  cursor:pointer;
+}
+.dashboard-header-reopen[hidden]{display:none!important}
+.dashboard-header-reopen:hover{border-color:#9bcfb7;background:#f5fbf7}
+.dashboard-header-reopen:focus-visible{
+  outline:2px solid #30b695;
+  outline-offset:3px;
+}
+.dashboard-head-toggle{
+  flex:0 0 36px;
+  font-size:20px;
+  line-height:1;
+}
+.dashboard-head-toggle:focus-visible{
+  outline:2px solid #60d6bd;
+  outline-offset:3px;
+}
+html[data-theme="dark"] .dashboard-header-reopen{
+  border-color:#344b49;
+  background:#1b292c;
+  color:#edf6f3;
+}
+html[data-theme="dark"] .dashboard-header-reopen:hover{background:#2d4540}
+</style>
 </head>
-<body data-page-kind="owner">
+<body data-page-kind="owner" class="workspace-header-collapsed">
 <div class="wrap">
-<header class="top">
+<header class="top" id="storeNestTopBar">
 <a class="logo" href="/" aria-label="StoreNest home">store<span>nest.</span></a>
 <div class="top-actions">
 <button class="install-btn" id="installBtn" type="button">Install app</button>
@@ -721,8 +770,9 @@ html[data-theme="dark"] #itemMediaQualityNote[data-warning="true"]{color:#f4c27e
 <button class="button button-primary" type="submit">Update password</button>
 <div class="message" role="status" aria-live="polite" hidden></div>
 </form>
-<div class="auth-view" data-view="account" hidden>
-  <div class="dashboard-head"><div><span class="eyebrow">BUSINESS WORKSPACE</span><h2 id="businessTitle">Your business</h2><div class="business-switcher"><label for="businessSelect">Current business</label><select id="businessSelect" aria-label="Select business"></select><button type="button" id="createBusinessButton" class="outline-button">+ Create business</button><button type="button" id="deleteBusinessButton" class="outline-button danger-outline-button" disabled>Delete store</button></div><p class="sub" id="dashboardWelcome">Here’s your business at a glance.</p></div><div class="head-actions"><button type="button" class="theme-switch theme-switch-header" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false"><span class="theme-switch-icon" aria-hidden="true">☾</span><span class="theme-switch-label">Dark mode</span></button><button type="button" class="icon-button" id="notificationsButton" aria-label="Notifications">♧</button><button type="button" class="avatar" id="profileButton" aria-label="Business profile">SN</button></div></div>
+<div class="auth-view" data-view="account" id="accountDashboardView" hidden>
+  <button type="button" class="dashboard-header-reopen" id="dashboardHeaderReopen" aria-label="Show the StoreNest header" aria-controls="storeNestTopBar dashboardHead" aria-expanded="false" title="Show header">Show header <span aria-hidden="true">⌄</span></button>
+  <div class="dashboard-head" id="dashboardHead"><div id="dashboardHeadDetails"><span class="eyebrow">BUSINESS WORKSPACE</span><h2 id="businessTitle">Your business</h2><div class="business-switcher"><label for="businessSelect">Current business</label><select id="businessSelect" aria-label="Select business"></select><button type="button" id="createBusinessButton" class="outline-button">+ Create business</button><button type="button" id="deleteBusinessButton" class="outline-button danger-outline-button" disabled>Delete store</button></div><p class="sub" id="dashboardWelcome">Here’s your business at a glance.</p></div><div class="head-actions"><button type="button" class="theme-switch theme-switch-header" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false"><span class="theme-switch-icon" aria-hidden="true">☾</span><span class="theme-switch-label">Dark mode</span></button><button type="button" class="icon-button" id="notificationsButton" aria-label="Notifications">♧</button><button type="button" class="avatar" id="profileButton" aria-label="Business profile">SN</button><button type="button" class="icon-button dashboard-head-toggle" id="dashboardHeadToggle" aria-label="Hide the StoreNest header" aria-controls="storeNestTopBar dashboardHead" aria-expanded="false" title="Hide header">⌃</button></div></div>
   <div class="dashboard-layout">
     <aside class="sidebar" id="dashboardSidebar" aria-label="Business dashboard navigation">
 <div class="sidebar-group"><div class="side-label">DAILY WORKSPACE</div><button type="button" class="side-link active" data-section="overview"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span class="nav-name">Overview</span></button><button type="button" class="side-link" data-section="orders"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l1 12H4L5 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg></span><span class="nav-name">Orders</span><span class="owner-nav-badge" data-owner-nav-badge="orders" hidden></span></button><button type="button" class="side-link" data-section="bookings"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M8 14h3M14 14h3M8 17h3"/></svg></span><span class="nav-name">Bookings</span><span class="owner-nav-badge" data-owner-nav-badge="bookings" hidden></span></button><button type="button" class="side-link" data-section="messages"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5 8.6 8.6 0 0 1-4-.98L3 21l1.98-5.5a8.4 8.4 0 0 1-.98-4A8.5 8.5 0 0 1 12.5 3a8.5 8.5 0 0 1 8.5 8.5Z"/><path d="M8.5 11.5h.01M12.5 11.5h.01M16.5 11.5h.01"/></svg></span><span class="nav-name">Messages</span><span class="owner-nav-badge" data-owner-nav-badge="messages" hidden></span></button></div>
@@ -968,6 +1018,30 @@ html[data-theme="dark"] #itemMediaQualityNote[data-warning="true"]{color:#f4c27e
 const STORE_AUTH={url:"https://cypbjzbagezdelmemuhb.supabase.co",publishableKey:"sb_publishable_8W8zyYtggQMWoFlnxrzoVA_BUKjQ9va"};
 let authClient=null, signingIn=false, recovering=false, activeView="start", currentUser=null, currentBusiness=null, ownerBusinesses=[], switchingBusiness=false, businessItems=[], businessCategories=[], selectedFilter="all", itemQuery="", selectedLogoFile=null, storefrontDraft=null;
 const $=id=>document.getElementById(id);
+const DASHBOARD_HEAD_STORAGE_KEY="storenest:business-workspace-header-open";
+function setDashboardHeadExpanded(expanded,persist=false){
+ const isExpanded=Boolean(expanded),closeButton=$("dashboardHeadToggle"),reopenButton=$("dashboardHeaderReopen");
+ document.body.classList.toggle("workspace-header-collapsed",!isExpanded);
+ if(closeButton){
+  closeButton.setAttribute("aria-expanded",String(isExpanded));
+  closeButton.setAttribute("aria-label",isExpanded?"Hide the StoreNest header":"Show the StoreNest header");
+  closeButton.title=isExpanded?"Hide header":"Show header";
+  closeButton.textContent=isExpanded?"⌃":"⌄";
+ }
+ if(reopenButton){
+  reopenButton.hidden=isExpanded;
+  reopenButton.setAttribute("aria-expanded",String(isExpanded));
+ }
+ if(persist){try{localStorage.setItem(DASHBOARD_HEAD_STORAGE_KEY,isExpanded?"open":"closed")}catch{}}
+}
+function restoreDashboardHeadState(){
+ let isExpanded=false;
+ try{isExpanded=localStorage.getItem(DASHBOARD_HEAD_STORAGE_KEY)==="open"}catch{}
+ setDashboardHeadExpanded(isExpanded,false);
+}
+restoreDashboardHeadState();
+$("dashboardHeadToggle")?.addEventListener("click",()=>setDashboardHeadExpanded(false,true));
+$("dashboardHeaderReopen")?.addEventListener("click",()=>setDashboardHeadExpanded(true,true));
 const authViews=[...document.querySelectorAll("[data-view]")];
 const menuToggle=$("menuToggle"),siteMenu=$("siteMenu"),menuContainer=$("menuContainer");
 function setMenuOpen(open){siteMenu.hidden=!open;menuToggle.setAttribute("aria-expanded",String(open));menuToggle.setAttribute("aria-label",open?"Close menu":"Open menu")}
