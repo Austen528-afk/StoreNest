@@ -48,6 +48,18 @@ test("Explore buttons sit beside the timeframe and the separate Explore section 
   assert.match(ownerHtml, /id="analyticsBusinessDetail"/);
 });
 
+test("the four analytics buttons stay visible, highlight the selected view, and return to overview", () => {
+  const start = dashboardJs.indexOf("  function renderExplore(snapshot) {");
+  const end = dashboardJs.indexOf("  function renderViewSummary", start);
+  const renderer = dashboardJs.slice(start, end);
+  assert.doesNotMatch(renderer, /cards\.hidden\s*=\s*true/);
+  assert.match(renderer, /button\.setAttribute\("aria-pressed", selected \? "true" : "false"\)/);
+  assert.match(dashboardJs, /state\.activeView = state\.activeView === selectedView \? "" : selectedView/);
+  assert.match(ownerHtml, /← Default analytics/);
+  assert.match(dashboardJs, /analytics-summary-row analytics-view-summary/);
+  assert.match(dashboardJs, /analytics-main-grid analytics-view-grid/);
+});
+
 test("desktop Analytics fits the dashboard viewport without page scrolling", () => {
   assert.match(styles, /@media\s*\(min-width:\s*1100px\)[\s\S]*?\.workspace:has\(#analyticsDashboard:not\(\[hidden\]\)\)\{[^}]*overflow:hidden/);
   assert.match(styles, /\.analytics-content:not\(\[hidden\]\)\{[^}]*flex:1 1 auto[^}]*min-height:0[^}]*overflow:hidden/);
@@ -111,7 +123,7 @@ test("analytics schema restricts event reads and insight state to the owning bus
 });
 
 test("service worker activates the new dashboard assets in a fresh cache", () => {
-  assert.match(serviceWorker, /storenest-shell-v52/);
+  assert.match(serviceWorker, /storenest-shell-v53/);
   for (const asset of ["analytics-dashboard.css", "analytics-engine.js", "analytics-dashboard.js", "storefront-analytics.js"]) {
     assert.match(serviceWorker, new RegExp("/" + asset.replaceAll(".", "\\.")));
   }
