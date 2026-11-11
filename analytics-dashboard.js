@@ -547,12 +547,16 @@
     $("analyticsViewAllInsights")?.addEventListener("click", () => { state.insightsExpanded = !state.insightsExpanded; if (state.loaded) renderInsights(currentSnapshot()); });
     $("analyticsRetry")?.addEventListener("click", () => { state.loaded = false; loadData(true); });
     $("analyticsRefresh")?.addEventListener("click", () => { state.loaded = false; loadData(true); });
-    $("analyticsExploreCards")?.addEventListener("click", event => {
-      const button = event.target.closest("[data-analytics-view]");
-      if (!button) return;
-      const selectedView = button.dataset.analyticsView;
-      setAnalyticsView(state.activeView === selectedView ? "" : selectedView);
-    });
+    const exploreCards = $("analyticsExploreCards");
+    if (exploreCards) {
+      exploreCards.querySelectorAll("[data-analytics-view]").forEach(button => {
+        button.addEventListener("click", event => {
+          event.preventDefault();
+          const selectedView = button.dataset.analyticsView;
+          setAnalyticsView(state.activeView === selectedView ? "" : selectedView);
+        });
+      });
+    }
     $("analyticsBusinessBack")?.addEventListener("click", event => { event.preventDefault(); setAnalyticsView(""); });
     $("analyticsInsightDetail")?.addEventListener("click", async event => {
       if (event.target.closest("[data-close-insight]")) {
