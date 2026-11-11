@@ -55,6 +55,22 @@ test("the four category buttons stay beside the timeframe and no extra category 
   assert.match(ownerHtml, /option value="bookings"/);
 });
 
+test("customer intelligence shortcuts sit in the Customers header beside its timeframe", () => {
+  const headerStart = ownerHtml.indexOf('<header class="customer-header">');
+  const headerEnd = ownerHtml.indexOf("</header>", headerStart);
+  const header = ownerHtml.slice(headerStart, headerEnd);
+  const navStart = header.indexOf('class="customer-explore-nav"');
+  const navEnd = header.indexOf("</nav>", navStart);
+  const nav = header.slice(navStart, navEnd);
+  assert.ok(navStart >= 0 && navEnd > navStart);
+  for (const view of ["overview", "behaviour", "preferences", "habits", "journey", "retention"]) {
+    assert.match(nav, new RegExp('data-customer-view="' + view + '"'));
+  }
+  assert.ok(navStart < header.indexOf('id="customerDateRange"'));
+  assert.doesNotMatch(ownerHtml, /customer-explore-grid|customer-explore-card/);
+  assert.match(read("customer-dashboard.css"), /\.customer-explore-nav\{[^}]*grid-template-columns:repeat\(6,minmax\(0,1fr\)\)/);
+});
+
 test("category clicks update only the shared summary row and trends chart and return to overview", () => {
   const start = dashboardJs.indexOf("  function setAnalyticsView(view) {");
   const end = dashboardJs.indexOf("  function renderInsights(snapshot) {", start);
@@ -134,7 +150,7 @@ test("analytics schema restricts event reads and insight state to the owning bus
 });
 
 test("service worker activates the new dashboard assets in a fresh cache", () => {
-  assert.match(serviceWorker, /storenest-shell-v57/);
+  assert.match(serviceWorker, /storenest-shell-v58/);
   for (const asset of ["analytics-dashboard.css", "analytics-engine.js", "analytics-dashboard.js", "customer-dashboard.css", "customer-intelligence-engine.js", "customer-dashboard.js", "storefront-analytics.js"]) {
     assert.match(serviceWorker, new RegExp("/" + asset.replaceAll(".", "\\.")));
   }
