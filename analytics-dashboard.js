@@ -462,9 +462,6 @@
     renderInsights(snapshot);
     renderExplore(snapshot);
     renderInsightDetail(snapshot);
-    const trackingNote = $("analyticsTrackingNote");
-    const needsBookingAttribution = snapshot.items.some(item => String(item.item_type || "").toLowerCase() === "service");
-    if (trackingNote) trackingNote.hidden = snapshot.eventsAvailable && snapshot.orderAttributionAvailable && (!needsBookingAttribution || snapshot.bookingAttributionAvailable);
   }
 
   function onBusinessReady(event) {
