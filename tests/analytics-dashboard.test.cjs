@@ -25,7 +25,7 @@ const bookingMigration = read("supabase/migrations/20261111105224_service_bookin
 
 test("the existing owner dashboard contains one Analytics section with the four shared-row metrics", () => {
   assert.match(ownerHtml, /id="analyticsDashboard"[^>]*data-section-view="analytics"/);
-  for (const id of ["analyticsDateRange", "analyticsMetric", "analyticsSummary", "analyticsChart", "smartInsightList", "analyticsExploreCards", "analyticsBusinessDetail", "analyticsInsightDetail"]) {
+  for (const id of ["analyticsDateRange", "analyticsMetric", "analyticsSummary", "analyticsChart", "smartInsightList", "analyticsExploreCards", "analyticsBusinessBack", "analyticsTrendsDescription", "analyticsInsightDetail"]) {
     assert.match(ownerHtml, new RegExp('id="' + id + '"'));
   }
   assert.match(ownerHtml, /analytics-dashboard.css/);
@@ -38,26 +38,36 @@ test("the existing owner dashboard contains one Analytics section with the four 
   assert.match(styles, /.analytics-summary-row\{[^}]*grid-template-columns:repeat\(4,minmax\(0,1fr\)\)[^}]*border:1px solid/);
   assert.doesNotMatch(styles, /.analytics-summary-item\{[^}]*border:/);
 });
-test("Explore buttons sit beside the timeframe and the separate Explore section is removed", () => {
+test("the four category buttons stay beside the timeframe and no extra category page is created", () => {
   const headerStart = ownerHtml.indexOf('<header class="analytics-header">');
   const headerEnd = ownerHtml.indexOf("</header>", headerStart);
   const header = ownerHtml.slice(headerStart, headerEnd);
   assert.ok(header.indexOf('id="analyticsExploreCards"') < header.indexOf('id="analyticsDateRange"'));
   assert.equal((ownerHtml.match(/data-analytics-view=/g) || []).length, 4);
   assert.doesNotMatch(ownerHtml, /analytics-explore-panel|analyticsExploreTitle|Explore Your Business/);
-  assert.match(ownerHtml, /id="analyticsBusinessDetail"/);
+  assert.doesNotMatch(ownerHtml, /analyticsBusinessDetail|analytics-view-summary|analytics-view-grid/);
+  const trendsStart = ownerHtml.indexOf('class="analytics-card analytics-card-trends"');
+  const trendsEnd = ownerHtml.indexOf('id="analyticsChart"', trendsStart);
+  const trends = ownerHtml.slice(trendsStart, trendsEnd + 80);
+  assert.ok(trends.indexOf('id="analyticsBusinessBack"') >= 0);
+  assert.ok(trends.indexOf('id="analyticsBusinessBack"') < trends.indexOf('id="analyticsChart"'));
+  assert.match(ownerHtml, /option value="product_views"/);
+  assert.match(ownerHtml, /option value="bookings"/);
 });
 
-test("the four analytics buttons stay visible, highlight the selected view, and return to overview", () => {
-  const start = dashboardJs.indexOf("  function renderExplore(snapshot) {");
-  const end = dashboardJs.indexOf("  function renderViewSummary", start);
-  const renderer = dashboardJs.slice(start, end);
-  assert.doesNotMatch(renderer, /cards\.hidden\s*=\s*true/);
-  assert.match(renderer, /button\.setAttribute\("aria-pressed", selected \? "true" : "false"\)/);
-  assert.match(dashboardJs, /state\.activeView = state\.activeView === selectedView \? "" : selectedView/);
-  assert.match(ownerHtml, /← Default analytics/);
-  assert.match(dashboardJs, /analytics-summary-row analytics-view-summary/);
-  assert.match(dashboardJs, /analytics-main-grid analytics-view-grid/);
+test("category clicks update only the shared summary row and trends chart and return to overview", () => {
+  const start = dashboardJs.indexOf("  function setAnalyticsView(view) {");
+  const end = dashboardJs.indexOf("  function renderInsights(snapshot) {", start);
+  const handler = dashboardJs.slice(start, end);
+  assert.match(handler, /renderSummary\(snapshot, state\.activeView\)/);
+  assert.match(handler, /renderChart\(snapshot\)/);
+  assert.doesNotMatch(handler, /renderInsights|smartInsightList|analytics-main-grid|hidden\s*=/);
+  assert.match(dashboardJs, /setAnalyticsView\(state\.activeView === selectedView \? "" : selectedView\)/);
+  assert.match(dashboardJs, /setAnalyticsView\(""\)/);
+  const navStart = ownerHtml.indexOf('id="analyticsExploreCards"');
+  const navEnd = ownerHtml.indexOf("</nav>", navStart);
+  assert.doesNotMatch(ownerHtml.slice(navStart, navEnd), /aria-pressed/);
+  assert.doesNotMatch(dashboardJs, /renderExplore|renderBusinessView|analyticsBusinessDetail/);
 });
 
 test("desktop Analytics fits the dashboard viewport without page scrolling", () => {
@@ -123,7 +133,7 @@ test("analytics schema restricts event reads and insight state to the owning bus
 });
 
 test("service worker activates the new dashboard assets in a fresh cache", () => {
-  assert.match(serviceWorker, /storenest-shell-v53/);
+  assert.match(serviceWorker, /storenest-shell-v54/);
   for (const asset of ["analytics-dashboard.css", "analytics-engine.js", "analytics-dashboard.js", "storefront-analytics.js"]) {
     assert.match(serviceWorker, new RegExp("/" + asset.replaceAll(".", "\\.")));
   }
