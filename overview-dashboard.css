@@ -1,0 +1,148 @@
+/* StoreNest Business Owner Overview */
+#overviewDashboard{display:block;min-width:0;width:100%;color:inherit}
+#overviewDashboard[hidden]{display:none!important}
+#overviewDashboard .overview-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin:0 0 18px}
+#overviewDashboard .overview-heading-copy{min-width:0}
+#overviewDashboard .overview-heading h3{margin:0 0 5px;font-size:clamp(23px,2.2vw,30px);line-height:1.15;letter-spacing:-.025em}
+#overviewDashboard .overview-heading p{margin:0;color:#60736c;font-size:15px;line-height:1.45}
+#overviewDashboard #overviewDataStatus{display:block;margin-top:6px;color:#71827b;font-size:11px;line-height:1.4}
+#overviewDashboard .overview-heading-actions{display:flex;align-items:center;justify-content:flex-end;flex:0 0 auto}
+#overviewDashboard .overview-refresh-host{display:flex;align-items:center;justify-content:flex-end;min-height:42px}
+#overviewDashboard .overview-refresh-host .page-refresh-button{position:static;display:inline-grid;place-items:center;width:42px;height:42px;min-width:42px;padding:0;border:1px solid #dce6e0;border-radius:12px;background:#fff;color:#263c35;box-shadow:none}
+#overviewDashboard .overview-refresh-host .page-refresh-button:hover{background:#f2faf6;border-color:#b7dccd}
+#overviewDashboard .overview-panel{min-width:0;border:1px solid #dce5e0;border-radius:18px;background:#fff}
+#overviewDashboard .overview-attention-panel{padding:18px 20px;margin-bottom:14px}
+#overviewDashboard .overview-panel-heading{display:flex;align-items:center;justify-content:space-between;gap:14px}
+#overviewDashboard .overview-panel-heading h4{margin:0;font-size:17px;line-height:1.25;letter-spacing:-.015em}
+#overviewDashboard .overview-panel-heading p{margin:4px 0 0;color:#71817c;font-size:12px;line-height:1.45}
+#overviewDashboard .overview-attention-title{display:flex;align-items:center;gap:12px;min-width:0}
+#overviewDashboard .overview-attention-title>span{display:grid;place-items:center;flex:0 0 46px;height:46px;border-radius:14px;background:#edf9f1;color:#13783d;font-size:23px}
+#overviewDashboard .overview-attention-title>div{min-width:0}
+#overviewDashboard .overview-attention-title h4{margin:0;font-size:18px}
+#overviewDashboard .overview-attention-title p{margin:4px 0 0;color:#65766f;font-size:13px}
+#overviewDashboard .overview-attention-empty{padding:12px 0 2px;color:#74837d;font-size:12px}
+#overviewDashboard .overview-attention-empty[hidden]{display:none!important}
+#overviewDashboard .overview-attention-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:14px}
+#overviewDashboard .overview-attention-item{display:flex;align-items:center;gap:11px;width:100%;min-width:0;padding:11px 12px;text-align:left;border:1px solid #e0ebe4;border-radius:12px;background:#fbfdfb;color:inherit;cursor:pointer;transition:background .15s,border-color .15s,transform .15s}
+#overviewDashboard .overview-attention-item:hover{background:#f0faf4;border-color:#b9deca;transform:translateY(-1px)}
+#overviewDashboard .overview-attention-icon{display:grid;place-items:center;flex:0 0 34px;height:34px;border-radius:11px;background:#eaf8ef;color:#168244;font-size:17px}
+#overviewDashboard .overview-attention-copy{display:grid;gap:3px;min-width:0;flex:1}
+#overviewDashboard .overview-attention-copy strong{font-size:12px;line-height:1.3}
+#overviewDashboard .overview-attention-copy small{color:#667871;font-size:11px;line-height:1.4}
+#overviewDashboard .overview-attention-arrow{color:#168244;font-size:22px;line-height:1}
+#overviewDashboard .overview-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+#overviewDashboard .overview-metric{display:flex;flex-direction:column;align-items:flex-start;min-width:0;min-height:142px;padding:16px 17px;border:1px solid #dce5e0;border-radius:17px;background:#fff;color:inherit;text-align:left;cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s}
+#overviewDashboard .overview-metric:hover{border-color:#b8dcca;box-shadow:0 7px 20px rgba(24,82,51,.07);transform:translateY(-1px)}
+#overviewDashboard .overview-metric-icon{display:grid;place-items:center;width:38px;height:38px;margin-bottom:12px;border-radius:12px;background:#eef9f2;color:#188248;font-size:19px}
+#overviewDashboard .overview-metric-label{color:#4e6159;font-size:13px;line-height:1.3}
+#overviewDashboard .overview-metric-value{display:block;margin-top:7px;font-size:25px;line-height:1.15;font-weight:800;letter-spacing:-.025em}
+#overviewDashboard .overview-metric-note{display:block;margin-top:6px;color:#798881;font-size:10px;line-height:1.4}
+#overviewDashboard .overview-bottom{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(360px,.92fr);align-items:stretch;gap:16px}
+#overviewDashboard .overview-activity-panel,#overviewDashboard .overview-assistant-panel{display:flex;flex-direction:column;min-height:360px;padding:20px}
+#overviewDashboard .overview-activity-heading{align-items:flex-start;margin-bottom:16px}
+#overviewDashboard .overview-view-all{flex:0 0 auto;padding:5px 0;border:0;background:none;color:#16763b;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+#overviewDashboard .overview-view-all:hover{text-decoration:underline}
+#overviewDashboard .overview-activity-empty{display:flex;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:13px;min-height:200px;color:#596b63;text-align:center}
+#overviewDashboard .overview-activity-empty>span{display:grid;place-items:center;width:68px;height:68px;border-radius:20px;background:#edf9f1;color:#198348;font-size:34px}
+#overviewDashboard .overview-activity-empty strong{font-size:14px;font-weight:500}
+#overviewDashboard .overview-activity-empty[hidden]{display:none!important}
+#overviewDashboard .overview-activity-list,#overviewDashboard .overview-history-list{display:grid;gap:0;margin:0;padding:0;list-style:none}
+#overviewDashboard .overview-activity-list[hidden]{display:none!important}
+#overviewDashboard .overview-activity-row{display:grid;grid-template-columns:38px minmax(0,1fr) auto;align-items:center;gap:11px;width:100%;min-width:0;padding:12px 2px;border:0;border-bottom:1px solid #edf1ee;background:transparent;color:inherit;text-align:left;cursor:pointer}
+#overviewDashboard .overview-activity-row:hover .overview-activity-copy strong{color:#137a40}
+#overviewDashboard .overview-activity-icon{display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:#eff9f2;color:#168044;font-size:17px}
+#overviewDashboard .overview-activity-copy{display:grid;gap:4px;min-width:0}
+#overviewDashboard .overview-activity-copy strong{overflow:hidden;color:#243b32;font-size:12px;line-height:1.35;text-overflow:ellipsis}
+#overviewDashboard .overview-activity-copy small{overflow:hidden;color:#75827d;font-size:10px;line-height:1.4;text-overflow:ellipsis;white-space:nowrap}
+#overviewDashboard .overview-activity-row time{color:#76847d;font-size:10px;white-space:nowrap}
+#overviewDashboard .overview-assistant-panel{gap:0}
+#overviewDashboard .overview-assistant-heading{justify-content:flex-start;margin-bottom:18px}
+#overviewDashboard .overview-assistant-brand{display:flex;align-items:center;gap:12px;min-width:0}
+#overviewDashboard .overview-assistant-brand-icon{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;color:#167b40;font-size:25px}
+#overviewDashboard .overview-assistant-brand h4{font-size:20px}
+#overviewDashboard .overview-assistant-tag{margin-left:auto;padding:5px 9px;border-radius:999px;background:#eff9f2;color:#247349;font-size:10px;font-weight:700;white-space:nowrap}
+#overviewDashboard .overview-assistant-intro h5{margin:0 0 6px;font-size:18px;line-height:1.3;letter-spacing:-.015em}
+#overviewDashboard .overview-assistant-note{margin:0;color:#687a72;font-size:13px;line-height:1.5}
+#overviewDashboard .overview-assistant-suggestions{display:grid;gap:8px;margin:16px 0}
+#overviewDashboard .overview-assistant-suggestions[hidden]{display:none!important}
+#overviewDashboard .overview-assistant-suggestions button{display:grid;grid-template-columns:28px minmax(0,1fr) 18px;align-items:center;gap:9px;width:100%;min-height:42px;padding:8px 11px;border:0;border-radius:12px;background:#f0faf3;color:#18372a;text-align:left;font:inherit;font-size:12px;cursor:pointer}
+#overviewDashboard .overview-assistant-suggestions button:hover{background:#e5f6eb}
+#overviewDashboard .suggestion-icon{display:grid;place-items:center;width:26px;height:26px;border-radius:9px;color:#167d40;font-size:17px}
+#overviewDashboard .suggestion-arrow{color:#167d40;font-size:21px;text-align:right}
+#overviewDashboard .overview-assistant-thread{display:grid;gap:10px;max-height:190px;overflow:auto;margin:0 0 12px;padding:2px 2px 8px}
+#overviewDashboard .overview-assistant-thread[hidden]{display:none!important}
+#overviewDashboard .overview-chat-message{display:grid;justify-items:start;gap:5px}
+#overviewDashboard .overview-chat-message.is-user{justify-items:end}
+#overviewDashboard .overview-chat-message p{max-width:92%;margin:0;padding:9px 12px;border-radius:13px;background:#f1f5f2;color:#294138;font-size:12px;line-height:1.5}
+#overviewDashboard .overview-chat-message.is-user p{background:#e7f6ed}
+#overviewDashboard .overview-chat-action{padding:5px 9px;border:1px solid #d8e8de;border-radius:9px;background:#fff;color:#187744;font-size:11px;font-weight:700;cursor:pointer}
+#overviewDashboard .overview-assistant-form{display:flex;align-items:center;gap:8px;min-height:48px;margin-top:auto;padding:5px 8px 5px 13px;border:1px solid #d7e1db;border-radius:14px;background:#fff}
+#overviewDashboard .overview-assistant-form:focus-within{border-color:#71c99b;box-shadow:0 0 0 3px rgba(56,174,107,.12)}
+#overviewDashboard .overview-assistant-form input{flex:1;min-width:0;height:36px;border:0;outline:0;background:transparent;color:inherit;font:inherit;font-size:13px}
+#overviewDashboard .overview-assistant-form button{display:grid;place-items:center;width:36px;height:36px;border:0;border-radius:11px;background:#edfaf2;color:#137b42;font-size:0;cursor:pointer}
+#overviewDashboard .overview-assistant-form button::before{content:"➤";font-size:19px}
+#overviewDashboard .overview-assistant-status{margin:10px 0 0;color:#829089;font-size:10px;line-height:1.45}
+#overviewDashboard .overview-history-dialog{width:min(760px,calc(100vw - 28px));max-width:none;max-height:min(82vh,780px);padding:0;border:1px solid #dce5e0;border-radius:18px;background:#fff;color:#20352c;box-shadow:0 24px 70px rgba(19,40,30,.2)}
+#overviewDashboard .overview-history-dialog::backdrop{background:rgba(16,32,25,.38)}
+#overviewDashboard .overview-history-inner{max-height:min(82vh,780px);overflow:auto;padding:20px}
+#overviewDashboard .overview-history-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#overviewDashboard .overview-history-head h3{margin:0;font-size:20px}
+#overviewDashboard .overview-dialog-close{width:34px;height:34px;border:1px solid #dce5e0;border-radius:10px;background:#fff;color:inherit;font-size:22px;cursor:pointer}
+#overviewDashboard .overview-history-description{color:#65776e;font-size:12px;line-height:1.5}
+#overviewDashboard .overview-history-empty{padding:24px 0;color:#728179;font-size:12px;text-align:center}
+#overviewDashboard .overview-history-empty[hidden]{display:none!important}
+#overviewDashboard .overview-history-footer{display:flex;justify-content:center;padding-top:14px}
+#overviewDashboard .overview-history-footer button{min-height:38px;padding:8px 14px;border:1px solid #dce5e0;border-radius:10px;background:#fff;color:#23613e;font-weight:700;cursor:pointer}
+#overviewDashboard .overview-history-footer button:disabled{opacity:.6;cursor:wait}
+#overviewDashboard .overview-legacy-state{display:none!important}
+#overviewDashboard button:focus-visible{outline:3px solid rgba(34,156,94,.3);outline-offset:2px}
+@media(max-width:980px){
+ #overviewDashboard .overview-bottom{grid-template-columns:minmax(0,1fr)}
+ #overviewDashboard .overview-assistant-panel{min-height:320px}
+}
+@media(max-width:680px){
+ #overviewDashboard .overview-heading{align-items:flex-start;gap:10px;margin-bottom:14px}
+ #overviewDashboard .overview-heading p{font-size:13px}
+ #overviewDashboard .overview-attention-panel{padding:15px;margin-bottom:12px}
+ #overviewDashboard .overview-attention-list{grid-template-columns:minmax(0,1fr)}
+ #overviewDashboard .overview-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ #overviewDashboard .overview-metric{min-height:126px;padding:13px}
+ #overviewDashboard .overview-metric-value{font-size:22px}
+ #overviewDashboard .overview-bottom{gap:12px}
+ #overviewDashboard .overview-activity-panel,#overviewDashboard .overview-assistant-panel{min-height:0;padding:16px}
+ #overviewDashboard .overview-activity-empty{min-height:150px}
+ #overviewDashboard .overview-assistant-heading{margin-bottom:14px}
+ #overviewDashboard .overview-assistant-brand h4{font-size:17px}
+ #overviewDashboard .overview-assistant-tag{font-size:9px}
+}
+@media(max-width:380px){
+ #overviewDashboard .overview-metric{padding:11px}
+ #overviewDashboard .overview-metric-label{font-size:11px}
+ #overviewDashboard .overview-metric-note{font-size:9px}
+ #overviewDashboard .overview-assistant-tag{display:none}
+}
+html[data-theme="dark"] #overviewDashboard{color:#edf5f1}
+html[data-theme="dark"] #overviewDashboard .overview-heading p,
+html[data-theme="dark"] #overviewDashboard #overviewDataStatus,
+html[data-theme="dark"] #overviewDashboard .overview-panel-heading p,
+html[data-theme="dark"] #overviewDashboard .overview-attention-title p,
+html[data-theme="dark"] #overviewDashboard .overview-assistant-note{color:#a8bab2}
+html[data-theme="dark"] #overviewDashboard .overview-panel,
+html[data-theme="dark"] #overviewDashboard .overview-metric,
+html[data-theme="dark"] #overviewDashboard .overview-history-dialog{border-color:#344844;background:#172626;color:#edf5f1}
+html[data-theme="dark"] #overviewDashboard .overview-metric-label,
+html[data-theme="dark"] #overviewDashboard .overview-activity-copy strong,
+html[data-theme="dark"] #overviewDashboard .overview-assistant-suggestions button{color:#edf5f1}
+html[data-theme="dark"] #overviewDashboard .overview-metric-note,
+html[data-theme="dark"] #overviewDashboard .overview-attention-copy small,
+html[data-theme="dark"] #overviewDashboard .overview-activity-copy small,
+html[data-theme="dark"] #overviewDashboard .overview-activity-row time,
+html[data-theme="dark"] #overviewDashboard .overview-assistant-status,
+html[data-theme="dark"] #overviewDashboard .overview-history-description{color:#a4b7af}
+html[data-theme="dark"] #overviewDashboard .overview-attention-item,
+html[data-theme="dark"] #overviewDashboard .overview-assistant-form,
+html[data-theme="dark"] #overviewDashboard .overview-dialog-close,
+html[data-theme="dark"] #overviewDashboard .overview-history-footer button{border-color:#344844;background:#1b2d2c;color:#edf5f1}
+html[data-theme="dark"] #overviewDashboard .overview-assistant-suggestions button,
+html[data-theme="dark"] #overviewDashboard .overview-chat-message p{background:#223a31;color:#edf5f1}
+html[data-theme="dark"] #overviewDashboard .overview-assistant-form input{color:#edf5f1}
