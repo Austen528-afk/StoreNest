@@ -5,7 +5,7 @@ const test = require("node:test");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const sourceFiles = ["business-owner.html", "storefront.html", "service-bookings.js", "sw.js", "analytics-dashboard.css", "analytics-dashboard.js", "storefront-analytics.js", "supabase/migrations/20261111104421_storefront_analytics.sql", "supabase/migrations/20261111104615_storefront_analytics_indexes.sql", "supabase/migrations/20261111105224_service_booking_analytics_attribution.sql"];
+const sourceFiles = ["business-owner.html", "storefront.html", "service-bookings.js", "sw.js", "analytics-dashboard.css", "analytics-dashboard.js", "storefront-analytics.js", "supabase/migrations/20261111104421_storefront_analytics.sql", "supabase/migrations/20261111104615_storefront_analytics_indexes.sql", "supabase/migrations/20261111105224_service_booking_analytics_attribution.sql", "supabase/migrations/20261112010000_analytics_lifecycle_and_insight_history.sql"];
 const fullCheckoutAvailable = sourceFiles.every(filename => fs.existsSync(path.join(__dirname, "..", filename)));
 
 if (!fullCheckoutAvailable) {
@@ -22,6 +22,7 @@ const serviceWorker = read("sw.js");
 const migration = read("supabase/migrations/20261111104421_storefront_analytics.sql");
 const indexMigration = read("supabase/migrations/20261111104615_storefront_analytics_indexes.sql");
 const bookingMigration = read("supabase/migrations/20261111105224_service_booking_analytics_attribution.sql");
+const lifecycleMigration = read("supabase/migrations/20261112010000_analytics_lifecycle_and_insight_history.sql");
 
 test("the existing owner dashboard contains one Analytics section with the four shared-row metrics", () => {
   assert.match(ownerHtml, /id="analyticsDashboard"[^>]*data-section-view="analytics"/);
@@ -35,6 +36,7 @@ test("the existing owner dashboard contains one Analytics section with the four 
   assert.match(ownerHtml, /data-analytics-view="products"/);
   assert.match(ownerHtml, /data-analytics-view="orders"/);
   assert.match(ownerHtml, /data-analytics-view="operations"/);
+  assert.match(ownerHtml, /How is my business performing, what is affecting its performance, and what should I improve\?/);
   assert.match(styles, /.analytics-summary-row\{[^}]*grid-template-columns:repeat\(4,minmax\(0,1fr\)\)[^}]*border:1px solid/);
   assert.doesNotMatch(styles, /.analytics-summary-item\{[^}]*border:/);
 });
@@ -74,12 +76,13 @@ test("customer intelligence shortcuts open from one borderless list beside the t
   assert.match(read("customer-dashboard.js"), /customerExploreToggle[\s\S]*setExploreMenuOpen\(false, true\)/);
 });
 
-test("category clicks update only the shared summary row and trends chart and return to overview", () => {
+test("category clicks update only the shared summary and trends detail and return to overview", () => {
   const start = dashboardJs.indexOf("  function setAnalyticsView(view) {");
   const end = dashboardJs.indexOf("  function renderInsights(snapshot) {", start);
   const handler = dashboardJs.slice(start, end);
   assert.match(handler, /renderSummary\(snapshot, state\.activeView\)/);
   assert.match(handler, /renderChart\(snapshot\)/);
+  assert.match(handler, /renderExploreDetail\(snapshot\)/);
   assert.doesNotMatch(handler, /renderInsights|smartInsightList|analytics-main-grid|hidden\s*=/);
   assert.match(dashboardJs, /setAnalyticsView\(state\.activeView === selectedView \? "" : selectedView\)/);
   assert.match(dashboardJs, /setAnalyticsView\(""\)/);
@@ -87,7 +90,7 @@ test("category clicks update only the shared summary row and trends chart and re
   const navStart = ownerHtml.indexOf('id="analyticsExploreMenu"');
   const navEnd = ownerHtml.indexOf("</ul>", navStart);
   assert.doesNotMatch(ownerHtml.slice(navStart, navEnd), /aria-pressed/);
-  assert.doesNotMatch(dashboardJs, /renderExplore|renderBusinessView|analyticsBusinessDetail/);
+  assert.doesNotMatch(dashboardJs, /renderExplore\(|renderBusinessView|analyticsBusinessDetail/);
 });
 
 test("desktop Analytics fits the dashboard viewport without page scrolling", () => {
@@ -150,6 +153,20 @@ test("analytics schema restricts event reads and insight state to the owning bus
   assert.match(bookingMigration, /add column if not exists analytics_session_id uuid/i);
   assert.match(bookingMigration, /grant insert \(analytics_session_id\)[\s\S]*to anon, authenticated/i);
   assert.match(bookingMigration, /grant select \(analytics_session_id\)[\s\S]*to authenticated/i);
+  assert.match(lifecycleMigration, /create table if not exists public\.business_analytics_lifecycle_events/i);
+  assert.match(lifecycleMigration, /after insert or update of status on public\.storefront_orders/i);
+  assert.match(lifecycleMigration, /after insert or update of status on public\.service_booking_requests/i);
+  assert.match(lifecycleMigration, /business_id, entity_type, entity_id, from_status, to_status, changed_at, actor_id/i);
+  assert.match(lifecycleMigration, /Owners read their business lifecycle events/i);
+  assert.match(lifecycleMigration, /Owners read their business insight history/i);
+  assert.match(lifecycleMigration, /keep_analytics_insight_evidence_immutable/i);
+  assert.match(lifecycleMigration, /grant update \(status, updated_at, acted_at, action_note, follow_up_snapshot\)/i);
+  assert.match(lifecycleMigration, /item_id uuid null,[\s\S]*?intentionally not a foreign key/i);
+  assert.doesNotMatch(lifecycleMigration, /update public\.storefront_orders set|update public\.service_booking_requests set/i);
+  assert.match(dashboardJs, /data-insight-related-view/);
+  assert.match(dashboardJs, /relatedAnalysisTarget/);
+  assert.match(dashboardJs, /closest\("\[data-insight-related-view\]"\)/);
+  assert.match(styles, /\.analytics-related-link\{[^}]*border:0/);
 });
 
 test("service worker activates the new dashboard assets in a fresh cache", () => {
