@@ -917,7 +917,7 @@ html[data-theme="dark"] .dashboard-header-reopen:hover{background:#2d4540}
   <header class="analytics-header">
     <div>
       <h3 id="analyticsTitle">Analytics</h3>
-      <p>What is working in my business, and where should I focus?</p>
+      <p>How is my business performing, what is affecting its performance, and what should I improve?</p>
       <span id="analyticsRangeLabel" class="analytics-range-label"></span>
     </div>
     <div class="analytics-header-controls">
@@ -927,6 +927,7 @@ html[data-theme="dark"] .dashboard-header-reopen:hover{background:#2d4540}
           <span>Explore</span><span class="analytics-explore-chevron" aria-hidden="true">⌄</span>
         </button>
         <ul class="analytics-explore-list" id="analyticsExploreList" aria-label="Analytics sections" hidden>
+          <li><button class="analytics-explore-option" type="button" data-analytics-view="overview"><span class="analytics-explore-option-icon" aria-hidden="true">▦</span><span><strong>Analytics Overview</strong><small>Return to the default Analytics page</small></span></button></li>
           <li><button class="analytics-explore-option" type="button" data-analytics-view="customers"><span class="analytics-explore-option-icon" aria-hidden="true">♧</span><span><strong>Customers</strong><small>Returning customer patterns and trends</small></span></button></li>
           <li><button class="analytics-explore-option" type="button" data-analytics-view="products"><span class="analytics-explore-option-icon" aria-hidden="true">◇</span><span><strong>Products</strong><small>Product and service views over time</small></span></button></li>
           <li><button class="analytics-explore-option" type="button" data-analytics-view="orders"><span class="analytics-explore-option-icon" aria-hidden="true">🛒</span><span><strong>Orders</strong><small>Order volumes during the selected period</small></span></button></li>
@@ -969,7 +970,7 @@ html[data-theme="dark"] .dashboard-header-reopen:hover{background:#2d4540}
             <button id="analyticsBusinessBack" class="analytics-back-button analytics-overview-button" type="button" hidden>← Overview</button>
             <label class="analytics-metric-control-wrap"><span class="sr-only">Chart metric</span>
             <select id="analyticsMetric" class="analytics-metric-control" aria-label="Chart metric">
-              <option value="orders" selected>Orders</option><option value="visits">Store Visits</option><option value="conversion">Conversion</option><option value="returning">Returning</option><option value="product_views">Unique Item Views</option><option value="bookings">Booking Requests</option>
+              <option value="orders" selected>Orders</option><option value="visits">Store Visits</option><option value="conversion">Conversion</option><option value="returning">Returning</option><option value="product_views">Unique Item Views</option><option value="bookings">Booking Requests</option><option value="completed_orders">Completed Orders</option><option value="cancelled_orders">Cancelled Orders</option><option value="item_purchases" hidden>Selected Item Purchases</option><option value="item_booking_requests" hidden>Selected Service Requests</option><option value="item_cart_adds" hidden>Selected Item Cart Adds</option><option value="item_conversion" hidden>Selected Item Conversion</option><option value="order_acceptance_hours">Order Acceptance Time</option><option value="order_accepted_to_preparation_hours">Accepted to Preparation Time</option><option value="order_preparation_hours">Preparation Time</option><option value="order_collection_hours">Ready to Collection Time</option><option value="order_fulfilment_hours">Order Fulfilment Time</option><option value="booking_response_hours">Booking Response Time</option><option value="booking_completion_hours">Booking Completion Time</option><option value="message_response_hours">Message Response Time</option>
             </select>
             </label>
           </div>
@@ -979,11 +980,16 @@ html[data-theme="dark"] .dashboard-header-reopen:hover{background:#2d4540}
       <section class="analytics-card" aria-labelledby="analyticsInsightsTitle">
         <div class="analytics-panel-heading analytics-insights-head">
           <div><h4 id="analyticsInsightsTitle">Smart Insights</h4><p>Key takeaways for your store.</p></div>
-          <button id="analyticsViewAllInsights" type="button" hidden aria-expanded="false">View all</button>
+          <button id="analyticsHistoryToggle" type="button" aria-expanded="false" aria-controls="analyticsInsightHistory">History</button>
         </div>
         <div id="smartInsightList" class="analytics-insight-list" aria-live="polite"></div>
+        <section id="analyticsInsightHistory" class="analytics-insight-history" hidden aria-label="Insight history">
+          <div class="analytics-history-controls"><label><span class="sr-only">Filter insight history</span><select id="analyticsHistoryStatus"><option value="all">All findings</option><option value="active">Active</option><option value="viewed">Viewed</option><option value="action_taken">Actions taken</option><option value="dismissed">Dismissed</option><option value="resolved">Resolved</option></select></label><span id="analyticsHistoryCount"></span></div>
+          <div id="analyticsHistoryList" class="analytics-history-list"></div>
+        </section>
       </section>
     </div>
+    <section id="analyticsExploreDetail" class="analytics-card analytics-explore-detail" hidden aria-live="polite" aria-label="Explore analytics details"></section>
     <section id="analyticsInsightDetail" class="analytics-business-detail analytics-insight-detail" hidden aria-live="polite"></section>
   </div>
 </section>

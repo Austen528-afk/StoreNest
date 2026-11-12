@@ -157,7 +157,7 @@ test("returning customers use earlier completed non-refunded customer purchases 
   assert.equal(belowThreshold.customers.returningRate, null);
 });
 
-test("product view insight needs a useful sample and counts same-session submitted orders", () => {
+test("product view insight needs a useful sample and counts completed same-session purchases", () => {
   const itemViews = Array.from({ length: 20 }, (_, index) => ({
     business_id: businessId,
     event_type: "product_view",
@@ -169,9 +169,19 @@ test("product view insight needs a useful sample and counts same-session submitt
     status: "cancelled",
     analytics_session_id: "product-session-0"
   });
+  const refundedOrder = order("refunded-product-order", {
+    status: "completed",
+    payment_status: "refunded",
+    analytics_session_id: "product-session-1"
+  });
+  const completedOrder = order("completed-product-order", {
+    status: "completed",
+    payment_status: "paid",
+    analytics_session_id: "product-session-2"
+  });
   const snapshot = engine.buildSnapshot({
     businessId,
-    orders: [cancelledOrder],
+    orders: [cancelledOrder, refundedOrder, completedOrder],
     events: itemViews,
     items: [{ id: itemId, business_id: businessId, name: "Test item", is_available: true }],
     eventsAvailable: true,
@@ -181,11 +191,12 @@ test("product view insight needs a useful sample and counts same-session submitt
   });
   assert.equal(snapshot.productViews.get(itemId).size, 20);
   assert.equal(snapshot.productOrderSessions.get(itemId).size, 1);
-  assert.equal(snapshot.productPurchases.get(itemId), undefined);
+  assert.equal(snapshot.productPurchases.get(itemId), 1);
   const insight = engine.buildInsights(snapshot, {}, now).find(row => row.type === "product_view_order_rate");
   assert.ok(insight);
   assert.equal(insight.viewSessions, 20);
   assert.equal(insight.convertedSessions, 1);
+  assert.match(insight.interpretation, /completed-purchase/);
 
   const fourteenViews = engine.buildSnapshot({
     businessId,
@@ -198,6 +209,139 @@ test("product view insight needs a useful sample and counts same-session submitt
     now
   });
   assert.equal(engine.buildInsights(fourteenViews, {}, now).some(row => row.type === "product_view_order_rate"), false);
+});
+
+test("order breakdown counts each order once per item and category even with multiple line items", () => {
+  const snapshot = engine.buildSnapshot({
+    businessId,
+    orders: [order("multi-line-order", { items: [
+      { item_id: itemId, quantity: 1 },
+      { item_id: itemId, quantity: 2 }
+    ] })],
+    items: [{ id: itemId, business_id: businessId, name: "Kota", category_id: "food" }],
+    categories: [{ id: "food", business_id: businessId, name: "Food" }],
+    period: "last7",
+    now
+  });
+  assert.equal(snapshot.orderBreakdown.items[0].orders, 1);
+  assert.equal(snapshot.orderBreakdown.items[0].units, 3);
+  assert.equal(snapshot.orderBreakdown.categories[0].orders, 1);
+});
+
+test("customer demand links identified first and repeat purchases to items without counting guests", () => {
+  const prior = order("prior-order", { customer_user_id: "returning-customer", created_at: monthIso(9, 20) });
+  const current = [
+    order("returning-order", { customer_user_id: "returning-customer", created_at: monthIso(10, 6), items: [{ item_id: itemId, quantity: 1 }] }),
+    order("first-order", { customer_user_id: "new-customer", created_at: monthIso(10, 7), items: [{ item_id: itemId, quantity: 2 }, { item_id: "item-b", quantity: 1 }] }),
+    order("repeat-order", { customer_user_id: "new-customer", created_at: monthIso(10, 8), items: [{ item_id: "item-b", quantity: 2 }] }),
+    order("guest-order", { customer_user_id: null, created_at: monthIso(10, 9), items: [{ item_id: itemId, quantity: 1 }] }),
+    order("refunded-order", { customer_user_id: "new-customer", payment_status: "refunded", created_at: monthIso(10, 9), items: [{ item_id: itemId, quantity: 1 }] })
+  ];
+  const snapshot = engine.buildSnapshot({
+    businessId,
+    orders: current,
+    customerHistory: [prior, ...current],
+    items: [
+      { id: itemId, business_id: businessId, name: "Kota", category_id: "food" },
+      { id: "item-b", business_id: businessId, name: "Drink", category_id: "drinks" }
+    ],
+    categories: [
+      { id: "food", business_id: businessId, name: "Food" },
+      { id: "drinks", business_id: businessId, name: "Drinks" }
+    ],
+    period: "last7",
+    now
+  });
+  const kota = snapshot.customerItemDemand.find(row => row.itemId === itemId);
+  const drink = snapshot.customerItemDemand.find(row => row.itemId === "item-b");
+  assert.deepEqual([kota.firstPurchaseOrders, kota.repeatPurchaseOrders], [1, 1]);
+  assert.deepEqual([kota.firstPurchaseUnits, kota.repeatPurchaseUnits], [2, 1]);
+  assert.deepEqual([drink.firstPurchaseOrders, drink.repeatPurchaseOrders], [1, 1]);
+  assert.deepEqual([drink.firstPurchaseUnits, drink.repeatPurchaseUnits], [1, 2]);
+});
+
+test("traffic and order changes are linked only when both periods have minimum evidence", () => {
+  const events = [];
+  for (let index = 0; index < 30; index++) events.push({ ...visit("prior-visit-" + index), occurred_at: monthIso(9, 29 + Math.floor(index / 5)) });
+  for (let index = 0; index < 40; index++) events.push({ ...visit("current-visit-" + index), occurred_at: monthIso(10, 5 + Math.floor(index / 6)) });
+  const orders = [
+    ...Array.from({ length: 5 }, (_, index) => order("prior-order-" + index, { created_at: monthIso(9, 29 + index) })),
+    ...Array.from({ length: 10 }, (_, index) => order("current-order-" + index, { created_at: monthIso(10, 5 + index % 7) }))
+  ];
+  const snapshot = engine.buildSnapshot({ businessId, orders, events, eventsAvailable: true, orderAttributionAvailable: false, period: "last7", now });
+  const insight = engine.buildInsights(snapshot, {}, now).find(row => row.key === "traffic-order-coincidence");
+  assert.ok(insight);
+  assert.match(insight.interpretation, /not proof/);
+
+  const tooFewSessions = engine.buildSnapshot({ businessId, orders, events: events.slice(0, 15).concat(events.slice(30)), eventsAvailable: true, orderAttributionAvailable: false, period: "last7", now });
+  assert.equal(engine.buildInsights(tooFewSessions, {}, now).some(row => row.key === "traffic-order-coincidence"), false);
+});
+
+test("cross-system insight links comparable order growth with slower acceptance only after both tracking windows", () => {
+  const orders = [];
+  const lifecycleEvents = [];
+  const addOrder = (id, date, acceptanceHours) => {
+    orders.push(order(id, { created_at: date.toISOString(), status: "new" }));
+    lifecycleEvents.push({ business_id: businessId, entity_type: "order", entity_id: id, from_status: null, to_status: "new", changed_at: date.toISOString() });
+    lifecycleEvents.push({ business_id: businessId, entity_type: "order", entity_id: id, from_status: "new", to_status: "accepted", changed_at: new Date(date.getTime() + acceptanceHours * 3600000).toISOString() });
+  };
+  for (let index = 0; index < 5; index++) addOrder("previous-" + index, new Date(2026, 9, 30, 10 + index), 1);
+  for (let index = 0; index < 10; index++) addOrder("current-" + index, new Date(2026, 10, 6, 10 + index), 2);
+  const snapshot = engine.buildSnapshot({
+    businessId,
+    orders,
+    lifecycleEvents,
+    lifecycleAvailable: true,
+    lifecycleTrackingStartedAt: "2026-10-01T00:00:00.000Z",
+    period: "last7",
+    now
+  });
+  assert.equal(snapshot.demandOperations.comparable, true);
+  assert.equal(snapshot.demandOperations.currentOrders, 10);
+  assert.equal(snapshot.demandOperations.previousOrders, 5);
+  assert.equal(snapshot.demandOperations.currentAcceptance.sampleSize, 10);
+  const insight = engine.buildInsights(snapshot, {}, now).find(row => row.type === "cross_system_relationship");
+  assert.ok(insight);
+  assert.match(insight.interpretation, /not proof/);
+  assert.ok(insight.priorityBreakdown.evidence > 0);
+
+  const notYetComparable = engine.buildSnapshot({
+    businessId,
+    orders,
+    lifecycleEvents,
+    lifecycleAvailable: true,
+    lifecycleTrackingStartedAt: "2026-11-01T00:00:00.000Z",
+    period: "last7",
+    now
+  });
+  assert.equal(notYetComparable.demandOperations.comparable, false);
+  assert.equal(engine.buildInsights(notYetComparable, {}, now).some(row => row.type === "cross_system_relationship"), false);
+});
+
+test("cancellation-stage insight counts distinct orders and does not claim a cause", () => {
+  const lifecycleEvents = Array.from({ length: 3 }, (_, index) => ({
+    business_id: businessId,
+    entity_type: "order",
+    entity_id: "cancelled-" + index,
+    from_status: "accepted",
+    to_status: "cancelled",
+    changed_at: iso(10)
+  }));
+  lifecycleEvents.push({ ...lifecycleEvents[0] });
+  const snapshot = engine.buildSnapshot({
+    businessId,
+    orders: lifecycleEvents.slice(0, 3).map((row, index) => order("cancelled-" + index, { status: "cancelled" })),
+    lifecycleEvents,
+    lifecycleAvailable: true,
+    lifecycleTrackingStartedAt: "2026-10-01T00:00:00.000Z",
+    period: "last7",
+    now
+  });
+  assert.equal(snapshot.lifecycle.cancellationsByPriorStatus.accepted, 3);
+  const insight = engine.buildInsights(snapshot, {}, now).find(row => row.type === "cancellation_stage_pattern");
+  assert.ok(insight);
+  assert.match(insight.title, /acceptance/);
+  assert.match(insight.interpretation, /cannot establish why/);
 });
 
 test("service analytics use booking requests instead of sales and need session attribution", () => {
