@@ -118,3 +118,44 @@
 .sn-message-thread{overflow:hidden}
 .sn-message-thread-scroll{flex:1 1 0;min-height:0}
 .sn-message-composer-wrap{display:block;flex:0 0 auto;visibility:visible}
+
+/* Keep the owner conversation composer anchored at the bottom of the chat pane.
+   The dashboard applies global layout rules to <main>, so reset them here and
+   define the conversation as explicit header / scroll area / composer rows. */
+.sn-owner-message-centre .sn-message-main{
+ display:grid;
+ grid-template-columns:minmax(0,1fr);
+ grid-template-rows:minmax(0,1fr);
+ align-items:stretch;
+ justify-items:stretch;
+ gap:0;
+ padding:0;
+ height:100%;
+ min-width:0;
+ min-height:0;
+ overflow:hidden;
+}
+.sn-owner-message-centre .sn-message-thread{
+ display:grid;
+ grid-template-columns:minmax(0,1fr);
+ grid-template-rows:auto minmax(0,1fr) auto;
+ width:100%;
+ height:100%;
+ min-width:0;
+ min-height:0;
+ overflow:hidden;
+}
+.sn-owner-message-centre .sn-message-thread-scroll{
+ min-height:0;
+ max-height:none;
+ overflow-x:hidden;
+ overflow-y:auto;
+}
+.sn-owner-message-centre .sn-message-composer-wrap{
+ grid-row:3;
+ position:sticky;
+ bottom:0;
+ z-index:2;
+ align-self:stretch;
+ background:#fff;
+}
