@@ -4,7 +4,7 @@
   const CUSTOMER_TABLE = "storefront_conversations";
   const MESSAGE_TABLE = "storefront_messages";
   const isOwnerPage = Boolean(document.querySelector('[data-section-view="messages"]'));
-  const customer = { root: null, client: null, user: null, profileName: "Customer", active: null, rows: [], businessById: new Map(), channel: null, authSubscription: null, timer: null, searchTimer: null, searchToken: 0, previousOverflow: "", pendingConversationId: null };
+  const customer = { root: null, client: null, user: null, profileName: "Customer", active: null, rows: [], businessById: new Map(), channel: null, authSubscription: null, timer: null, unreadPollTimer: null, searchTimer: null, searchToken: 0, previousOverflow: "", pendingConversationId: null };
   const owner = { root: null, client: null, user: null, active: null, rows: [], business: null, businessId: null, channel: null, authSubscription: null, timer: null, loading: false, search: "", pendingConversationId: null };
   let notificationRegistrationPromise = null;
   let messageToastTimer = null;
@@ -237,6 +237,25 @@
     window.StoreNestCustomerUnreadCount = unreadCount;
     window.dispatchEvent(new CustomEvent("storenest:customer-unread-count", { detail: { count: unreadCount } }));
   }
+  async function refreshCustomerUnreadCount() {
+    if (!customer.client || !customer.user) {
+      publishCustomerUnreadCount(0);
+      return 0;
+    }
+    const userId = customer.user.id;
+    const result = await customer.client.from(MESSAGE_TABLE)
+      .select("id", { count: "exact", head: true })
+      .is("read_at", null)
+      .neq("sender_id", userId);
+    if (result.error) {
+      console.warn("StoreNest customer unread-message count could not be loaded:", result.error.message || result.error);
+      throw result.error;
+    }
+    if (!customer.user || customer.user.id !== userId) return null;
+    const count = Number(result.count) || 0;
+    publishCustomerUnreadCount(count);
+    return count;
+  }
   async function loadCustomerInbox() {
     if (!customer.client || !customer.user) {
       customer.rows = [];
@@ -253,10 +272,12 @@
     const rows = result.data || [];
     const ids = rows.map(function (row) { return row.business_id; }).filter(Boolean);
     const conversationIds = rows.map(function (row) { return row.id; }).filter(Boolean);
-    const [businessResult, unreadResult] = await Promise.all([
+    const [businessResult, unreadResult, totalUnreadResult] = await Promise.all([
       ids.length ? customer.client.from("businesses").select("id,name,slug,category,location,logo_url").in("id", ids) : Promise.resolve({ data: [], error: null }),
-      conversationIds.length ? customer.client.from(MESSAGE_TABLE).select("conversation_id").in("conversation_id", conversationIds).is("read_at", null).neq("sender_id", customer.user.id) : Promise.resolve({ data: [], error: null })
+      conversationIds.length ? customer.client.from(MESSAGE_TABLE).select("conversation_id").in("conversation_id", conversationIds).is("read_at", null).neq("sender_id", customer.user.id) : Promise.resolve({ data: [], error: null }),
+      refreshCustomerUnreadCount().then(function (count) { return { count: count, error: null }; }).catch(function (error) { return { count: null, error: error }; })
     ]);
+    if (totalUnreadResult.error) throw totalUnreadResult.error;
     if (businessResult.error) throw businessResult.error;
     if (unreadResult.error) throw unreadResult.error;
     customer.businessById = new Map((businessResult.data || []).map(function (business) { return [business.id, business]; }));
@@ -270,9 +291,6 @@
       const refreshed = customer.rows.find(function (row) { return row.id === customer.active.conversation.id; });
       if (refreshed) customer.active.conversation = refreshed;
     }
-    publishCustomerUnreadCount(customer.rows.reduce(function (total, row) {
-      return total + (Number(row.unread_count) || 0);
-    }, 0));
     renderList(customer, "customer");
     openPendingConversation(customer, "customer");
   }
@@ -904,6 +922,13 @@
     }
     const userId = customer.user.id;
     ensureCustomerRealtime();
+    if (!customer.unreadPollTimer) {
+      customer.unreadPollTimer = setInterval(function () {
+        if (customer.user && document.visibilityState === "visible") {
+          refreshCustomerUnreadCount().catch(function () {});
+        }
+      }, 20000);
+    }
     setTimeout(async function () {
       if (!customer.user || customer.user.id !== userId) return;
       try {
@@ -946,6 +971,9 @@
     });
     window.addEventListener("focus", function () {
       if (customer.user) loadCustomerInbox().catch(function () {});
+    });
+    document.addEventListener("visibilitychange", function () {
+      if (customer.user && document.visibilityState === "visible") loadCustomerInbox().catch(function () {});
     });
     document.addEventListener("keydown", function (event) {
       if (event.key === "Escape" && customer.root && !customer.root.hidden) closeCustomerCentre();
