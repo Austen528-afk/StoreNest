@@ -425,7 +425,7 @@ html[data-theme="dark"] .marketplace-category-menu [data-tag-category] svg circl
 <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5"></rect><path d="M7.5 3.5v4M16.5 3.5v4M3.5 10h17m-12 5 2.4 2.4 4.8-5"></path></svg><span class="order-notification-badge" id="overallBookingsBadge" aria-hidden="true" hidden></span></button>
 <button class="top-icon-button" id="overallOrdersButton" type="button" aria-label="My orders" title="My orders">
 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h8l4 4V20a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 20V5a1.5 1.5 0 0 1 1.5-1.5Z"></path><path d="M15 3.5V8h4M8.5 12h7M8.5 15.5h7"></path></svg><span class="order-notification-badge" id="overallOrdersBadge" aria-hidden="true" hidden></span></button>
-<div class="menu-container" id="menuContainer"><button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="siteMenu"><span></span><span></span><span></span></button><nav class="site-menu" id="siteMenu" aria-label="StoreNest menu" hidden><a class="menu-action" href="/customer-account.html">Profile</a><button class="menu-action" id="menuAccountAction" type="button">Sign in</button><a class="menu-action" href="/customer-account.html?mode=signup">Sign up</a><a class="menu-action" href="/customer-account.html?mode=settings">Settings</a><a class="menu-register" href="/business-owner.html">Register as business owner <span aria-hidden="true">→</span></a><button class="theme-switch" data-theme-toggle type="button" aria-label="Switch to dark mode" aria-pressed="false"><span class="theme-switch-icon" aria-hidden="true">☾</span><span class="theme-switch-label">Dark mode</span></button><p class="menu-feedback" id="menuFeedback" role="status" aria-live="polite" hidden></p></nav></div></div></header>
+<div class="menu-container" id="menuContainer"><button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="siteMenu"><span></span><span></span><span></span></button><nav class="site-menu" id="siteMenu" aria-label="StoreNest menu" hidden><a class="menu-action" href="/customer-account.html">Profile</a><button class="menu-action" id="menuAccountAction" type="button">Sign in</button><a class="menu-action" href="/customer-account.html?mode=signup">Sign up</a><a class="menu-action" href="/customer-account.html?mode=settings">Settings</a><a class="menu-register" href="/business-owner.html">Register as business owner <span aria-hidden="true">→</span></a><button class="menu-register" id="publishersMenuAction" type="button">Publishers <span aria-hidden="true">→</span></button><button class="theme-switch" data-theme-toggle type="button" aria-label="Switch to dark mode" aria-pressed="false"><span class="theme-switch-icon" aria-hidden="true">☾</span><span class="theme-switch-label">Dark mode</span></button><p class="menu-feedback" id="menuFeedback" role="status" aria-live="polite" hidden></p></nav></div></div></header>
 <div id="installHint" class="install-hint" role="status" aria-live="polite"></div>
 <section class="search-row" role="search" aria-label="Search StoreNest">
   <form class="search-form" id="storeSearchForm">
@@ -1011,6 +1011,7 @@ const menuToggle=document.getElementById("menuToggle");
 const siteMenu=document.getElementById("siteMenu");
 function setMenuOpen(open){siteMenu.hidden=!open;menuToggle.setAttribute("aria-expanded",String(open));menuToggle.setAttribute("aria-label",open?"Close menu":"Open menu");}
 const menuAccountAction=document.getElementById("menuAccountAction");
+const publishersMenuAction=document.getElementById("publishersMenuAction");
 const menuFeedback=document.getElementById("menuFeedback");
 let marketplaceAuthClient=null,marketplaceSignedIn=false,marketplaceAuthReady=false,marketplaceAuthPromise=null,marketplaceCurrentUserId=null,marketplaceIdentityReady=false;
 function updateMenuAccountAction(signedIn){
@@ -1019,6 +1020,7 @@ function updateMenuAccountAction(signedIn){
  menuAccountAction.setAttribute("aria-label",marketplaceSignedIn?"Sign out of your customer account":"Sign in to your customer account");
 }
 function showMenuFeedback(message){menuFeedback.textContent=message;menuFeedback.hidden=!message}
+publishersMenuAction.addEventListener("click",()=>showMenuFeedback("The Publishers platform link is not connected yet."));
 async function initializeMarketplaceAuth(){
  if(!marketplaceAuthPromise){
   marketplaceAuthPromise=(async()=>{
