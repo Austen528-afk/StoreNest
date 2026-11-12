@@ -8,7 +8,7 @@
     launcher.className = "storenest-chat-launcher";
     launcher.setAttribute("aria-label", "Open Chat Centre");
     launcher.title = "Chat Centre";
-    launcher.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5 7.7 7.7 0 0 1-3.1-.65L4 20l1.55-4.55A7.47 7.47 0 1 1 20 11.5Z"></path></svg>';
+    launcher.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5 7.7 7.7 0 0 1-3.1-.65L4 20l1.55-4.55A7.47 7.47 0 1 1 20 11.5Z"></path></svg><span class="storenest-chat-unread-badge" aria-live="polite" aria-atomic="true" hidden></span>';
 
     const style = document.createElement("style");
     style.textContent = `
@@ -30,6 +30,26 @@
         cursor: pointer;
         transition: transform .16s ease, box-shadow .16s ease;
       }
+      .storenest-chat-unread-badge {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        z-index: 1;
+        min-width: 19px;
+        height: 19px;
+        padding: 0 4px;
+        display: grid;
+        place-items: center;
+        border: 2px solid #fff;
+        border-radius: 99px;
+        background: #d84343;
+        color: #fff;
+        font-size: 10px;
+        font-weight: 900;
+        line-height: 1;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, .14);
+      }
+      .storenest-chat-unread-badge[hidden] { display: none !important; }
       .storenest-chat-launcher svg {
         width: 29px;
         height: 29px;
@@ -58,6 +78,19 @@
       }
     `;
     document.head.append(style);
+    const unreadBadge = launcher.querySelector(".storenest-chat-unread-badge");
+    const updateUnreadCount = (value) => {
+      const count = Math.max(0, Math.floor(Number(value) || 0));
+      unreadBadge.textContent = count > 99 ? "99+" : String(count);
+      unreadBadge.hidden = count === 0;
+      const label = count ? `Open Chat Centre, ${count} unread message${count === 1 ? "" : "s"}` : "Open Chat Centre";
+      launcher.setAttribute("aria-label", label);
+      launcher.title = count ? `Chat Centre (${count} unread message${count === 1 ? "" : "s"})` : "Chat Centre";
+    };
+    window.addEventListener("storenest:customer-unread-count", (event) => {
+      updateUnreadCount(event.detail && event.detail.count);
+    });
+    updateUnreadCount(window.StoreNestCustomerUnreadCount || 0);
     launcher.addEventListener("click", () => {
       window.dispatchEvent(new CustomEvent("storenest:open-chat-centre"));
     });
