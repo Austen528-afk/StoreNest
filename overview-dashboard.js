@@ -170,7 +170,7 @@
       client.from("storefront_messages").select("id,conversation_id,sender_id,body,created_at,conversation:storefront_conversations!inner(business_id,customer_label)")
         .eq("conversation.business_id", businessId).neq("sender_id", userId).order("created_at", { ascending: false }).limit(15),
       client.from("business_analytics_lifecycle_events").select("id,business_id,entity_type,entity_id,from_status,to_status,changed_at").eq("business_id", businessId).order("changed_at", { ascending: false }).limit(60),
-      client.from("business_analytics_insight_history").select("title,explanation,recommendation,priority,status,detected_at").eq("business_id", businessId).eq("priority", "high").eq("status", "new").order("detected_at", { ascending: false }).limit(2),
+      client.from("business_analytics_insight_history").select("title,explanation,recommendation,priority,status,detected_at").eq("business_id", businessId).eq("priority", "high").eq("status", "new").neq("insight_type", "unanswered_messages").order("detected_at", { ascending: false }).limit(2),
       fetchPaidToday(client, businessId, day)
     ]);
     [active,fresh,accepted,prepared,ready,bookings,unread,catalog,ordersToday,orders,bookingRows,messageRows,lifecycle,insights].forEach(result => { if (result.error) throw result.error; });
