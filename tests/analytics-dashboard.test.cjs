@@ -99,6 +99,10 @@ test("desktop Analytics uses the workspace page scroll without nested detail scr
   assert.match(styles, /\.analytics-explore-detail:not\(\[hidden\]\)\{[^}]*max-height:none;overflow:visible/);
   assert.match(styles, /\.analytics-table-wrap\{[^}]*max-height:none;overflow:visible/);
   assert.match(styles, /\.analytics-history-list\{[^}]*overflow:visible/);
+  const trendsStart = ownerHtml.indexOf('class="analytics-card analytics-card-trends"');
+  const exploreStart = ownerHtml.indexOf('id="analyticsExploreDetail"');
+  assert.ok(trendsStart >= 0 && exploreStart > ownerHtml.indexOf("</section>", trendsStart));
+  assert.match(ownerHtml, /<\/div>\s*<section id="analyticsExploreDetail" class="analytics-card analytics-explore-detail"/);
 });
 
 test("successful Analytics loads render the calculated snapshot", () => {
@@ -171,7 +175,7 @@ test("analytics schema restricts event reads and insight state to the owning bus
 });
 
 test("service worker activates the new dashboard assets in a fresh cache", () => {
-  assert.match(serviceWorker, /storenest-shell-v61/);
+  assert.match(serviceWorker, /storenest-shell-v62/);
   for (const asset of ["analytics-dashboard.css", "analytics-engine.js", "analytics-dashboard.js", "customer-dashboard.css", "customer-intelligence-engine.js", "customer-dashboard.js", "storefront-analytics.js"]) {
     assert.match(serviceWorker, new RegExp("/" + asset.replaceAll(".", "\\.")));
   }
