@@ -37,7 +37,7 @@ begin
     raise exception 'Cash receipt confirmation is only available for Pay on collection orders.' using errcode = '22023';
   end if;
 
-  if v_status not in ('ready', 'completed') then
+  if v_status is distinct from 'ready' and v_status is distinct from 'completed' then
     raise exception 'Cash can be confirmed when the order is ready for collection.' using errcode = '22023';
   end if;
 
