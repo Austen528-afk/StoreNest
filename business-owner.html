@@ -600,6 +600,12 @@ html[data-theme="dark"] #itemOptionsEditor small{color:#afc4b6}
 .owner-order-pin-check input{width:100%;min-width:0;height:38px;padding:8px 10px;border:1px solid #cad9d0;border-radius:9px;background:#fff;color:#1b2520;font:inherit;font-size:15px;letter-spacing:.12em}
 .owner-order-pin-check input:focus{outline:2px solid #5ed4b6;outline-offset:1px}
 .owner-order-pin-check small{grid-column:1/-1;color:#738179;font-size:10px}
+.owner-order-cash-confirm{display:flex;flex-wrap:wrap;align-items:center;gap:8px;width:100%;padding:10px 11px;border:1px solid #dce8e0;border-radius:11px;background:#f7faf8}
+.owner-order-cash-confirm small{flex:1 1 220px;color:#738179;font-size:10px}
+.owner-order-action-cash{background:#16864e}
+.owner-order-action-cash:hover{background:#117240}
+html[data-theme="dark"] body[data-page-kind="owner"] .owner-order-cash-confirm{background:var(--st-panel2);border-color:var(--st-border)}
+html[data-theme="dark"] body[data-page-kind="owner"] .owner-order-cash-confirm small{color:var(--st-muted)}
 @media(max-width:540px){.owner-order-pin-check{grid-template-columns:1fr}.owner-order-pin-check small{grid-column:auto}.owner-order-pin-check button{width:100%}}
 .owner-order-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:1px solid #edf0ee;padding-bottom:10px}
 .owner-order-ref{font-size:13px;font-weight:850}
@@ -1970,7 +1976,10 @@ function renderBusinessOrders(rows){
   const collectionPinAction=order.status==="ready"
    ?'<div class="owner-order-pin-check"><label>Customer collection PIN<input type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" data-collection-pin placeholder="6 digits"></label><button type="button" class="owner-order-action" data-verify-collection-pin data-order-id="'+escapeHtml(order.id)+'">Verify PIN &amp; mark collected</button><small>Ask the customer for the PIN when they arrive.</small></div>'
    :"";
-  const actionMarkup=progressAction||collectionPinAction?'<div class="owner-order-actions">'+progressAction+collectionPinAction+'</div>':"";
+  const cashPaymentAction=order.payment_method==="pay_on_collection"&&order.payment_status==="unpaid"&&["ready","completed"].includes(order.status)
+   ?'<div class="owner-order-cash-confirm"><button type="button" class="owner-order-action owner-order-action-cash" data-confirm-cash-payment data-order-id="'+escapeHtml(order.id)+'">Confirm cash received</button><small>Confirm '+formatOrderMoney(order.subtotal)+' received. This marks the order as paid.</small></div>'
+   :"";
+  const actionMarkup=progressAction||collectionPinAction||cashPaymentAction?'<div class="owner-order-actions">'+progressAction+collectionPinAction+cashPaymentAction+'</div>':"";
   const contacts=[];
   const phone=String(order.contact_phone||"");
   const tel=phone.replace(/[^0-9+]/g,"");
@@ -1988,7 +1997,9 @@ function renderBusinessOrders(rows){
   }).join("");
   const paymentNote=order.payment_method==="card"&&order.payment_status==="pending"
    ?'<small class="owner-order-payment-note">Preview only: no card payment was processed.</small>'
-   :order.payment_method==="pay_on_collection"?'<small>Customer pays when collecting.</small>':"";
+   :order.payment_method==="pay_on_collection"
+    ?(order.payment_status==="paid"?'<small>Cash receipt confirmed.</small>':'<small>Customer pays when collecting.</small>')
+    :"";
   return '<article class="owner-order-card" data-owner-order-view="'+escapeHtml(order.id)+'" role="button" tabindex="0" aria-label="View full details for order '+escapeHtml(ref)+'">'+
    '<div class="owner-order-header"><div><div class="owner-order-ref">Order #'+escapeHtml(ref)+'</div><div class="owner-order-date">'+escapeHtml(submitted)+'</div></div>'+
    '<div class="owner-order-badges"><span class="owner-order-badge '+statusClass+'">'+escapeHtml(status)+'</span><span class="owner-order-badge '+paymentClass+'">'+escapeHtml(payment)+'</span></div></div>'+
@@ -2021,6 +2032,29 @@ async function advanceStorefrontOrder(orderId,nextStatus,button){
   console.error("StoreNest order status update failed:",error);
   showToast(friendlyError(error),true);
   if(button)button.disabled=false;
+ }
+}
+async function confirmStorefrontCashPayment(orderId,button){
+ const current=ownerOrdersRows.find(row=>row.id===orderId);
+ if(!current||!currentBusiness||current.payment_method!=="pay_on_collection"||current.payment_status!=="unpaid"||!["ready","completed"].includes(current.status))return;
+ const ref=String(current.id||"").replace(/-/g,"").slice(0,8).toUpperCase();
+ const amount=formatOrderMoney(current.subtotal);
+ if(!window.confirm("Confirm that "+amount+" in cash was received for order #"+ref+"? This will mark the order as paid."))return;
+ button.disabled=true;button.textContent="Recording…";
+ try{
+  const client=await loadAuth();
+  const {data,error}=await client.rpc("confirm_storefront_order_cash_payment",{p_order_id:orderId});
+  if(error)throw error;
+  const result=Array.isArray(data)?data[0]:data;
+  if(!result?.confirmed||result.payment_status!=="paid")throw Error("Cash receipt was not recorded. Refresh the order and try again.");
+  ownerOrdersRows=ownerOrdersRows.map(row=>row.id===orderId?{...row,payment_status:"paid",updated_at:result.updated_at||new Date().toISOString()}:row);
+  renderBusinessOrders(ownerOrdersRows);
+  window.dispatchEvent(new CustomEvent("storenest:owner-payments-reload",{detail:{businessId:currentBusiness.id}}));
+  showToast("Cash received. Order marked paid.");
+ }catch(error){
+  console.error("StoreNest cash payment confirmation failed:",error);
+  showToast(friendlyError(error),true);
+  if(button){button.disabled=false;button.textContent="Confirm cash received"}
  }
 }
 async function verifyStorefrontOrderCollectionPin(orderId,button){
@@ -2138,8 +2172,10 @@ setInterval(()=>{if(document.visibilityState==="visible"&&currentBusiness&&authC
 
 $("ownerOrdersHistory").addEventListener("click",()=>{ownerOrdersHistoryMode=!ownerOrdersHistoryMode;renderBusinessOrders(ownerOrdersRows)});
 $("ownerOrdersList").addEventListener("click",event=>{
+ const cashButton=event.target.closest("[data-confirm-cash-payment]");
+ if(cashButton){event.preventDefault();event.stopPropagation();confirmStorefrontCashPayment(cashButton.dataset.orderId,cashButton);return}
  const verifyButton=event.target.closest("[data-verify-collection-pin]");
- if(verifyButton){verifyStorefrontOrderCollectionPin(verifyButton.dataset.orderId,verifyButton);return}
+ if(verifyButton){event.preventDefault();event.stopPropagation();verifyStorefrontOrderCollectionPin(verifyButton.dataset.orderId,verifyButton);return}
  const button=event.target.closest("[data-order-id][data-order-next]");
  if(button)advanceStorefrontOrder(button.dataset.orderId,button.dataset.orderNext,button);
 });
