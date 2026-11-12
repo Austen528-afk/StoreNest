@@ -754,7 +754,8 @@
       loadCustomerInbox().catch(function (error) { textError(customer, error.message); });
       const active = customer.active && customer.active.conversation;
       const changed = payload && payload.new && (payload.new.conversation_id || payload.new.id);
-      if (active && active.id && (!changed || changed === active.id || (payload.new && payload.new.conversation_id === active.id))) {
+      const chatCentreVisible = customer.root && !customer.root.hidden;
+      if (chatCentreVisible && active && active.id && (!changed || changed === active.id || (payload.new && payload.new.conversation_id === active.id))) {
         loadThreadMessages(customer, "customer").catch(function () {});
       }
     }, 120);
