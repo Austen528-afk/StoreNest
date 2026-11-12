@@ -123,7 +123,10 @@
     const date = new Date(value), now = new Date();
     if (!Number.isFinite(date.getTime())) return "";
     const today = saDayRange(now).day === saDayRange(date).day;
-    return new Intl.DateTimeFormat("en-ZA", { timeZone: "Africa/Johannesburg", ...(today ? { hour: "2-digit", minute: "2-digit" } : { dateStyle: "medium", hour: "2-digit", minute: "2-digit" }) }).format(date);
+    const options = today
+      ? { timeZone: "Africa/Johannesburg", hour: "2-digit", minute: "2-digit" }
+      : { timeZone: "Africa/Johannesburg", year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" };
+    return new Intl.DateTimeFormat("en-ZA", options).format(date);
   }
   async function countQuery(client, table, businessId, column, value) {
     return client.from(table).select("id", { count: "exact", head: true }).eq("business_id", businessId).eq(column, value);
@@ -230,7 +233,10 @@
     const date = new Date(value);
     if (!Number.isFinite(date.getTime())) return "";
     const today = saDayRange(new Date()).day === saDayRange(date).day;
-    return new Intl.DateTimeFormat("en-ZA", { timeZone: "Africa/Johannesburg", ...(today ? { hour: "2-digit", minute: "2-digit" } : { dateStyle: "medium", hour: "2-digit", minute: "2-digit" }) }).format(date);
+    const options = today
+      ? { timeZone: "Africa/Johannesburg", hour: "2-digit", minute: "2-digit" }
+      : { timeZone: "Africa/Johannesburg", year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" };
+    return new Intl.DateTimeFormat("en-ZA", options).format(date);
   }
   function activityNode(event) {
     const li = root.document.createElement("li"), button = root.document.createElement("button");
@@ -457,7 +463,7 @@
   }
   function openForTest() {}
   root.StoreNestOverviewDashboard = Object.freeze({
-    ACTIVE_ORDER_STATUSES, isActiveOrder, isRecordedPaid, sumRecordedPaidSales, saDayRange, canAccessBusiness, buildAttentionItems, createActivityFeed,
+    ACTIVE_ORDER_STATUSES, isActiveOrder, isRecordedPaid, sumRecordedPaidSales, saDayRange, canAccessBusiness, buildAttentionItems, createActivityFeed, formatActivityTime: timeLabel,
     metricTarget, resolveOverviewNavigation, assistantReply, getLoadMessage: input => input && input.loading ? "Refreshing this business…" : input && input.error ? "Could not refresh business activity. Try again." : input && input.empty ? "No recent recorded activity yet." : "Live business records",
     init, refresh, getState: () => ({ businessId: state.businessId, counts: Object.assign({}, state.counts), loading: state.loading, error: state.error, activityCount: state.activities.length })
   });
