@@ -93,11 +93,12 @@ test("category clicks update only the shared summary and trends detail and retur
   assert.doesNotMatch(dashboardJs, /renderExplore\(|renderBusinessView|analyticsBusinessDetail/);
 });
 
-test("desktop Analytics fits the dashboard viewport without page scrolling", () => {
-  assert.match(styles, /@media\s*\(min-width:\s*1100px\)[\s\S]*?\.workspace:has\(#analyticsDashboard:not\(\[hidden\]\)\)\{[^}]*overflow:hidden/);
-  assert.match(styles, /\.analytics-content:not\(\[hidden\]\)\{[^}]*flex:1 1 auto[^}]*min-height:0[^}]*overflow:hidden/);
-  assert.match(styles, /\.analytics-main-grid\{[^}]*flex:1 1 auto[^}]*min-height:0/);
-  assert.match(styles, /\.analytics-insight-list\{[^}]*overflow-y:auto/);
+test("desktop Analytics uses the workspace page scroll without nested detail scrolling", () => {
+  assert.match(styles, /@media\s*\(min-width:\s*1100px\)[\s\S]*?\.workspace:has\(#analyticsDashboard:not\(\[hidden\]\)\)\{[^}]*overflow-x:hidden;overflow-y:auto/);
+  assert.match(styles, /\.analytics-content:not\(\[hidden\]\)\{[^}]*display:block[^}]*overflow:visible/);
+  assert.match(styles, /\.analytics-explore-detail:not\(\[hidden\]\)\{[^}]*max-height:none;overflow:visible/);
+  assert.match(styles, /\.analytics-table-wrap\{[^}]*max-height:none;overflow:visible/);
+  assert.match(styles, /\.analytics-history-list\{[^}]*overflow:visible/);
 });
 
 test("successful Analytics loads render the calculated snapshot", () => {
@@ -170,7 +171,7 @@ test("analytics schema restricts event reads and insight state to the owning bus
 });
 
 test("service worker activates the new dashboard assets in a fresh cache", () => {
-  assert.match(serviceWorker, /storenest-shell-v60/);
+  assert.match(serviceWorker, /storenest-shell-v61/);
   for (const asset of ["analytics-dashboard.css", "analytics-engine.js", "analytics-dashboard.js", "customer-dashboard.css", "customer-intelligence-engine.js", "customer-dashboard.js", "storefront-analytics.js"]) {
     assert.match(serviceWorker, new RegExp("/" + asset.replaceAll(".", "\\.")));
   }
