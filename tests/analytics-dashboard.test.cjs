@@ -87,6 +87,8 @@ test("category clicks update only the shared summary and trends detail and retur
   assert.match(dashboardJs, /setAnalyticsView\(state\.activeView === selectedView \? "" : selectedView\)/);
   assert.match(dashboardJs, /setAnalyticsView\(""\)/);
   assert.match(dashboardJs, /event\.target\.closest\("\[data-analytics-view\]"\)/);
+  assert.match(ownerHtml, /data-analytics-view="overview"[\s\S]*?<strong>Analytics Overview<\/strong>/);
+  assert.match(dashboardJs, /selectedView === "overview"[\s\S]*?setAnalyticsView\(""\)/);
   const navStart = ownerHtml.indexOf('id="analyticsExploreMenu"');
   const navEnd = ownerHtml.indexOf("</ul>", navStart);
   assert.doesNotMatch(ownerHtml.slice(navStart, navEnd), /aria-pressed/);
@@ -175,7 +177,7 @@ test("analytics schema restricts event reads and insight state to the owning bus
 });
 
 test("service worker activates the new dashboard assets in a fresh cache", () => {
-  assert.match(serviceWorker, /storenest-shell-v62/);
+  assert.match(serviceWorker, /storenest-shell-v63/);
   for (const asset of ["analytics-dashboard.css", "analytics-engine.js", "analytics-dashboard.js", "customer-dashboard.css", "customer-intelligence-engine.js", "customer-dashboard.js", "storefront-analytics.js"]) {
     assert.match(serviceWorker, new RegExp("/" + asset.replaceAll(".", "\\.")));
   }

@@ -1114,6 +1114,10 @@
         event.preventDefault();
         const selectedView = option.dataset.analyticsView;
         setAnalyticsExploreMenuOpen(false, true);
+        if (selectedView === "overview") {
+          setAnalyticsView("");
+          return;
+        }
         setAnalyticsView(state.activeView === selectedView ? "" : selectedView);
       }
     });
