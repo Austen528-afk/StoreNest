@@ -127,6 +127,9 @@ html,body{background:#f8faf9;color:#182321}
 .site-menu .theme-switch{width:100%;min-height:42px;padding:12px;border-radius:9px;background:transparent;color:inherit;font-size:13px;font-weight:700}
 .site-menu .menu-action:disabled{opacity:.65;cursor:wait}
 .site-menu .menu-feedback{margin:7px 12px;color:#a44936;font-size:12px;line-height:1.4}
+.site-menu .menu-divider{height:1px;margin:5px 9px;background:#e2eae6}
+.site-menu .theme-switch-label{text-transform:capitalize}
+html[data-theme="dark"] body[data-page-kind="marketplace"] .site-menu .menu-divider{background:#ffffff1c}
 html[data-theme="dark"] body[data-page-kind="marketplace"] .site-menu .menu-feedback{color:#f0b6a7}
 html[data-theme="dark"] body[data-page-kind="marketplace"] .site-menu .menu-action:hover{background:#283e39;color:var(--st-text)}
 
@@ -425,7 +428,7 @@ html[data-theme="dark"] .marketplace-category-menu [data-tag-category] svg circl
 <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5"></rect><path d="M7.5 3.5v4M16.5 3.5v4M3.5 10h17m-12 5 2.4 2.4 4.8-5"></path></svg><span class="order-notification-badge" id="overallBookingsBadge" aria-hidden="true" hidden></span></button>
 <button class="top-icon-button" id="overallOrdersButton" type="button" aria-label="My orders" title="My orders">
 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h8l4 4V20a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 20V5a1.5 1.5 0 0 1 1.5-1.5Z"></path><path d="M15 3.5V8h4M8.5 12h7M8.5 15.5h7"></path></svg><span class="order-notification-badge" id="overallOrdersBadge" aria-hidden="true" hidden></span></button>
-<div class="menu-container" id="menuContainer"><button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="siteMenu"><span></span><span></span><span></span></button><nav class="site-menu" id="siteMenu" aria-label="StoreNest menu" hidden><a class="menu-action" href="/customer-account.html">Profile</a><button class="menu-action" id="menuAccountAction" type="button">Sign in</button><a class="menu-action" href="/customer-account.html?mode=signup">Sign up</a><a class="menu-action" href="/customer-account.html?mode=settings">Settings</a><a class="menu-register" href="/business-owner.html">Register as business owner <span aria-hidden="true">→</span></a><button class="menu-register" id="publishersMenuAction" type="button">Publishers <span aria-hidden="true">→</span></button><button class="theme-switch" data-theme-toggle type="button" aria-label="Switch to dark mode" aria-pressed="false"><span class="theme-switch-icon" aria-hidden="true">☾</span><span class="theme-switch-label">Dark mode</span></button><p class="menu-feedback" id="menuFeedback" role="status" aria-live="polite" hidden></p></nav></div></div></header>
+<div class="menu-container" id="menuContainer"><button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="siteMenu"><span></span><span></span><span></span></button><nav class="site-menu" id="siteMenu" aria-label="StoreNest menu" hidden><a class="menu-action" href="/customer-account.html">Profile</a><button class="menu-action" id="menuAccountAction" type="button">Sign in</button><a class="menu-action" id="menuSignupAction" href="/customer-account.html?mode=signup">Sign up</a><a class="menu-action" href="/customer-account.html?mode=settings">Settings</a><div class="menu-divider" aria-hidden="true"></div><a class="menu-register" href="/business-owner.html">Business Owner <span aria-hidden="true">→</span></a><button class="menu-register" id="publishersMenuAction" type="button">Publisher <span aria-hidden="true">→</span></button><div class="menu-divider" aria-hidden="true"></div><button class="theme-switch" data-theme-toggle type="button" aria-label="Switch to dark mode" aria-pressed="false"><span class="theme-switch-icon" aria-hidden="true">☾</span><span class="theme-switch-label">Dark mode</span></button><p class="menu-feedback" id="menuFeedback" role="status" aria-live="polite" hidden></p><div class="menu-divider" aria-hidden="true"></div><button class="menu-action" id="menuSignOutAction" type="button" hidden>Sign Out</button></nav></div></div></header>
 <div id="installHint" class="install-hint" role="status" aria-live="polite"></div>
 <section class="search-row" role="search" aria-label="Search StoreNest">
   <form class="search-form" id="storeSearchForm">
@@ -1011,13 +1014,18 @@ const menuToggle=document.getElementById("menuToggle");
 const siteMenu=document.getElementById("siteMenu");
 function setMenuOpen(open){siteMenu.hidden=!open;menuToggle.setAttribute("aria-expanded",String(open));menuToggle.setAttribute("aria-label",open?"Close menu":"Open menu");}
 const menuAccountAction=document.getElementById("menuAccountAction");
+const menuSignupAction=document.getElementById("menuSignupAction");
+const menuSignOutAction=document.getElementById("menuSignOutAction");
 const publishersMenuAction=document.getElementById("publishersMenuAction");
 const menuFeedback=document.getElementById("menuFeedback");
 let marketplaceAuthClient=null,marketplaceSignedIn=false,marketplaceAuthReady=false,marketplaceAuthPromise=null,marketplaceCurrentUserId=null,marketplaceIdentityReady=false;
-function updateMenuAccountAction(signedIn){
+function updateMarketplaceMenuAuth(signedIn){
  marketplaceSignedIn=Boolean(signedIn);
- menuAccountAction.textContent=marketplaceSignedIn?"Sign out":"Sign in";
- menuAccountAction.setAttribute("aria-label",marketplaceSignedIn?"Sign out of your customer account":"Sign in to your customer account");
+ menuAccountAction.hidden=marketplaceSignedIn;
+ menuSignupAction.hidden=marketplaceSignedIn;
+ menuSignOutAction.hidden=!marketplaceSignedIn;
+ menuAccountAction.setAttribute("aria-label","Sign in to your customer account");
+ menuSignOutAction.setAttribute("aria-label","Sign out of your customer account");
 }
 function showMenuFeedback(message){menuFeedback.textContent=message;menuFeedback.hidden=!message}
 publishersMenuAction.addEventListener("click",()=>showMenuFeedback("The Publishers platform link is not connected yet."));
@@ -1029,14 +1037,14 @@ async function initializeMarketplaceAuth(){
     marketplaceAuthClient.auth.onAuthStateChange((_event,session)=>{
      marketplaceCurrentUserId=session?.user?.id||null;
      marketplaceIdentityReady=true;
-     updateMenuAccountAction(Boolean(session?.user));
+     updateMarketplaceMenuAuth(Boolean(session?.user));
      window.dispatchEvent(new Event("storenest:customer-identity-change"));
     });
     const {data,error}=await marketplaceAuthClient.auth.getUser();
     if(error)throw error;
     marketplaceCurrentUserId=data?.user?.id||null;
     marketplaceIdentityReady=true;
-    updateMenuAccountAction(Boolean(data?.user));
+    updateMarketplaceMenuAuth(Boolean(data?.user));
     window.dispatchEvent(new Event("storenest:customer-identity-change"));
     marketplaceAuthReady=true;
     return marketplaceAuthClient;
@@ -1060,23 +1068,36 @@ menuAccountAction.addEventListener("click",async()=>{
   finally{menuAccountAction.disabled=false}
  }
  if(!marketplaceSignedIn){window.location.assign("/customer-account.html?mode=signin");return}
- menuAccountAction.disabled=true;
- menuAccountAction.textContent="Signing out…";
- menuAccountAction.setAttribute("aria-busy","true");
+ setMenuOpen(false);
+});
+menuSignOutAction.addEventListener("click",async()=>{
+ if(menuSignOutAction.disabled)return;
+ showMenuFeedback("");
+ if(!marketplaceAuthReady){
+  menuSignOutAction.disabled=true;
+  try{await initializeMarketplaceAuth()}
+  catch(error){console.error("Could not load marketplace sign-in:",error);showMenuFeedback("Could not check your account. Please try again.");return}
+  finally{menuSignOutAction.disabled=false}
+ }
+ if(!marketplaceSignedIn)return;
+ menuSignOutAction.disabled=true;
+ menuSignOutAction.textContent="Signing out…";
+ menuSignOutAction.setAttribute("aria-busy","true");
  try{
   const client=marketplaceAuthClient||await initializeMarketplaceAuth();
   const {error}=await client.auth.signOut();
   if(error)throw error;
-  updateMenuAccountAction(false);
+  updateMarketplaceMenuAuth(false);
   showMenuFeedback("");
   setMenuOpen(false);
  }catch(error){
   console.error("Could not sign out customer:",error);
-  updateMenuAccountAction(marketplaceSignedIn);
+  updateMarketplaceMenuAuth(marketplaceSignedIn);
   showMenuFeedback("Could not sign out. Please try again.");
  }finally{
-  menuAccountAction.disabled=false;
-  menuAccountAction.removeAttribute("aria-busy");
+  menuSignOutAction.disabled=false;
+  menuSignOutAction.textContent="Sign Out";
+  menuSignOutAction.removeAttribute("aria-busy");
  }
 });
 
