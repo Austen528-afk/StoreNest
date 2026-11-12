@@ -232,9 +232,15 @@
       textError(customer, error.message || "Could not search businesses. Try again.");
     }
   }
+  function publishCustomerUnreadCount(count) {
+    const unreadCount = Math.max(0, Math.floor(Number(count) || 0));
+    window.StoreNestCustomerUnreadCount = unreadCount;
+    window.dispatchEvent(new CustomEvent("storenest:customer-unread-count", { detail: { count: unreadCount } }));
+  }
   async function loadCustomerInbox() {
     if (!customer.client || !customer.user) {
       customer.rows = [];
+      publishCustomerUnreadCount(0);
       renderList(customer, "customer");
       return;
     }
@@ -264,6 +270,9 @@
       const refreshed = customer.rows.find(function (row) { return row.id === customer.active.conversation.id; });
       if (refreshed) customer.active.conversation = refreshed;
     }
+    publishCustomerUnreadCount(customer.rows.reduce(function (total, row) {
+      return total + (Number(row.unread_count) || 0);
+    }, 0));
     renderList(customer, "customer");
     openPendingConversation(customer, "customer");
   }
@@ -522,6 +531,7 @@
       .is("read_at", null);
     if (result.error) console.warn("StoreNest message read receipt could not be saved:", result.error.message);
     if (mode === "owner") await refreshOwnerBadge();
+    else if (mode === "customer") await loadCustomerInbox().catch(function (error) { textError(customer, error.message); });
   }
   async function loadThreadMessages(state, mode) {
     const active = state.active;
@@ -886,6 +896,7 @@
       : "Customer";
     if (!customer.user) {
       customer.rows = [];
+      publishCustomerUnreadCount(0);
       customer.active = null;
       if (customer.refs) renderList(customer, "customer");
       return;
