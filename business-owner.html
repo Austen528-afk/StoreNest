@@ -1161,7 +1161,57 @@ function showMessage(view,message,type="error") {const el=document.querySelector
 function showView(view){if(!["start","register","login","forgot","new-password","account"].includes(view))view="start";activeView=view;clearMessages();authViews.forEach(el=>{el.hidden=el.dataset.view!==view});const panel=$("accountPanel");panel.classList.toggle("dashboard-mode",view==="account");panel.scrollTop=0;setMenuOpen(false)}
 function isConfigured(){return /^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(STORE_AUTH.url)&&/^(sb_publishable_|eyJ)/.test(STORE_AUTH.publishableKey)}
 async function loadAuth(){if(!isConfigured())throw new Error("StoreNest account registration is not connected yet.");if(authClient)return authClient;if(!window.supabase)await new Promise((resolve,reject)=>{const script=document.createElement("script");script.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0";script.onload=resolve;script.onerror=()=>reject(new Error("Unable to load the sign-in service. Check your internet connection."));document.head.appendChild(script)});if(!window.supabase)throw new Error("The sign-in service could not be loaded.");authClient=window.supabase.createClient(STORE_AUTH.url,STORE_AUTH.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});window.StoreNestBusinessClient=authClient;window.dispatchEvent(new CustomEvent("storenest:business-client-ready",{detail:{client:authClient}}));authClient.auth.onAuthStateChange((event,session)=>{if(event==="PASSWORD_RECOVERY"){recovering=true;showView("new-password");return}if(event==="SIGNED_OUT"){recovering=false;currentUser=null;currentBusiness=null;ownerBusinesses=[];showView("login");return}if(event==="SIGNED_IN"&&!recovering&&!signingIn&&session?.user)activateDashboard(session.user).catch(error=>showToast(friendlyError(error),true))});return authClient}
-async function upsertOwnerProfile(client,user,fallbackName=""){if(!user?.id)return;const fullName=String(user.user_metadata?.full_name||fallbackName).trim().slice(0,100);if(fullName.length<2)return;const {error}=await client.from("business_owner_profiles").upsert({user_id:user.id,full_name:fullName,updated_at:new Date().toISOString()},{onConflict:"user_id"});if(error)console.warn("StoreNest profile sync failed:",error.message)}
+const PUBLISHER_REFERRAL_STORAGE_KEY="storenest-publisher-referral";
+let publisherReferralFromLink="";
+function getPendingPublisherReferralCode(){
+ const queryCode=new URLSearchParams(location.search).get("ref");
+ if(queryCode)return String(queryCode).trim().toUpperCase();
+ if(publisherReferralFromLink)return publisherReferralFromLink;
+ try{return String(localStorage.getItem(PUBLISHER_REFERRAL_STORAGE_KEY)||"").trim().toUpperCase()}catch{return ""}
+}
+function rememberPublisherReferralFromUrl(){
+ const params=new URLSearchParams(location.search),incoming=params.get("ref");
+ if(!incoming)return;
+ const code=String(incoming).trim().toUpperCase();
+ if(!code||code.length>50)return;
+ publisherReferralFromLink=code;
+ let stored=false;
+ try{localStorage.setItem(PUBLISHER_REFERRAL_STORAGE_KEY,code);stored=true}catch{}
+ if(stored){
+  params.delete("ref");
+  const query=params.toString();
+  history.replaceState(history.state,"",location.pathname+(query?"?"+query:"")+location.hash);
+ }
+}
+function clearPendingPublisherReferralCode(){
+ publisherReferralFromLink="";
+ try{localStorage.removeItem(PUBLISHER_REFERRAL_STORAGE_KEY)}catch{}
+ const params=new URLSearchParams(location.search);
+ if(params.has("ref")){
+  params.delete("ref");
+  const query=params.toString();
+  history.replaceState(history.state,"",location.pathname+(query?"?"+query:"")+location.hash);
+ }
+}
+function businessOwnerReferralRedirectUrl(){
+ const url=new URL(location.pathname,location.origin);
+ const code=getPendingPublisherReferralCode();
+ if(code)url.searchParams.set("ref",code);
+ return url.toString();
+}
+rememberPublisherReferralFromUrl();
+async function upsertOwnerProfile(client,user,fallbackName=""){
+ if(!user?.id)return;
+ const fullName=String(user.user_metadata?.full_name||fallbackName).trim().slice(0,100);
+ if(fullName.length<2)return;
+ const referralCode=getPendingPublisherReferralCode();
+ const {error}=await client.rpc("register_business_owner_profile",{
+  p_full_name:fullName,
+  p_referral_code:referralCode||null
+ });
+ if(error)throw error;
+ if(referralCode)clearPendingPublisherReferralCode();
+}
 function friendlyError(error){if(!error)return"Something went wrong. Please try again.";if(/invalid login credentials/i.test(error.message))return"Incorrect email address or password.";if(/email not confirmed/i.test(error.message))return"Please verify your email address, then try logging in.";if(/rate limit|over_email_send_rate_limit/i.test(error.message))return"Too many attempts. Please try again later.";if(/row-level security|permission denied/i.test(error.message))return"StoreNest could not save that change. Check your account access and try again.";return error.message||"Something went wrong. Please try again."}
 function busy(form,state){const button=form.querySelector('button[type="submit"]');if(!button)return;if(state){button.dataset.original=button.textContent;button.textContent="Please wait…";button.disabled=true}else{button.textContent=button.dataset.original||button.textContent;button.disabled=false}}
 function showToast(message,error=false){const el=$("dashboardToast");if(!el)return;el.textContent=message;el.classList.toggle("error",error);el.classList.toggle("success",!error);el.hidden=false;clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>el.hidden=true,3600)}
@@ -2280,7 +2330,7 @@ function populateMobileNav(){const mobile=$("mobileNavList");mobile.replaceChild
 async function addCategory(name){const client=await loadAuth();const clean=name.trim();if(!clean)throw Error("Enter a section name.");const id=$("categoryEditId").value;const payload={name:clean,display_style:$("categoryStyle").value,marketplace_category:$("categoryMarketplace").value,description:$("categoryDescription").value.trim()};const query=id?client.from("business_categories").update(payload).eq("id",id).eq("business_id",currentBusiness.id):client.from("business_categories").insert({...payload,business_id:currentBusiness.id,display_order:businessCategories.length});const {data,error}=await query.select("*").single();if(error)throw error;await loadBusinessData();$("itemCategory").value=data.id;closeModal($("categoryModal"));showToast(id?"Section updated.":"Section created.")}
 function handleModalClose(event){const close=event.target.closest("[data-close-modal]");if(close){const modal=close.closest(".modal-backdrop");closeModal(modal)}}
 document.querySelectorAll("[data-switch]").forEach(control=>control.addEventListener("click",event=>{event.preventDefault();const view=control.dataset.switch;history.replaceState(null,"",location.pathname+location.search+"#"+view);showView(view)}));
-$("registerForm").addEventListener("submit",async event=>{event.preventDefault();const form=event.currentTarget,name=$("registerName").value.trim(),email=$("registerEmail").value.trim(),password=$("registerPassword").value,confirm=$("registerConfirm").value;if(name.length<2){showMessage("register","Please enter your full name.");return}if(password.length<8){showMessage("register","Password must contain at least 8 characters.");return}if(password!==confirm){showMessage("register","Your passwords do not match.");return}busy(form,true);signingIn=true;try{const client=await loadAuth();const {data,error}=await client.auth.signUp({email,password,options:{data:{full_name:name},emailRedirectTo:location.origin+location.pathname}});if(error)throw error;if(data.session?.user){await upsertOwnerProfile(client,data.user,name);await activateDashboard(data.user)}else showMessage("register","Check your email for a confirmation link. Once confirmed, return here and log in.","success")}catch(error){showMessage("register",friendlyError(error))}finally{signingIn=false;busy(form,false)}});
+$("registerForm").addEventListener("submit",async event=>{event.preventDefault();const form=event.currentTarget,name=$("registerName").value.trim(),email=$("registerEmail").value.trim(),password=$("registerPassword").value,confirm=$("registerConfirm").value;if(name.length<2){showMessage("register","Please enter your full name.");return}if(password.length<8){showMessage("register","Password must contain at least 8 characters.");return}if(password!==confirm){showMessage("register","Your passwords do not match.");return}busy(form,true);signingIn=true;try{const client=await loadAuth();const {data,error}=await client.auth.signUp({email,password,options:{data:{full_name:name},emailRedirectTo:businessOwnerReferralRedirectUrl()}});if(error)throw error;if(data.session?.user){await upsertOwnerProfile(client,data.user,name);await activateDashboard(data.user)}else showMessage("register","Check your email for a confirmation link. Once confirmed, return here and log in.","success")}catch(error){showMessage("register",friendlyError(error))}finally{signingIn=false;busy(form,false)}});
 $("loginForm").addEventListener("submit",async event=>{event.preventDefault();const form=event.currentTarget;busy(form,true);signingIn=true;try{const client=await loadAuth();const {data,error}=await client.auth.signInWithPassword({email:$("loginEmail").value.trim(),password:$("loginPassword").value});if(error)throw error;if(!data.user)throw new Error("Login did not complete. Please try again.");await upsertOwnerProfile(client,data.user);await activateDashboard(data.user)}catch(error){showMessage("login",friendlyError(error))}finally{signingIn=false;busy(form,false)}});
 $("forgotForm").addEventListener("submit",async event=>{event.preventDefault();const form=event.currentTarget;busy(form,true);try{const client=await loadAuth();const {error}=await client.auth.resetPasswordForEmail($("forgotEmail").value.trim(),{redirectTo:location.origin+location.pathname});if(error)throw error;showMessage("forgot","If this email is registered, a password reset message will be sent.","success")}catch(error){showMessage("forgot",friendlyError(error))}finally{busy(form,false)}});
 $("newPasswordForm").addEventListener("submit",async event=>{event.preventDefault();const form=event.currentTarget,password=$("newPassword").value;if(password!==$("newPasswordConfirm").value){showMessage("new-password","Passwords do not match.");return}busy(form,true);try{const client=await loadAuth();const {error}=await client.auth.updateUser({password});if(error)throw error;recovering=false;await client.auth.signOut();showView("login");showMessage("login","Password updated. You can now log in.","success")}catch(error){showMessage("new-password",friendlyError(error))}finally{busy(form,false)}});

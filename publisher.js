@@ -2,7 +2,7 @@
   "use strict";
 
   const $ = (id) => document.getElementById(id);
-  const TERMS_VERSION = "publisher-account-v1";
+  const TERMS_VERSION = "publisher-account-v2";
   const SECTION_TITLES = {
     overview: "Overview",
     businesses: "My Businesses",
@@ -274,6 +274,109 @@
     return new Intl.DateTimeFormat("en-ZA", { day: "numeric", month: "short", year: "numeric" }).format(date);
   }
 
+  function buildPublisherReferralLink() {
+    const code = String(publisherProfile?.referral_code || "").trim();
+    if (!code) return "";
+    const url = new URL("/business-owner.html", window.location.origin);
+    url.searchParams.set("ref", code);
+    return url.toString();
+  }
+
+  function setPublisherReferralDetails() {
+    const link = buildPublisherReferralLink();
+    $("publisherReferralLink").value = link || "Referral link unavailable";
+    $("publisherReferralCode").textContent = publisherProfile?.referral_code || "—";
+    $("copyPublisherReferralLink").disabled = !link;
+  }
+
+  async function copyPublisherReferralLink() {
+    const link = buildPublisherReferralLink();
+    if (!link) {
+      setMessage($("publisherReferralMessage"), "Your referral link is not available yet. Refresh the page and try again.", "error");
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(link);
+      setMessage($("publisherReferralMessage"), "Referral link copied. Share it with the business owner you referred.", "success");
+    } catch {
+      $("publisherReferralLink").focus();
+      $("publisherReferralLink").select();
+      setMessage($("publisherReferralMessage"), "Select the link and copy it to share with the business owner.", "");
+    }
+  }
+
+  function appendReferralCell(row, label, value, className) {
+    const cell = document.createElement("td");
+    cell.dataset.label = label;
+    if (className) cell.className = className;
+    cell.textContent = value;
+    row.appendChild(cell);
+    return cell;
+  }
+
+  function renderReferredBusinessAccounts(accounts) {
+    const rows = $("publisherBusinessesRows");
+    rows.replaceChildren();
+    accounts.forEach((account) => {
+      const storeNames = Array.isArray(account.store_names) ? account.store_names.filter(Boolean) : [];
+      const ownerName = String(account.business_owner_name || "Business Owner").trim();
+      const primaryName = storeNames[0] || ownerName || "Business Owner";
+      const row = document.createElement("tr");
+      const accountCell = document.createElement("td");
+      accountCell.dataset.label = "Business account";
+      const title = document.createElement("strong");
+      title.textContent = primaryName;
+      const subtitle = document.createElement("small");
+      subtitle.textContent = storeNames.length
+        ? "Business Owner: " + ownerName
+        : "Business Owner account";
+      accountCell.append(title, subtitle);
+      row.appendChild(accountCell);
+
+      appendReferralCell(row, "Registered", formatDate(account.registered_at));
+      const storeCount = Number(account.store_count || 0);
+      appendReferralCell(row, "Storefronts", storeCount + (storeCount === 1 ? " storefront" : " storefronts"));
+      const publishedCount = Number(account.published_store_count || 0);
+      const statusText = publishedCount > 0
+        ? "Storefront published"
+        : storeCount > 0
+          ? "Storefront setup"
+          : "Account registered";
+      const statusCell = document.createElement("td");
+      statusCell.dataset.label = "Status";
+      const status = document.createElement("span");
+      status.className = "referral-status";
+      status.textContent = statusText;
+      statusCell.appendChild(status);
+      row.appendChild(statusCell);
+      rows.appendChild(row);
+    });
+  }
+
+  async function loadReferredBusinessAccounts() {
+    $("publisherBusinessesLoading").hidden = false;
+    $("publisherBusinessesError").hidden = true;
+    $("publisherBusinessesEmpty").hidden = true;
+    $("publisherBusinessesTableWrap").hidden = true;
+    $("publisherBusinessesSummary").textContent = "Loading referred business accounts…";
+    try {
+      if (!activeClient || !publisherProfile?.id) throw new Error("Publisher account data is not ready. Refresh and try again.");
+      const { data, error } = await activeClient.rpc("get_my_referred_business_accounts");
+      if (error) throw error;
+      const accounts = Array.isArray(data) ? data : [];
+      renderReferredBusinessAccounts(accounts);
+      $("publisherBusinessesLoading").hidden = true;
+      $("publisherBusinessesEmpty").hidden = accounts.length > 0;
+      $("publisherBusinessesTableWrap").hidden = accounts.length === 0;
+      $("publisherBusinessesSummary").textContent = accounts.length + (accounts.length === 1 ? " referred Business Owner account" : " referred Business Owner accounts");
+    } catch (error) {
+      $("publisherBusinessesLoading").hidden = true;
+      $("publisherBusinessesSummary").textContent = "Referred business accounts could not be loaded.";
+      $("publisherBusinessesError").textContent = friendlyError(error);
+      $("publisherBusinessesError").hidden = false;
+    }
+  }
+
   function renderDashboard() {
     const displayName = publisherProfile?.display_name || "Publisher";
     const fullName = fullNameFromAccount() || displayName;
@@ -288,6 +391,7 @@
     $("settingsFullName").textContent = fullName || "Not provided";
     $("settingsEmail").textContent = accountEmail() || "Not provided";
     $("settingsPhone").textContent = accountPhone() || "Not provided";
+    setPublisherReferralDetails();
     setMessage($("settingsMessage"), "", "");
   }
 
@@ -304,6 +408,9 @@
     $("dashboardHeading").textContent = SECTION_TITLES[key];
     if (updateHistory && window.location.hash !== "#" + key) {
       window.history.pushState({ publisherSection: key }, "", "#" + key);
+    }
+    if (key === "businesses" && activeClient && publisherProfile?.id) {
+      loadReferredBusinessAccounts();
     }
   }
 
@@ -639,6 +746,7 @@
     $("forgotPasswordForm").addEventListener("submit", submitForgotPassword);
     $("newPasswordForm").addEventListener("submit", submitNewPassword);
     $("publisherSettingsForm").addEventListener("submit", savePublisherSettings);
+    $("copyPublisherReferralLink").addEventListener("click", copyPublisherReferralLink);
     $("openForgotPassword").addEventListener("click", () => {
       clearMessages();
       $("phoneRecoveryCodePanel").hidden = true;

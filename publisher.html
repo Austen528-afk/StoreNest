@@ -117,7 +117,7 @@
             <summary>Read the Publisher Terms and Conditions</summary>
             <div class="terms-copy">
               <p>Your Publisher profile uses the StoreNest account you create here. Keep your sign-in details private and provide accurate account information.</p>
-              <p>This registration creates a Publisher account only. It does not promise or calculate commissions, payouts, business referrals, or campaign results. Separate terms will apply before those features are offered.</p>
+              <p>This creates a Publisher account with a shareable referral link. New Business Owner accounts created through that link are recorded as referrals. Tracking does not promise or calculate commissions or payouts; separate terms will apply before either is offered.</p>
             </div>
           </details>
           <label class="terms-check"><input id="newAccountTerms" type="checkbox" required><span>I have read and accept the Publisher Terms and Conditions.</span></label>
@@ -213,7 +213,7 @@
             <summary>Read the Publisher Terms and Conditions</summary>
             <div class="terms-copy">
               <p>Your Publisher profile uses your existing StoreNest account. Keep your sign-in details private and provide accurate account information.</p>
-              <p>This registration creates a Publisher account only. It does not promise or calculate commissions, payouts, business referrals, or campaign results. Separate terms will apply before those features are offered.</p>
+              <p>This creates a Publisher account with a shareable referral link. New Business Owner accounts created through that link are recorded as referrals. Tracking does not promise or calculate commissions or payouts; separate terms will apply before either is offered.</p>
             </div>
           </details>
           <label class="terms-check"><input id="existingTerms" type="checkbox" required><span>I have read and accept the Publisher Terms and Conditions.</span></label>
@@ -286,8 +286,17 @@
         </section>
 
         <section class="dashboard-panel" id="businessesPanel" data-dashboard-panel="businesses" hidden>
-          <div class="panel-intro"><span class="eyebrow">YOUR NETWORK</span><h2>My Businesses</h2><p>Businesses connected to your Publisher profile will appear here.</p></div>
-          <div class="empty-state"><span class="empty-icon" aria-hidden="true">▦</span><h3>No businesses linked yet</h3><p>Business recruitment and referral tracking are not active yet. When those tools are available, your linked businesses will appear here.</p></div>
+          <div class="panel-intro"><span class="eyebrow">YOUR NETWORK</span><h2>My Businesses</h2><p>Business Owner accounts registered through your referral link appear here.</p></div>
+          <p class="referral-summary" id="publisherBusinessesSummary">Loading referred business accounts…</p>
+          <div class="referral-state" id="publisherBusinessesLoading" role="status" aria-live="polite">Loading referred business accounts…</div>
+          <div class="referral-state referral-state-error" id="publisherBusinessesError" role="alert" hidden></div>
+          <div class="empty-state referral-empty" id="publisherBusinessesEmpty" hidden><span class="empty-icon" aria-hidden="true">▦</span><h3>No referred businesses yet</h3><p>Share your referral link. A new Business Owner account will appear here after registration.</p></div>
+          <div class="referral-table-wrap" id="publisherBusinessesTableWrap" hidden>
+            <table class="referral-table">
+              <thead><tr><th scope="col">Business account</th><th scope="col">Registered</th><th scope="col">Storefronts</th><th scope="col">Status</th></tr></thead>
+              <tbody id="publisherBusinessesRows"></tbody>
+            </table>
+          </div>
         </section>
 
         <section class="dashboard-panel" id="earningsPanel" data-dashboard-panel="earnings" hidden>
@@ -296,8 +305,21 @@
         </section>
 
         <section class="dashboard-panel" id="recruitmentPanel" data-dashboard-panel="recruitment" hidden>
-          <div class="panel-intro"><span class="eyebrow">GROW YOUR NETWORK</span><h2>Recruitment</h2><p>Plan and manage how you introduce businesses to StoreNest.</p></div>
-          <div class="empty-state"><span class="empty-icon" aria-hidden="true">＋</span><h3>Recruitment tools are coming later</h3><p>This section is ready for future recruitment tools. No invitations or referrals have been created.</p></div>
+          <div class="panel-intro"><span class="eyebrow">GROW YOUR NETWORK</span><h2>Recruitment</h2><p>Share your link with business owners you introduce to StoreNest.</p></div>
+          <div class="referral-share-card">
+            <div>
+              <span class="referral-card-label">YOUR PUBLISHER REFERRAL LINK</span>
+              <p>When a new Business Owner account is created through this link, StoreNest records the referral on your account.</p>
+            </div>
+            <label class="referral-link-label" for="publisherReferralLink">Shareable link</label>
+            <div class="referral-link-row">
+              <input id="publisherReferralLink" type="url" readonly aria-label="Your Publisher referral link" value="Loading your referral link…">
+              <button class="primary-button referral-copy-button" id="copyPublisherReferralLink" type="button">Copy link</button>
+            </div>
+            <p class="referral-code-line">Referral code <strong id="publisherReferralCode">—</strong></p>
+            <p class="form-message referral-message" id="publisherReferralMessage" role="status" aria-live="polite" hidden></p>
+            <div class="referral-note">This first step tracks registered Business Owner accounts. It does not calculate or promise commissions or payouts.</div>
+          </div>
         </section>
 
         <section class="dashboard-panel" id="campaignsPanel" data-dashboard-panel="campaigns" hidden>
