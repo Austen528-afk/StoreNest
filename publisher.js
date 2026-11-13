@@ -187,7 +187,11 @@
       const auth = window.StoreNestCustomerAuth;
       if (!auth) throw new Error("StoreNest account sign-in could not be loaded. Refresh the page and try again.");
       customerClient = await auth.getClient();
-      businessClient = typeof auth.getBusinessClient === "function" ? await auth.getBusinessClient() : customerClient;
+      // getClient() only creates the business-owner client when it finds an existing
+      // business-owner session. Do not create a second auth client on every page
+      // load: reset links can otherwise be consumed by two clients, and a later
+      // sign-out can clear an unrelated saved account.
+      businessClient = window.StoreNestBusinessClient || customerClient;
       registerAuthListeners();
 
       const [customerUser, businessUser] = await Promise.all([
@@ -591,7 +595,11 @@
     isSigningOut = true;
     try {
       const clients = [...new Set([customerClient, businessClient].filter(Boolean))];
-      const results = await Promise.allSettled(clients.map((client) => client.auth.signOut({ scope: "local" })));
+      const currentUserId = currentUser?.id;
+      const sessions = await Promise.all(clients.map(async (client) => ({ client, user: await getAuthUser(client) })));
+      const matchingClients = sessions.filter(({ user }) => currentUserId && user?.id === currentUserId).map(({ client }) => client);
+      const clientsToSignOut = matchingClients.length ? matchingClients : [activeClient].filter(Boolean);
+      const results = await Promise.allSettled(clientsToSignOut.map((client) => client.auth.signOut({ scope: "local" })));
       const failed = results.find((result) => result.status === "rejected" || result.value?.error);
       if (failed) {
         const error = failed.status === "rejected" ? failed.reason : failed.value.error;
