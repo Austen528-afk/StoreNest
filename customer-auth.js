@@ -6,6 +6,37 @@
   };
   let clientPromise = null;
 
+  async function ensureClientLibrary() {
+    if (!window.supabase) {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0";
+        script.onload = resolve;
+        script.onerror = () => reject(new Error("Unable to load secure sign-in. Check your connection and try again."));
+        document.head.appendChild(script);
+      });
+    }
+    if (!window.supabase) throw new Error("Secure sign-in is unavailable.");
+  }
+
+  async function getBusinessClient() {
+    if (window.StoreNestBusinessClient) return window.StoreNestBusinessClient;
+    await ensureClientLibrary();
+    window.StoreNestBusinessClient = window.supabase.createClient(CONFIG.url, CONFIG.key, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+    });
+    return window.StoreNestBusinessClient;
+  }
+
+  function hasBusinessSessionStorage() {
+    try {
+      const projectRef = new URL(CONFIG.url).hostname.split(".")[0];
+      return Boolean(window.localStorage.getItem("sb-" + projectRef + "-auth-token"));
+    } catch (_) {
+      return false;
+    }
+  }
+
   async function getClient() {
     if (window.StoreNestCustomerClient) {
       window.StoreNestMarketplaceActivity?.connect(window.StoreNestCustomerClient);
@@ -13,17 +44,8 @@
     }
     if (!clientPromise) {
       clientPromise = (async () => {
-        if (!window.supabase) {
-          await new Promise((resolve, reject) => {
-            const script = document.createElement("script");
-            script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0";
-            script.onload = resolve;
-            script.onerror = () => reject(new Error("Unable to load secure sign-in. Check your connection and try again."));
-            document.head.appendChild(script);
-          });
-        }
-        if (!window.supabase) throw new Error("Secure sign-in is unavailable.");
-        window.StoreNestCustomerClient = window.supabase.createClient(CONFIG.url, CONFIG.key, {
+        await ensureClientLibrary();
+        const customerClient = window.supabase.createClient(CONFIG.url, CONFIG.key, {
           auth: {
             persistSession: true,
             autoRefreshToken: true,
@@ -31,8 +53,21 @@
             storageKey: "storenest-customer-auth-v1"
           }
         });
-        window.StoreNestMarketplaceActivity?.connect(window.StoreNestCustomerClient);
-        return window.StoreNestCustomerClient;
+
+        let selectedClient = customerClient;
+        let businessClient = window.StoreNestBusinessClient || null;
+        if (!businessClient && hasBusinessSessionStorage()) businessClient = await getBusinessClient();
+        if (businessClient) {
+          const [customerResult, businessResult] = await Promise.all([
+            customerClient.auth.getUser(),
+            businessClient.auth.getUser()
+          ]);
+          if (!customerResult.data?.user && businessResult.data?.user) selectedClient = businessClient;
+        }
+
+        window.StoreNestCustomerClient = selectedClient;
+        window.StoreNestMarketplaceActivity?.connect(selectedClient);
+        return selectedClient;
       })().catch(error => {
         clientPromise = null;
         throw error;
@@ -40,7 +75,6 @@
     }
     return clientPromise;
   }
-
   function normalizePhone(value) {
     let digits = String(value || "").trim().replace(/[^0-9+]/g, "");
     if (digits.startsWith("00")) digits = "+" + digits.slice(2);
@@ -219,5 +253,5 @@
     return data;
   }
 
-  window.StoreNestCustomerAuth = { getClient, normalizePhone, normalizeEmail, sendCode, verifyCode, createAccount, resendConfirmation, sendExistingAccountCode, signInWithPassword, updatePassword, getProfile, saveProfile };
+  window.StoreNestCustomerAuth = { getClient, getBusinessClient, normalizePhone, normalizeEmail, sendCode, verifyCode, createAccount, resendConfirmation, sendExistingAccountCode, signInWithPassword, updatePassword, getProfile, saveProfile };
 })();

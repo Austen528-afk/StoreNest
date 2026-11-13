@@ -1028,7 +1028,7 @@ function updateMarketplaceMenuAuth(signedIn){
  menuSignOutAction.setAttribute("aria-label","Sign out of your customer account");
 }
 function showMenuFeedback(message){menuFeedback.textContent=message;menuFeedback.hidden=!message}
-publishersMenuAction.addEventListener("click",()=>showMenuFeedback("The Publishers platform link is not connected yet."));
+publishersMenuAction.addEventListener("click",()=>window.location.assign("/publisher.html"));
 async function initializeMarketplaceAuth(){
  if(!marketplaceAuthPromise){
   marketplaceAuthPromise=(async()=>{
