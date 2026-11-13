@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10171d">
+  <meta name="description" content="Manage your StoreNest Publisher account.">
+  <title>Publisher | StoreNest</title>
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/publisher.css">
+  <script src="/theme.js" defer></script>
+  <script src="/customer-auth.js" defer></script>
+  <script src="/publisher.js" defer></script>
+</head>
+<body class="publisher-page" data-page-kind="publisher">
+  <header class="publisher-topbar">
+    <a class="publisher-brand" href="/" aria-label="StoreNest home">
+      <span class="brand-mark" aria-hidden="true">S</span>
+      <span>StoreNest <small>Publisher</small></span>
+    </a>
+    <div class="publisher-top-actions">
+      <button class="theme-switch" data-theme-toggle type="button" aria-label="Switch to dark mode" aria-pressed="false">
+        <span class="theme-switch-icon" aria-hidden="true">☾</span>
+        <span class="theme-switch-label">Dark mode</span>
+      </button>
+      <a class="back-to-store" href="/">← <span>Back to StoreNest</span></a>
+    </div>
+  </header>
+
+  <main class="publisher-main">
+    <div id="publisherLoading" class="publisher-loading" role="status" aria-live="polite">
+      <span class="spinner" aria-hidden="true"></span>
+      <span>Opening Publisher…</span>
+    </div>
+
+    <section class="auth-view auth-choice" data-view="choice" hidden>
+      <div class="auth-intro">
+        <span class="eyebrow">STORENEST PUBLISHER</span>
+        <h1>Grow StoreNest with your own ideas.</h1>
+        <p>Use one StoreNest account to access your Publisher workspace. If you already use StoreNest as a consumer or business owner, keep using that account.</p>
+        <div class="auth-points">
+          <div><span class="point-icon" aria-hidden="true">01</span><span>One account across StoreNest</span></div>
+          <div><span class="point-icon" aria-hidden="true">02</span><span>A private Publisher workspace</span></div>
+          <div><span class="point-icon" aria-hidden="true">03</span><span>Built to grow with you</span></div>
+        </div>
+      </div>
+      <div class="auth-card">
+        <span class="eyebrow">GET STARTED</span>
+        <h2>Your Publisher account</h2>
+        <p class="card-copy">Sign in with your existing StoreNest details, or create one StoreNest account and register it as a Publisher.</p>
+        <div id="choiceMessage" class="form-message" role="alert" aria-live="polite" hidden></div>
+        <button class="primary-button full-button" id="startPublisherRegistration" type="button">Register as Publisher <span aria-hidden="true">→</span></button>
+        <button class="secondary-button full-button" id="openPublisherSignIn" type="button">Sign in</button>
+        <p class="privacy-note">Your Publisher profile is linked to your StoreNest account. You do not need a second account.</p>
+      </div>
+    </section>
+
+    <section class="auth-view single-auth-view" data-view="login" hidden>
+      <div class="auth-card auth-card-wide">
+        <a class="text-back" href="/" aria-label="Back to StoreNest">← Back to StoreNest</a>
+        <span class="eyebrow">WELCOME BACK</span>
+        <h1>Sign in to StoreNest</h1>
+        <p class="card-copy">Use the same email or phone number and password you use for StoreNest.</p>
+        <form id="publisherLoginForm" novalidate>
+          <fieldset class="method-fieldset">
+            <legend>Sign in with</legend>
+            <label class="method-option"><input type="radio" name="loginMethod" value="email" id="loginMethodEmail" checked> Email</label>
+            <label class="method-option"><input type="radio" name="loginMethod" value="phone" id="loginMethodPhone"> Phone</label>
+          </fieldset>
+          <label class="field" for="loginContact"><span id="loginContactLabel">Email address</span>
+            <input id="loginContact" type="email" autocomplete="username" required placeholder="you@example.com">
+          </label>
+          <label class="field" for="loginPassword">Password
+            <input id="loginPassword" type="password" autocomplete="current-password" required placeholder="Your StoreNest password">
+          </label>
+          <div id="loginMessage" class="form-message" role="alert" aria-live="polite" hidden></div>
+          <button class="primary-button full-button" id="loginSubmit" type="submit">Sign in <span aria-hidden="true">→</span></button>
+        </form>
+        <div class="auth-links">
+          <button class="text-button" id="openForgotPassword" type="button">Forgot password?</button>
+          <span>New to StoreNest? <button class="text-button" id="loginToRegister" type="button">Register as Publisher</button></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="auth-view single-auth-view" data-view="new-account" hidden>
+      <div class="auth-card auth-card-wide">
+        <button class="text-back" type="button" data-back-to-choice>← Back</button>
+        <span class="eyebrow">CREATE YOUR STORENEST ACCOUNT</span>
+        <h1>Register as a Publisher</h1>
+        <p class="card-copy">Create one StoreNest account, confirm your email or phone, and create your Publisher profile.</p>
+        <form id="newPublisherAccountForm" novalidate>
+          <label class="field" for="newAccountFullName">Full name
+            <input id="newAccountFullName" type="text" autocomplete="name" required minlength="2" maxlength="100" placeholder="Your full name">
+          </label>
+          <fieldset class="method-fieldset">
+            <legend>StoreNest sign-in contact</legend>
+            <label class="method-option"><input type="radio" name="newAccountMethod" value="email" id="newEmailMethod" checked> Email</label>
+            <label class="method-option"><input type="radio" name="newAccountMethod" value="phone" id="newPhoneMethod"> Phone</label>
+          </fieldset>
+          <label class="field" for="newAccountContact"><span id="newAccountContactLabel">Email address</span>
+            <input id="newAccountContact" type="email" autocomplete="email" required placeholder="you@example.com">
+          </label>
+          <label class="field" for="newAccountDisplayName">Publisher display name
+            <input id="newAccountDisplayName" type="text" required minlength="2" maxlength="80" placeholder="How you want to appear to businesses">
+            <small>This is the name shown on your Publisher profile.</small>
+          </label>
+          <div class="field-row">
+            <label class="field" for="newAccountPassword">Password
+              <input id="newAccountPassword" type="password" autocomplete="new-password" required minlength="8" placeholder="At least 8 characters">
+            </label>
+            <label class="field" for="newAccountPasswordConfirm">Confirm password
+              <input id="newAccountPasswordConfirm" type="password" autocomplete="new-password" required minlength="8" placeholder="Enter it again">
+            </label>
+          </div>
+          <details class="terms-details">
+            <summary>Read the Publisher Terms and Conditions</summary>
+            <div class="terms-copy">
+              <p>Your Publisher profile uses the StoreNest account you create here. Keep your sign-in details private and provide accurate account information.</p>
+              <p>This registration creates a Publisher account only. It does not promise or calculate commissions, payouts, business referrals, or campaign results. Separate terms will apply before those features are offered.</p>
+            </div>
+          </details>
+          <label class="terms-check"><input id="newAccountTerms" type="checkbox" required><span>I have read and accept the Publisher Terms and Conditions.</span></label>
+          <div id="newAccountMessage" class="form-message" role="alert" aria-live="polite" hidden></div>
+          <button class="primary-button full-button" id="newAccountSubmit" type="submit">Create account and continue <span aria-hidden="true">→</span></button>
+        </form>
+        <p class="form-footer">Already have a StoreNest account? <button class="text-button" id="newAccountToLogin" type="button">Sign in</button></p>
+      </div>
+    </section>
+
+    <section class="auth-view single-auth-view" data-view="verify" hidden>
+      <div class="auth-card auth-card-wide">
+        <span class="eyebrow">ACCOUNT CONFIRMATION</span>
+        <h1>Confirm your StoreNest account</h1>
+        <p class="card-copy">Enter the confirmation code sent to <strong id="verificationDestination"></strong>. Your Publisher profile is created after your account is confirmed.</p>
+        <form id="publisherVerifyForm" novalidate>
+          <label class="field" for="verificationCode">Confirmation code
+            <input id="verificationCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" required placeholder="Enter the code">
+          </label>
+          <div id="verificationMessage" class="form-message" role="alert" aria-live="polite" hidden></div>
+          <button class="primary-button full-button" id="verifySignupButton" type="submit">Confirm account <span aria-hidden="true">→</span></button>
+          <button class="text-button center-button" id="resendSignupCode" type="button">Resend confirmation code</button>
+        </form>
+        <button class="text-back" id="cancelSignupVerification" type="button">Use a different account</button>
+      </div>
+    </section>
+
+    <section class="auth-view single-auth-view" data-view="forgot" hidden>
+      <div class="auth-card auth-card-wide">
+        <button class="text-back" type="button" data-back-to-login>← Back to sign in</button>
+        <span class="eyebrow">ACCOUNT RECOVERY</span>
+        <h1>Reset your password</h1>
+        <p class="card-copy">Choose the email or phone number linked to your StoreNest account.</p>
+        <form id="forgotPasswordForm" novalidate>
+          <fieldset class="method-fieldset">
+            <legend>Recovery method</legend>
+            <label class="method-option"><input type="radio" name="recoveryMethod" value="email" id="recoveryMethodEmail" checked> Email</label>
+            <label class="method-option"><input type="radio" name="recoveryMethod" value="phone" id="recoveryMethodPhone"> Phone</label>
+          </fieldset>
+          <label class="field" for="recoveryContact"><span id="recoveryContactLabel">Email address</span>
+            <input id="recoveryContact" type="email" autocomplete="email" required placeholder="you@example.com">
+          </label>
+          <div id="recoveryMessage" class="form-message" role="status" aria-live="polite" hidden></div>
+          <button class="primary-button full-button" id="sendRecoveryButton" type="submit">Send recovery instructions <span aria-hidden="true">→</span></button>
+        </form>
+        <div id="phoneRecoveryCodePanel" class="recovery-code-panel" hidden>
+          <p class="card-copy">Enter the one-time code sent to <strong id="phoneRecoveryDestination"></strong>.</p>
+          <label class="field" for="phoneRecoveryCode">One-time code
+            <input id="phoneRecoveryCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Enter the code">
+          </label>
+          <button class="primary-button full-button" id="verifyPhoneRecovery" type="button">Confirm phone <span aria-hidden="true">→</span></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="auth-view single-auth-view" data-view="password-reset" hidden>
+      <div class="auth-card auth-card-wide">
+        <span class="eyebrow">SECURE YOUR ACCOUNT</span>
+        <h1>Choose a new password</h1>
+        <p class="card-copy">Use a password with at least 8 characters.</p>
+        <form id="newPasswordForm" novalidate>
+          <label class="field" for="resetNewPassword">New password
+            <input id="resetNewPassword" type="password" autocomplete="new-password" required minlength="8" placeholder="At least 8 characters">
+          </label>
+          <label class="field" for="resetNewPasswordConfirm">Confirm new password
+            <input id="resetNewPasswordConfirm" type="password" autocomplete="new-password" required minlength="8" placeholder="Enter it again">
+          </label>
+          <div id="resetMessage" class="form-message" role="alert" aria-live="polite" hidden></div>
+          <button class="primary-button full-button" id="saveNewPassword" type="submit">Save new password <span aria-hidden="true">→</span></button>
+        </form>
+      </div>
+    </section>
+
+    <section class="auth-view single-auth-view" data-view="publisher-register" hidden>
+      <div class="auth-card auth-card-wide">
+        <button class="text-back" type="button" id="existingRegistrationBack">← Back to StoreNest</button>
+        <span class="eyebrow">ONE STORENEST ACCOUNT</span>
+        <h1>Complete your Publisher profile</h1>
+        <p class="card-copy">Your StoreNest account is already signed in. Add a Publisher display name and accept the Publisher Terms to continue.</p>
+        <div class="account-summary">
+          <div><span>StoreNest account</span><strong id="registrationAccountName"></strong></div>
+          <div><span>Email</span><strong id="registrationAccountEmail"></strong></div>
+          <div><span>Phone</span><strong id="registrationAccountPhone"></strong></div>
+        </div>
+        <form id="existingPublisherForm" novalidate>
+          <label class="field" for="existingFullName">Full name
+            <input id="existingFullName" type="text" autocomplete="name" required minlength="2" maxlength="100" placeholder="Your full name">
+          </label>
+          <label class="field" for="existingDisplayName">Publisher display name
+            <input id="existingDisplayName" type="text" required minlength="2" maxlength="80" placeholder="How you want to appear to businesses">
+          </label>
+          <details class="terms-details">
+            <summary>Read the Publisher Terms and Conditions</summary>
+            <div class="terms-copy">
+              <p>Your Publisher profile uses your existing StoreNest account. Keep your sign-in details private and provide accurate account information.</p>
+              <p>This registration creates a Publisher account only. It does not promise or calculate commissions, payouts, business referrals, or campaign results. Separate terms will apply before those features are offered.</p>
+            </div>
+          </details>
+          <label class="terms-check"><input id="existingTerms" type="checkbox" required><span>I have read and accept the Publisher Terms and Conditions.</span></label>
+          <div id="existingPublisherMessage" class="form-message" role="alert" aria-live="polite" hidden></div>
+          <button class="primary-button full-button" id="existingPublisherSubmit" type="submit">Create Publisher profile <span aria-hidden="true">→</span></button>
+        </form>
+      </div>
+    </section>
+
+    <section class="auth-view single-auth-view" data-view="blocked" hidden>
+      <div class="auth-card auth-card-wide">
+        <span class="eyebrow">PUBLISHER ACCOUNT</span>
+        <h1>Publisher access is unavailable</h1>
+        <p class="card-copy" id="blockedMessage">This Publisher profile is not currently active. Contact StoreNest support if you think this is a mistake.</p>
+        <a class="primary-button full-button button-link" href="/">Return to StoreNest</a>
+      </div>
+    </section>
+
+    <section class="publisher-dashboard" data-view="dashboard" hidden>
+      <aside class="publisher-sidebar">
+        <div class="sidebar-identity">
+          <span class="publisher-avatar" id="sidebarInitials" aria-hidden="true">SN</span>
+          <span class="sidebar-identity-copy"><strong id="sidebarDisplayName">Publisher</strong><small>Publisher account</small></span>
+        </div>
+        <nav class="publisher-nav" aria-label="Publisher navigation">
+          <button type="button" data-section-link="overview" class="is-active"><span class="nav-icon" aria-hidden="true">⌂</span>Overview</button>
+          <button type="button" data-section-link="businesses"><span class="nav-icon" aria-hidden="true">▦</span>My Businesses</button>
+          <button type="button" data-section-link="earnings"><span class="nav-icon" aria-hidden="true">↗</span>Earnings &amp; Commissions</button>
+          <button type="button" data-section-link="recruitment"><span class="nav-icon" aria-hidden="true">＋</span>Recruitment</button>
+          <button type="button" data-section-link="campaigns"><span class="nav-icon" aria-hidden="true">◇</span>Campaigns</button>
+          <button type="button" data-section-link="messages"><span class="nav-icon" aria-hidden="true">▤</span>Messages</button>
+          <button type="button" data-section-link="analytics"><span class="nav-icon" aria-hidden="true">⌁</span>Analytics</button>
+          <button type="button" data-section-link="settings"><span class="nav-icon" aria-hidden="true">⚙</span>Settings</button>
+        </nav>
+        <div class="sidebar-bottom">
+          <a href="/" class="sidebar-home">← Back to StoreNest</a>
+          <button type="button" class="sidebar-signout" data-signout>Sign out</button>
+        </div>
+      </aside>
+
+      <div class="publisher-workspace">
+        <div class="dashboard-topline">
+          <div>
+            <span class="eyebrow">STORENEST PUBLISHER</span>
+            <h1 id="dashboardHeading">Overview</h1>
+          </div>
+          <div class="dashboard-top-actions">
+            <span class="status-pill" id="publisherStatusPill">Active</span>
+            <a class="dashboard-home-link" href="/">StoreNest home <span aria-hidden="true">↗</span></a>
+          </div>
+        </div>
+
+        <section class="dashboard-panel" id="overviewPanel" data-dashboard-panel="overview">
+          <div class="welcome-card">
+            <div class="welcome-copy">
+              <span class="eyebrow">YOUR PUBLISHER WORKSPACE</span>
+              <h2>Welcome, <span id="welcomeFullName">Publisher</span></h2>
+              <p>Your Publisher account is ready. Use this workspace to keep your StoreNest work organised as the Publisher tools are developed.</p>
+              <span class="welcome-meta">Member since <strong id="memberSince">—</strong></span>
+            </div>
+            <div class="welcome-art" aria-hidden="true"><span class="art-orbit orbit-one"></span><span class="art-orbit orbit-two"></span><span class="art-center">S</span></div>
+          </div>
+          <div class="overview-section-head">
+            <div><span class="eyebrow">WORKSPACE</span><h2>Your Publisher sections</h2></div>
+            <p>Open a section to see its current status.</p>
+          </div>
+          <div class="section-shortcuts">
+            <button type="button" data-section-link="businesses"><span class="shortcut-icon">▦</span><span><strong>My Businesses</strong><small>Businesses linked to your publisher profile</small></span><span class="shortcut-arrow">→</span></button>
+            <button type="button" data-section-link="earnings"><span class="shortcut-icon">↗</span><span><strong>Earnings &amp; Commissions</strong><small>Publisher earnings and commission records</small></span><span class="shortcut-arrow">→</span></button>
+            <button type="button" data-section-link="recruitment"><span class="shortcut-icon">＋</span><span><strong>Recruitment</strong><small>Tools for bringing businesses to StoreNest</small></span><span class="shortcut-arrow">→</span></button>
+            <button type="button" data-section-link="settings"><span class="shortcut-icon">⚙</span><span><strong>Settings</strong><small>Your Publisher profile and StoreNest account</small></span><span class="shortcut-arrow">→</span></button>
+          </div>
+          <div class="account-status-card">
+            <span class="status-check" aria-hidden="true">✓</span>
+            <div><strong>Publisher profile active</strong><p>Your profile is connected to your StoreNest account.</p></div>
+            <span class="status-pill" id="overviewStatus">Active</span>
+          </div>
+        </section>
+
+        <section class="dashboard-panel" id="businessesPanel" data-dashboard-panel="businesses" hidden>
+          <div class="panel-intro"><span class="eyebrow">YOUR NETWORK</span><h2>My Businesses</h2><p>Businesses connected to your Publisher profile will appear here.</p></div>
+          <div class="empty-state"><span class="empty-icon" aria-hidden="true">▦</span><h3>No businesses linked yet</h3><p>Business recruitment and referral tracking are not active yet. When those tools are available, your linked businesses will appear here.</p></div>
+        </section>
+
+        <section class="dashboard-panel" id="earningsPanel" data-dashboard-panel="earnings" hidden>
+          <div class="panel-intro"><span class="eyebrow">PUBLISHER FINANCES</span><h2>Earnings &amp; Commissions</h2><p>Commission and payout information will be shown here when those systems are introduced.</p></div>
+          <div class="empty-state"><span class="empty-icon" aria-hidden="true">↗</span><h3>No earnings data</h3><p>No commission or payout records are available for this Publisher profile yet.</p></div>
+        </section>
+
+        <section class="dashboard-panel" id="recruitmentPanel" data-dashboard-panel="recruitment" hidden>
+          <div class="panel-intro"><span class="eyebrow">GROW YOUR NETWORK</span><h2>Recruitment</h2><p>Plan and manage how you introduce businesses to StoreNest.</p></div>
+          <div class="empty-state"><span class="empty-icon" aria-hidden="true">＋</span><h3>Recruitment tools are coming later</h3><p>This section is ready for future recruitment tools. No invitations or referrals have been created.</p></div>
+        </section>
+
+        <section class="dashboard-panel" id="campaignsPanel" data-dashboard-panel="campaigns" hidden>
+          <div class="panel-intro"><span class="eyebrow">YOUR INITIATIVES</span><h2>Campaigns</h2><p>Manage publisher campaigns here when campaign tools are available.</p></div>
+          <div class="empty-state"><span class="empty-icon" aria-hidden="true">◇</span><h3>No campaigns yet</h3><p>Campaign planning and tracking are not active in this foundation release.</p></div>
+        </section>
+
+        <section class="dashboard-panel" id="messagesPanel" data-dashboard-panel="messages" hidden>
+          <div class="panel-intro"><span class="eyebrow">COMMUNICATION</span><h2>Messages</h2><p>Messages related to your Publisher work will appear here.</p></div>
+          <div class="empty-state"><span class="empty-icon" aria-hidden="true">▤</span><h3>No Publisher messages</h3><p>Publisher messaging is not active yet. No messages are being shown.</p></div>
+        </section>
+
+        <section class="dashboard-panel" id="analyticsPanel" data-dashboard-panel="analytics" hidden>
+          <div class="panel-intro"><span class="eyebrow">PERFORMANCE</span><h2>Analytics</h2><p>Publisher activity and performance reporting will appear here when the underlying data is available.</p></div>
+          <div class="empty-state"><span class="empty-icon" aria-hidden="true">⌁</span><h3>No analytics data</h3><p>Publisher analytics have not been activated. No figures are displayed.</p></div>
+        </section>
+
+        <section class="dashboard-panel" id="settingsPanel" data-dashboard-panel="settings" hidden>
+          <div class="panel-intro"><span class="eyebrow">ACCOUNT</span><h2>Settings</h2><p>Review your Publisher profile and StoreNest account details.</p></div>
+          <div class="settings-card">
+            <form id="publisherSettingsForm" novalidate>
+              <h3>Publisher profile</h3>
+              <label class="field" for="settingsDisplayName">Publisher display name
+                <input id="settingsDisplayName" type="text" required minlength="2" maxlength="80" autocomplete="nickname">
+              </label>
+              <div id="settingsMessage" class="form-message" role="status" aria-live="polite" hidden></div>
+              <button class="primary-button" id="savePublisherSettings" type="submit">Save display name</button>
+            </form>
+            <div class="settings-divider"></div>
+            <div class="account-details">
+              <h3>StoreNest account</h3>
+              <dl>
+                <div><dt>Full name</dt><dd id="settingsFullName">—</dd></div>
+                <div><dt>Registered email</dt><dd id="settingsEmail">—</dd></div>
+                <div><dt>Registered phone</dt><dd id="settingsPhone">—</dd></div>
+              </dl>
+              <a class="secondary-button inline-button" href="/customer-account.html?mode=settings">Open StoreNest account settings <span aria-hidden="true">↗</span></a>
+            </div>
+            <div class="settings-divider"></div>
+            <div class="signout-panel">
+              <div><h3>Sign out</h3><p>Sign out of this StoreNest account on this device.</p></div>
+              <button class="secondary-button" type="button" data-signout>Sign out</button>
+            </div>
+          </div>
+        </section>
+
+        <footer class="publisher-footer"><span>StoreNest Publisher</span><a href="/">Return to StoreNest</a></footer>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
