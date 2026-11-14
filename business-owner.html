@@ -2154,7 +2154,7 @@ function renderBusinessOrders(rows){
   const collectionPinAction=order.status==="ready"
    ?'<div class="owner-order-pin-check"><label>Customer collection PIN<input type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" data-collection-pin placeholder="6 digits"></label><button type="button" class="owner-order-action" data-verify-collection-pin data-order-id="'+escapeHtml(order.id)+'">Verify PIN &amp; mark collected</button><small>Ask the customer for the PIN when they arrive.</small></div>'
    :"";
-  const cashPaymentAction=order.payment_method==="pay_on_collection"&&order.payment_status==="unpaid"&&["ready","completed"].includes(order.status)
+  const cashPaymentAction=order.payment_method==="pay_on_collection"&&order.payment_status==="unpaid"&&order.status==="completed"
    ?'<div class="owner-order-cash-confirm"><button type="button" class="owner-order-action owner-order-action-cash" data-confirm-cash-payment data-order-id="'+escapeHtml(order.id)+'">Confirm cash received</button><small>Confirm '+formatOrderMoney(order.subtotal)+' received. This marks the order as paid.</small></div>'
    :"";
   const actionMarkup=progressAction||collectionPinAction||cashPaymentAction?'<div class="owner-order-actions">'+progressAction+collectionPinAction+cashPaymentAction+'</div>':"";
@@ -2214,10 +2214,10 @@ async function advanceStorefrontOrder(orderId,nextStatus,button){
 }
 async function confirmStorefrontCashPayment(orderId,button){
  const current=ownerOrdersRows.find(row=>row.id===orderId);
- if(!current||!currentBusiness||current.payment_method!=="pay_on_collection"||current.payment_status!=="unpaid"||!["ready","completed"].includes(current.status))return;
+ if(!current||!currentBusiness||current.payment_method!=="pay_on_collection"||current.payment_status!=="unpaid"||current.status!=="completed")return;
  const ref=String(current.id||"").replace(/-/g,"").slice(0,8).toUpperCase();
  const amount=formatOrderMoney(current.subtotal);
- if(!window.confirm("Confirm that "+amount+" in cash was received for order #"+ref+"? This will mark the order as paid."))return;
+ if(!window.confirm("Confirm that "+amount+" in cash was received and order #"+ref+" was collected? This will mark the order as paid."))return;
  button.disabled=true;button.textContent="Recording…";
  try{
   const client=await loadAuth();
