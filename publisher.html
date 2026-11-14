@@ -258,12 +258,20 @@
         <h1 class="publisher-visually-hidden" id="dashboardHeading">Overview</h1>
 
         <section class="dashboard-panel" id="overviewPanel" data-dashboard-panel="overview">
-          <div class="welcome-card">
+          <div class="welcome-card" id="publisherWelcomeCard" data-welcome-slide="welcome">
+            <div class="welcome-backdrop" aria-hidden="true">
+              <span class="welcome-glow welcome-glow--welcome"></span>
+              <span class="welcome-glow welcome-glow--ready"></span>
+              <span class="welcome-glow welcome-glow--attention"></span>
+              <span class="welcome-glow welcome-glow--recommendations"></span>
+            </div>
             <span class="status-pill welcome-status-pill" id="publisherStatusPill">Active</span>
             <div class="welcome-copy">
-              <span class="eyebrow">YOUR PUBLISHER WORKSPACE</span>
-              <h2>Welcome, <span id="welcomeFullName">Publisher</span></h2>
-              <p>Your Publisher account is ready. Use this workspace to keep your StoreNest work organised as the Publisher tools are developed.</p>
+              <span class="eyebrow" id="welcomeStoryEyebrow">YOUR PUBLISHER WORKSPACE</span>
+              <div class="welcome-message">
+                <h2 id="welcomeStoryTitle">Welcome, Publisher</h2>
+                <p id="welcomeStoryDescription">Your Publisher workspace is ready.</p>
+              </div>
               <span class="welcome-meta">Member since <strong id="memberSince">—</strong></span>
             </div>
             <div class="welcome-art" aria-hidden="true"><span class="art-orbit orbit-one"></span><span class="art-orbit orbit-two"></span><span class="art-center">S</span></div>
