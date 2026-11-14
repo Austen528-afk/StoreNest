@@ -52,6 +52,155 @@
     }).format(parsed);
   }
 
+
+  function formatRand(value) {
+    const amount = Number(value);
+    return "R" + (Number.isFinite(amount) ? amount : 0).toFixed(2);
+  }
+
+  function renderCommissionReport(rows) {
+    const records = Array.isArray(rows) ? rows : [];
+    const performance = $("publisherCommissionPerformanceRows");
+    const balance = $("publisherCommissionBalanceRows");
+    performance.replaceChildren();
+    balance.replaceChildren();
+
+    if (!records.length) {
+      const performanceRow = document.createElement("tr");
+      const performanceCell = document.createElement("td");
+      performanceCell.colSpan = 6;
+      performanceCell.className = "center";
+      performanceCell.textContent = "No referred business commission records yet.";
+      performanceRow.appendChild(performanceCell);
+      performance.appendChild(performanceRow);
+
+      const balanceRow = document.createElement("tr");
+      const balanceCell = document.createElement("td");
+      balanceCell.colSpan = 5;
+      balanceCell.className = "center";
+      balanceCell.textContent = "No Publisher commission balances yet.";
+      balanceRow.appendChild(balanceCell);
+      balance.appendChild(balanceRow);
+      $("publisherCommissionPerformanceStatus").textContent = "No records";
+      $("publisherCommissionBalanceStatus").textContent = "No records";
+      return;
+    }
+
+    records.forEach((record) => {
+      const recordType = record.is_test === true ? "TEST · not payable" : "Live";
+      const performanceRow = document.createElement("tr");
+      addCell(performanceRow, record.publisher_name || "Publisher");
+      addCell(performanceRow, record.business_name || "Referred business");
+      addCell(performanceRow, formatRand(record.sales_generated));
+      addCell(performanceRow, formatRand(record.platform_fees_collected));
+      addCell(performanceRow, formatRand(record.outstanding_platform_fees));
+      const typeCell = document.createElement("td");
+      if (record.is_test === true) {
+        const badge = document.createElement("span");
+        badge.className = "commission-test-tag";
+        badge.textContent = recordType;
+        typeCell.appendChild(badge);
+      } else {
+        typeCell.textContent = recordType;
+      }
+      performanceRow.appendChild(typeCell);
+      performance.appendChild(performanceRow);
+
+      const balanceRow = document.createElement("tr");
+      addCell(balanceRow, record.publisher_name || "Publisher");
+      addCell(balanceRow, record.business_name || "Referred business");
+      addCell(balanceRow, formatRand(record.publisher_commission_earned));
+      addCell(balanceRow, formatRand(record.publisher_commission_pending));
+      const balanceTypeCell = document.createElement("td");
+      if (record.is_test === true) {
+        const badge = document.createElement("span");
+        badge.className = "commission-test-tag";
+        badge.textContent = recordType;
+        balanceTypeCell.appendChild(badge);
+      } else {
+        balanceTypeCell.textContent = recordType;
+      }
+      balanceRow.appendChild(balanceTypeCell);
+      balance.appendChild(balanceRow);
+    });
+
+    const summary = records.length + (records.length === 1 ? " business record" : " business records");
+    $("publisherCommissionPerformanceStatus").textContent = summary;
+    $("publisherCommissionBalanceStatus").textContent = summary;
+  }
+
+  function renderCommissionReportError() {
+    const performance = $("publisherCommissionPerformanceRows");
+    const balance = $("publisherCommissionBalanceRows");
+    performance.replaceChildren();
+    balance.replaceChildren();
+    const performanceRow = document.createElement("tr");
+    const performanceCell = document.createElement("td");
+    performanceCell.colSpan = 6;
+    performanceCell.className = "center";
+    performanceCell.textContent = "Commission performance could not be loaded.";
+    performanceRow.appendChild(performanceCell);
+    performance.appendChild(performanceRow);
+    const balanceRow = document.createElement("tr");
+    const balanceCell = document.createElement("td");
+    balanceCell.colSpan = 5;
+    balanceCell.className = "center";
+    balanceCell.textContent = "Commission balances could not be loaded.";
+    balanceRow.appendChild(balanceCell);
+    balance.appendChild(balanceRow);
+    $("publisherCommissionPerformanceStatus").textContent = "Unavailable";
+    $("publisherCommissionBalanceStatus").textContent = "Unavailable";
+  }
+
+  async function loadCommissionReport() {
+    try {
+      const { data, error } = await client.rpc("get_platform_admin_publisher_commission_report");
+      if (error) throw error;
+      renderCommissionReport(data);
+    } catch (error) {
+      console.error("Could not load the Publisher commission report:", error);
+      renderCommissionReportError();
+    }
+  }
+
+  function setTestFeedback(message, error = false) {
+    const feedback = $("publisherCommissionTestFeedback");
+    feedback.textContent = message || "";
+    feedback.hidden = !message;
+    feedback.dataset.state = error ? "error" : "success";
+  }
+
+  async function runPublisherCommissionTest1() {
+    const button = $("runPublisherCommissionTest1");
+    if (!client || !activeUser || !window.confirm(
+      "Run the controlled Test 1 for LEON and Dino? It creates one isolated, clearly marked test record and does not publish a storefront, process a payment, recover a fee, or pay a commission."
+    )) return;
+
+    button.disabled = true;
+    button.textContent = "Running Test 1…";
+    setTestFeedback("");
+    try {
+      const { data, error } = await client.rpc("run_publisher_commission_test_1");
+      if (error) throw error;
+      const result = Array.isArray(data) ? data[0] : data;
+      if (!result || Number(result.fee_record_count) !== 1 || Number(result.commission_record_count) !== 1) {
+        throw new Error("Test 1 did not return exactly one persisted fee record and one commission record.");
+      }
+      setTestFeedback(
+        "Test 1 verified for " + (result.business_name || "Dino") + ": " +
+        formatRand(result.outstanding_fees) + " outstanding fee and " +
+        formatRand(result.commission_pending) + " pending commission. One fee record and one commission record remain after repeated confirmation. Test data is non-payable."
+      );
+      await loadReferrals();
+    } catch (error) {
+      console.error("Publisher Test 1 could not be completed:", error);
+      setTestFeedback(error?.message || "Test 1 could not be completed.", true);
+    } finally {
+      button.disabled = false;
+      button.textContent = "Run Test 1";
+    }
+  }
+
   function renderReferrals(rows) {
     const table = $("publisherReferralRows");
     table.replaceChildren();
@@ -110,6 +259,7 @@
     $("adminSignedInAs").textContent = activeUser?.email || "Administrator";
     authPanel.hidden = true;
     workspace.hidden = false;
+    await loadCommissionReport();
     const note = document.querySelector(".demo-note");
     if (note) note.innerHTML = "<strong>Live referral reporting.</strong> Publisher registration totals are connected to StoreNest accounts.";
   }
@@ -162,6 +312,7 @@
   $("adminSwitchAccount").addEventListener("click", signOutAndSwitch);
   $("adminSignOut").addEventListener("click", signOutAndSwitch);
   $("refreshPublisherRecruitment").addEventListener("click", loadReferrals);
+  $("runPublisherCommissionTest1").addEventListener("click", runPublisherCommissionTest1);
 
   async function initialize() {
     try {
