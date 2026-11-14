@@ -420,18 +420,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, summary:focus-visibl
   inset: -36%;
   opacity: 0;
   transition: opacity 1.1s ease;
-  animation: welcomeGlowDrift 22s ease-in-out infinite alternate;
 }
 .welcome-glow--welcome { background: linear-gradient(112deg, #172d25 0%, #1e4638 68%, #286754 100%); }
 .welcome-glow--ready { background: linear-gradient(112deg, #15332d 0%, #205345 64%, #36846b 100%); }
 .welcome-glow--attention { background: linear-gradient(112deg, #172d3d 0%, #20505a 65%, #3a7868 100%); }
+.welcome-glow--recommendations { background: linear-gradient(112deg, #18382f 0%, #27614b 65%, #438467 100%); }
 .welcome-card[data-welcome-slide="welcome"] .welcome-glow--welcome,
 .welcome-card[data-welcome-slide="ready"] .welcome-glow--ready,
-.welcome-card[data-welcome-slide="attention"] .welcome-glow--attention { opacity: 1; }
-@keyframes welcomeGlowDrift {
-  from { transform: translate(-1.5%, 1%) scale(1); }
-  to { transform: translate(1.5%, -1%) scale(1.08); }
-}
+.welcome-card[data-welcome-slide="attention"] .welcome-glow--attention,
+.welcome-card[data-welcome-slide="recommendations"] .welcome-glow--recommendations { opacity: 1; }
 .welcome-copy { position: relative; z-index: 1; max-width: 590px; }
 .welcome-card .eyebrow { color: #9be9cc; }
 .welcome-copy > .eyebrow,

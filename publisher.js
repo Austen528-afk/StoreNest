@@ -26,7 +26,7 @@
   let isSigningOut = false;
   let activeView = "loading";
   let registeredAuthListeners = false;
-  let welcomeStoryInterval = null;
+  let welcomeStoryTimer = null;
   let welcomeStorySwapTimeout = null;
 
   function setView(view) {
@@ -386,7 +386,7 @@
     const description = $("welcomeStoryDescription");
     if (!card || !eyebrow || !title || !description) return;
 
-    if (welcomeStoryInterval) window.clearInterval(welcomeStoryInterval);
+    if (welcomeStoryTimer) window.clearTimeout(welcomeStoryTimer);
     if (welcomeStorySwapTimeout) window.clearTimeout(welcomeStorySwapTimeout);
     card.classList.remove("is-changing");
 
@@ -407,7 +407,13 @@
         key: "attention",
         eyebrow: "AI INSIGHTS",
         title: "AI detected elements that might need attention.",
-        description: "AI insights will appear here as the Publisher tools are developed."
+        description: "AI reflections and recommendations for your StoreNest work."
+      },
+      {
+        key: "recommendations",
+        eyebrow: "AI REFLECTIONS & RECOMMENDATIONS",
+        title: "AI reflections and recommendations",
+        description: "Personalized guidance will appear here as the Publisher tools are developed."
       }
     ];
 
@@ -422,15 +428,30 @@
 
     applySlide(currentIndex);
     const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
-    welcomeStoryInterval = window.setInterval(() => {
-      if (document.hidden || card.matches(":hover")) return;
+    const advance = () => {
+      if (document.hidden || card.matches(":hover")) {
+        welcomeStoryTimer = window.setTimeout(advance, 1000);
+        return;
+      }
+
+      const nextIndex = currentIndex + 1;
+      if (nextIndex >= slides.length) return;
+
       card.classList.add("is-changing");
       welcomeStorySwapTimeout = window.setTimeout(() => {
-        currentIndex = (currentIndex + 1) % slides.length;
+        currentIndex = nextIndex;
         applySlide(currentIndex);
         window.requestAnimationFrame(() => card.classList.remove("is-changing"));
+
+        if (currentIndex < slides.length - 1) {
+          welcomeStoryTimer = window.setTimeout(advance, 7200);
+        } else {
+          welcomeStoryTimer = null;
+        }
       }, prefersReducedMotion ? 0 : 420);
-    }, 7200);
+    };
+
+    welcomeStoryTimer = window.setTimeout(advance, 7200);
   }
 
   function renderDashboard() {
