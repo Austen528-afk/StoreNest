@@ -277,7 +277,7 @@
   function buildPublisherReferralLink() {
     const code = String(publisherProfile?.referral_code || "").trim();
     if (!code) return "";
-    const url = new URL("/business-owner.html", window.location.origin);
+    const url = new URL("/", window.location.origin);
     url.searchParams.set("ref", code);
     return url.toString();
   }
