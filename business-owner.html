@@ -763,6 +763,16 @@ html[data-theme="dark"] .dashboard-header-reopen:hover{background:#2d4540}
 <div class="message" role="status" aria-live="polite" hidden></div>
 <p class="switch-row">Already registered? <button type="button" class="link-button" data-switch="login">Log in</button></p>
 </form>
+<form class="auth-view" data-view="verify-email" id="emailVerificationForm" hidden>
+<div class="back-row"><button class="link-button" type="button" data-switch="login">← Back to log in</button></div>
+<h2>Confirm your StoreNest account</h2>
+<p class="sub">Enter the confirmation code sent to <strong id="verificationEmailSummary">your email address</strong>.</p>
+<div class="field"><label for="verificationEmail">Email address</label><input id="verificationEmail" name="email" type="email" autocomplete="email" placeholder="you@example.com" required></div>
+<div class="field"><label for="verificationCode">Confirmation code</label><input id="verificationCode" name="token" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="12" placeholder="Enter the code" required></div>
+<button class="button button-primary" type="submit">Confirm account →</button>
+<div class="message" role="status" aria-live="polite" hidden></div>
+<p class="switch-row">Code expired or missing? <button type="button" class="link-button" id="resendConfirmationCode">Resend confirmation code</button></p>
+</form>
 <form class="auth-view" data-view="login" id="loginForm" hidden>
 <div class="back-row"><button class="link-button" type="button" data-switch="start">← Back</button></div>
 <h2>Welcome back</h2>
@@ -773,6 +783,7 @@ html[data-theme="dark"] .dashboard-header-reopen:hover{background:#2d4540}
 <button class="button button-primary" type="submit">Log in</button>
 <div class="message" role="status" aria-live="polite" hidden></div>
 <p class="switch-row">New to StoreNest? <button type="button" class="link-button" data-switch="register">Create an account</button></p>
+<p class="switch-row">Have a confirmation code? <button type="button" class="link-button" data-switch="verify-email">Enter code</button></p>
 </form>
 <form class="auth-view" data-view="forgot" id="forgotForm" hidden>
 <div class="back-row"><button class="link-button" type="button" data-switch="login">← Back to login</button></div>
@@ -1158,7 +1169,7 @@ menuToggle.addEventListener("click",()=>setMenuOpen(siteMenu.hidden));
 document.addEventListener("click",event=>{if(!menuContainer.contains(event.target))setMenuOpen(false)});
 function clearMessages(){document.querySelectorAll(".message").forEach(el=>{el.hidden=true;el.textContent="";el.classList.remove("error","success")})}
 function showMessage(view,message,type="error") {const el=document.querySelector('[data-view="'+view+'"] .message');if(!el)return;el.textContent=message;el.classList.remove("error","success");el.classList.add(type);el.hidden=false}
-function showView(view){if(!["start","register","login","forgot","new-password","account"].includes(view))view="start";activeView=view;clearMessages();authViews.forEach(el=>{el.hidden=el.dataset.view!==view});const panel=$("accountPanel");panel.classList.toggle("dashboard-mode",view==="account");panel.scrollTop=0;setMenuOpen(false)}
+function showView(view){if(!["start","register","login","forgot","verify-email","new-password","account"].includes(view))view="start";activeView=view;clearMessages();authViews.forEach(el=>{el.hidden=el.dataset.view!==view});const panel=$("accountPanel");panel.classList.toggle("dashboard-mode",view==="account");panel.scrollTop=0;setMenuOpen(false)}
 function isConfigured(){return /^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(STORE_AUTH.url)&&/^(sb_publishable_|eyJ)/.test(STORE_AUTH.publishableKey)}
 async function loadAuth(){if(!isConfigured())throw new Error("StoreNest account registration is not connected yet.");if(authClient)return authClient;if(!window.supabase)await new Promise((resolve,reject)=>{const script=document.createElement("script");script.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0";script.onload=resolve;script.onerror=()=>reject(new Error("Unable to load the sign-in service. Check your internet connection."));document.head.appendChild(script)});if(!window.supabase)throw new Error("The sign-in service could not be loaded.");authClient=window.supabase.createClient(STORE_AUTH.url,STORE_AUTH.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});window.StoreNestBusinessClient=authClient;window.dispatchEvent(new CustomEvent("storenest:business-client-ready",{detail:{client:authClient}}));authClient.auth.onAuthStateChange((event,session)=>{if(event==="PASSWORD_RECOVERY"){recovering=true;showView("new-password");return}if(event==="SIGNED_OUT"){recovering=false;currentUser=null;currentBusiness=null;ownerBusinesses=[];showView("login");return}if(event==="SIGNED_IN"&&!recovering&&!signingIn&&session?.user)activateDashboard(session.user).catch(error=>showToast(friendlyError(error),true))});return authClient}
 const PUBLISHER_REFERRAL_STORAGE_KEY="storenest-publisher-referral";
@@ -1200,6 +1211,27 @@ function businessOwnerReferralRedirectUrl(){
  return url.toString();
 }
 rememberPublisherReferralFromUrl();
+const OWNER_PENDING_CONFIRMATION_EMAIL_KEY="storenest-owner-pending-confirmation-email";
+const OWNER_PENDING_CONFIRMATION_NAME_KEY="storenest-owner-pending-confirmation-name";
+function getPendingOwnerConfirmationEmail(){
+ try{return String(localStorage.getItem(OWNER_PENDING_CONFIRMATION_EMAIL_KEY)||"").trim().toLowerCase()}catch{return ""}
+}
+function getPendingOwnerConfirmationName(){
+ try{return String(localStorage.getItem(OWNER_PENDING_CONFIRMATION_NAME_KEY)||"").trim()}catch{return ""}
+}
+function rememberOwnerConfirmation(email,fullName=""){
+ const normalized=String(email||"").trim().toLowerCase();
+ if(!normalized)return;
+ try{localStorage.setItem(OWNER_PENDING_CONFIRMATION_EMAIL_KEY,normalized);if(fullName)localStorage.setItem(OWNER_PENDING_CONFIRMATION_NAME_KEY,String(fullName).trim().slice(0,100))}catch{}
+ $("verificationEmail").value=normalized;
+ $("verificationEmailSummary").textContent=normalized;
+ $("verificationCode").value="";
+ showView("verify-email");
+}
+function clearOwnerConfirmation(){
+ try{localStorage.removeItem(OWNER_PENDING_CONFIRMATION_EMAIL_KEY);localStorage.removeItem(OWNER_PENDING_CONFIRMATION_NAME_KEY)}catch{}
+ const input=$("verificationCode");if(input)input.value="";
+}
 async function upsertOwnerProfile(client,user,fallbackName=""){
  if(!user?.id)return;
  const fullName=String(user.user_metadata?.full_name||fallbackName).trim().slice(0,100);
@@ -1210,7 +1242,7 @@ async function upsertOwnerProfile(client,user,fallbackName=""){
   p_referral_code:referralCode||null
  });
  if(error)throw error;
- if(referralCode)clearPendingPublisherReferralCode();
+ if(referralCode)clearPendingPublisherReferralCode();clearOwnerConfirmation();
 }
 function friendlyError(error){if(!error)return"Something went wrong. Please try again.";if(/invalid login credentials/i.test(error.message))return"Incorrect email address or password.";if(/email not confirmed/i.test(error.message))return"Please verify your email address, then try logging in.";if(/rate limit|over_email_send_rate_limit/i.test(error.message))return"Too many attempts. Please try again later.";if(/row-level security|permission denied/i.test(error.message))return"StoreNest could not save that change. Check your account access and try again.";return error.message||"Something went wrong. Please try again."}
 function busy(form,state){const button=form.querySelector('button[type="submit"]');if(!button)return;if(state){button.dataset.original=button.textContent;button.textContent="Please wait…";button.disabled=true}else{button.textContent=button.dataset.original||button.textContent;button.disabled=false}}
@@ -2330,7 +2362,36 @@ function populateMobileNav(){const mobile=$("mobileNavList");mobile.replaceChild
 async function addCategory(name){const client=await loadAuth();const clean=name.trim();if(!clean)throw Error("Enter a section name.");const id=$("categoryEditId").value;const payload={name:clean,display_style:$("categoryStyle").value,marketplace_category:$("categoryMarketplace").value,description:$("categoryDescription").value.trim()};const query=id?client.from("business_categories").update(payload).eq("id",id).eq("business_id",currentBusiness.id):client.from("business_categories").insert({...payload,business_id:currentBusiness.id,display_order:businessCategories.length});const {data,error}=await query.select("*").single();if(error)throw error;await loadBusinessData();$("itemCategory").value=data.id;closeModal($("categoryModal"));showToast(id?"Section updated.":"Section created.")}
 function handleModalClose(event){const close=event.target.closest("[data-close-modal]");if(close){const modal=close.closest(".modal-backdrop");closeModal(modal)}}
 document.querySelectorAll("[data-switch]").forEach(control=>control.addEventListener("click",event=>{event.preventDefault();const view=control.dataset.switch;history.replaceState(null,"",location.pathname+location.search+"#"+view);showView(view)}));
-$("registerForm").addEventListener("submit",async event=>{event.preventDefault();const form=event.currentTarget,name=$("registerName").value.trim(),email=$("registerEmail").value.trim(),password=$("registerPassword").value,confirm=$("registerConfirm").value;if(name.length<2){showMessage("register","Please enter your full name.");return}if(password.length<8){showMessage("register","Password must contain at least 8 characters.");return}if(password!==confirm){showMessage("register","Your passwords do not match.");return}busy(form,true);signingIn=true;try{const client=await loadAuth();const {data,error}=await client.auth.signUp({email,password,options:{data:{full_name:name},emailRedirectTo:businessOwnerReferralRedirectUrl()}});if(error)throw error;if(data.session?.user){await upsertOwnerProfile(client,data.user,name);await activateDashboard(data.user)}else showMessage("register","Check your email for a confirmation link. Once confirmed, return here and log in.","success")}catch(error){showMessage("register",friendlyError(error))}finally{signingIn=false;busy(form,false)}});
+$("registerForm").addEventListener("submit",async event=>{event.preventDefault();const form=event.currentTarget,name=$("registerName").value.trim(),email=$("registerEmail").value.trim(),password=$("registerPassword").value,confirm=$("registerConfirm").value;if(name.length<2){showMessage("register","Please enter your full name.");return}if(password.length<8){showMessage("register","Password must contain at least 8 characters.");return}if(password!==confirm){showMessage("register","Your passwords do not match.");return}busy(form,true);signingIn=true;try{const client=await loadAuth();const {data,error}=await client.auth.signUp({email,password,options:{data:{full_name:name},emailRedirectTo:businessOwnerReferralRedirectUrl()}});if(error)throw error;if(data.session?.user){await upsertOwnerProfile(client,data.user,name);await activateDashboard(data.user)}else{rememberOwnerConfirmation(email,name);showMessage("verify-email","A confirmation code was sent to "+email+". Enter it below to verify your account. Check spam if you do not see it.","success")}}catch(error){showMessage("register",friendlyError(error))}finally{signingIn=false;busy(form,false)}});
+$("emailVerificationForm").addEventListener("submit",async event=>{
+ event.preventDefault();
+ const form=event.currentTarget,email=$("verificationEmail").value.trim().toLowerCase(),token=$("verificationCode").value.trim().replace(/\s+/g,"");
+ if(!email||!token){showMessage("verify-email","Enter your email address and confirmation code.");return}
+ busy(form,true);signingIn=true;
+ try{
+  const client=await loadAuth();
+  const {data,error}=await client.auth.verifyOtp({email,token,type:"email"});
+  if(error)throw error;
+  const user=data.user||data.session?.user;
+  if(!user)throw new Error("Email confirmation did not complete. Request a new code and try again.");
+  await upsertOwnerProfile(client,user,getPendingOwnerConfirmationName());
+  clearOwnerConfirmation();
+  await activateDashboard(user);
+ }catch(error){showMessage("verify-email",friendlyError(error))}
+ finally{signingIn=false;busy(form,false)}
+});
+$("resendConfirmationCode").addEventListener("click",async event=>{
+ const button=event.currentTarget,email=$("verificationEmail").value.trim().toLowerCase();
+ if(!email){showMessage("verify-email","Enter your email address first.");return}
+ button.disabled=true;
+ try{
+  const client=await loadAuth();
+  const {error}=await client.auth.resend({type:"signup",email,options:{emailRedirectTo:businessOwnerReferralRedirectUrl()}});
+  if(error)throw error;
+  showMessage("verify-email","A new confirmation code was sent to "+email+". Check your inbox and spam folder.","success");
+ }catch(error){showMessage("verify-email",friendlyError(error))}
+ finally{button.disabled=false}
+});
 $("loginForm").addEventListener("submit",async event=>{event.preventDefault();const form=event.currentTarget;busy(form,true);signingIn=true;try{const client=await loadAuth();const {data,error}=await client.auth.signInWithPassword({email:$("loginEmail").value.trim(),password:$("loginPassword").value});if(error)throw error;if(!data.user)throw new Error("Login did not complete. Please try again.");await upsertOwnerProfile(client,data.user);await activateDashboard(data.user)}catch(error){showMessage("login",friendlyError(error))}finally{signingIn=false;busy(form,false)}});
 $("forgotForm").addEventListener("submit",async event=>{event.preventDefault();const form=event.currentTarget;busy(form,true);try{const client=await loadAuth();const {error}=await client.auth.resetPasswordForEmail($("forgotEmail").value.trim(),{redirectTo:location.origin+location.pathname});if(error)throw error;showMessage("forgot","If this email is registered, a password reset message will be sent.","success")}catch(error){showMessage("forgot",friendlyError(error))}finally{busy(form,false)}});
 $("newPasswordForm").addEventListener("submit",async event=>{event.preventDefault();const form=event.currentTarget,password=$("newPassword").value;if(password!==$("newPasswordConfirm").value){showMessage("new-password","Passwords do not match.");return}busy(form,true);try{const client=await loadAuth();const {error}=await client.auth.updateUser({password});if(error)throw error;recovering=false;await client.auth.signOut();showView("login");showMessage("login","Password updated. You can now log in.","success")}catch(error){showMessage("new-password",friendlyError(error))}finally{busy(form,false)}});
@@ -2903,7 +2964,7 @@ document.querySelectorAll(".modal-backdrop").forEach(backdrop=>{backdrop.addEven
 $("copyStoreUrl").addEventListener("click",async()=>{try{await navigator.clipboard.writeText($("storeUrlText").textContent);showToast("Storefront link copied.")}catch{showToast("Copy failed. Select and copy your storefront link.",true)}});
 $("publishButton").addEventListener("click",async()=>{if(!currentBusiness?.is_published)return;try{const client=await loadAuth();const {data,error}=await client.from("businesses").update({is_published:false,updated_at:new Date().toISOString()}).eq("id",currentBusiness.id).eq("owner_id",currentUser.id).select("*").single();if(error)throw error;applyBusiness(data);showToast("Your storefront is unpublished.")}catch(error){showToast(friendlyError(error),true)}});
 $("previewStoreButton").addEventListener("click",()=>{if(!currentBusiness?.is_published){showToast("Publish your storefront before previewing it.",true);return}window.open(location.origin+"/storefront.html?slug="+encodeURIComponent(currentBusiness.slug),"_blank","noopener,noreferrer")});$("notificationsButton").addEventListener("click",()=>showToast("No new business activity yet."));
-window.addEventListener("hashchange",()=>{const hash=location.hash.replace("#","");if(["start","register","login","forgot"].includes(hash))showView(hash)});showView(["start","register","login","forgot"].includes(location.hash.slice(1))?location.hash.slice(1):"start");
+window.addEventListener("hashchange",()=>{const hash=location.hash.replace("#","");if(["start","register","login","forgot","verify-email"].includes(hash))showView(hash)});const pendingConfirmationEmail=getPendingOwnerConfirmationEmail();if(pendingConfirmationEmail){$("verificationEmail").value=pendingConfirmationEmail;$("verificationEmailSummary").textContent=pendingConfirmationEmail}const requestedAuthView=location.hash.slice(1);showView(pendingConfirmationEmail?"verify-email":(["start","register","login","forgot","verify-email"].includes(requestedAuthView)?requestedAuthView:"start"));
 if(isConfigured())loadAuth().then(async client=>{const {data,error}=await client.auth.getUser();if(error&&error.name!=="AuthSessionMissingError")return;if(data.user&&!recovering){await upsertOwnerProfile(client,data.user);await activateDashboard(data.user)}}).catch(()=>{});
 if("serviceWorker" in navigator){let hadOwnerServiceWorker=Boolean(navigator.serviceWorker.controller),ownerPaymentsUpdateReload=false;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!hadOwnerServiceWorker){hadOwnerServiceWorker=true;return}if(ownerPaymentsUpdateReload)return;const paymentsOpen=!$("paymentsDashboard")?.hidden,modalOpen=Boolean(document.querySelector(".modal-backdrop:not([hidden])"));if(paymentsOpen&&!modalOpen){ownerPaymentsUpdateReload=true;window.location.reload()}else showToast("A StoreNest update is ready. Refresh when you finish your current work.")});window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js",{updateViaCache:"none"}).then(registration=>registration.update()).catch(()=>{}))}let installPrompt=null;const installBtn=$("installBtn");window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();installPrompt=event;installBtn.classList.add("visible")});installBtn.addEventListener("click",async()=>{if(!installPrompt){alert("Open your browser menu, then choose Install app or Add to Home screen.");return}const prompt=installPrompt;installPrompt=null;installBtn.classList.remove("visible");await prompt.prompt()});window.addEventListener("appinstalled",()=>installBtn.classList.remove("visible"));if(/Android/i.test(navigator.userAgent))installBtn.classList.add("visible");
 
