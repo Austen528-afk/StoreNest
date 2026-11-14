@@ -380,6 +380,128 @@
     }
   }
 
+
+  function formatCommissionMoney(value) {
+    const amount = Number(value);
+    return "R" + (Number.isFinite(amount) ? amount : 0).toFixed(2);
+  }
+
+  function appendCommissionCell(row, label, value, className) {
+    const cell = document.createElement("td");
+    cell.dataset.label = label;
+    if (className) cell.className = className;
+    if (value instanceof Node) cell.appendChild(value);
+    else cell.textContent = value == null ? "" : String(value);
+    row.appendChild(cell);
+  }
+
+  function renderPublisherCommissionRecords(records, emptyMessage) {
+    const table = $("publisherCommissionRows");
+    if (!table) return;
+    table.replaceChildren();
+    const commissions = Array.isArray(records) ? records : [];
+    if (!commissions.length) {
+      const row = document.createElement("tr");
+      const cell = document.createElement("td");
+      cell.colSpan = 5;
+      cell.className = "earnings-empty-state";
+      cell.textContent = emptyMessage || "No commission records yet.";
+      row.appendChild(cell);
+      table.appendChild(row);
+      return;
+    }
+
+    commissions.forEach((record, index) => {
+      const row = document.createElement("tr");
+      appendCommissionCell(row, "#", "#" + String(index + 1).padStart(3, "0"), "earnings-record-number");
+
+      const businessWrap = document.createElement("span");
+      businessWrap.className = "earnings-business-name";
+      const icon = document.createElement("span");
+      icon.className = "earnings-business-icon";
+      icon.setAttribute("aria-hidden", "true");
+      icon.textContent = "▦";
+      const businessCopy = document.createElement("span");
+      const businessName = document.createElement("strong");
+      businessName.textContent = String(record.business_name || "Referred business");
+      businessCopy.appendChild(businessName);
+      if (record.is_test === true) {
+        const testNote = document.createElement("small");
+        testNote.className = "earnings-business-test-note";
+        testNote.textContent = "Test 1 · not payable";
+        businessCopy.appendChild(testNote);
+      }
+      businessWrap.append(icon, businessCopy);
+      appendCommissionCell(row, "Business", businessWrap);
+
+      appendCommissionCell(row, "Your Commission (15%)", formatCommissionMoney(record.commission_amount), "earnings-amount");
+
+      const paymentType = document.createElement("span");
+      const isCollection = record.payment_type === "pay_on_collection";
+      paymentType.className = "earnings-type-pill " + (isCollection ? "earnings-type-pill--pending" : "earnings-type-pill--earned");
+      const paymentIcon = document.createElement("span");
+      paymentIcon.setAttribute("aria-hidden", "true");
+      paymentIcon.textContent = isCollection ? "▣" : "▰";
+      paymentType.appendChild(paymentIcon);
+      paymentType.appendChild(document.createTextNode(isCollection ? "Pay on Collection" : "Online Payment"));
+      appendCommissionCell(row, "Payment Type", paymentType);
+
+      const isEarned = record.status === "earned";
+      const status = document.createElement("span");
+      status.className = "earnings-status-pill " + (isEarned ? "earnings-status-pill--earned" : "earnings-status-pill--pending");
+      const statusIcon = document.createElement("span");
+      statusIcon.setAttribute("aria-hidden", "true");
+      statusIcon.textContent = isEarned ? "✓" : "◷";
+      status.appendChild(statusIcon);
+      status.appendChild(document.createTextNode(isEarned ? "Earned" : "Pending"));
+      appendCommissionCell(row, "Status", status);
+      table.appendChild(row);
+    });
+  }
+
+  async function loadPublisherCommissionDashboard() {
+    const statusLabel = $("publisherEarningsDataStatus");
+    const note = $("publisherEarningsRecordsNote");
+    const statIds = [
+      "publisherEarningsTotalEarned",
+      "publisherEarningsPending",
+      "publisherEarningsTotalCommissions",
+      "publisherEarningsBusinesses"
+    ];
+    statIds.forEach((id) => { if ($(id)) $(id).textContent = "—"; });
+    if (statusLabel) statusLabel.textContent = "Loading commission records…";
+
+    try {
+      if (!activeClient || !publisherProfile?.id) throw new Error("Publisher account data is not ready.");
+      const [summaryResult, recordsResult] = await Promise.all([
+        activeClient.rpc("get_my_publisher_commission_summary"),
+        activeClient.rpc("get_my_publisher_commission_records")
+      ]);
+      if (summaryResult.error) throw summaryResult.error;
+      if (recordsResult.error) throw recordsResult.error;
+
+      const summary = Array.isArray(summaryResult.data) ? summaryResult.data[0] : summaryResult.data;
+      const records = Array.isArray(recordsResult.data) ? recordsResult.data : [];
+      $("publisherEarningsTotalEarned").textContent = formatCommissionMoney(summary?.total_earned);
+      $("publisherEarningsPending").textContent = formatCommissionMoney(summary?.pending_commissions);
+      $("publisherEarningsTotalCommissions").textContent = formatCommissionMoney(summary?.total_commissions);
+      $("publisherEarningsBusinesses").textContent = new Intl.NumberFormat("en-ZA").format(Number(summary?.referred_businesses) || 0);
+      renderPublisherCommissionRecords(records);
+      const hasTestRecord = records.some((record) => record.is_test === true);
+      if (statusLabel) statusLabel.textContent = hasTestRecord
+        ? "Test record · not payable"
+        : "Connected to your commission records";
+      if (note) note.textContent = hasTestRecord
+        ? "Controlled Test 1 is marked and excluded from payouts. Only your commission information is shown."
+        : "Only your commission amount and status are shown here.";
+    } catch (error) {
+      console.error("Publisher commission records could not be loaded:", error);
+      if (statusLabel) statusLabel.textContent = "Commission data unavailable";
+      if (note) note.textContent = "Your commission data could not be loaded. Refresh and try again.";
+      renderPublisherCommissionRecords([], "Your commission records could not be loaded. Refresh and try again.");
+    }
+  }
+
   function startWelcomeStory(firstName) {
     const card = $("publisherWelcomeCard");
     const eyebrow = $("welcomeStoryEyebrow");
@@ -489,6 +611,9 @@
     }
     if (key === "businesses" && activeClient && publisherProfile?.id) {
       loadReferredBusinessAccounts();
+    }
+    if (key === "earnings" && activeClient && publisherProfile?.id) {
+      loadPublisherCommissionDashboard();
     }
   }
 
