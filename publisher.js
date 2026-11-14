@@ -26,6 +26,8 @@
   let isSigningOut = false;
   let activeView = "loading";
   let registeredAuthListeners = false;
+  let welcomeStoryInterval = null;
+  let welcomeStorySwapTimeout = null;
 
   function setView(view) {
     activeView = view;
@@ -377,13 +379,67 @@
     }
   }
 
+  function startWelcomeStory(firstName) {
+    const card = $("publisherWelcomeCard");
+    const eyebrow = $("welcomeStoryEyebrow");
+    const title = $("welcomeStoryTitle");
+    const description = $("welcomeStoryDescription");
+    if (!card || !eyebrow || !title || !description) return;
+
+    if (welcomeStoryInterval) window.clearInterval(welcomeStoryInterval);
+    if (welcomeStorySwapTimeout) window.clearTimeout(welcomeStorySwapTimeout);
+    card.classList.remove("is-changing");
+
+    const slides = [
+      {
+        key: "welcome",
+        eyebrow: "YOUR PUBLISHER WORKSPACE",
+        title: "Welcome, " + (firstName || "Publisher"),
+        description: "Your Publisher workspace is ready."
+      },
+      {
+        key: "ready",
+        eyebrow: "YOUR PUBLISHER WORKSPACE",
+        title: "Your Publisher account is ready.",
+        description: "Use this workspace to keep your StoreNest work organized as the Publisher tools are developed."
+      },
+      {
+        key: "attention",
+        eyebrow: "AI INSIGHTS",
+        title: "AI detected elements that might need attention.",
+        description: "AI insights will appear here as the Publisher tools are developed."
+      }
+    ];
+
+    let currentIndex = 0;
+    const applySlide = (index) => {
+      const slide = slides[index];
+      card.dataset.welcomeSlide = slide.key;
+      eyebrow.textContent = slide.eyebrow;
+      title.textContent = slide.title;
+      description.textContent = slide.description;
+    };
+
+    applySlide(currentIndex);
+    const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    welcomeStoryInterval = window.setInterval(() => {
+      if (document.hidden || card.matches(":hover")) return;
+      card.classList.add("is-changing");
+      welcomeStorySwapTimeout = window.setTimeout(() => {
+        currentIndex = (currentIndex + 1) % slides.length;
+        applySlide(currentIndex);
+        window.requestAnimationFrame(() => card.classList.remove("is-changing"));
+      }, prefersReducedMotion ? 0 : 420);
+    }, 7200);
+  }
+
   function renderDashboard() {
     const displayName = publisherProfile?.display_name || "Publisher";
     const fullName = fullNameFromAccount() || displayName;
     const statusText = publisherProfile?.status === "active" ? "Active" : "Unavailable";
     $("sidebarDisplayName").textContent = displayName;
     $("sidebarInitials").textContent = initials(displayName);
-    $("welcomeFullName").textContent = fullName.split(/\s+/)[0] || displayName;
+    startWelcomeStory(fullName.split(/\s+/)[0] || displayName);
     $("memberSince").textContent = formatDate(publisherProfile?.created_at);
     $("publisherStatusPill").textContent = statusText;
     $("overviewStatus").textContent = statusText;
