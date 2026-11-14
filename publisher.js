@@ -28,6 +28,7 @@
   let registeredAuthListeners = false;
   let welcomeStoryTimer = null;
   let welcomeStorySwapTimeout = null;
+  const WELCOME_STORY_INTERVAL_MS = 3000;
 
   function setView(view) {
     activeView = view;
@@ -444,14 +445,14 @@
         window.requestAnimationFrame(() => card.classList.remove("is-changing"));
 
         if (currentIndex < slides.length - 1) {
-          welcomeStoryTimer = window.setTimeout(advance, 7200);
+          welcomeStoryTimer = window.setTimeout(advance, WELCOME_STORY_INTERVAL_MS);
         } else {
           welcomeStoryTimer = null;
         }
       }, prefersReducedMotion ? 0 : 420);
     };
 
-    welcomeStoryTimer = window.setTimeout(advance, 7200);
+    welcomeStoryTimer = window.setTimeout(advance, WELCOME_STORY_INTERVAL_MS);
   }
 
   function renderDashboard() {
