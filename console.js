@@ -1,6 +1,6 @@
 (()=>{
  const sidebar=document.getElementById('sidebar'), backdrop=document.getElementById('navBackdrop'), menu=document.getElementById('menuButton'), content=document.getElementById('content'), title=document.getElementById('topTitle');
- const titles={overview:'Overview',businesses:'Businesses',transactions:'Transactions',subscriptions:'Subscriptions',analytics:'Analytics',settings:'Platform Settings',today:"Today's Workspace",orders:'Orders',bookings:'Bookings',inventory:'Inventory',activity:'Activity'};
+ const titles={overview:'Overview',businesses:'Businesses','publisher-recruits':'Publisher Recruits',transactions:'Transactions',subscriptions:'Subscriptions',analytics:'Analytics',settings:'Platform Settings',today:"Today's Workspace",orders:'Orders',bookings:'Bookings',inventory:'Inventory',activity:'Activity'};
  const today=document.getElementById('localDate');
  if(today)today.textContent=new Intl.DateTimeFormat('en-ZA',{weekday:'short',day:'numeric',month:'short',year:'numeric'}).format(new Date());
  function closeMenu(){sidebar.classList.remove('open');backdrop.classList.remove('visible');menu.setAttribute('aria-expanded','false')}
