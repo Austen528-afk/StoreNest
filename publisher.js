@@ -482,17 +482,23 @@
 
       const summary = Array.isArray(summaryResult.data) ? summaryResult.data[0] : summaryResult.data;
       const records = Array.isArray(recordsResult.data) ? recordsResult.data : [];
-      $("publisherEarningsTotalEarned").textContent = formatCommissionMoney(summary?.total_earned);
-      $("publisherEarningsPending").textContent = formatCommissionMoney(summary?.pending_commissions);
-      $("publisherEarningsTotalCommissions").textContent = formatCommissionMoney(summary?.total_commissions);
+      // Test-only rows are visible in the records table with an explicit label,
+      // but must never inflate the Publisher's live earnings totals.
+      const liveRecords = records.filter((record) => record.is_test !== true);
+      const sumLiveCommissions = (status) => liveRecords
+        .filter((record) => !status || record.status === status)
+        .reduce((total, record) => total + (Number(record.commission_amount) || 0), 0);
+      $("publisherEarningsTotalEarned").textContent = formatCommissionMoney(sumLiveCommissions("earned"));
+      $("publisherEarningsPending").textContent = formatCommissionMoney(sumLiveCommissions("pending"));
+      $("publisherEarningsTotalCommissions").textContent = formatCommissionMoney(sumLiveCommissions());
       $("publisherEarningsBusinesses").textContent = new Intl.NumberFormat("en-ZA").format(Number(summary?.referred_businesses) || 0);
       renderPublisherCommissionRecords(records);
       const hasTestRecord = records.some((record) => record.is_test === true);
       if (statusLabel) statusLabel.textContent = hasTestRecord
-        ? "Test record · not payable"
+        ? "Connected · demo record separated"
         : "Connected to your commission records";
       if (note) note.textContent = hasTestRecord
-        ? "Controlled Test 1 is marked and excluded from payouts. Only your commission information is shown."
+        ? "Controlled Test 1 is labelled as a demonstration and excluded from live totals. Only your commission information is shown."
         : "Only your commission amount and status are shown here.";
     } catch (error) {
       console.error("Publisher commission records could not be loaded:", error);
@@ -999,3 +1005,4 @@
   configureContactField("recoveryMethod", "recoveryContact", "recoveryContactLabel");
   initialize();
 })();
+
