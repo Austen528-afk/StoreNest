@@ -308,10 +308,133 @@
         </section>
 
         <section class="dashboard-panel" id="earningsPanel" data-dashboard-panel="earnings" hidden>
-          <div class="panel-intro"><span class="eyebrow">PUBLISHER FINANCES</span><h2>Earnings &amp; Commissions</h2><p>Commission and payout information will be shown here when those systems are introduced.</p></div>
-          <div class="empty-state"><span class="empty-icon" aria-hidden="true">↗</span><h3>No earnings data</h3><p>No commission or payout records are available for this Publisher profile yet.</p></div>
-        </section>
+          <div class="publisher-earnings-dashboard">
+            <header class="earnings-heading">
+              <div class="earnings-heading-copy">
+                <span class="eyebrow">PUBLISHER FINANCES</span>
+                <h2>Earnings &amp; Commissions</h2>
+                <p>Track your 15% share from the transaction fees of the businesses you referred.</p>
+              </div>
+              <span class="earnings-demo-label"><span aria-hidden="true"></span>Design preview · example data</span>
+            </header>
 
+            <section class="earnings-stat-grid" aria-label="Earnings overview">
+              <article class="earnings-stat earnings-stat--earned">
+                <span class="earnings-stat-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="7.5" ry="3"/><path d="M4.5 5v5c0 1.7 3.4 3 7.5 3 1.1 0 2.2-.1 3.1-.3M19.5 5v3"/><path d="M4.5 10v5c0 1.7 3.4 3 7.5 3 .9 0 1.8-.1 2.6-.2M19.5 10v2"/><path d="M4.5 15v3c0 1.7 3.4 3 7.5 3 .5 0 1 0 1.5-.1"/><path d="M16 16.5c0-1.7 3.4-3 3.4-3s3.4 1.3 3.4 3v2.1c0 1.4-1.4 2.5-3.4 3-2-.5-3.4-1.6-3.4-3z"/></svg>
+                </span>
+                <span class="earnings-stat-copy"><span class="earnings-stat-label">Total Earned</span><strong class="earnings-stat-value">R0.75</strong><small>Available for payout</small></span>
+              </article>
+              <article class="earnings-stat earnings-stat--pending">
+                <span class="earnings-stat-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+                </span>
+                <span class="earnings-stat-copy"><span class="earnings-stat-label">Pending Commissions</span><strong class="earnings-stat-value">R0.75</strong><small>Awaiting fee recovery</small></span>
+              </article>
+              <article class="earnings-stat earnings-stat--total">
+                <span class="earnings-stat-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="m12 3 9 4.7-9 4.7-9-4.7L12 3Z"/><path d="m3 12 9 4.7 9-4.7"/><path d="m3 16.3 9 4.7 9-4.7"/></svg>
+                </span>
+                <span class="earnings-stat-copy"><span class="earnings-stat-label">Total Commissions</span><strong class="earnings-stat-value">R1.50</strong><small>Earned + Pending</small></span>
+              </article>
+              <article class="earnings-stat earnings-stat--businesses">
+                <span class="earnings-stat-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M3 9.5 5 4h14l2 5.5"/><path d="M4 9.5h16V21H4z"/><path d="M8 21v-7h4v7"/><path d="M4 9.5c0 1.5 1 2.5 2.5 2.5S9 11 9 9.5c0 1.5 1 2.5 2.5 2.5S14 11 14 9.5c0 1.5 1 2.5 2.5 2.5S19 11 19 9.5"/></svg>
+                </span>
+                <span class="earnings-stat-copy"><span class="earnings-stat-label">Referred Businesses</span><strong class="earnings-stat-value">1</strong><small>Active</small></span>
+              </article>
+            </section>
+
+            <section class="earnings-explainer" aria-label="Commission flow and payment types">
+              <div class="earnings-flow-column">
+                <h3>Your Commission Flow (Your 15% Share)</h3>
+                <div class="earnings-flow-chain">
+                  <article class="earnings-flow-card">
+                    <span class="earnings-flow-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><path d="m12 3 9 4.7-9 4.7-9-4.7L12 3Z"/><path d="m3 12 9 4.7 9-4.7"/><path d="m3 16.3 9 4.7 9-4.7"/></svg>
+                    </span>
+                    <h4>StoreNest<br>Transaction Fee</h4>
+                    <p>(5%)</p>
+                  </article>
+                  <span class="earnings-flow-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span>
+                  <article class="earnings-flow-card earnings-flow-card--share">
+                    <span class="earnings-flow-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3.5 20v-1.5A5.5 5.5 0 0 1 9 13h.8"/><path d="M16 13.5a3 3 0 1 0-2.7-4.3"/><path d="M14 20v-1a5 5 0 0 1 7-4.6"/></svg>
+                    </span>
+                    <h4>Your Share</h4>
+                    <p>(15% of fee)</p>
+                  </article>
+                  <span class="earnings-flow-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span>
+                  <article class="earnings-flow-card earnings-flow-card--status">
+                    <span class="earnings-flow-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16.5 8"/></svg>
+                    </span>
+                    <h4>Commission Status</h4>
+                    <ul class="earnings-status-list">
+                      <li class="earnings-status-line earnings-status-line--earned"><span aria-hidden="true">✓</span>Earned (online payment)</li>
+                      <li class="earnings-status-line earnings-status-line--pending"><span aria-hidden="true">◷</span>Pending (pay on collection)</li>
+                    </ul>
+                  </article>
+                </div>
+              </div>
+
+              <div class="earnings-payment-column">
+                <h3>Payment Types</h3>
+                <article class="earnings-payment-card earnings-payment-card--earned">
+                  <span class="earnings-payment-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M3 9h18M7 14h4"/></svg>
+                  </span>
+                  <div class="earnings-payment-copy">
+                    <h4>Online Payment</h4>
+                    <p>The publisher earns 15% of the eligible platform transaction fee once payment is successfully confirmed.</p>
+                  </div>
+                  <span class="earnings-status-pill earnings-status-pill--earned"><span aria-hidden="true">✓</span>Earned</span>
+                </article>
+                <article class="earnings-payment-card earnings-payment-card--pending">
+                  <span class="earnings-payment-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M5 8h.01M19 16h.01"/></svg>
+                  </span>
+                  <div class="earnings-payment-copy">
+                    <h4>Pay on Collection</h4>
+                    <p>The publisher's commission remains pending until StoreNest recovers its platform fee from the business's next payout.</p>
+                  </div>
+                  <span class="earnings-status-pill earnings-status-pill--pending"><span aria-hidden="true">◷</span>Pending</span>
+                </article>
+              </div>
+            </section>
+
+            <section class="earnings-records" aria-labelledby="earningsRecordsTitle">
+              <div class="earnings-records-heading">
+                <h3 id="earningsRecordsTitle">Your Commission Records</h3>
+                <span class="earnings-records-note"><span aria-hidden="true">ⓘ</span>Examples only · not actual earnings</span>
+              </div>
+              <div class="earnings-table-wrap" role="region" aria-label="Example commission records" tabindex="0">
+                <table class="earnings-table">
+                  <caption class="earnings-visually-hidden">Example StoreNest Publisher commission records</caption>
+                  <thead>
+                    <tr><th scope="col">#</th><th scope="col">Business</th><th scope="col">Your Commission (15%)</th><th scope="col">Payment Type</th><th scope="col">Status</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="earnings-record-number">#001</td>
+                      <td><span class="earnings-business-name"><span class="earnings-business-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 9.5 5 4h14l2 5.5"/><path d="M4 9.5h16V21H4z"/><path d="M8 21v-7h4v7"/><path d="M4 9.5c0 1.5 1 2.5 2.5 2.5S9 11 9 9.5c0 1.5 1 2.5 2.5 2.5S14 11 14 9.5c0 1.5 1 2.5 2.5 2.5S19 11 19 9.5"/></svg></span><strong>Kota Corner</strong></span></td>
+                      <td class="earnings-amount">R0.75</td>
+                      <td><span class="earnings-type-pill earnings-type-pill--pending"><span aria-hidden="true">▣</span>Pay on Collection</span></td>
+                      <td><span class="earnings-status-pill earnings-status-pill--pending"><span aria-hidden="true">◷</span>Pending</span></td>
+                    </tr>
+                    <tr>
+                      <td class="earnings-record-number">#002</td>
+                      <td><span class="earnings-business-name"><span class="earnings-business-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 9.5 5 4h14l2 5.5"/><path d="M4 9.5h16V21H4z"/><path d="M8 21v-7h4v7"/><path d="M4 9.5c0 1.5 1 2.5 2.5 2.5S9 11 9 9.5c0 1.5 1 2.5 2.5 2.5S14 11 14 9.5c0 1.5 1 2.5 2.5 2.5S19 11 19 9.5"/></svg></span><strong>Kota Corner</strong></span></td>
+                      <td class="earnings-amount">R0.75</td>
+                      <td><span class="earnings-type-pill earnings-type-pill--earned"><span aria-hidden="true">▣</span>Online Payment</span></td>
+                      <td><span class="earnings-status-pill earnings-status-pill--earned"><span aria-hidden="true">✓</span>Earned</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        </section>
         <section class="dashboard-panel" id="recruitmentPanel" data-dashboard-panel="recruitment" hidden>
           <div class="panel-intro"><span class="eyebrow">GROW YOUR NETWORK</span><h2>Recruitment</h2><p>Share your link with business owners you introduce to StoreNest.</p></div>
           <div class="referral-share-card">
