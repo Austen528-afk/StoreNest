@@ -198,3 +198,52 @@ html[data-theme="dark"] .sn-owner-message-centre .sn-message-composer-wrap{backg
 .sn-message-signin-link:hover{border-color:#79cda9;background:#dcf3e9}
 html[data-theme="dark"] .sn-message-signin-link{border-color:#29634b;background:#173d2d;color:#9ce5c2}
 html[data-theme="dark"] .sn-message-signin-link:hover{background:#1d4b37}
+
+
+/* Publisher Messages uses one account list and one vertical scrollbar. */
+#publisherMessageCentre,
+#publisherMessageCentre .sn-message-app,
+#publisherMessageCentre .sn-message-list-pane,
+#publisherMessageCentre .sn-message-list{
+  min-width:0;
+  max-width:100%;
+}
+#publisherMessageCentre .sn-message-list-pane{
+  overflow-x:hidden;
+  overflow-y:hidden;
+}
+#publisherMessageCentre .sn-message-contact-results{
+  display:none!important;
+}
+#publisherMessageCentre .sn-message-list{
+  flex:1 1 0;
+  min-height:0;
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior-y:contain;
+  scrollbar-gutter:stable;
+}
+#publisherMessageCentre .sn-message-list-label{
+  border-top:0;
+}
+#publisherMessageCentre .sn-message-list .sn-message-row,
+#publisherMessageCentre .sn-message-list .sn-business-result{
+  width:100%;
+  min-width:0;
+  max-width:100%;
+}
+#publisherMessageCentre .sn-message-list .sn-message-row-body{
+  min-width:0;
+}
+#publisherMessageCentre .sn-message-list .sn-message-row-top{
+  min-width:0;
+}
+#publisherMessageCentre .sn-message-list .sn-message-row-name,
+#publisherMessageCentre .sn-message-list .sn-message-row-preview{
+  min-width:0;
+  max-width:100%;
+  overflow-wrap:anywhere;
+}
+#publisherMessageCentre .sn-message-list .sn-message-contact-result .sn-message-row-preview{
+  white-space:normal;
+}
