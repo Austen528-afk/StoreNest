@@ -82,7 +82,7 @@
         '<div class="sn-message-error" role="status" aria-live="polite" hidden></div>' +
         '<div class="sn-message-contact-results" hidden></div>' +
         '<div class="sn-message-results" hidden></div>' +
-        '<div class="sn-message-list-label"><span>' + (customerMode ? "Inbox" : mode === "publisher" ? "Messages" : "Conversations") + '</span><span class="sn-message-list-count"></span></div>' +
+        '<div class="sn-message-list-label"><span>' + (mode === "hq" ? "Accounts & conversations" : customerMode ? "Inbox" : mode === "publisher" ? "Messages" : "Conversations") + '</span><span class="sn-message-list-count"></span></div>' +
         '<div class="sn-message-list" role="list"></div>' +
       '</aside>' +
       '<main class="sn-message-main">' +
@@ -230,9 +230,122 @@
     });
   }
 
+
+  function renderHqDirectory(state) {
+    const rows = Array.isArray(state.rows) ? state.rows : [];
+    const query = String(state.search || "").trim().toLowerCase();
+    const contacts = Array.isArray(state.contacts) ? state.contacts : [];
+    const uniqueContacts = [];
+    const seenContacts = new Set();
+
+    contacts.forEach(function (contact) {
+      const role = contact.contact_role || contact.role || "customer";
+      const userId = contact.contact_user_id || contact.userId || null;
+      const businessId = contact.business_id || contact.businessId || null;
+      const key = String(userId || contact.contact_display_name || contact.displayName || role) + "|" + role + "|" + String(businessId || "");
+      if (seenContacts.has(key)) return;
+      seenContacts.add(key);
+
+      const existingConversation = rows.some(function (row) {
+        return Boolean(userId)
+          && row.partner_user_id === userId
+          && row.partner_role === role
+          && (role !== "business_owner" || !businessId || (row.business_id || null) === businessId);
+      });
+      if (existingConversation) return;
+
+      const name = contact.contact_display_name || contact.displayName || roleLabel(role);
+      const businessName = contact.business_name || contact.businessName || "";
+      const detail = [roleLabel(role), businessName].filter(Boolean).join(" · ");
+      if (query && !(name + " " + role + " " + detail).toLowerCase().includes(query)) return;
+      uniqueContacts.push({
+        contact: contact,
+        role: role,
+        userId: userId,
+        businessId: businessId,
+        name: name,
+        detail: detail,
+        businessName: businessName
+      });
+    });
+
+    const filteredRows = rows.filter(function (row) {
+      return !query || (String(row.partner_display_name || "") + " " + roleLabel(row.partner_role) + " " + String(row.last_message_preview || "")).toLowerCase().includes(query);
+    });
+
+    const list = state.refs.list;
+    list.replaceChildren();
+    const total = uniqueContacts.length + filteredRows.length;
+    state.refs.listCount.textContent = total ? String(total) : "";
+
+    if (!total) {
+      const empty = make("div", "sn-message-empty-list");
+      empty.appendChild(make("strong", "", state.user ? "No accounts or conversations" : "Sign in to see your messages"));
+      empty.appendChild(document.createTextNode(query
+        ? "No registered accounts or conversations match this search."
+        : "Search for a registered StoreNest user or continue a conversation."));
+      list.appendChild(empty);
+      return;
+    }
+
+    uniqueContacts.forEach(function (entry) {
+      const button = make("button", "sn-business-result sn-message-contact-result");
+      button.type = "button";
+      button.setAttribute("role", "listitem");
+      button.appendChild(avatar(entry.name, entry.contact.partner_logo_url || ""));
+      const body = make("span", "sn-message-row-body");
+      body.appendChild(make("span", "sn-message-row-name", entry.name));
+      body.appendChild(make("span", "sn-message-row-preview", entry.detail));
+      button.appendChild(body);
+      button.appendChild(make("span", "sn-message-row-time", "Message"));
+      button.addEventListener("click", function () {
+        const target = {
+          userId: entry.userId,
+          role: entry.role,
+          businessId: entry.role === "business_owner" ? entry.businessId : null,
+          displayName: entry.name,
+          businessName: entry.businessName || null,
+          myRole: "hq",
+          myBusinessId: null
+        };
+        const business = entry.role === "business_owner"
+          ? { id: target.businessId, name: target.businessName || entry.name }
+          : null;
+        openThread(state, "hq", { conversation: null, business: business, target: target });
+      });
+      list.appendChild(button);
+    });
+
+    filteredRows.forEach(function (row) {
+      const name = row.partner_display_name || row.customer_label || (row.business && row.business.name) || "StoreNest account";
+      const button = make("button", "sn-message-row" + (state.active && state.active.conversation && state.active.conversation.id === row.id ? " is-active" : ""));
+      button.type = "button";
+      button.setAttribute("role", "listitem");
+      button.appendChild(avatar(name, row.partner_logo_url || (row.business && row.business.logo_url) || ""));
+      const body = make("span", "sn-message-row-body");
+      const top = make("span", "sn-message-row-top");
+      top.appendChild(make("span", "sn-message-row-name", name));
+      top.appendChild(make("span", "sn-message-row-time", timeLabel(row.updated_at || row.last_message_at || row.created_at)));
+      body.appendChild(top);
+      body.appendChild(make("span", "sn-message-row-preview", (row.last_message_sender_id && state.user && row.last_message_sender_id === state.user.id ? "You: " : "") + (row.last_message_preview || "Start the conversation")));
+      if (row.request_status === "pending") body.appendChild(make("span", "sn-message-row-request", row.request_for_me ? "Message request" : "Request sent"));
+      button.appendChild(body);
+      if (row.unread_count) button.appendChild(make("span", "sn-message-unread", row.unread_count > 99 ? "99+" : String(row.unread_count)));
+      button.addEventListener("click", function () {
+        openThread(state, "hq", { conversation: row, business: row.business || null });
+      });
+      list.appendChild(button);
+    });
+  }
+
+
   function renderList(state, mode) {
     if (mode === "publisher") {
       renderPublisherDirectory(state);
+      return;
+    }
+    if (mode === "hq") {
+      renderHqDirectory(state);
       return;
     }
     const rows = state.rows || [];
@@ -358,7 +471,7 @@
     state.contacts = Array.isArray(contacts) ? contacts : [];
     const box = state.refs && state.refs.contacts;
     if (!box) return;
-    if (mode === "publisher") {
+    if (mode === "publisher" || mode === "hq") {
       box.replaceChildren();
       box.hidden = true;
       renderList(state, mode);
