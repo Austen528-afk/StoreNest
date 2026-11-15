@@ -623,6 +623,85 @@
     }
   }
 
+
+  const PUBLISHER_ANALYTICS_CATEGORIES = {
+    recruitment: {
+      category: "RECRUITMENT",
+      title: "Recruitment Analytics",
+      description: "Understand how effectively you attract and register new businesses.",
+      metrics: ["Referral Visits", "Registrations", "Conversion Rate"],
+      chartTitle: "Recruitment Trends",
+      chartCaption: "Illustrative view of referral visits and business registrations.",
+      insight: "Identify which recruitment activities are converting visitors into registered businesses."
+    },
+    commissions: {
+      category: "COMMISSIONS",
+      title: "Commissions Analytics",
+      description: "Track the development of your own publisher earnings.",
+      metrics: ["Total Earned", "Pending Commissions", "Commission Growth"],
+      chartTitle: "Commission Earnings Over Time",
+      chartCaption: "Illustrative view of your publisher commission earnings.",
+      insight: "Understand how your commissions change and identify opportunities for growth."
+    },
+    businesses: {
+      category: "MY BUSINESSES",
+      title: "My Businesses Analytics",
+      description: "Monitor the development of your referred business network.",
+      metrics: ["Registered", "Activated", "Inactive"],
+      chartTitle: "Business Activation Trends",
+      chartCaption: "Illustrative view of referred business activation.",
+      insight: "Identify recently recruited businesses that may need help becoming active."
+    },
+    progression: {
+      category: "PROGRESSION",
+      title: "Progression Analytics",
+      description: "Track progress toward higher publisher commission levels.",
+      metrics: ["Current Share", "Next Level", "Milestone Progress"],
+      chartTitle: "Commission Level Progression",
+      chartCaption: "Illustrative progression view only.",
+      insight: "Discover which performance milestones need attention to reach your next level."
+    }
+  };
+
+  function selectPublisherAnalyticsCategory(categoryKey) {
+    const config = PUBLISHER_ANALYTICS_CATEGORIES[categoryKey];
+    const panel = $("analyticsPanel");
+    if (!config || !panel) return;
+
+    panel.querySelectorAll("[data-analytics-tab]").forEach((button) => {
+      const selected = button.dataset.analyticsTab === categoryKey;
+      button.classList.toggle("is-selected", selected);
+      button.setAttribute("aria-selected", selected ? "true" : "false");
+      button.tabIndex = selected ? 0 : -1;
+    });
+
+    const selectedTab = panel.querySelector('[data-analytics-tab="' + categoryKey + '"]');
+    const content = $("publisherAnalyticsContent");
+    if (selectedTab && content) content.setAttribute("aria-labelledby", selectedTab.id);
+
+    $("analyticsCategory").textContent = config.category;
+    $("analyticsTitle").textContent = config.title;
+    $("analyticsDescription").textContent = config.description;
+    $("analyticsChartTitle").textContent = config.chartTitle;
+    $("analyticsChartCaption").textContent = config.chartCaption + " No live analytics data is connected.";
+    $("analyticsInsight").textContent = config.insight;
+
+    const metrics = $("analyticsMetrics");
+    if (metrics) {
+      const cards = config.metrics.map((label) => {
+        const card = document.createElement("article");
+        card.className = "publisher-analytics-metric";
+        const metricLabel = document.createElement("span");
+        metricLabel.textContent = label;
+        const metricValue = document.createElement("strong");
+        metricValue.textContent = "—";
+        card.append(metricLabel, metricValue);
+        return card;
+      });
+      metrics.replaceChildren(...cards);
+    }
+  }
+
   async function createPublisherProfile(client, user, fullName, displayName) {
     const name = String(fullName || "").trim();
     const publisherName = String(displayName || "").trim();
@@ -988,6 +1067,28 @@
       $("phoneRecoveryCodePanel").hidden = true;
     }));
     document.querySelectorAll("[data-section-link]").forEach((button) => button.addEventListener("click", () => setDashboardSection(button.dataset.sectionLink, true)));
+
+    const analyticsTabs = [...document.querySelectorAll("[data-analytics-tab]")];
+    analyticsTabs.forEach((button) => button.addEventListener("click", () => {
+      selectPublisherAnalyticsCategory(button.dataset.analyticsTab);
+    }));
+    document.querySelector("[data-analytics-tablist]")?.addEventListener("keydown", (event) => {
+      const currentButton = event.target.closest("[data-analytics-tab]");
+      if (!currentButton) return;
+      const currentIndex = analyticsTabs.indexOf(currentButton);
+      if (currentIndex < 0 || !analyticsTabs.length) return;
+      let nextIndex = currentIndex;
+      if (event.key === "ArrowRight") nextIndex = (currentIndex + 1) % analyticsTabs.length;
+      else if (event.key === "ArrowLeft") nextIndex = (currentIndex - 1 + analyticsTabs.length) % analyticsTabs.length;
+      else if (event.key === "Home") nextIndex = 0;
+      else if (event.key === "End") nextIndex = analyticsTabs.length - 1;
+      else return;
+      event.preventDefault();
+      analyticsTabs[nextIndex].focus();
+      selectPublisherAnalyticsCategory(analyticsTabs[nextIndex].dataset.analyticsTab);
+    });
+    selectPublisherAnalyticsCategory("recruitment");
+
     document.querySelectorAll("[data-signout]").forEach((button) => button.addEventListener("click", signOut));
     window.addEventListener("popstate", () => {
       const section = window.location.hash.replace(/^#/, "");
