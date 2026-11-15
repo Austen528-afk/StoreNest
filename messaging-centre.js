@@ -129,12 +129,6 @@
     setAvatar(el, name, logo);
     return el;
   }
-  function renderList(state, mode) {
-    if (mode === "publisher") {
-      renderPublisherDirectory(state);
-      return;
-    }
-    const rows = state.rows || [];
   function renderPublisherDirectory(state) {
     const rows = Array.isArray(state.rows) ? state.rows : [];
     const query = String(state.search || "").trim().toLowerCase();
@@ -235,6 +229,14 @@
       list.appendChild(button);
     });
   }
+
+  function renderList(state, mode) {
+    if (mode === "publisher") {
+      renderPublisherDirectory(state);
+      return;
+    }
+    const rows = state.rows || [];
+
 
 
     state.refs.list.replaceChildren();
