@@ -191,7 +191,7 @@ body.dark .publisher-connection.connected{background:#1e352d;border-color:#365c4
 .hq-auth-form input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,191,156,.13)}
 .hq-auth-submit{min-height:46px;margin-top:14px;border:1px solid #0b8b70;border-radius:11px;background:#0b8b70;color:#fff;font-size:13px;font-weight:800;transition:background .16s,opacity .16s}
 .hq-auth-submit:hover:not(:disabled){background:#08745e}.hq-auth-submit:disabled{opacity:.58}
-.hq-auth-status{min-height:20px;margin:12px 0 0;color:var(--muted);font-size:12px;line-height:1.5}.hq-auth-status[data-error=true]{color:#b33b35}
+.hq-auth-status{min-height:20px;margin:12px 0 0;color:var(--muted);font-size:12px;line-height:1.5}.hq-auth-status[data-error=true]{color:#b33b35}.hq-auth-retry{min-height:38px;margin-top:8px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--accentdark);font-size:12px;font-weight:750}.hq-auth-retry[hidden]{display:none!important}
 .hq-auth-note{display:flex;gap:9px;margin-top:16px;padding:12px;border-radius:11px;background:var(--soft);color:var(--muted);font-size:11px;line-height:1.5}.hq-auth-note span:first-child{flex:none;color:var(--accentdark);font-size:16px;font-weight:900}
 .hq-auth-footer{width:min(1180px,100%);margin:0 auto;display:flex;justify-content:space-between;gap:12px;padding-top:13px;border-top:1px solid var(--line);color:var(--muted);font-size:11px}
 .hq-admin-identity{max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:11px}
@@ -221,7 +221,7 @@ body.dark .hq-auth-emblem{background:#25483d;color:#70e2c2}
    <label for="hqLoginPassword">Password</label><input id="hqLoginPassword" name="password" type="password" autocomplete="current-password" required placeholder="Enter your password">
    <button class="hq-auth-submit" id="hqLoginButton" type="submit" disabled>Connecting securely…</button>
   </form>
-  <p class="hq-auth-status" id="hqAuthStatus" role="status" aria-live="polite"></p>
+  <p class="hq-auth-status" id="hqAuthStatus" role="status" aria-live="polite"></p><button class="hq-auth-retry" id="hqAuthRetry" type="button" hidden>Retry secure connection</button>
   <div class="hq-auth-note"><span aria-hidden="true">⌑</span><span>HQ access is verified against your StoreNest administrator permissions. Publisher and business accounts cannot open this workspace.</span></div>
  </section></div>
  <footer class="hq-auth-footer"><span>StoreNest HQ</span><span>Authorized access only</span></footer>
@@ -595,7 +595,9 @@ initTheme();setPage(location.hash.slice(1)||'overview',false);
 <script>
 (function(){
  'use strict';
- var client=null,authorized=false,currentUser=null,validating=null;
+ var client=null,authorized=false,currentUser=null,validating=null,authSubscription=null;
+ var SUPABASE_URL='https://cypbjzbagezdelmemuhb.supabase.co';
+ var SUPABASE_PUBLISHABLE_KEY='sb_publishable_8W8zyYtggQMWoFlnxrzoVA_BUKjQ9va';
  function byId(id){return document.getElementById(id)}
  function setStatus(message,isError){
   var status=byId('hqAuthStatus');
@@ -637,6 +639,52 @@ initTheme();setPage(location.hash.slice(1)||'overview',false);
   var centre=byId('hqMessageCentre');
   if(centre)centre.hidden=!authorized;
  }
+ async function loadSupabaseSdk(){
+  if(window.supabase&&typeof window.supabase.createClient==='function')return;
+  var sources=[
+   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js',
+   'https://unpkg.com/@supabase/supabase-js@2.118.0/dist/umd/supabase.js'
+  ];
+  var lastError=null;
+  for(var i=0;i<sources.length;i++){
+   try{
+    await new Promise(function(resolve,reject){
+     var script=document.createElement('script'),settled=false,timer;
+     function finish(error){
+      if(settled)return;
+      settled=true;
+      clearTimeout(timer);
+      script.onload=null;script.onerror=null;
+      if(error){script.remove();reject(error)}else resolve();
+     }
+     script.src=sources[i];
+     script.async=true;
+     script.crossOrigin='anonymous';
+     script.onload=function(){if(window.supabase&&typeof window.supabase.createClient==='function')finish();else finish(new Error('The Supabase library loaded without its browser client.'))};
+     script.onerror=function(){finish(new Error('The Supabase library CDN could not be reached.'))};
+     timer=setTimeout(function(){finish(new Error('Loading the Supabase library timed out.'))},12000);
+     document.head.appendChild(script);
+    });
+    if(window.supabase&&typeof window.supabase.createClient==='function')return;
+   }catch(error){lastError=error}
+  }
+  throw lastError||new Error('Could not load the Supabase browser client.');
+ }
+ async function getHQClient(){
+  await loadSupabaseSdk();
+  if(window.StoreNestCustomerAuth&&typeof window.StoreNestCustomerAuth.getBusinessClient==='function'){
+   try{
+    var existing=await window.StoreNestCustomerAuth.getBusinessClient();
+    if(existing&&existing.auth)return existing;
+   }catch(error){console.warn('StoreNest auth helper unavailable; using the same project configuration directly.',error)}
+  }
+  if(window.StoreNestBusinessClient&&window.StoreNestBusinessClient.auth)return window.StoreNestBusinessClient;
+  var fallback=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
+   auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
+  });
+  window.StoreNestBusinessClient=fallback;
+  return fallback;
+ }
  async function verifyAdministrator(user){
   if(!client||!user)throw new Error('No authenticated StoreNest user was found.');
   if(validating)return validating;
@@ -649,6 +697,7 @@ initTheme();setPage(location.hash.slice(1)||'overview',false);
    window.StoreNestHQAdminAuthorized=true;
    syncView();
    setStatus('');
+   var retry=byId('hqAuthRetry');if(retry)retry.hidden=true;
    window.dispatchEvent(new CustomEvent('storenest:hq-admin-ready',{detail:{client:client,user:user}}));
    return true;
   })();
@@ -658,46 +707,56 @@ initTheme();setPage(location.hash.slice(1)||'overview',false);
   clearAdminSession();
   setStatus(message,true);
  }
+ function bindAuthListener(){
+  if(authSubscription||!client)return;
+  var result=client.auth.onAuthStateChange(function(event,session){
+   if(event==='SIGNED_OUT'){
+    clearAdminSession();
+    setStatus('');
+    window.dispatchEvent(new CustomEvent('storenest:hq-admin-signed-out'));
+   }else if(event==='SIGNED_IN'&&session&&session.user&&!authorized){
+    window.setTimeout(function(){
+     verifyAdministrator(session.user).catch(function(){showSignInError('This account is not authorized for StoreNest HQ.')});
+    },0);
+   }
+  });
+  authSubscription=result&&result.data&&result.data.subscription?result.data.subscription:null;
+ }
  async function initialize(){
-  var button=byId('hqLoginButton');
+  var button=byId('hqLoginButton'),retry=byId('hqAuthRetry');
   if(button){button.disabled=true;button.textContent='Connecting securely…'}
+  if(retry)retry.hidden=true;
+  setStatus('');
   try{
-   if(!window.StoreNestCustomerAuth)throw new Error('StoreNest secure sign-in is unavailable.');
-   client=await window.StoreNestCustomerAuth.getBusinessClient();
-   if(!client||!client.auth)throw new Error('StoreNest secure sign-in is unavailable.');
+   client=await getHQClient();
+   bindAuthListener();
    if(button){button.disabled=false;button.textContent='Sign in securely'}
-   var listener=client.auth.onAuthStateChange(function(event,session){
-    if(event==='SIGNED_OUT'){
-     clearAdminSession();
-     setStatus('');
-     window.dispatchEvent(new CustomEvent('storenest:hq-admin-signed-out'));
-    }else if(event==='SIGNED_IN'&&session&&session.user&&!authorized){
-     window.setTimeout(function(){
-      verifyAdministrator(session.user).catch(function(){showSignInError('This account could not be authorized for StoreNest HQ.')});
-     },0);
-    }
-   });
-   if(listener&&listener.data&&listener.data.subscription)window.__storenestHQAuthSubscription=listener.data.subscription;
    var result=await client.auth.getUser();
-   if(result.error)throw result.error;
+   if(result.error){
+    clearAdminSession();
+    setStatus('Your previous session could not be restored. Sign in with your HQ administrator account.',true);
+    return;
+   }
    if(result.data&&result.data.user){
     try{await verifyAdministrator(result.data.user)}
     catch(error){showSignInError('This account is not authorized for StoreNest HQ. Sign in with an authorized administrator account.')}
    }else{
     clearAdminSession();
-    if(button){button.disabled=false;button.textContent='Sign in securely'}
+    setStatus('');
    }
   }catch(error){
    clearAdminSession();
-   setStatus('Secure sign-in could not be initialized. Refresh this page and try again.',true);
+   var reason=error&&error.message?String(error.message):'Unknown connection error.';
+   setStatus('Secure sign-in could not initialize. '+reason,true);
    if(button){button.disabled=true;button.textContent='Sign-in unavailable'}
+   if(retry)retry.hidden=false;
    console.error('StoreNest HQ sign-in initialization failed:',error);
   }
  }
  document.addEventListener('submit',async function(event){
   if(!event.target||event.target.id!=='hqLoginForm')return;
   event.preventDefault();
-  if(!client){setStatus('Secure sign-in is still connecting. Please wait a moment.',true);return}
+  if(!client){setStatus('Secure sign-in is not connected. Choose “Retry secure connection” and try again.',true);return}
   var button=byId('hqLoginButton');
   if(button){button.disabled=true;button.textContent='Verifying access…'}
   setStatus('');
@@ -716,10 +775,10 @@ initTheme();setPage(location.hash.slice(1)||'overview',false);
   }
  });
  document.addEventListener('click',async function(event){
+  if(event.target.closest&&event.target.closest('#hqAuthRetry')){initialize();return}
   if(!event.target.closest||!event.target.closest('#hqGlobalSignOut'))return;
   if(!client)return;
-  var button=byId('hqGlobalSignOut');
-  var status=byId('hqSessionStatus');
+  var button=byId('hqGlobalSignOut'),status=byId('hqSessionStatus');
   if(status){status.hidden=true;status.textContent=''}
   if(button){button.disabled=true;button.textContent='Signing out…'}
   var result=await client.auth.signOut();
