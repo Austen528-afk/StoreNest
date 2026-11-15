@@ -297,6 +297,23 @@
     $("copyPublisherReferralLink").disabled = !link;
   }
 
+  async function copyPublisherMessageLink() {
+    const status = $("publisherMessageLinkStatus");
+    const code = String(publisherProfile?.referral_code || "").trim();
+    if (!code) {
+      setMessage(status, "Your Publisher contact link is not available yet. Refresh and try again.", "error");
+      return;
+    }
+    const link = new URL("/", window.location.origin);
+    link.searchParams.set("message_publisher", code);
+    try {
+      await navigator.clipboard.writeText(link.toString());
+      setMessage(status, "Publisher contact link copied. Share it with a StoreNest customer.", "success");
+    } catch (error) {
+      setMessage(status, "Clipboard access is unavailable. Copy this link from the browser address bar: " + link.toString(), "error");
+    }
+  }
+
   async function copyPublisherReferralLink() {
     const link = buildPublisherReferralLink();
     if (!link) {
@@ -1356,6 +1373,7 @@
     $("newPasswordForm").addEventListener("submit", submitNewPassword);
     $("publisherSettingsForm").addEventListener("submit", savePublisherSettings);
     $("copyPublisherReferralLink").addEventListener("click", copyPublisherReferralLink);
+  $("copyPublisherMessageLink").addEventListener("click", copyPublisherMessageLink);
     $("openForgotPassword").addEventListener("click", () => {
       clearMessages();
       $("phoneRecoveryCodePanel").hidden = true;
