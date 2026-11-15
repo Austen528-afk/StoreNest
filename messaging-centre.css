@@ -192,3 +192,9 @@ html[data-theme="dark"] .sn-message-bubble{background:#1b2a23;color:#e4f0e9}
 html[data-theme="dark"] .sn-message-bubble-row.is-mine .sn-message-bubble{background:#174334;color:#dbf5e9}
 html[data-theme="dark"] .sn-message-auth-note{border-color:#294b3c;background:#152a20;color:#c7d8ce}
 html[data-theme="dark"] .sn-owner-message-centre .sn-message-composer-wrap{background:#101b16}
+
+
+.sn-message-signin-link{display:flex;align-items:center;justify-content:center;min-height:42px;margin:10px 12px;padding:9px 13px;border:1px solid #b9e8d5;border-radius:10px;background:#eaf8f2;color:#087653;font-size:12px;font-weight:800;text-decoration:none;transition:background .16s ease,border-color .16s ease}
+.sn-message-signin-link:hover{border-color:#79cda9;background:#dcf3e9}
+html[data-theme="dark"] .sn-message-signin-link{border-color:#29634b;background:#173d2d;color:#9ce5c2}
+html[data-theme="dark"] .sn-message-signin-link:hover{background:#1d4b37}
