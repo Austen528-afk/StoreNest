@@ -643,6 +643,14 @@ as $function$
   join public.publisher_profiles as publisher on publisher.id = owner_profile.referred_by_publisher_id and publisher.status = 'active'
   left join public.businesses as business on business.owner_id = owner_profile.user_id
   where owner_profile.user_id = auth.uid()
+  union all
+  select orders.customer_user_id, 'customer'::text, coalesce(nullif(pg_catalog.btrim(customer.profile_name), ''), 'Customer'),
+         orders.business_id, nullif(pg_catalog.btrim(business.name), '')
+  from public.storefront_orders as orders
+  join public.businesses as business on business.id = orders.business_id and business.owner_id = auth.uid()
+  join public.customer_profiles as customer on customer.user_id = orders.customer_user_id
+  where orders.customer_user_id is not null
+  group by orders.customer_user_id, customer.profile_name, orders.business_id, business.name
   order by 3, 5 nulls first;
 $function$;
 revoke all on function public.get_my_message_contacts() from public, anon;
