@@ -115,9 +115,16 @@ grant select, insert on public.message_user_blocks to authenticated;
 create policy "Users can read blocks involving their own account"
 on public.message_user_blocks for select to authenticated
 using (blocker_user_id = (select auth.uid()) or blocked_user_id = (select auth.uid()));
-create policy "Users can block another account"
+create policy "Users can block another conversation participant"
 on public.message_user_blocks for insert to authenticated
-with check (blocker_user_id = (select auth.uid()));
+with check (
+  blocker_user_id = (select auth.uid())
+  and exists (
+    select 1 from public.storefront_conversations as c
+    where (c.participant_a_id = (select auth.uid()) and c.participant_b_id = message_user_blocks.blocked_user_id)
+       or (c.participant_b_id = (select auth.uid()) and c.participant_a_id = message_user_blocks.blocked_user_id)
+  )
+);
 
 create or replace function private.storenest_message_role_is_valid(
   p_user_id uuid,
@@ -381,9 +388,9 @@ begin
     raise exception using errcode = '42501', message = 'The selected recipient identity is unavailable.';
   end if;
 
-  if p_sender_role = 'business_owner' and p_sender_business_id is null
-     or p_recipient_role = 'business_owner' and p_recipient_business_id is null then
-    raise exception using errcode = '22023', message = 'Select a registered business identity for this conversation.';
+  if p_sender_role = 'business_owner' and p_recipient_role = 'customer' and p_sender_business_id is null
+     or p_recipient_role = 'business_owner' and p_sender_role = 'customer' and p_recipient_business_id is null then
+    raise exception using errcode = '22023', message = 'Select the StoreNest business for this customer conversation.';
   end if;
   if p_sender_role <> 'business_owner' and p_sender_business_id is not null
      or p_recipient_role <> 'business_owner' and p_recipient_business_id is not null then
