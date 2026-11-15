@@ -247,3 +247,76 @@ html[data-theme="dark"] .sn-message-signin-link:hover{background:#1d4b37}
 #publisherMessageCentre .sn-message-list .sn-message-contact-result .sn-message-row-preview{
   white-space:normal;
 }
+
+/* HQ Messages: one compact list, vertical scrolling only. */
+#hqMessageCentre,
+#hqMessageCentre .sn-message-app,
+#hqMessageCentre .sn-message-list-pane,
+#hqMessageCentre .sn-message-list,
+#hqMessageCentre .sn-message-contact-results,
+#hqMessageCentre .sn-message-results,
+#hqMessageCentre .sn-message-main,
+#hqMessageCentre .sn-message-thread,
+#hqMessageCentre .sn-message-thread-scroll,
+#hqMessagesMount {
+  min-width: 0;
+  max-width: 100%;
+}
+#hqMessagesMount,
+#hqMessageCentre {
+  width: 100%;
+  overflow-x: hidden;
+}
+#hqMessageCentre .sn-message-app {
+  width: 100%;
+  min-width: 0;
+  grid-template-columns: minmax(0, 350px) minmax(0, 1fr);
+  overflow: hidden;
+}
+#hqMessageCentre .sn-message-list-head {
+  display: none !important;
+}
+#hqMessageCentre .sn-message-contact-results,
+#hqMessageCentre .sn-message-results {
+  display: none !important;
+}
+#hqMessageCentre .sn-message-list-pane {
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+#hqMessageCentre .sn-message-list {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
+}
+#hqMessageCentre .sn-message-list-label {
+  border-top: 0;
+}
+#hqMessageCentre .sn-message-list .sn-message-row,
+#hqMessageCentre .sn-message-list .sn-business-result {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+#hqMessageCentre .sn-message-row-body,
+#hqMessageCentre .sn-message-row-top {
+  min-width: 0;
+}
+#hqMessageCentre .sn-message-row-name,
+#hqMessageCentre .sn-message-row-preview {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+#hqMessageCentre .sn-message-thread-scroll {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+@media (max-width: 760px) {
+  #hqMessageCentre .sn-message-app {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
