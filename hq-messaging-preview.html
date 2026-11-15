@@ -510,7 +510,7 @@ function businessDirectorySection(){
 }
 function messageWorkspace(){
  return '<div class="hq-message-view">'+
- '<div class="pagehead"><div><div class="eyebrow">ST O R E N E S T  •  HQ</div><h1 class="title">Messages</h1><p class="subtitle">Start and continue private one-to-one conversations with StoreNest Customers, Business Owners and Publishers.</p></div></div>'+
+
  '<section class="panel hq-message-panel"><div class="panel-head"><div><h3>StoreNest inbox</h3><p>Search for a registered StoreNest user or continue a conversation. Messages are private to their two participants.</p></div><span class="badge-preview">Secure messaging</span></div>'+
  '<div class="hq-message-account" id="hqMessagingAccount" hidden><div><strong>HQ administrator session active</strong><small id="hqMessagingSignedInAs"></small></div></div>'+
  '<div id="hqMessagesMount" hidden></div></section></div>';
@@ -542,7 +542,9 @@ function setPage(id,updateHash){
  if(hqMessageCentre&&hqMessageStash)hqMessageStash.appendChild(hqMessageCentre);
  document.title=area.name+' — StoreNest HQ';
  if(updateHash)window.location.hash=area.id;
- document.getElementById('page').innerHTML=area.id==='overview'?overview():section(area);
+ var page=document.getElementById('page');
+ page.classList.toggle('messages-page',area.id==='messages');
+ page.innerHTML=area.id==='overview'?overview():section(area);
  if(area.id==='messages'){
   var hqMessagesMount=document.getElementById('hqMessagesMount');
   if(hqMessageCentre&&hqMessagesMount){hqMessagesMount.appendChild(hqMessageCentre);hqMessageCentre.hidden=!window.StoreNestHQAdminAuthorized}
