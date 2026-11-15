@@ -39,6 +39,8 @@ alter table public.storefront_conversations
     check (
       participant_a_role in ('customer', 'business_owner', 'publisher', 'hq')
       and participant_b_role in ('customer', 'business_owner', 'publisher', 'hq')
+      and (participant_a_role = 'business_owner' or participant_a_business_id is null)
+      and (participant_b_role = 'business_owner' or participant_b_business_id is null)
     ),
   add constraint storefront_conversations_request_state_check
     check (
@@ -111,20 +113,11 @@ create table public.message_user_blocks (
 );
 alter table public.message_user_blocks enable row level security;
 revoke all on public.message_user_blocks from public, anon, authenticated;
-grant select, insert on public.message_user_blocks to authenticated;
+grant select on public.message_user_blocks to authenticated;
+create index message_user_blocks_blocked_user_idx on public.message_user_blocks (blocked_user_id, blocker_user_id);
 create policy "Users can read blocks involving their own account"
 on public.message_user_blocks for select to authenticated
 using (blocker_user_id = (select auth.uid()) or blocked_user_id = (select auth.uid()));
-create policy "Users can block another conversation participant"
-on public.message_user_blocks for insert to authenticated
-with check (
-  blocker_user_id = (select auth.uid())
-  and exists (
-    select 1 from public.storefront_conversations as c
-    where (c.participant_a_id = (select auth.uid()) and c.participant_b_id = message_user_blocks.blocked_user_id)
-       or (c.participant_b_id = (select auth.uid()) and c.participant_a_id = message_user_blocks.blocked_user_id)
-  )
-);
 
 create or replace function private.storenest_message_role_is_valid(
   p_user_id uuid,
@@ -480,7 +473,8 @@ begin
     v_is_new := true;
     v_status := 'pending';
   else
-    select c.id, c.request_status, c.participant_a_role, c.participant_b_role
+    select c.id, c.request_status, c.participant_a_role, c.participant_b_role,
+           c.participant_a_business_id, c.participant_b_business_id
       into v_match
     from public.storefront_conversations as c
     where c.participant_a_id = v_a_id and c.participant_b_id = v_b_id
@@ -504,12 +498,12 @@ begin
       raise exception using errcode = '42501', message = 'Your message request is awaiting a response.';
     end if;
 
-    update public.storefront_conversations as c
-    set participant_a_role = v_a_role,
-        participant_b_role = v_b_role,
-        participant_a_business_id = v_a_business_id,
-        participant_b_business_id = v_b_business_id
-    where c.id = v_conversation_id;
+    if v_match.participant_a_role is distinct from v_a_role
+       or v_match.participant_b_role is distinct from v_b_role
+       or v_match.participant_a_business_id is distinct from v_a_business_id
+       or v_match.participant_b_business_id is distinct from v_b_business_id then
+      raise exception using errcode = '22023', message = 'This conversation already uses another StoreNest identity.';
+    end if;
 
     insert into public.storefront_messages (conversation_id, sender_id, body)
     values (v_conversation_id, v_sender, p_initial_message);
@@ -671,11 +665,12 @@ as $function$
   select p.user_id, p.display_name
   from public.publisher_profiles as p
   where p.status = 'active'
+    and pg_catalog.char_length(pg_catalog.btrim(coalesce(p_referral_code, ''))) between 1 and 32
     and p.referral_code = pg_catalog.upper(pg_catalog.btrim(coalesce(p_referral_code, '')))
   limit 1;
 $function$;
-revoke all on function public.get_public_publisher_message_contact(text) from public;
-grant execute on function public.get_public_publisher_message_contact(text) to anon, authenticated;
+revoke all on function public.get_public_publisher_message_contact(text) from public, anon;
+grant execute on function public.get_public_publisher_message_contact(text) to authenticated;
 
 create or replace function public.get_platform_admin_message_contacts(
   p_search text,
