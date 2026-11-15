@@ -259,8 +259,8 @@
     $("adminSignedInAs").textContent = activeUser?.email || "Administrator";
     authPanel.hidden = true;
     workspace.hidden = false;
-    await loadCommissionReport();
     window.dispatchEvent(new CustomEvent("storenest:hq-admin-ready", { detail: { client: client, user: activeUser } }));
+    await loadCommissionReport();
     const note = document.querySelector(".demo-note");
     if (note) note.innerHTML = "<strong>Live referral reporting.</strong> Publisher registration totals are connected to StoreNest accounts.";
   }
