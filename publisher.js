@@ -29,9 +29,14 @@
   let welcomeStoryTimer = null;
   let welcomeStorySwapTimeout = null;
   const WELCOME_STORY_INTERVAL_MS = 3000;
+  let analyticsSelectedCategory = "recruitment";
+  let publisherAnalyticsRefreshTimer = null;
+  let publisherAnalyticsRequestToken = 0;
+  const PUBLISHER_ANALYTICS_REFRESH_MS = 30000;
 
   function setView(view) {
     activeView = view;
+    if (view !== "dashboard") stopPublisherAnalyticsRefresh();
     $("publisherLoading").hidden = true;
     document.querySelectorAll("[data-view]").forEach((element) => {
       element.hidden = element.dataset.view !== view;
@@ -612,6 +617,8 @@
       button.setAttribute("aria-current", active ? "page" : "false");
     });
     $("dashboardHeading").textContent = SECTION_TITLES[key];
+    if (key === "analytics" && activeClient && publisherProfile?.id) startPublisherAnalyticsRefresh();
+    else stopPublisherAnalyticsRefresh();
     if (updateHistory && window.location.hash !== "#" + key) {
       window.history.pushState({ publisherSection: key }, "", "#" + key);
     }
@@ -631,8 +638,7 @@
       description: "Understand how effectively you attract and register new businesses.",
       metrics: ["Referral Visits", "Registrations", "Conversion Rate"],
       chartTitle: "Recruitment Trends",
-      chartCaption: "Illustrative view of referral visits and business registrations.",
-      insight: "Identify which recruitment activities are converting visitors into registered businesses."
+      insight: "Referral registrations come from your saved referral relationships. StoreNest does not currently record referral-link visits, so conversion cannot be calculated."
     },
     commissions: {
       category: "COMMISSIONS",
@@ -640,17 +646,15 @@
       description: "Track the development of your own publisher earnings.",
       metrics: ["Total Earned", "Pending Commissions", "Commission Growth"],
       chartTitle: "Commission Earnings Over Time",
-      chartCaption: "Illustrative view of your publisher commission earnings.",
-      insight: "Understand how your commissions change and identify opportunities for growth."
+      insight: "This view includes only your persisted commission records. Test-only records are excluded from the live totals."
     },
     businesses: {
       category: "MY BUSINESSES",
       title: "My Businesses Analytics",
       description: "Monitor the development of your referred business network.",
       metrics: ["Registered", "Activated", "Inactive"],
-      chartTitle: "Business Activation Trends",
-      chartCaption: "Illustrative view of referred business activation.",
-      insight: "Identify recently recruited businesses that may need help becoming active."
+      chartTitle: "Business Activation Snapshot",
+      insight: "A referred business is counted as activated when it has at least one published storefront. No business sales or revenue are shown."
     },
     progression: {
       category: "PROGRESSION",
@@ -658,15 +662,337 @@
       description: "Track progress toward higher publisher commission levels.",
       metrics: ["Current Share", "Next Level", "Milestone Progress"],
       chartTitle: "Commission Level Progression",
-      chartCaption: "Illustrative progression view only.",
-      insight: "Discover which performance milestones need attention to reach your next level."
+      insight: "Publisher level settings and qualification milestones are not stored yet. No progression estimate is shown."
     }
   };
+
+  function setPublisherAnalyticsStatus(message) {
+    const status = $("analyticsDataStatus");
+    if (status) status.textContent = message;
+  }
+
+  function renderPublisherAnalyticsMetrics(categoryKey, values) {
+    const config = PUBLISHER_ANALYTICS_CATEGORIES[categoryKey];
+    const container = $("analyticsMetrics");
+    if (!config || !container) return;
+    container.setAttribute("aria-label", config.title + " summary metrics");
+    const cards = config.metrics.map((label, index) => {
+      const metric = values?.[index] || {};
+      const card = document.createElement("article");
+      card.className = "publisher-analytics-metric";
+      const metricLabel = document.createElement("span");
+      metricLabel.textContent = label;
+      const metricValue = document.createElement("strong");
+      metricValue.textContent = metric.value == null ? "—" : String(metric.value);
+      const note = document.createElement("small");
+      note.textContent = metric.note || "Waiting for live StoreNest records";
+      card.append(metricLabel, metricValue, note);
+      return card;
+    });
+    container.replaceChildren(...cards);
+  }
+
+  function setPublisherAnalyticsChartEmpty(title, caption, badge) {
+    const svg = $("analyticsChartSvg");
+    const bars = $("analyticsChartBars");
+    const labels = $("analyticsChartLabels");
+    const placeholder = $("analyticsChartPlaceholder");
+    const line = $("analyticsChartLine");
+    const fill = $("analyticsChartAreaFill");
+    if (svg) svg.hidden = true;
+    if (bars) {
+      bars.hidden = true;
+      bars.replaceChildren();
+    }
+    if (labels) {
+      labels.hidden = true;
+      labels.replaceChildren();
+    }
+    if (placeholder) placeholder.hidden = false;
+    if (line) {
+      line.hidden = true;
+      line.setAttribute("d", "");
+    }
+    if (fill) {
+      fill.hidden = true;
+      fill.setAttribute("d", "");
+    }
+    if ($("analyticsChartPlaceholderTitle")) $("analyticsChartPlaceholderTitle").textContent = title;
+    if ($("analyticsChartCaption")) $("analyticsChartCaption").textContent = caption;
+    if ($("analyticsChartBadge") && badge) $("analyticsChartBadge").textContent = badge;
+    const area = document.querySelector(".publisher-analytics-chart-area");
+    if (area) area.setAttribute("aria-label", title + ". " + caption);
+  }
+
+  function recentPublisherMonths() {
+    const now = new Date();
+    return Array.from({ length: 6 }, (_, index) => {
+      const month = new Date(now.getFullYear(), now.getMonth() - 5 + index, 1);
+      const key = month.getFullYear() + "-" + String(month.getMonth() + 1).padStart(2, "0");
+      return {
+        key,
+        start: month,
+        end: new Date(month.getFullYear(), month.getMonth() + 1, 1),
+        label: month.toLocaleDateString("en-ZA", { month: "short" })
+      };
+    });
+  }
+
+  function publisherMonthlySeries(records, dateField, amountField) {
+    const months = recentPublisherMonths();
+    const sums = new Map(months.map((month) => [month.key, 0]));
+    (Array.isArray(records) ? records : []).forEach((record) => {
+      const date = new Date(record?.[dateField]);
+      if (!Number.isFinite(date.getTime())) return;
+      const key = date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0");
+      if (!sums.has(key)) return;
+      const amount = amountField ? Math.max(0, Number(record?.[amountField]) || 0) : 1;
+      sums.set(key, sums.get(key) + amount);
+    });
+    return { labels: months.map((month) => month.label), values: months.map((month) => sums.get(month.key) || 0) };
+  }
+
+  function renderPublisherAnalyticsLineChart(values, labels, caption, badge) {
+    const numericValues = Array.isArray(values) ? values.map((value) => Math.max(0, Number(value) || 0)) : [];
+    const max = Math.max(0, ...numericValues);
+    if (!numericValues.length || max <= 0) {
+      setPublisherAnalyticsChartEmpty("No recent records yet", caption, "Live records");
+      return;
+    }
+    const svg = $("analyticsChartSvg");
+    const line = $("analyticsChartLine");
+    const fill = $("analyticsChartAreaFill");
+    const bars = $("analyticsChartBars");
+    const placeholder = $("analyticsChartPlaceholder");
+    const monthLabels = $("analyticsChartLabels");
+    const chartArea = document.querySelector(".publisher-analytics-chart-area");
+    if (!svg || !line || !fill) return;
+    const xStart = 22;
+    const xEnd = 678;
+    const yTop = 34;
+    const yBottom = 146;
+    const points = numericValues.map((value, index) => {
+      const x = xStart + ((xEnd - xStart) * index) / Math.max(1, numericValues.length - 1);
+      const y = yBottom - (value / max) * (yBottom - yTop);
+      return { x: Number(x.toFixed(1)), y: Number(y.toFixed(1)) };
+    });
+    const linePath = "M " + points.map((point) => point.x + " " + point.y).join(" L ");
+    const areaPath = linePath + " L " + xEnd + " 165 L " + xStart + " 165 Z";
+    line.setAttribute("d", linePath);
+    fill.setAttribute("d", areaPath);
+    line.hidden = false;
+    fill.hidden = false;
+    svg.hidden = false;
+    if (bars) {
+      bars.hidden = true;
+      bars.replaceChildren();
+    }
+    if (placeholder) placeholder.hidden = true;
+    if ($("analyticsChartCaption")) $("analyticsChartCaption").textContent = caption;
+    if ($("analyticsChartBadge")) $("analyticsChartBadge").textContent = badge || "Last 6 months";
+    if (chartArea) chartArea.setAttribute("aria-label", caption);
+    if (monthLabels) {
+      monthLabels.replaceChildren(...labels.map((label) => {
+        const month = document.createElement("span");
+        month.textContent = label;
+        return month;
+      }));
+      monthLabels.hidden = false;
+    }
+  }
+
+  function renderPublisherActivationChart(activated, inactive, total) {
+    if (!total) {
+      setPublisherAnalyticsChartEmpty("No referred businesses yet", "Business activation appears when referred accounts are registered.", "Current status");
+      return;
+    }
+    const svg = $("analyticsChartSvg");
+    const bars = $("analyticsChartBars");
+    const labels = $("analyticsChartLabels");
+    const placeholder = $("analyticsChartPlaceholder");
+    if (svg) svg.hidden = true;
+    if (labels) {
+      labels.hidden = true;
+      labels.replaceChildren();
+    }
+    if (placeholder) placeholder.hidden = true;
+    if (!bars) return;
+    bars.replaceChildren();
+    [
+      { label: "Activated", value: activated, fillClass: "analytics-chart-bar-fill--active" },
+      { label: "Not yet activated", value: inactive, fillClass: "analytics-chart-bar-fill--inactive" }
+    ].forEach((item) => {
+      const row = document.createElement("div");
+      row.className = "analytics-chart-bar-row";
+      const label = document.createElement("span");
+      label.className = "analytics-chart-bar-label";
+      label.textContent = item.label;
+      const track = document.createElement("span");
+      track.className = "analytics-chart-bar-track";
+      const fill = document.createElement("span");
+      fill.className = "analytics-chart-bar-fill " + item.fillClass;
+      fill.style.width = Math.round((item.value / total) * 100) + "%";
+      track.appendChild(fill);
+      const value = document.createElement("strong");
+      value.className = "analytics-chart-bar-value";
+      value.textContent = new Intl.NumberFormat("en-ZA").format(item.value);
+      row.append(label, track, value);
+      bars.appendChild(row);
+    });
+    bars.hidden = false;
+    if ($("analyticsChartCaption")) $("analyticsChartCaption").textContent = "Current published-storefront status across your referred businesses.";
+    if ($("analyticsChartBadge")) $("analyticsChartBadge").textContent = "Current status";
+    const area = document.querySelector(".publisher-analytics-chart-area");
+    if (area) area.setAttribute("aria-label", "Business activation snapshot: " + activated + " activated, " + inactive + " not yet activated.");
+  }
+
+  function commissionGrowthMetric(records) {
+    const now = new Date();
+    const currentStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const nextStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const previousStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    let current = 0;
+    let previous = 0;
+    records.forEach((record) => {
+      const date = new Date(record.created_at);
+      if (!Number.isFinite(date.getTime())) return;
+      const amount = Math.max(0, Number(record.commission_amount) || 0);
+      if (date >= currentStart && date < nextStart) current += amount;
+      else if (date >= previousStart && date < currentStart) previous += amount;
+    });
+    if (previous <= 0) return { value: "—", note: "No previous-month baseline" };
+    const percent = ((current - previous) / previous) * 100;
+    return {
+      value: (percent > 0 ? "+" : "") + percent.toFixed(1) + "%",
+      note: "Compared with the previous calendar month"
+    };
+  }
+
+  function setPublisherAnalyticsProgressionUnavailable() {
+    renderPublisherAnalyticsMetrics("progression", [
+      { value: "—", note: "Current level is not saved" },
+      { value: "—", note: "Level rules are not configured" },
+      { value: "—", note: "Milestones are not configured" }
+    ]);
+    setPublisherAnalyticsChartEmpty(
+      "Progression data is not configured",
+      "StoreNest has not saved publisher levels or qualification milestones, so no progress is estimated.",
+      "Not configured"
+    );
+    $("analyticsInsight").textContent = PUBLISHER_ANALYTICS_CATEGORIES.progression.insight;
+    setPublisherAnalyticsStatus("Progression data unavailable");
+  }
+
+  async function loadPublisherAnalytics(categoryKey) {
+    const key = categoryKey || analyticsSelectedCategory;
+    if (!PUBLISHER_ANALYTICS_CATEGORIES[key]) return;
+    if (key === "progression") {
+      setPublisherAnalyticsProgressionUnavailable();
+      return;
+    }
+    if (!activeClient || !publisherProfile?.id) {
+      setPublisherAnalyticsStatus("Waiting for Publisher account");
+      return;
+    }
+    const requestToken = ++publisherAnalyticsRequestToken;
+    setPublisherAnalyticsStatus("Updating live StoreNest records…");
+    try {
+      if (key === "recruitment" || key === "businesses") {
+        const { data, error } = await activeClient.rpc("get_my_referred_business_accounts");
+        if (error) throw error;
+        if (requestToken !== publisherAnalyticsRequestToken || key !== analyticsSelectedCategory) return;
+        const accounts = Array.isArray(data) ? data : [];
+        const registered = accounts.length;
+        if (key === "recruitment") {
+          const series = publisherMonthlySeries(accounts, "registered_at");
+          renderPublisherAnalyticsMetrics(key, [
+            { value: "—", note: "Referral visits are not tracked yet" },
+            { value: new Intl.NumberFormat("en-ZA").format(registered), note: "Referred owner accounts" },
+            { value: "—", note: "Requires referral-visit tracking" }
+          ]);
+          renderPublisherAnalyticsLineChart(
+            series.values,
+            series.labels,
+            "Referred business registrations per month, using your saved referral relationships.",
+            "Last 6 months"
+          );
+          $("analyticsInsight").textContent = registered
+            ? "Your registered referrals are connected. Referral-link visits are not stored, so a conversion rate cannot be calculated."
+            : "StoreNest is checking your saved referral relationships. Referral visits are not stored, so visits and conversion remain unavailable.";
+        } else {
+          const activated = accounts.filter((account) => Number(account.published_store_count || 0) > 0).length;
+          const inactive = Math.max(0, registered - activated);
+          renderPublisherAnalyticsMetrics(key, [
+            { value: new Intl.NumberFormat("en-ZA").format(registered), note: "Referred owner accounts" },
+            { value: new Intl.NumberFormat("en-ZA").format(activated), note: "At least one storefront published" },
+            { value: new Intl.NumberFormat("en-ZA").format(inactive), note: "No storefront published yet" }
+          ]);
+          renderPublisherActivationChart(activated, inactive, registered);
+          $("analyticsInsight").textContent = registered
+            ? "Activation counts use published storefront status. Businesses without a published storefront may need setup support."
+            : "No referred business accounts are registered yet. Activation will appear when a referred business publishes a storefront.";
+        }
+      } else if (key === "commissions") {
+        const { data, error } = await activeClient.rpc("get_my_publisher_commission_records");
+        if (error) throw error;
+        if (requestToken !== publisherAnalyticsRequestToken || key !== analyticsSelectedCategory) return;
+        const records = (Array.isArray(data) ? data : []).filter((record) => record?.is_test !== true);
+        const totalEarned = records
+          .filter((record) => record.status === "earned")
+          .reduce((sum, record) => sum + (Number(record.commission_amount) || 0), 0);
+        const pending = records
+          .filter((record) => record.status === "pending")
+          .reduce((sum, record) => sum + (Number(record.commission_amount) || 0), 0);
+        const series = publisherMonthlySeries(records, "created_at", "commission_amount");
+        renderPublisherAnalyticsMetrics(key, [
+          { value: formatCommissionMoney(totalEarned), note: "Your earned commissions" },
+          { value: formatCommissionMoney(pending), note: "Your pending commissions" },
+          commissionGrowthMetric(records)
+        ]);
+        renderPublisherAnalyticsLineChart(
+          series.values,
+          series.labels,
+          "Your eligible commissions recorded per month. StoreNest fees and business sales are not shown.",
+          "Last 6 months"
+        );
+        $("analyticsInsight").textContent = "Only your persisted commission amounts and statuses are included. Demonstration records are excluded from live totals.";
+      }
+      setPublisherAnalyticsStatus("Live · updated " + new Date().toLocaleTimeString("en-ZA", { hour: "2-digit", minute: "2-digit" }));
+    } catch (error) {
+      if (requestToken !== publisherAnalyticsRequestToken || key !== analyticsSelectedCategory) return;
+      console.warn("Publisher Analytics could not be refreshed:", error?.message || error);
+      setPublisherAnalyticsStatus("Live data unavailable");
+    }
+  }
+
+  function stopPublisherAnalyticsRefresh() {
+    if (publisherAnalyticsRefreshTimer !== null) {
+      window.clearInterval(publisherAnalyticsRefreshTimer);
+      publisherAnalyticsRefreshTimer = null;
+    }
+    publisherAnalyticsRequestToken += 1;
+  }
+
+  function startPublisherAnalyticsRefresh() {
+    stopPublisherAnalyticsRefresh();
+    if (!activeClient || !publisherProfile?.id) {
+      setPublisherAnalyticsStatus("Publisher account required");
+      return;
+    }
+    loadPublisherAnalytics(analyticsSelectedCategory);
+    publisherAnalyticsRefreshTimer = window.setInterval(() => {
+      const panel = $("analyticsPanel");
+      if (!document.hidden && activeView === "dashboard" && panel && !panel.hidden && analyticsSelectedCategory !== "progression") {
+        loadPublisherAnalytics(analyticsSelectedCategory);
+      }
+    }, PUBLISHER_ANALYTICS_REFRESH_MS);
+  }
 
   function selectPublisherAnalyticsCategory(categoryKey) {
     const config = PUBLISHER_ANALYTICS_CATEGORIES[categoryKey];
     const panel = $("analyticsPanel");
     if (!config || !panel) return;
+    analyticsSelectedCategory = categoryKey;
 
     panel.querySelectorAll("[data-analytics-tab]").forEach((button) => {
       const selected = button.dataset.analyticsTab === categoryKey;
@@ -683,22 +1009,17 @@
     $("analyticsTitle").textContent = config.title;
     $("analyticsDescription").textContent = config.description;
     $("analyticsChartTitle").textContent = config.chartTitle;
-    $("analyticsChartCaption").textContent = config.chartCaption + " No live analytics data is connected.";
     $("analyticsInsight").textContent = config.insight;
 
-    const metrics = $("analyticsMetrics");
-    if (metrics) {
-      const cards = config.metrics.map((label) => {
-        const card = document.createElement("article");
-        card.className = "publisher-analytics-metric";
-        const metricLabel = document.createElement("span");
-        metricLabel.textContent = label;
-        const metricValue = document.createElement("strong");
-        metricValue.textContent = "—";
-        card.append(metricLabel, metricValue);
-        return card;
-      });
-      metrics.replaceChildren(...cards);
+    renderPublisherAnalyticsMetrics(categoryKey, config.metrics.map(() => ({ value: "—", note: "Loading live StoreNest records" })));
+    setPublisherAnalyticsChartEmpty("Loading live StoreNest records", "Waiting for your publisher-scoped data.", "Live records");
+
+    if (categoryKey === "progression") {
+      setPublisherAnalyticsProgressionUnavailable();
+    } else if (!panel.hidden && activeClient && publisherProfile?.id) {
+      loadPublisherAnalytics(categoryKey);
+    } else {
+      setPublisherAnalyticsStatus("Live records load when Analytics opens");
     }
   }
 
@@ -1097,6 +1418,18 @@
     window.addEventListener("hashchange", () => {
       const section = window.location.hash.replace(/^#/, "");
       if (activeView === "dashboard") setDashboardSection(section, false);
+    });
+    document.addEventListener("visibilitychange", () => {
+      const panel = $("analyticsPanel");
+      if (!document.hidden && activeView === "dashboard" && panel && !panel.hidden && analyticsSelectedCategory !== "progression") {
+        loadPublisherAnalytics(analyticsSelectedCategory);
+      }
+    });
+    window.addEventListener("focus", () => {
+      const panel = $("analyticsPanel");
+      if (activeView === "dashboard" && panel && !panel.hidden && analyticsSelectedCategory !== "progression") {
+        loadPublisherAnalytics(analyticsSelectedCategory);
+      }
     });
   }
 
