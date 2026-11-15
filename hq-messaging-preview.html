@@ -177,19 +177,66 @@ body.dark .publisher-connection.connected{background:#1e352d;border-color:#365c4
 .hq-message-signout{padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--text);font-size:11px;font-weight:750}
 #hqMessagesMount[hidden]{display:none!important}
 @media(max-width:640px){.hq-message-panel{padding:12px}.hq-message-auth{padding:16px}.hq-message-form{grid-template-columns:1fr}.hq-message-submit{grid-column:auto}.hq-message-account{align-items:flex-start;flex-direction:column}.hq-message-signout{width:100%}}
-</style></head>
+.hq-auth-gate{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;padding:26px clamp(18px,5vw,76px) 18px;background:radial-gradient(ellipse at 50% 35%,#fff 0,#f7faf8 57%,#eef5f1 100%);color:var(--text)}
+.hq-auth-gate[hidden],.app[hidden]{display:none!important}
+.hq-auth-top{width:min(1180px,100%);margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.hq-auth-brand{display:inline-flex;align-items:center;gap:11px;font-size:18px;font-weight:850;letter-spacing:-.6px}.hq-auth-brand b{margin-left:5px;padding:3px 7px;border:1px solid #cde8db;border-radius:6px;background:#e9f6f0;color:#16775e;font-size:10px;letter-spacing:.08em}
+.hq-auth-brand-mark{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:#15332d;color:#9df0d8;font-size:22px;font-weight:900}
+.hq-auth-main{flex:1;display:grid;place-items:center;padding:38px 0}
+.hq-auth-card{width:min(440px,100%);padding:34px 36px 28px;border:1px solid var(--line);border-radius:20px;background:var(--surface);box-shadow:0 18px 60px rgba(15,57,43,.09)}
+.hq-auth-emblem{display:grid;place-items:center;width:48px;height:48px;margin-bottom:23px;border-radius:15px;background:#e7f7ef;color:#07876d}.hq-auth-emblem svg{width:25px;height:25px}
+.hq-auth-card .eyebrow{margin-bottom:8px}.hq-auth-card h1{margin:0;font-size:26px;letter-spacing:-.9px;line-height:1.2}.hq-auth-intro{margin:10px 0 25px;color:var(--muted);font-size:13px;line-height:1.6}
+.hq-auth-form{display:grid;gap:8px}.hq-auth-form label{margin-top:7px;color:var(--text);font-size:12px;font-weight:730}
+.hq-auth-form input{width:100%;height:46px;padding:0 13px;border:1px solid var(--line);border-radius:11px;background:var(--surface);color:var(--text);font-size:13px;outline:none;transition:border-color .16s,box-shadow .16s}
+.hq-auth-form input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,191,156,.13)}
+.hq-auth-submit{min-height:46px;margin-top:14px;border:1px solid #0b8b70;border-radius:11px;background:#0b8b70;color:#fff;font-size:13px;font-weight:800;transition:background .16s,opacity .16s}
+.hq-auth-submit:hover:not(:disabled){background:#08745e}.hq-auth-submit:disabled{opacity:.58}
+.hq-auth-status{min-height:20px;margin:12px 0 0;color:var(--muted);font-size:12px;line-height:1.5}.hq-auth-status[data-error=true]{color:#b33b35}
+.hq-auth-note{display:flex;gap:9px;margin-top:16px;padding:12px;border-radius:11px;background:var(--soft);color:var(--muted);font-size:11px;line-height:1.5}.hq-auth-note span:first-child{flex:none;color:var(--accentdark);font-size:16px;font-weight:900}
+.hq-auth-footer{width:min(1180px,100%);margin:0 auto;display:flex;justify-content:space-between;gap:12px;padding-top:13px;border-top:1px solid var(--line);color:var(--muted);font-size:11px}
+.hq-admin-identity{max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:11px}
+.hq-global-signout{min-height:36px;padding:0 11px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--text);font-size:11px;font-weight:740}
+.hq-global-signout:hover{background:var(--soft)}.hq-global-signout:disabled{opacity:.55}
+.hq-session-status{color:#a43d35;font-size:11px}
+.hq-message-account{margin-top:16px}
+body.dark .hq-auth-gate{background:radial-gradient(ellipse at 50% 35%,#172623 0,#101b19 70%)}
+body.dark .hq-auth-card{box-shadow:none}
+body.dark .hq-auth-brand b{background:#25483d;color:#9de7cb;border-color:#366655}
+body.dark .hq-auth-brand-mark{background:#25483d;color:#9de7cb}
+body.dark .hq-auth-emblem{background:#25483d;color:#70e2c2}
+@media(max-width:620px){.hq-auth-gate{padding:18px 16px 14px}.hq-auth-main{padding:26px 0}.hq-auth-card{padding:27px 22px 22px;border-radius:17px}.hq-auth-card h1{font-size:23px}.hq-auth-footer{font-size:10px}.hq-admin-identity{display:none}.hq-global-signout{padding:0 8px;font-size:10px}}</style></head>
 <body>
+<section class="hq-auth-gate" id="hqAuthGate" aria-labelledby="hqAuthTitle">
+ <div class="hq-auth-top">
+  <a class="hq-auth-brand" href="/" aria-label="StoreNest HQ home"><span class="hq-auth-brand-mark">S</span><span>StoreNest <b>HQ</b></span></a>
+  <button class="iconbtn hq-auth-theme" id="hqAuthTheme" type="button" aria-label="Toggle dark mode" title="Toggle theme"></button>
+ </div>
+ <div class="hq-auth-main"><section class="hq-auth-card">
+  <div class="hq-auth-emblem" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 10.5 12 4l8 6.5v8a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 20v-6h6v6M8 9h8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  <div class="eyebrow">SECURE ADMINISTRATOR ACCESS</div>
+  <h1 id="hqAuthTitle">Sign in to StoreNest HQ</h1>
+  <p class="hq-auth-intro">Use your authorized StoreNest administrator account to access the HQ platform.</p>
+  <form class="hq-auth-form" id="hqLoginForm">
+   <label for="hqLoginEmail">Email address</label><input id="hqLoginEmail" name="email" type="email" autocomplete="username" inputmode="email" required placeholder="you@example.com">
+   <label for="hqLoginPassword">Password</label><input id="hqLoginPassword" name="password" type="password" autocomplete="current-password" required placeholder="Enter your password">
+   <button class="hq-auth-submit" id="hqLoginButton" type="submit" disabled>Connecting securely…</button>
+  </form>
+  <p class="hq-auth-status" id="hqAuthStatus" role="status" aria-live="polite"></p>
+  <div class="hq-auth-note"><span aria-hidden="true">⌑</span><span>HQ access is verified against your StoreNest administrator permissions. Publisher and business accounts cannot open this workspace.</span></div>
+ </section></div>
+ <footer class="hq-auth-footer"><span>StoreNest HQ</span><span>Authorized access only</span></footer>
+</section>
 <div class="shade" id="shade"></div>
-<div class="app">
+<div class="app" id="hqPlatformApp" hidden>
 <aside class="sidebar" id="sidebar">
  <div class="brand"><div class="brand-icon" id="brandicon"></div><div><div class="brand-name">store<span>nest.</span><span class="hq-tag">HQ</span></div></div></div>
  <div class="nav-scroller" id="nav"></div>
- <div class="sidebar-bottom"><div class="flag"><strong>Independent HQ preview</strong>Publisher network data and HQ administrator access are not connected.</div></div>
+ <div class="sidebar-bottom"><div class="flag"><strong>StoreNest HQ</strong>Private HQ records are available after secure administrator sign-in.</div></div>
 </aside>
 <div class="main">
  <header class="topbar">
   <div class="top-left"><button class="iconbtn mobile-menu" id="mobile-menu" aria-label="Open menu"></button><div><div class="top-label">StoreNest Headquarters</div><div class="top-caption">Marketplace management environment</div></div></div>
-  <div class="top-actions"><div class="search" id="search-shell"><span id="searchicon"></span><input id="navsearch" aria-label="Find a section" placeholder="Find a section..."></div><span class="status-pill"><span class="dot"></span>Prototype</span><button class="iconbtn" id="theme" aria-label="Toggle dark mode" title="Toggle theme"></button><div class="avatar" title="HQ prototype">HQ</div></div>
+  <div class="top-actions"><div class="search" id="search-shell"><span id="searchicon"></span><input id="navsearch" aria-label="Find a section" placeholder="Find a section..."></div><span class="status-pill"><span class="dot"></span>Prototype</span><button class="iconbtn" id="theme" aria-label="Toggle dark mode" title="Toggle theme"></button><span class="hq-admin-identity" id="hqAdminIdentity" hidden></span><span class="hq-session-status" id="hqSessionStatus" role="status" hidden></span><button class="hq-global-signout" id="hqGlobalSignOut" type="button" hidden>Sign out</button><div class="avatar" title="StoreNest HQ administrator">HQ</div></div>
  </header>
  <main class="page" id="page"></main>
 </div>
@@ -313,6 +360,7 @@ async function loadPendingStoreNestPayments(){
  if(request===pendingStorePaymentsRequest&&selected==='publishers')renderPublisherPage();
 }
 async function loadPublisherNetwork(){
+ if(!window.StoreNestHQAdminAuthorized)return;
  var request=++publisherRequest;
  publisherDataState='loading';publisherDataError='';publisherDataConnected=false;publisherRecords=[];registeredBusinessAccounts=[];
  if(selected==='publishers'){renderPublisherPage();loadPendingStoreNestPayments();}
@@ -381,6 +429,7 @@ function publisherProfileModal(record){
  return '<div class="publisher-profile-backdrop" data-publisher-profile-backdrop><section class="publisher-profile-dialog" role="dialog" aria-modal="true" aria-labelledby="publisher-profile-title" tabindex="-1"><header class="publisher-profile-head"><div class="publisher-profile-heading"><span class="publisher-avatar">'+escapeHtml((name.trim().charAt(0)||'P').toUpperCase())+'</span><div><span class="publisher-profile-kicker">Publisher profile</span><h2 id="publisher-profile-title">'+escapeHtml(name)+'</h2><p>Registered account details and available conduct records</p></div></div><button class="publisher-close" type="button" data-publisher-profile-close aria-label="Close Publisher profile">Close</button></header>'+content+'</section></div>';
 }
 async function loadPublisherProfile(id){
+ if(!window.StoreNestHQAdminAuthorized)return;
  var request=++publisherProfileRequest;
  selectedProfileId=id;publisherProfileState='loading';publisherProfileData=null;publisherProfileError='';
  if(selected==='publishers')renderPublisherPage();
@@ -463,8 +512,7 @@ function messageWorkspace(){
  return '<div class="hq-message-view">'+
  '<div class="pagehead"><div><div class="eyebrow">ST O R E N E S T  •  HQ</div><h1 class="title">Messages</h1><p class="subtitle">Start and continue private one-to-one conversations with StoreNest Customers, Business Owners and Publishers.</p></div></div>'+
  '<section class="panel hq-message-panel"><div class="panel-head"><div><h3>StoreNest inbox</h3><p>Search for a registered StoreNest user or continue a conversation. Messages are private to their two participants.</p></div><span class="badge-preview">Secure messaging</span></div>'+
- '<div class="hq-message-auth" id="hqMessagesLogin"><h2>HQ administrator sign in</h2><p>Sign in with your StoreNest administrator account to access the shared messaging system.</p><form class="hq-message-form" id="hqMessagingLoginForm"><label class="hq-message-field">Email address<input id="hqMessagingEmail" name="email" type="email" autocomplete="username" required placeholder="you@example.com"></label><label class="hq-message-field">Password<input id="hqMessagingPassword" name="password" type="password" autocomplete="current-password" required></label><button class="hq-message-submit" id="hqMessagingSignIn" type="submit">Sign in securely</button></form><p class="hq-message-auth-status" id="hqMessagingAuthStatus" role="status" aria-live="polite"></p></div>'+
- '<div class="hq-message-account" id="hqMessagingAccount" hidden><div><strong>Connected to StoreNest messaging</strong><small id="hqMessagingSignedInAs"></small></div><button type="button" class="hq-message-signout" id="hqMessagingSignOut">Sign out</button></div>'+
+ '<div class="hq-message-account" id="hqMessagingAccount" hidden><div><strong>HQ administrator session active</strong><small id="hqMessagingSignedInAs"></small></div></div>'+
  '<div id="hqMessagesMount" hidden></div></section></div>';
 }
 function section(a){
@@ -503,9 +551,9 @@ function setPage(id,updateHash){
  renderNav(document.getElementById('navsearch').value);
  document.getElementById('sidebar').classList.remove('open');document.getElementById('shade').classList.remove('show');
  document.getElementById('page').scrollTop=0;
- if(area.id==='publishers'||area.id==='businesses')loadPublisherNetwork();
+ if((area.id==='publishers'||area.id==='businesses')&&window.StoreNestHQAdminAuthorized)loadPublisherNetwork();
 }
-function initTheme(){document.getElementById('theme').innerHTML=icon(theme==='dark'?'sun':'moon',18);document.getElementById('theme').title=theme==='dark'?'Switch to light mode':'Switch to dark mode'}
+function initTheme(){var symbol=icon(theme==='dark'?'sun':'moon',18),title=theme==='dark'?'Switch to light mode':'Switch to dark mode';document.getElementById('theme').innerHTML=symbol;document.getElementById('theme').title=title;var gateTheme=document.getElementById('hqAuthTheme');if(gateTheme){gateTheme.innerHTML=symbol;gateTheme.title=title}}
 document.addEventListener('click',function(event){
  var go=event.target.closest('[data-go]');if(go){setPage(go.getAttribute('data-go'),true);return}
  var profileButton=event.target.closest('[data-publisher-profile]');if(profileButton){profileReturnFocusId=profileButton.getAttribute('data-publisher-profile');loadPublisherProfile(profileReturnFocusId);return}
@@ -529,13 +577,15 @@ document.addEventListener('keydown',function(event){
 });
 document.getElementById('navsearch').addEventListener('input',function(e){renderNav(e.target.value)});
 document.addEventListener('input',function(e){var page=document.getElementById('page'),scrollTop=page.scrollTop;if(e.target.matches('.business-search input')){businessQuery=e.target.value;page.innerHTML=businessDirectorySection()}else if(e.target.matches('.publisher-search input')){publisherQuery=e.target.value;page.innerHTML=publisherSection()}else{return}page.scrollTop=scrollTop;var selector=e.target.matches('.business-search input')?'.business-search input':'.publisher-search input',replacement=page.querySelector(selector);if(replacement){replacement.focus();replacement.setSelectionRange(replacement.value.length,replacement.value.length)}});
-document.getElementById('theme').addEventListener('click',function(){theme=theme==='light'?'dark':'light';document.body.classList.toggle('dark',theme==='dark');try{localStorage.setItem('storenest-hq-theme',theme)}catch(e){}initTheme()});
+function setHqTheme(){theme=theme==='light'?'dark':'light';document.body.classList.toggle('dark',theme==='dark');try{localStorage.setItem('storenest-hq-theme',theme)}catch(e){}initTheme()}document.getElementById('theme').addEventListener('click',setHqTheme);document.getElementById('hqAuthTheme').addEventListener('click',setHqTheme);
 document.getElementById('mobile-menu').addEventListener('click',function(){document.getElementById('sidebar').classList.add('open');document.getElementById('shade').classList.add('show')});
 document.getElementById('shade').addEventListener('click',function(){document.getElementById('sidebar').classList.remove('open');document.getElementById('shade').classList.remove('show')});
 document.addEventListener('change',function(e){
  if(e.target.id==='period'){selectedPeriod=e.target.value;if(selected==='publishers')renderPublisherPage();toast('Selected '+selectedPeriod+'. Publisher fee and commission reporting is unavailable until those records are tracked.')}
 });
 window.addEventListener('hashchange',function(){var key=location.hash.replace('#','');if(key!==selected)setPage(key,false)});
+window.addEventListener('storenest:hq-admin-ready',function(){if(selected==='publishers'||selected==='businesses')loadPublisherNetwork()});
+window.addEventListener('storenest:hq-admin-signed-out',function(){publisherRequest++;publisherProfileRequest++;pendingStorePaymentsRequest++;publisherDataConnected=false;publisherDataState='disconnected';publisherDataError='';publisherRecords=[];registeredBusinessAccounts=[];publisherCommissionTotals=[];pendingStorePaymentsAmount=null;pendingStorePaymentsCount=null;pendingStorePaymentsState='loading';selectedProfileId=null;publisherProfileState='idle';publisherProfileData=null;publisherProfileError=''});
 initTheme();setPage(location.hash.slice(1)||'overview',false);
 })();
 </script>
@@ -544,70 +594,144 @@ initTheme();setPage(location.hash.slice(1)||'overview',false);
 <script src="/messaging-centre.js" defer></script>
 <script>
 (function(){
+ 'use strict';
  var client=null,authorized=false,currentUser=null,validating=null;
  function byId(id){return document.getElementById(id)}
- function setStatus(message,isError){var el=byId('hqMessagingAuthStatus');if(!el)return;el.textContent=message||'';el.dataset.error=isError?'true':'false'}
+ function setStatus(message,isError){
+  var status=byId('hqAuthStatus');
+  if(!status)return;
+  status.textContent=message||'';
+  status.dataset.error=isError?'true':'false';
+ }
+ function clearAdminSession(){
+  authorized=false;currentUser=null;validating=null;
+  window.StoreNestHQAdminAuthorized=false;
+  window.StoreNestHQAdminUser=null;
+  var identity=byId('hqAdminIdentity');
+  if(identity){identity.textContent='';identity.title='';identity.hidden=true}
+  var signout=byId('hqGlobalSignOut');
+  if(signout){signout.hidden=true;signout.disabled=false;signout.textContent='Sign out'}
+  var account=byId('hqMessagingAccount');
+  if(account)account.hidden=true;
+  var mount=byId('hqMessagesMount');
+  if(mount)mount.hidden=true;
+  var centre=byId('hqMessageCentre');
+  if(centre)centre.hidden=true;
+  byId('hqAuthGate').hidden=false;
+  byId('hqPlatformApp').hidden=true;
+ }
  function syncView(){
-  var login=byId('hqMessagesLogin'),account=byId('hqMessagingAccount'),mount=byId('hqMessagesMount'),centre=byId('hqMessageCentre'),email=byId('hqMessagingSignedInAs');
-  if(login)login.hidden=authorized;
+  byId('hqAuthGate').hidden=authorized;
+  byId('hqPlatformApp').hidden=!authorized;
+  var identity=byId('hqAdminIdentity'),signout=byId('hqGlobalSignOut');
+  if(identity){
+   identity.hidden=!authorized;
+   identity.textContent=currentUser&&currentUser.email?currentUser.email:'Administrator';
+   identity.title=identity.textContent;
+  }
+  if(signout)signout.hidden=!authorized;
+  var account=byId('hqMessagingAccount'),email=byId('hqMessagingSignedInAs');
   if(account){account.hidden=!authorized;if(email)email.textContent=currentUser&&currentUser.email?'Signed in as '+currentUser.email:'Administrator access verified'}
+  var mount=byId('hqMessagesMount');
   if(mount)mount.hidden=!authorized;
+  var centre=byId('hqMessageCentre');
   if(centre)centre.hidden=!authorized;
  }
  async function verifyAdministrator(user){
-  if(!client||!user)return false;
+  if(!client||!user)throw new Error('No authenticated StoreNest user was found.');
   if(validating)return validating;
   validating=(async function(){
    var result=await client.rpc('get_platform_admin_publisher_referrals');
    if(result.error)throw result.error;
-   currentUser=user;authorized=true;window.StoreNestHQAdminUser=user;window.StoreNestHQAdminAuthorized=true;
-   syncView();setStatus('');
+   currentUser=user;
+   authorized=true;
+   window.StoreNestHQAdminUser=user;
+   window.StoreNestHQAdminAuthorized=true;
+   syncView();
+   setStatus('');
    window.dispatchEvent(new CustomEvent('storenest:hq-admin-ready',{detail:{client:client,user:user}}));
    return true;
   })();
   try{return await validating}finally{validating=null}
  }
- function deny(message){authorized=false;window.StoreNestHQAdminAuthorized=false;window.StoreNestHQAdminUser=null;syncView();setStatus(message||'This account does not have StoreNest HQ administrator access.',true)}
+ function showSignInError(message){
+  clearAdminSession();
+  setStatus(message,true);
+ }
  async function initialize(){
+  var button=byId('hqLoginButton');
+  if(button){button.disabled=true;button.textContent='Connecting securely…'}
   try{
    if(!window.StoreNestCustomerAuth)throw new Error('StoreNest secure sign-in is unavailable.');
    client=await window.StoreNestCustomerAuth.getBusinessClient();
-   var auth=client.auth.onAuthStateChange(function(event,session){
-    if(event==='SIGNED_OUT'){authorized=false;currentUser=null;window.StoreNestHQAdminAuthorized=false;window.StoreNestHQAdminUser=null;window.dispatchEvent(new CustomEvent('storenest:hq-admin-signed-out'));syncView();setStatus('')}
+   if(!client||!client.auth)throw new Error('StoreNest secure sign-in is unavailable.');
+   if(button){button.disabled=false;button.textContent='Sign in securely'}
+   var listener=client.auth.onAuthStateChange(function(event,session){
+    if(event==='SIGNED_OUT'){
+     clearAdminSession();
+     setStatus('');
+     window.dispatchEvent(new CustomEvent('storenest:hq-admin-signed-out'));
+    }else if(event==='SIGNED_IN'&&session&&session.user&&!authorized){
+     window.setTimeout(function(){
+      verifyAdministrator(session.user).catch(function(){showSignInError('This account could not be authorized for StoreNest HQ.')});
+     },0);
+    }
    });
-   sub=auth&&auth.data&&auth.data.subscription?auth.data.subscription:null;
+   if(listener&&listener.data&&listener.data.subscription)window.__storenestHQAuthSubscription=listener.data.subscription;
    var result=await client.auth.getUser();
    if(result.error)throw result.error;
-   if(result.data&&result.data.user){try{await verifyAdministrator(result.data.user)}catch(error){deny('This signed-in account is not authorized for StoreNest HQ messaging. Sign in with an HQ administrator account.')}}else syncView();
-  }catch(error){syncView();setStatus('StoreNest secure sign-in could not be initialized. Refresh the page and try again.',true);console.error('HQ messaging sign-in unavailable:',error)}
+   if(result.data&&result.data.user){
+    try{await verifyAdministrator(result.data.user)}
+    catch(error){showSignInError('This account is not authorized for StoreNest HQ. Sign in with an authorized administrator account.')}
+   }else{
+    clearAdminSession();
+    if(button){button.disabled=false;button.textContent='Sign in securely'}
+   }
+  }catch(error){
+   clearAdminSession();
+   setStatus('Secure sign-in could not be initialized. Refresh this page and try again.',true);
+   if(button){button.disabled=true;button.textContent='Sign-in unavailable'}
+   console.error('StoreNest HQ sign-in initialization failed:',error);
+  }
  }
  document.addEventListener('submit',async function(event){
-  if(!event.target||event.target.id!=='hqMessagingLoginForm')return;
-  event.preventDefault();if(!client){setStatus('StoreNest secure sign-in is not ready. Refresh the page and try again.',true);return}
-  var button=byId('hqMessagingSignIn');if(button){button.disabled=true;button.textContent='Signing in…'}
+  if(!event.target||event.target.id!=='hqLoginForm')return;
+  event.preventDefault();
+  if(!client){setStatus('Secure sign-in is still connecting. Please wait a moment.',true);return}
+  var button=byId('hqLoginButton');
+  if(button){button.disabled=true;button.textContent='Verifying access…'}
   setStatus('');
   try{
-   var email=byId('hqMessagingEmail').value.trim().toLowerCase(),password=byId('hqMessagingPassword').value;
+   var email=byId('hqLoginEmail').value.trim().toLowerCase();
+   var password=byId('hqLoginPassword').value;
    var result=await client.auth.signInWithPassword({email:email,password:password});
    if(result.error)throw result.error;
-   try{await verifyAdministrator(result.data.user)}catch(error){deny('The account is valid but does not have StoreNest HQ administrator access.');}
-   if(authorized){byId('hqMessagingLoginForm').reset()}
-  }catch(error){setStatus('The email and password could not be verified. Check them and try again.',true)}
-  finally{if(button){button.disabled=false;button.textContent='Sign in securely'}}
+   await verifyAdministrator(result.data.user);
+   byId('hqLoginForm').reset();
+  }catch(error){
+   showSignInError('We could not verify this sign-in for StoreNest HQ. Check your credentials and administrator access, then try again.');
+  }finally{
+   if(button&&client){button.disabled=false;button.textContent='Sign in securely'}
+  }
  });
  document.addEventListener('click',async function(event){
-  if(!event.target.closest||!event.target.closest('#hqMessagingSignOut'))return;
+  if(!event.target.closest||!event.target.closest('#hqGlobalSignOut'))return;
   if(!client)return;
-  var button=byId('hqMessagingSignOut');if(button)button.disabled=true;
+  var button=byId('hqGlobalSignOut');
+  var status=byId('hqSessionStatus');
+  if(status){status.hidden=true;status.textContent=''}
+  if(button){button.disabled=true;button.textContent='Signing out…'}
   var result=await client.auth.signOut();
-  if(result.error){setStatus('Sign out could not be completed. Try again.',true);if(button)button.disabled=false;return}
-  authorized=false;currentUser=null;window.StoreNestHQAdminAuthorized=false;window.StoreNestHQAdminUser=null;
-  window.dispatchEvent(new CustomEvent('storenest:hq-admin-signed-out'));syncView();setStatus('');
+  if(result.error){
+   if(status){status.hidden=false;status.textContent='Sign out could not be completed. Try again.'}
+   if(button){button.disabled=false;button.textContent='Sign out'}
+   return;
+  }
+  clearAdminSession();
+  setStatus('');
+  window.dispatchEvent(new CustomEvent('storenest:hq-admin-signed-out'));
  });
  window.addEventListener('storenest:hq-messages-page-shown',syncView);
- document.addEventListener('DOMContentLoaded',function(){
-  if(window.selected==='messages'&&typeof window.setPage==='function')window.setPage('messages',false);
-  initialize();
- });
+ document.addEventListener('DOMContentLoaded',initialize);
 })();
 </script></body></html>
