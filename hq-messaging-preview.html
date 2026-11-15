@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f5f8f6">
+<meta name="description" content="StoreNest HQ — independent marketplace administration prototype">
+<title>StoreNest HQ — Marketplace Control Centre</title>
+<style>
+:root{--bg:#f6f9f7;--surface:#fff;--soft:#f0f6f3;--line:#dce8e1;--text:#15332d;--muted:#73857e;--accent:#1abf9c;--accentdark:#087d66;--warn:#ab7a31;--radius:18px;--shadow:0 8px 34px rgba(12,55,39,.035)}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);background:var(--bg)}button,input,select{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed}a{text-decoration:none;color:inherit}
+.app{display:flex;min-height:100vh}.sidebar{width:254px;flex:none;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;background:var(--surface);border-right:1px solid var(--line);padding:23px 14px 18px;z-index:20}
+.brand{display:flex;align-items:center;gap:10px;padding:5px 12px 23px;border-bottom:1px solid var(--line)}.brand-icon{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:#d8f9ec;color:var(--accentdark)}
+.brand-name{font-size:21px;font-weight:850;letter-spacing:-1.25px;white-space:nowrap}.brand-name span{color:var(--accent)}.hq-tag{display:inline-flex;margin-left:5px;vertical-align:middle;background:#e9f6f0;border:1px solid #cde8db;border-radius:5px;color:#16775e;font-size:9px;font-weight:800;letter-spacing:.09em;padding:3px 5px}
+.nav-scroller{overflow-y:auto;flex:1;scrollbar-width:thin;padding-top:20px}.nav-title{font-size:10px;color:#8c9d94;font-weight:800;letter-spacing:.13em;margin:17px 12px 8px}.nav-title:first-child{margin-top:0}
+.nav-item{display:flex;align-items:center;gap:11px;width:100%;height:41px;border:0;border-radius:11px;background:transparent;padding:0 13px;margin:3px 0;color:#466057;text-align:left;font-size:13px;font-weight:610;transition:.16s}
+.nav-item:hover{background:var(--soft);color:var(--text)}.nav-item.active{color:var(--accentdark);background:#ddf7ec;font-weight:760;box-shadow:inset 3px 0 0 var(--accent)}.nav-item svg{flex:none}.nav-item span{flex:1}.nav-item .arrow{opacity:.45}
+.sidebar-bottom{border-top:1px solid var(--line);padding:15px 9px 0}.sidebar-bottom .flag{border-radius:12px;background:var(--soft);padding:12px;font-size:12px;line-height:1.55;color:var(--muted)}.sidebar-bottom strong{display:block;color:var(--text);font-size:12px;margin-bottom:3px}
+.main{flex:1;min-width:0}.topbar{height:75px;padding:0 32px;display:flex;align-items:center;justify-content:space-between;gap:14px;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-left,.top-actions{display:flex;align-items:center;gap:13px}.top-label{font-weight:720;font-size:14px}.top-caption{font-size:12px;color:var(--muted);margin-top:2px}
+.search{display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:11px;background:var(--bg);padding:0 12px;width:250px;height:38px;color:var(--muted)}.search input{border:0;outline:0;background:transparent;width:100%;min-width:0;color:var(--text);font-size:12px}
+.iconbtn{display:inline-grid;place-items:center;width:38px;height:38px;border:1px solid var(--line);border-radius:11px;background:var(--surface);color:var(--text)}.iconbtn:hover{background:var(--soft)}.avatar{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:#183a31;color:#dff8ee;font-size:12px;font-weight:750}.status-pill{display:flex;align-items:center;gap:7px;border:1px solid #cce7da;background:#ecf8f2;color:#18775f;padding:7px 10px;border-radius:100px;font-size:11px;font-weight:740;white-space:nowrap}.dot{width:7px;height:7px;background:var(--accent);border-radius:50%}
+.page{max-width:1450px;margin:auto;padding:31px 34px 60px}.pagehead{display:flex;align-items:start;justify-content:space-between;gap:18px;margin-bottom:25px}.eyebrow{font-size:10px;font-weight:850;letter-spacing:.16em;color:var(--accentdark);text-transform:uppercase;margin-bottom:9px}.title{font-size:30px;font-weight:790;letter-spacing:-1.1px;margin:0 0 7px}.subtitle{font-size:13px;line-height:1.65;color:var(--muted);margin:0;max-width:760px}.head-actions{display:flex;align-items:center;gap:9px}
+.select,.smallbtn{background:var(--surface);border:1px solid var(--line);padding:10px 13px;border-radius:11px;color:var(--text);font-size:12px;min-height:39px}.smallbtn{display:inline-flex;align-items:center;gap:7px;font-weight:670}.smallbtn:hover{background:var(--soft)}
+.hero-notice{border:1px solid #cce8d9;background:linear-gradient(110deg,#eafbf3,#f7fcf9);border-radius:16px;padding:14px 17px;display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:20px}
+.hero-notice strong{font-size:13px}.hero-notice p{font-size:12px;margin:4px 0 0;color:#52766a;line-height:1.55}.notebadge{font-size:10px;border:1px solid #cce6db;background:#fff;border-radius:99px;padding:7px 10px;color:#337966;white-space:nowrap}
+.section-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:26px 0 13px}.section-row h2{font-size:17px;letter-spacing:-.45px;margin:0}.section-row p{font-size:12px;color:var(--muted);margin:3px 0 0}
+.metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}.metric{background:var(--surface);border:1px solid var(--line);border-radius:15px;padding:18px 18px 15px;min-height:134px;box-shadow:var(--shadow)}.metric-top{display:flex;justify-content:space-between;align-items:center;color:#688477;font-size:12px}.metric-icon{display:grid;place-items:center;background:#e9f8ef;color:var(--accentdark);border-radius:10px;width:30px;height:30px}.metric-num{font-size:28px;line-height:1.25;margin:12px 0 6px;font-weight:770;letter-spacing:-.6px}.metric-foot{font-size:11px;color:var(--muted)}
+.attention{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:var(--shadow)}.attention-head{display:flex;align-items:center;gap:10px}.attention-head .attention-icon{color:var(--accentdark);background:var(--soft);padding:9px;border-radius:10px;display:flex}.attention h2{font-size:16px;margin:0}.attention .assist{margin:4px 0 0;color:var(--muted);font-size:12px}
+.action-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;margin-top:18px}.action{display:flex;text-align:left;align-items:center;gap:12px;border:1px solid var(--line);background:var(--surface);border-radius:13px;padding:14px;min-height:75px;color:var(--text)}.action:hover,.module-card:hover{border-color:#9fdac3;background:#f5fcf8}.action strong{display:block;font-size:12px}.action small{display:block;color:var(--muted);font-size:11px;margin-top:5px}.action .circle{display:grid;place-items:center;width:35px;height:35px;border-radius:11px;background:var(--soft);color:var(--accentdark);flex:none}.action .chevron{margin-left:auto;color:var(--muted)}
+.panels{display:grid;grid-template-columns:1.55fr 1fr;gap:16px}.panel{min-width:0;border:1px solid var(--line);border-radius:18px;background:var(--surface);padding:21px;min-height:290px}.panel-head{display:flex;justify-content:space-between;gap:8px;align-items:center}.panel h3{font-size:16px;letter-spacing:-.3px;margin:0}.panel p{font-size:12px;color:var(--muted);line-height:1.6;margin:5px 0 0}.emptychart{height:208px;position:relative;margin-top:19px;border-bottom:1px solid #e5eee8;background:repeating-linear-gradient(to bottom, transparent 0,transparent 43px,#edf2ef 44px,#edf2ef 45px)}.chart-content{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px}.softbubble{width:42px;height:42px;border-radius:15px;background:var(--soft);color:var(--accentdark);display:grid;place-items:center;margin-bottom:7px}.chart-content strong{font-size:13px}.chart-content p{max-width:260px;margin:0}
+.queue-list{margin-top:17px;display:grid;gap:9px}.queue-list button{background:var(--bg);border:1px solid var(--line);border-radius:12px;min-height:59px;padding:11px 13px;display:flex;align-items:center;gap:12px;text-align:left;color:var(--text)}.queue-list button:hover{background:var(--soft)}.queue-list button b{font-size:12px;display:block}.queue-list button small{font-size:10px;color:var(--muted);display:block;margin-top:4px}.queue-list button svg:last-child{margin-left:auto}
+.module-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.module-card{border:1px solid var(--line);background:var(--surface);border-radius:15px;padding:17px;text-align:left;min-height:119px;color:var(--text)}.module-icon{background:var(--soft);color:var(--accentdark);border-radius:10px;padding:8px;display:inline-flex}.module-card strong{font-size:13px;display:block;margin-top:10px}.module-card small{font-size:11px;line-height:1.4;color:var(--muted);display:block;margin-top:5px}
+.callout{background:var(--soft);border:1px solid var(--line);border-radius:15px;padding:15px 18px;font-size:12px;line-height:1.7;color:#54766a;margin-top:17px}
+.workflow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin-top:18px}.workflow-step{border:1px solid var(--line);border-radius:13px;padding:15px;background:var(--surface);min-height:116px}.workflow-step .num{font-size:10px;letter-spacing:.09em;font-weight:800;color:var(--accentdark);margin-bottom:12px}.workflow-step strong{font-size:12px;display:block}.workflow-step p{font-size:11px;margin-top:7px;color:var(--muted);line-height:1.5}
+.segment{display:flex;align-items:center;gap:5px;flex-wrap:wrap;padding:4px;background:var(--soft);border-radius:11px;width:max-content;max-width:100%}.segment button{border:0;padding:8px 12px;color:var(--muted);border-radius:8px;background:transparent;font-size:12px;font-weight:650}.segment button.selected{background:var(--surface);color:var(--accentdark);box-shadow:0 1px 5px #00000009}
+.tablewrap{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--surface);margin-top:16px}.tabletop{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:17px 19px}.tabletop strong{font-size:14px}.tabletop p{font-size:11px;color:var(--muted);margin:4px 0 0}
+table{width:100%;border-collapse:collapse;text-align:left}th{font-size:11px;font-weight:670;color:var(--muted);padding:13px 19px;background:var(--soft)}td{border-top:1px solid var(--line);padding:18px;text-align:center;color:var(--muted);font-size:12px}.empty-table{padding:52px 20px;text-align:center;color:var(--muted);font-size:12px}.empty-table strong{display:block;color:var(--text);font-size:13px;margin:12px 0 6px}
+.layout2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.mini-list{display:grid;gap:12px;margin-top:18px}.mini-list div{display:flex;gap:11px;align-items:center;font-size:12px;color:var(--muted)}.mini-list b{font-size:12px;color:var(--text)}
+.placeholder{background:var(--soft);border:1px dashed #bed9ca;border-radius:13px;padding:19px;color:#5e8072;font-size:12px;line-height:1.7}.badge-preview{display:inline-flex;align-items:center;padding:5px 9px;font-size:10px;font-weight:760;color:var(--accentdark);border-radius:99px;background:#e6f8ef}
+.toast{position:fixed;bottom:24px;right:24px;background:#1b3830;color:#fff;padding:12px 17px;border-radius:12px;font-size:12px;box-shadow:0 12px 40px #163f3038;opacity:0;transform:translateY(10px);transition:.2s;pointer-events:none;z-index:99}.toast.show{opacity:1;transform:translateY(0)}.mobile-menu{display:none}.shade{display:none}
+body.dark{--bg:#101b19;--surface:#172623;--soft:#203831;--line:#2b463d;--text:#effaf5;--muted:#a3b6ad;--accent:#52d7b4;--accentdark:#65e2bf;--shadow:none}
+body.dark .brand-icon,body.dark .metric-icon,body.dark .module-icon,body.dark .attention-icon,body.dark .action .circle{background:#25483d}body.dark .nav-item.active{background:#21493e}body.dark .status-pill,body.dark .hq-tag,body.dark .badge-preview{background:#25483d;color:#9de7cb;border-color:#366655}body.dark .hero-notice{background:#1e352d;border-color:#365c49}body.dark .hero-notice p,body.dark .callout{color:#a4c3b4}body.dark .notebadge{background:#2a493e;border-color:#366655;color:#b2e8d1}body.dark .action:hover,body.dark .module-card:hover{background:#254238}body.dark .emptychart{border-color:#355145;background:repeating-linear-gradient(to bottom,transparent 0,transparent 43px,#2c443b 44px,#2c443b 45px)}body.dark td{border-color:var(--line)}
+@media(max-width:1170px){.metric-grid,.module-grid{grid-template-columns:repeat(2,1fr)}.search{width:190px}.page{padding:26px 26px 50px}.sidebar{width:225px}.workflow{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:780px){.sidebar{position:fixed;transform:translateX(-101%);transition:.22s;width:255px;box-shadow:8px 0 30px #001d121a}.sidebar.open{transform:translateX(0)}.shade.show{display:block;position:fixed;inset:0;background:#0007;z-index:19}.mobile-menu{display:inline-grid}.topbar{padding:0 18px;height:67px}.search{display:none}.page{padding:23px 17px 35px}.pagehead{flex-direction:column;gap:15px}.title{font-size:26px}.panels,.layout2{grid-template-columns:1fr}.action-grid{grid-template-columns:1fr}.hero-notice{align-items:start}.notebadge{display:none}}
+@media(max-width:480px){.metric-grid,.module-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.metric{padding:14px;min-height:120px}.metric-top{font-size:11px}.metric-num{font-size:24px}.module-card{padding:12px;min-height:108px}.module-card strong{font-size:12px}.workflow{grid-template-columns:1fr 1fr;gap:8px}.workflow-step{padding:12px}.top-caption{display:none}.top-label{font-size:12px}.pagehead .head-actions{width:100%}.select{flex:1}.status-pill{display:none}.nav-item{height:42px}.tablewrap{overflow-x:auto}table{min-width:520px}}
+/* Keep the HQ shell stationary; the main content pane is the only desktop scroller. */
+html,body{height:100%;min-height:0;overflow:hidden}
+.app{height:100vh;height:100dvh;min-height:0;overflow:hidden}
+.sidebar{position:fixed;inset:0 auto 0 0;height:100vh;height:100dvh;overflow:hidden}
+.nav-scroller{overflow:visible;min-height:0}
+.main{height:100vh;height:100dvh;margin-left:254px;display:flex;flex-direction:column;overflow:hidden}
+.topbar{flex:none}
+.page{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;max-width:none;width:100%;margin:0;padding:25px clamp(20px,3vw,42px) 38px;overscroll-behavior:contain}
+@media(max-width:1170px){.sidebar{width:225px}.main{margin-left:225px}}
+@media(max-width:780px){.main{margin-left:0}.page{padding:22px 17px 32px}}
+@media(max-height:850px){.sidebar{padding:15px 11px 12px}.brand{padding-bottom:14px}.nav-scroller{padding-top:12px}.nav-title{margin:10px 10px 4px}.nav-item{height:36px;margin:2px 0;font-size:12px}.sidebar-bottom{padding:10px 7px 0}.sidebar-bottom .flag{padding:9px;font-size:11px}}
+.publisher-page .pagehead{margin-bottom:19px}
+.publisher-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.publisher-metric{min-width:0;min-height:116px;padding:15px 16px 13px}
+.publisher-metric .metric-top{gap:9px;align-items:flex-start;min-height:34px;line-height:1.35}
+.publisher-metric .metric-top>span:first-child{max-width:calc(100% - 38px)}
+.publisher-metric .metric-num{font-size:25px;margin:8px 0 3px;overflow-wrap:anywhere}
+.publisher-metric .metric-foot{font-size:10px;line-height:1.4}
+.publisher-section{margin-top:20px}
+.publisher-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:11px}
+.publisher-section-head h2{font-size:17px;letter-spacing:-.4px;margin:0}
+.publisher-section-head p{font-size:11px;color:var(--muted);margin:4px 0 0;line-height:1.45}
+.publisher-search{display:flex;align-items:center;gap:8px;width:min(320px,100%);height:39px;padding:0 11px;border:1px solid var(--line);border-radius:11px;background:var(--surface);color:var(--muted);flex:none}
+.publisher-search input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:var(--text);font-size:12px}
+.publisher-table-wrap{border:1px solid var(--line);border-radius:15px;background:var(--surface);overflow:hidden}
+.publishers-table{width:100%;table-layout:fixed;border-collapse:collapse;text-align:left}
+.publishers-table th{padding:12px 16px;font-size:10px}
+.publishers-table td{padding:13px 16px;border-top:1px solid var(--line);text-align:left;color:var(--text);font-size:12px;vertical-align:middle}
+.publishers-table th:nth-child(1){width:41%}.publishers-table th:nth-child(2){width:18%}.publishers-table th:nth-child(3){width:18%}.publishers-table th:nth-child(4){width:23%}
+.publisher-identity{display:flex;align-items:center;gap:11px;min-width:0}
+.publisher-avatar{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:var(--soft);color:var(--accentdark);font-size:12px;font-weight:800;flex:none}
+.publisher-identity-text{min-width:0}.publisher-identity-text strong{display:block;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.publisher-identity-text small{display:block;margin-top:3px;color:var(--muted);font-size:10px}
+.publisher-row-status{display:inline-flex;align-items:center;gap:5px;margin-left:7px;color:var(--accentdark);font-size:9px;font-weight:750}
+.publisher-view{border:1px solid #bde5d3;border-radius:9px;padding:7px 10px;background:#eef9f3;color:var(--accentdark);font-size:11px;font-weight:730}
+.publisher-view:hover{background:#ddf5e9}
+.publisher-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}
+.publisher-profile-button{border:1px solid var(--line);border-radius:9px;padding:7px 10px;background:var(--surface);color:var(--text);font-size:11px;font-weight:700}
+.publisher-profile-button:hover{background:var(--soft);border-color:#bde5d3}
+.publisher-empty{max-width:100%;padding:37px 18px;text-align:center;color:var(--muted);font-size:11px;line-height:1.5;overflow-wrap:anywhere;white-space:normal}
+.publisher-empty strong{display:block;color:var(--text);font-size:12px;margin:9px 0 3px}
+.publisher-detail{margin-top:18px;border:1px solid var(--line);border-radius:17px;background:var(--surface);padding:19px;box-shadow:var(--shadow)}
+.publisher-detail-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:16px}
+.publisher-detail-identity{display:flex;align-items:center;gap:12px;min-width:0}
+.publisher-detail-identity .publisher-avatar{width:42px;height:42px;border-radius:13px;font-size:14px}
+.publisher-detail-identity h2{font-size:17px;margin:0;overflow-wrap:anywhere}
+.publisher-detail-identity p{font-size:10px;color:var(--muted);margin:4px 0 0;overflow-wrap:anywhere}
+.publisher-close{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:9px;padding:7px 10px;font-size:11px;font-weight:700;flex:none}
+.publisher-close:hover{background:var(--soft)}
+.publisher-detail-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.publisher-detail-kpi{min-width:0;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:12px}
+.publisher-detail-kpi span{display:block;font-size:10px;color:var(--muted);line-height:1.35;min-height:28px}
+.publisher-detail-kpi strong{display:block;margin-top:5px;font-size:19px;letter-spacing:-.35px;overflow-wrap:anywhere}
+.publisher-finance{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(260px,1fr);gap:13px;margin-top:14px}
+.publisher-finance-panel{min-width:0;border:1px solid var(--line);border-radius:13px;padding:15px;background:var(--surface)}
+.publisher-finance-panel h3{font-size:13px;margin:0 0 12px}
+.publisher-ledger{display:grid;gap:0}
+.publisher-ledger-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line);font-size:11px}
+.publisher-ledger-row:first-child{border-top:0;padding-top:0}
+.publisher-ledger-row span{color:var(--muted);line-height:1.45}.publisher-ledger-row strong{font-size:11px;text-align:right;white-space:nowrap}
+.publisher-policy-note{font-size:10px;line-height:1.5;color:var(--muted);padding:10px;border-radius:9px;background:var(--soft);margin-top:8px}
+.publisher-chart{height:184px;position:relative;border-bottom:1px solid var(--line);background:repeating-linear-gradient(to bottom,transparent 0,transparent 43px,#edf2ef 44px,#edf2ef 45px);overflow:hidden}
+.publisher-chart svg{width:100%;height:100%;overflow:visible}.publisher-chart .chart-line{fill:none;stroke:var(--accentdark);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}.publisher-chart .chart-dot{fill:var(--surface);stroke:var(--accentdark);stroke-width:2}
+.publisher-chart-empty{height:100%;display:grid;place-items:center;text-align:center;padding:20px;color:var(--muted);font-size:11px}
+.publisher-profile-backdrop{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:22px;background:rgba(8,22,18,.48);backdrop-filter:blur(3px)}
+.publisher-profile-dialog{width:min(640px,100%);max-height:min(88vh,760px);overflow:auto;border:1px solid var(--line);border-radius:18px;background:var(--surface);color:var(--text);padding:21px;box-shadow:0 24px 70px rgba(11,35,27,.22);outline:none}
+.publisher-profile-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
+.publisher-profile-heading{display:flex;align-items:center;gap:12px;min-width:0}
+.publisher-profile-heading .publisher-avatar{width:42px;height:42px;border-radius:13px;font-size:14px}
+.publisher-profile-heading h2{margin:0;font-size:19px;letter-spacing:-.35px;overflow-wrap:anywhere}
+.publisher-profile-heading p{margin:4px 0 0;color:var(--muted);font-size:11px;line-height:1.45}
+.publisher-profile-kicker{display:block;margin-bottom:4px;color:var(--accentdark);font-size:9px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase}
+.publisher-profile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.publisher-profile-item{min-width:0;border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:12px}
+.publisher-profile-item span{display:block;margin-bottom:6px;color:var(--muted);font-size:10px}
+.publisher-profile-item strong,.publisher-profile-item a{display:block;min-width:0;color:var(--text);font-size:12px;font-weight:700;overflow-wrap:anywhere}
+.publisher-profile-item a{color:var(--accentdark);text-decoration:none}
+.publisher-profile-item a:hover{text-decoration:underline}
+.publisher-profile-conduct{margin-top:14px;border:1px solid #e6ede9;border-radius:13px;background:var(--surface);padding:14px}
+.publisher-profile-conduct h3{margin:0 0 6px;font-size:13px}
+.publisher-profile-conduct p{margin:0;color:var(--muted);font-size:11px;line-height:1.55}
+.publisher-profile-loading,.publisher-profile-error{padding:22px 4px;color:var(--muted);font-size:12px;line-height:1.55}
+.publisher-profile-retry{margin-top:10px;border:1px solid #bde5d3;border-radius:9px;padding:8px 11px;background:#eef9f3;color:var(--accentdark);font-size:11px;font-weight:750}
+body.dark .publisher-view{background:#21493e;color:#9de7cb;border-color:#366655}body.dark .publisher-profile-button{background:#192923;color:#e8f1ed;border-color:#385147}body.dark .publisher-profile-conduct{border-color:#365046}body.dark .publisher-chart{background:repeating-linear-gradient(to bottom,transparent 0,transparent 43px,#2c443b 44px,#2c443b 45px)}
+@media(max-width:950px){.publisher-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.publisher-detail-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:650px){.publisher-section-head{align-items:stretch;flex-direction:column}.publisher-search{width:100%}.publisher-finance{grid-template-columns:1fr}.publishers-table thead{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.publishers-table,.publishers-table tbody{display:block;width:100%}.publishers-table tbody tr{display:grid;grid-template-columns:1fr 1fr;gap:0;padding:8px 12px;border-top:1px solid var(--line)}.publishers-table tbody tr:first-child{border-top:0}.publishers-table td{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:8px 3px;border:0;font-size:11px}.publishers-table td:first-child{grid-column:1/-1}.publishers-table td:last-child{justify-content:flex-end}.publishers-table td[data-label="Action"]{grid-column:1/-1;justify-content:space-between}.publishers-table td:before{content:attr(data-label);font-size:9px;color:var(--muted);font-weight:650}.publishers-table td:first-child:before{display:none}.publishers-table td[colspan="4"]{display:block;min-width:0}.publisher-empty{display:block;width:100%;min-width:0;overflow-wrap:anywhere;white-space:normal}.publisher-detail{padding:14px}.publisher-detail-head{align-items:flex-start}.publisher-detail-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.publisher-detail-kpi:last-child{grid-column:1/-1}.publisher-profile-backdrop{padding:12px}.publisher-profile-dialog{padding:16px}.publisher-profile-grid{grid-template-columns:1fr}}
+@media(max-width:480px){.publisher-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.publisher-metric{padding:12px;min-height:112px}.publisher-metric .metric-num{font-size:22px}.publisher-metric .metric-top{font-size:10px}.publisher-detail-kpi{padding:10px}.publisher-detail-kpi strong{font-size:17px}}
+.publisher-connection{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 15px;margin:-2px 0 18px;border:1px solid var(--line);border-radius:13px;background:var(--surface)}
+.publisher-connection.connected{border-color:#c7e8d7;background:linear-gradient(110deg,#f0fbf5,#fff)}
+.publisher-connection-copy{min-width:0}.publisher-connection-copy strong{display:block;font-size:12px}.publisher-connection-copy p{font-size:11px;line-height:1.5;color:var(--muted);margin:4px 0 0}
+.publisher-connection-note{font-size:11px;color:var(--muted);line-height:1.55;margin-top:6px}
+body.dark .publisher-connection.connected{background:#1e352d;border-color:#365c49}
+@media(max-width:650px){.publisher-connection{align-items:stretch}}
+.business-account-list{display:grid;gap:10px}
+.business-account-row{display:grid;grid-template-columns:minmax(145px,1.15fr) minmax(120px,.8fr) minmax(170px,1.4fr) minmax(135px,.8fr);align-items:center;gap:14px;padding:15px 16px;border:1px solid var(--line);border-radius:14px;background:var(--surface);box-shadow:var(--shadow)}
+.business-owner-cell,.business-referrer-cell,.business-store-cell{display:grid;gap:5px;min-width:0}
+.business-owner-cell strong,.business-referrer-cell strong{font-size:13px;color:var(--text);overflow-wrap:anywhere}
+.business-owner-cell small,.business-referrer-cell small,.business-store-cell small{font-size:11px;line-height:1.4;color:var(--muted)}
+.business-referrer-cell span{font-size:10px;color:var(--muted)}
+.business-store-cell{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.business-store-chip{display:inline-flex;align-items:center;gap:5px;padding:6px 9px;border:1px solid var(--line);border-radius:999px;color:var(--text);font-size:11px;background:var(--surface2,#f4f8f6)}
+.business-status{justify-self:start;display:inline-flex;align-items:center;padding:6px 9px;border-radius:999px;background:#e9f8ef;color:#116653;font-size:10px;font-weight:700;line-height:1.35}
+.business-status.pending{background:#fff5df;color:#8b5a00}
+.business-status.neutral{background:var(--surface2,#f4f8f6);color:var(--muted)}
+.business-empty{padding:30px 18px;text-align:center;border:1px dashed var(--line);border-radius:14px;background:var(--surface);color:var(--muted);font-size:12px}
+.business-empty strong{display:block;margin-bottom:6px;color:var(--text);font-size:13px}
+.publisher-referral-accounts{margin:18px 0 0;padding:16px;border:1px solid var(--line);border-radius:15px;background:var(--surface2,#f7faf8)}
+.publisher-referral-accounts h3{font-size:14px;margin:0}
+.publisher-referral-accounts>p{font-size:11px;color:var(--muted);margin:4px 0 12px}
+.publisher-referral-list{display:grid;gap:9px}
+@media(max-width:900px){.business-account-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.business-account-row{grid-template-columns:1fr;gap:10px;padding:13px}.business-status{justify-self:start}}
+
+</style>
+<link rel="stylesheet" href="/messaging-centre.css"><style>
+.hq-message-unread{display:inline-grid;min-width:18px;height:18px;margin-left:auto;padding:0 5px;place-items:center;border-radius:999px;background:#0e9c7e;color:#fff;font-size:10px;font-weight:850;line-height:1}
+.hq-message-unread[hidden]{display:none!important}
+.hq-message-view .pagehead{margin-bottom:18px}
+.hq-message-panel{padding:18px}
+.hq-message-auth{max-width:620px;margin:16px auto;padding:22px;border:1px solid var(--line);border-radius:15px;background:var(--soft)}
+.hq-message-auth h2{margin:0 0 6px;font-size:16px}
+.hq-message-auth p{margin:6px 0 16px;color:var(--muted);font-size:12px;line-height:1.6}
+.hq-message-form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hq-message-field{display:block;color:var(--muted);font-size:11px;font-weight:700}
+.hq-message-field input{display:block;width:100%;height:42px;margin-top:6px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--text)}
+.hq-message-submit{grid-column:1/-1;min-height:42px;padding:9px 13px;border:1px solid #b8e4d1;border-radius:10px;background:#e7f8ef;color:#087d66;font-size:12px;font-weight:800}
+.hq-message-submit:disabled{opacity:.65}
+.hq-message-auth-status{min-height:18px;margin:10px 0 0!important;color:var(--muted)}
+.hq-message-auth-status[data-error=true]{color:#a43d35}
+.hq-message-account{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;padding:12px 14px;border:1px solid var(--line);border-radius:11px;background:var(--soft)}
+.hq-message-account[hidden]{display:none}
+.hq-message-signout{padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--text);font-size:11px;font-weight:750}
+#hqMessagesMount[hidden]{display:none!important}
+@media(max-width:640px){.hq-message-panel{padding:12px}.hq-message-auth{padding:16px}.hq-message-form{grid-template-columns:1fr}.hq-message-submit{grid-column:auto}.hq-message-account{align-items:flex-start;flex-direction:column}.hq-message-signout{width:100%}}
+</style></head>
+<body>
+<div class="shade" id="shade"></div>
+<div class="app">
+<aside class="sidebar" id="sidebar">
+ <div class="brand"><div class="brand-icon" id="brandicon"></div><div><div class="brand-name">store<span>nest.</span><span class="hq-tag">HQ</span></div></div></div>
+ <div class="nav-scroller" id="nav"></div>
+ <div class="sidebar-bottom"><div class="flag"><strong>Independent HQ preview</strong>Publisher network data and HQ administrator access are not connected.</div></div>
+</aside>
+<div class="main">
+ <header class="topbar">
+  <div class="top-left"><button class="iconbtn mobile-menu" id="mobile-menu" aria-label="Open menu"></button><div><div class="top-label">StoreNest Headquarters</div><div class="top-caption">Marketplace management environment</div></div></div>
+  <div class="top-actions"><div class="search" id="search-shell"><span id="searchicon"></span><input id="navsearch" aria-label="Find a section" placeholder="Find a section..."></div><span class="status-pill"><span class="dot"></span>Prototype</span><button class="iconbtn" id="theme" aria-label="Toggle dark mode" title="Toggle theme"></button><div class="avatar" title="HQ prototype">HQ</div></div>
+ </header>
+ <main class="page" id="page"></main>
+</div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script>
+(function(){
+'use strict';
+var paths={
+grid:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+store:'<path d="M3 10h18l-2-6H5l-2 6Z"/><path d="M4 10v10h16V10M9 20v-7h6v7"/><path d="M3 10c0 3 4 3 4 0m0 0c0 3 4 3 4 0m0 0c0 3 4 3 4 0m0 0c0 3 4 3 4 0"/>',
+package:'<path d="m12 2 9 5-9 5-9-5 9-5ZM3 7v10l9 5 9-5V7M12 12v10"/>',
+users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+megaphone:'<path d="m3 11 15-7v16L3 13v-2ZM3 11H2v4h5l2 5h4l-2-6"/>',
+receipt:'<path d="M4 3h16v18l-4-2-4 2-4-2-4 2V3ZM8 8h8M8 12h8M8 16h5"/>',
+wallet:'<rect x="2" y="5" width="20" height="15" rx="2"/><path d="M2 8V5a2 2 0 0 1 2-2h14M16 12h6v5h-6a2 2 0 0 1 0-5Z"/>',
+chart:'<path d="M3 3v18h18M7 16l4-5 3 3 6-8"/>',
+shield:'<path d="m12 2 9 4v6c0 5-3 8-9 10-6-2-9-5-9-10V6l9-4Z"/><path d="m9 12 2 2 4-4"/>',
+settings:'<path d="M12 3a3 3 0 0 0-3 3H6v4H3v4h3v4h3a3 3 0 0 0 6 0h3v-4h3v-4h-3V6h-3a3 3 0 0 0-3-3Z"/><circle cx="12" cy="12" r="2.5"/>',
+bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4"/>',
+arrow:'<path d="m9 18 6-6-6-6"/>',
+search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
+sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+moon:'<path d="M20.5 15.5A9 9 0 0 1 8.5 3.5a9 9 0 1 0 12 12Z"/>',
+menu:'<path d="M4 7h16M4 12h16M4 17h16"/>',
+activity:'<path d="M3 12h4l3-7 4 14 3-7h4"/>',
+clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+check:'<path d="m4 12 5 5L20 6"/>',
+refresh:'<path d="M20 7v5h-5M4 17v-5h5M5 9a7 7 0 0 1 12-2l3 5M4 12l3 5a7 7 0 0 0 12-2"/>',
+filter:'<path d="M4 6h16M7 12h10M10 18h4"/>',
+link:'<path d="M7 17 17 7M8 7h9v9"/>',
+credit:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
+help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4.5 1.5c-.5.7-2 1.5-2 3M12 17h.01"/>',
+file:'<path d="M6 2h8l5 5v15H6V2ZM14 2v6h5M9 13h7M9 17h7"/>',
+message:'<path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5 8.6 8.6 0 0 1-4-.98L3 21l1.98-5.5a8.4 8.4 0 0 1-.98-4A8.5 8.5 0 0 1 12.5 3a8.5 8.5 0 0 1 8.5 8.5Z"/>',
+briefcase:'<rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3M3 12h18"/>'
+};
+function icon(name,size){return '<svg aria-hidden="true" width="'+(size||18)+'" height="'+(size||18)+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">'+(paths[name]||paths.grid)+'</svg>'}
+var areas=[
+{id:'overview',name:'Overview',icon:'grid',group:'MARKETPLACE'},
+{id:'businesses',name:'Businesses',icon:'store',group:'MARKETPLACE',desc:'Review applications, approve businesses and oversee storefronts.',metrics:['Business applications','Approved businesses','Active storefronts','Suspended businesses'],tabs:['Applications','Approved','Suspended'],cols:['Business','Owner','Submitted','Status'],steps:[['Application','Business owner submits details and verification documents.'],['Verification','Check business information and supporting evidence.'],['Decision','Approve, reject or request clarification with reasons.'],['Publication','Only eligible approved storefronts may become public.']]},
+{id:'products',name:'Product Approvals',icon:'package',group:'MARKETPLACE',desc:'Control listing quality before new products and services go live.',metrics:['Pending submissions','Approved listings','Changes requested','Rejected listings'],tabs:['Pending review','Approved','Changes requested','Rejected'],cols:['Listing','Business','Submitted','Review status'],steps:[['Submission','New listing enters a non-public review queue.'],['Review','Check images, description, category and policy compliance.'],['Decision','Record an approval or a reasoned rejection.'],['Publish','Only an approved revision becomes visible publicly.']]},
+{id:'consumers',name:'Consumers',icon:'users',group:'MARKETPLACE',desc:'Understand the people using StoreNest and how they interact with the marketplace.',metrics:['Active consumers','New consumers','Returning consumers','Marketplace visits'],tabs:['Overview','Engagement','Retention'],cols:['Consumer group','Activity','Period','Trend'],steps:[['Acquisition','Understand where new consumers join.'],['Discovery','Observe how they explore businesses and products.'],['Purchase','Measure verified orders and bookings.'],['Retention','Understand repeat engagement and purchases.']]},
+{id:'publishers',name:'Publishers',icon:'megaphone',group:'MARKETPLACE',desc:'Measure publisher referrals and commissions against verified StoreNest fee collections.'},
+{id:'transactions',name:'Transactions',icon:'receipt',group:'OPERATIONS',desc:'Monitor orders, bookings, payments and collection milestones across the marketplace.',metrics:['Orders placed','Completed orders','Booking requests','Disputes'],tabs:['Orders','Bookings','Payments','Collections'],cols:['Transaction','Business','Customer amount','Status'],steps:[['Checkout','Customer completes a single or multi-business checkout.'],['Distribute','Each business receives its own order.'],['Prepare','Business records order preparation and readiness.'],['Complete','Collection and payment settlement follow agreed rules.']]},
+{id:'messages',name:'Messages',icon:'message',group:'OPERATIONS',desc:'Private one-to-one conversations with Customers, Business Owners and Publishers.'},
+{id:'finance',name:'Finance',icon:'wallet',group:'OPERATIONS',desc:'Understand StoreNest revenue, platform fees, processing costs and profitability.',metrics:['Gross order value','StoreNest fee revenue','Gateway costs','Net contribution'],tabs:['Overview','Revenue','Costs','Payouts'],cols:['Financial event','Amount','Date','Status'],steps:[['Collect','Record eligible marketplace fees.'],['Account','Separate order value from StoreNest revenue.'],['Reconcile','Match payment events, gateway fees and refunds.'],['Report','Measure financial performance with clear definitions.']]},
+{id:'analytics',name:'Analytics',icon:'chart',group:'OPERATIONS',desc:'Explore marketplace growth, demand, participation and relationships between activities.',metrics:['Marketplace visits','Active businesses','Completed orders','Repeat purchasing'],tabs:['Performance','Demand','Marketplace health','Insights'],cols:['Indicator','Period','Change','Evidence'],steps:[['Observe','Collect reliable marketplace events and metrics.'],['Compare','Study patterns across consumers, businesses and orders.'],['Evaluate','Detect meaningful changes and possible explanations.'],['Surface','Bring actionable findings to StoreNest HQ.']]},
+{id:'trust',name:'Trust & Support',icon:'shield',group:'OPERATIONS',desc:'Resolve complaints, enforce policies and protect marketplace trust.',metrics:['Open support cases','Active disputes','Flagged listings','Resolved cases'],tabs:['Support','Disputes','Reports','Enforcement'],cols:['Case','Type','Created','Status'],steps:[['Receive','Log a customer or business report.'],['Investigate','Review authorized evidence and history.'],['Resolve','Apply fair policies and communicate outcomes.'],['Audit','Preserve the case decisions and review records.']]},
+{id:'settings',name:'System Settings',icon:'settings',group:'ADMINISTRATION',desc:'Configure the StoreNest platform, administration roles and marketplace policies.',metrics:['Admin roles','Approval policies','Fee rules','Audit events'],tabs:['Platform','Permissions','Fees','Audit log'],cols:['Setting','Scope','Last updated','Status'],steps:[['Roles','Define founder and staff admin permissions.'],['Approval rules','Set business and product publication policies.'],['Financial rules','Configure marketplace fee and settlement logic.'],['Audit','Track sensitive changes and administrative actions.']]}
+];
+var selected='overview',selectedTab='',theme='light';
+var publisherDataConnected=false,publisherDataState='disconnected',publisherDataError='',publisherRecords=[],registeredBusinessAccounts=[],publisherRequest=0;
+var pendingStorePaymentsAmount=null,pendingStorePaymentsCount=null,pendingStorePaymentsState='loading',pendingStorePaymentsRequest=0;
+var publisherQuery='',businessQuery='',selectedPublisherId=null,selectedProfileId=null,profileReturnFocusId=null,selectedPeriod='Last 30 days';
+var publisherProfileState='idle',publisherProfileData=null,publisherProfileError='',publisherProfileRequest=0;
+var publisherCommissionTotals=[];
+try{theme=localStorage.getItem('storenest-hq-theme')==='dark'?'dark':'light'}catch(e){}
+document.body.classList.toggle('dark',theme==='dark');
+document.getElementById('brandicon').innerHTML=icon('store',19);
+document.getElementById('searchicon').innerHTML=icon('search',16);
+document.getElementById('mobile-menu').innerHTML=icon('menu',20);
+function toast(message){var el=document.getElementById('toast');el.textContent=message;el.classList.add('show');clearTimeout(window.__hqToast);window.__hqToast=setTimeout(function(){el.classList.remove('show')},3200)}
+function renderNav(filter){
+ var groups=['MARKETPLACE','OPERATIONS','ADMINISTRATION'];
+ document.getElementById('nav').innerHTML=groups.map(function(group){
+ var matches=areas.filter(function(a){return a.group===group&&(!filter||a.name.toLowerCase().includes(filter.toLowerCase()))});
+ return matches.length?'<div class="nav-title">'+group+'</div>'+matches.map(function(a){return '<button class="nav-item '+(a.id===selected?'active':'')+'" data-go="'+a.id+'">'+icon(a.icon,17)+'<span>'+a.name+'</span>'+(a.id==='messages'?'<span class="hq-message-unread" data-message-unread="hq" aria-live="polite" hidden></span>':'')+icon('arrow',13)+'</button>'}).join(''):''
+ }).join('')||'<div class="nav-title">No matching sections</div>';
+}
+function metric(label,iconName){return '<div class="metric"><div class="metric-top"><span>'+label+'</span><span class="metric-icon">'+icon(iconName,16)+'</span></div><div class="metric-num">—</div><div class="metric-foot">Not connected to live data</div></div>'}
+function heading(title,sub){return '<div class="pagehead"><div><div class="eyebrow">ST O R E N E S T  •  HQ</div><h1 class="title">'+title+'</h1><p class="subtitle">'+sub+'</p></div><div class="head-actions"><select class="select" id="period" aria-label="Date range"><option'+(selectedPeriod==='Last 30 days'?' selected':'')+'>Last 30 days</option><option'+(selectedPeriod==='Last 7 days'?' selected':'')+'>Last 7 days</option><option'+(selectedPeriod==='This month'?' selected':'')+'>This month</option><option'+(selectedPeriod==='Last 90 days'?' selected':'')+'>Last 90 days</option></select><button class="iconbtn" id="refresh" aria-label="Refresh" title="Refresh">'+icon('refresh',17)+'</button></div></div>'}
+function navcard(id,name,summary,iconName){return '<button class="module-card" data-go="'+id+'"><span class="module-icon">'+icon(iconName,19)+'</span><strong>'+name+'</strong><small>'+summary+'</small></button>'}
+function overview(){
+ var modules=areas.filter(function(a){return a.id!=='overview'});
+ return heading('Marketplace Overview','Your entire marketplace, at a glance.')+
+ '<div class="hero-notice"><div style="display:flex;align-items:center;gap:12px"><span class="softbubble" style="width:38px;height:38px;margin:0">'+icon('check',18)+'</span><div><strong>StoreNest HQ is ready for design review</strong><p>Publisher network records and HQ administrator permissions are not connected. The HQ preview does not request or store publisher passwords.</p></div></div><span class="notebadge">Preview only</span></div>'+
+ '<div class="section-row"><div><h2>Marketplace snapshot</h2><p>Key company-wide indicators</p></div><span class="badge-preview">Data connections pending</span></div>'+
+ '<div class="metric-grid">'+metric('Active Consumers','users')+metric('Active Businesses','store')+metric('Completed Orders','receipt')+metric('StoreNest Revenue','wallet')+'</div>'+
+ '<div class="section-row"><div><h2>Needs your attention</h2><p>Administration and review queues will appear here.</p></div></div>'+
+ '<div class="attention"><div class="attention-head"><span class="attention-icon">'+icon('bell',19)+'</span><div><h2>Review &amp; approvals</h2><p class="assist">Open the relevant management area. Pending counts require live data.</p></div></div><div class="action-grid">'+
+ '<button class="action" data-go="businesses"><span class="circle">'+icon('store',19)+'</span><span><strong>Business applications</strong><small>Verification and approvals</small></span><span class="chevron">'+icon('arrow',15)+'</span></button>'+
+ '<button class="action" data-go="products"><span class="circle">'+icon('package',19)+'</span><span><strong>Product submissions</strong><small>Listing quality reviews</small></span><span class="chevron">'+icon('arrow',15)+'</span></button>'+
+ '<button class="action" data-go="trust"><span class="circle">'+icon('shield',19)+'</span><span><strong>Trust &amp; support</strong><small>Cases and disputes</small></span><span class="chevron">'+icon('arrow',15)+'</span></button>'+
+ '</div></div>'+
+ '<div class="section-row"><div><h2>Marketplace operations</h2><p>Growth and activity on one side; operational management on the other.</p></div></div>'+
+ '<div class="panels"><section class="panel"><div class="panel-head"><div><h3>Marketplace Activity</h3><p>Visits, orders and completed transactions over time</p></div><span class="badge-preview">Awaiting data</span></div><div class="emptychart"><div class="chart-content"><span class="softbubble">'+icon('chart',22)+'</span><strong>No live metrics connected</strong><p>Verified marketplace activity will appear here when StoreNest HQ has its own authorized data connection.</p></div></div></section>'+
+ '<section class="panel"><div class="panel-head"><div><h3>Quick access</h3><p>Jump to the operational areas that matter.</p></div></div><div class="queue-list">'+
+ '<button data-go="transactions">'+icon('receipt',20)+'<span><b>Transactions</b><small>Orders, bookings and payment milestones</small></span>'+icon('arrow',15)+'</button>'+
+ '<button data-go="finance">'+icon('wallet',20)+'<span><b>Finance</b><small>Revenue and processing costs</small></span>'+icon('arrow',15)+'</button>'+
+ '<button data-go="publishers">'+icon('megaphone',20)+'<span><b>Publisher network</b><small>Referrals, commissions and performance</small></span>'+icon('arrow',15)+'</button>'+
+ '<button data-go="analytics">'+icon('chart',20)+'<span><b>Marketplace Analytics</b><small>Growth, demand and marketplace health</small></span>'+icon('arrow',15)+'</button>'+
+ '</div></section></div>'+
+ '<div class="section-row"><div><h2>Management sections</h2><p>Ten independent administration modules, ready for future integrations.</p></div></div>'+
+ '<div class="module-grid">'+modules.map(function(a){return navcard(a.id,a.name,a.desc,a.icon)}).join('')+'</div>'+
+ '<div class="callout"><strong>Security boundary:</strong> This version is a visual prototype only. Before connecting real marketplace accounts or enabling product approval, payouts or other privileged actions, StoreNest HQ must have dedicated administrator authentication, permission checks, server-side validation and immutable audit records.</div>';
+}
+function workflow(steps){return '<div class="workflow">'+steps.map(function(x,i){return '<div class="workflow-step"><div class="num">STEP 0'+(i+1)+'</div><strong>'+x[0]+'</strong><p>'+x[1]+'</p></div>'}).join('')+'</div>'}
+function escapeHtml(value){return String(value==null?'':value).replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]})}
+function publisherPeriodData(record){if(!record)return null;var period=record.reportingPeriods&&record.reportingPeriods[selectedPeriod]||{};return Object.assign({},record,period)}
+function recordNumber(record,key){if(!record||record[key]===null||record[key]===undefined||record[key]==='')return null;var number=Number(record[key]);return Number.isFinite(number)?number:null}
+function periodNumber(record,key){return recordNumber(publisherPeriodData(record),key)}
+function formatCount(value){return value===null||value===undefined?'—':new Intl.NumberFormat('en-ZA',{maximumFractionDigits:0}).format(value)}
+function formatMoney(value){return value===null||value===undefined?'—':new Intl.NumberFormat('en-ZA',{style:'currency',currency:'ZAR',minimumFractionDigits:2,maximumFractionDigits:2}).format(value)}
+function formatProfileDate(value){if(!value)return '—';var date=new Date(value);if(!Number.isFinite(date.getTime()))return '—';return new Intl.DateTimeFormat('en-ZA',{dateStyle:'medium',timeStyle:'short'}).format(date)}
+function publisherRecordsActive(){return publisherRecords.filter(function(record){return String(record.status||'').toLowerCase()==='active'})}
+function publisherTotal(key){var total=0,found=false;publisherRecords.forEach(function(record){var value=periodNumber(record,key);if(value!==null){total+=value;found=true}});return found?total:null}
+function publisherCommissionsTotal(){var total=0,found=false;publisherRecords.forEach(function(record){var report=publisherPeriodData(record),commission=recordNumber(report,'commissionsEarned'),fees=recordNumber(report,'storeNestFeesCollected');if(commission===null&&fees!==null)commission=fees*.15;if(commission!==null){total+=commission;found=true}});return found?total:null}
+function commissionTotalsFor(record){var id=String(record&&(record.id||record.publisherId)||'');return publisherCommissionTotals.find(function(row){return String(row.publisherId||'')===id})||null;}
+async function loadPendingStoreNestPayments(){
+ var request=++pendingStorePaymentsRequest;
+ pendingStorePaymentsState='loading';pendingStorePaymentsAmount=null;pendingStorePaymentsCount=null;
+ try{
+  var response=await fetch('/api/store-pending-payments',{method:'GET',headers:{Accept:'application/json'},credentials:'same-origin',cache:'no-store'});
+  var payload=await response.json().catch(function(){return {}});
+  var amount=Number(payload.pendingAmount),count=Number(payload.pendingObligations);
+  if(request!==pendingStorePaymentsRequest)return;
+  if(!response.ok||!Number.isFinite(amount)||amount<0||!Number.isFinite(count)||count<0){pendingStorePaymentsState='error'}
+  else{pendingStorePaymentsAmount=amount;pendingStorePaymentsCount=count;pendingStorePaymentsState='connected'}
+ }catch(error){if(request!==pendingStorePaymentsRequest)return;pendingStorePaymentsState='error'}
+ if(request===pendingStorePaymentsRequest&&selected==='publishers')renderPublisherPage();
+}
+async function loadPublisherNetwork(){
+ var request=++publisherRequest;
+ publisherDataState='loading';publisherDataError='';publisherDataConnected=false;publisherRecords=[];registeredBusinessAccounts=[];
+ if(selected==='publishers'){renderPublisherPage();loadPendingStoreNestPayments();}
+ else if(selected==='businesses')document.getElementById('page').innerHTML=businessDirectorySection();
+ try{
+  var response=await fetch('/api/publishers',{method:'GET',headers:{Accept:'application/json'},credentials:'same-origin',cache:'no-store'});
+  var payload=await response.json().catch(function(){return {}});
+  if(request!==publisherRequest)return;
+  if(response.status===503){publisherDataState='disconnected';publisherDataError='The server-side StoreNest reader has not been configured.'}
+  else if(!response.ok||!Array.isArray(payload.publishers)||!Array.isArray(payload.businessAccounts)){publisherDataState='error';publisherDataError='The StoreNest Publisher and Business Owner registry could not be loaded.'}
+  else{publisherRecords=payload.publishers;registeredBusinessAccounts=payload.businessAccounts;publisherCommissionTotals=Array.isArray(payload.commissionTotals)?payload.commissionTotals:[];publisherDataConnected=true;publisherDataState='connected'}
+ }catch(error){if(request!==publisherRequest)return;publisherDataState='error';publisherDataError='The StoreNest Publisher and Business Owner registry could not be loaded.'}
+ if(request!==publisherRequest)return;
+ if(selected==='publishers')renderPublisherPage();
+ else if(selected==='businesses')document.getElementById('page').innerHTML=businessDirectorySection();
+ 
+}
+function publisherCard(label,iconName,value,foot){return '<article class="metric publisher-metric"><div class="metric-top"><span>'+label+'</span><span class="metric-icon">'+icon(iconName,16)+'</span></div><div class="metric-num">'+value+'</div><div class="metric-foot">'+foot+'</div></article>'}
+function publisherChart(history){
+ if(!Array.isArray(history)||!history.length)return '<div class="publisher-chart"><div class="publisher-chart-empty"><span>No collected-fee commission history is available for this period.</span></div></div>';
+ var points=history.map(function(point){return {date:String(point.date||''),amount:Number(point.amount)}}).filter(function(point){return Number.isFinite(point.amount)});
+ if(!points.length)return '<div class="publisher-chart"><div class="publisher-chart-empty"><span>No collected-fee commission history is available for this period.</span></div></div>';
+ var max=Math.max.apply(null,points.map(function(point){return point.amount}));if(max<=0)max=1;
+ var coords=points.map(function(point,index){var x=points.length===1?50:4+92*index/(points.length-1);var y=88-76*Math.max(0,point.amount)/max;return {x:x,y:y,point:point}});
+ var line=coords.map(function(item){return item.x.toFixed(2)+','+item.y.toFixed(2)}).join(' ');
+ return '<div class="publisher-chart"><svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="Publisher commission earnings over time"><polyline class="chart-line" points="'+line+'"></polyline>'+coords.map(function(item){return '<circle class="chart-dot" cx="'+item.x.toFixed(2)+'" cy="'+item.y.toFixed(2)+'" r="1.4"><title>'+escapeHtml(item.point.date)+' · '+escapeHtml(formatMoney(item.point.amount))+'</title></circle>'}).join('')+'</svg></div>';
+}
+function publisherDetail(record){
+ var data=publisherPeriodData(record)||{},id=escapeHtml(record.id||record.publisherId||'—'),name=escapeHtml(record.name||record.displayName||'Publisher');
+ var referred=recordNumber(data,'referredBusinesses'),trading=recordNumber(data,'activeTradingBusinesses'),sales=recordNumber(data,'salesGenerated'),fees=recordNumber(data,'storeNestFeesCollected'),commissionTotals=commissionTotalsFor(record);
+ var earned=commissionTotals?Number(commissionTotals.commissionEarned)||0:recordNumber(data,'commissionsEarned');if(earned===null&&fees!==null)earned=fees*.15;
+ var pending=commissionTotals?Number(commissionTotals.commissionPending)||0:null,paid=recordNumber(data,'commissionsPaid');
+ var outstanding=commissionTotals?earned:(earned!==null&&paid!==null?Math.max(0,earned-paid):null),awaitingFees=recordNumber(data,'storeNestFeesAwaitingCollection');
+ var notEarned=commissionTotals?pending:(awaitingFees===null?null:awaitingFees*.15),history=Array.isArray(data.commissionHistory)?data.commissionHistory:[];
+ var accounts=Array.isArray(record.referredBusinessAccounts)?record.referredBusinessAccounts:[];
+ var accountsHtml=accounts.length?accounts.map(businessAccountRow).join(''):'<div class="business-empty"><strong>No Business Owner account has registered through this Publisher link yet.</strong>New registrations through this referral link will appear here.</div>';
+ var summary=commissionTotals?'<div class="publisher-commission-summary"><span>Earned <strong>'+formatMoney(earned)+'</strong></span><span>Pending <strong>'+formatMoney(pending)+'</strong></span></div>':'';
+ return '<section class="publisher-detail" aria-labelledby="publisher-detail-title"><div class="publisher-detail-head"><div class="publisher-detail-identity"><span class="publisher-avatar">'+escapeHtml((name.trim().charAt(0)||'P').toUpperCase())+'</span><div><h2 id="publisher-detail-title">'+name+'</h2><p>Publisher ID: '+id+' · <span class="publisher-row-status"><span class="dot"></span>'+escapeHtml(record.status||'Active')+'</span></p></div></div><button class="publisher-close" type="button" data-publisher-close>Close</button></div>'+
+ '<div class="publisher-detail-kpis"><div class="publisher-detail-kpi"><span>Referred Business Owner accounts · '+escapeHtml(selectedPeriod)+'</span><strong>'+formatCount(referred)+'</strong></div><div class="publisher-detail-kpi"><span>Actively trading businesses</span><strong>'+formatCount(trading)+'</strong></div><div class="publisher-detail-kpi"><span>Sales generated</span><strong>'+formatMoney(sales)+'</strong></div><div class="publisher-detail-kpi"><span>StoreNest fees collected</span><strong>'+formatMoney(fees)+'</strong></div><div class="publisher-detail-kpi"><span>Commission earned</span><strong>'+formatMoney(earned)+'</strong></div></div>'+
+ '<section class="publisher-referral-accounts"><h3>Registered Business Owner accounts · '+formatCount(accounts.length)+' total</h3><p>Referral attribution is attached to the account at registration. Storefronts may be created later.</p><div class="publisher-referral-list">'+accountsHtml+'</div></section>'+
+ '<div class="publisher-finance"><section class="publisher-finance-panel"><h3>Commission performance</h3>'+summary+publisherChart(history)+'</section><section class="publisher-finance-panel"><h3>Commission balance</h3><div class="publisher-ledger"><div class="publisher-ledger-row"><span>Total earned on fees collected</span><strong>'+formatMoney(earned)+'</strong></div><div class="publisher-ledger-row"><span>Commissions already paid</span><strong>'+formatMoney(paid)+'</strong></div><div class="publisher-ledger-row"><span>Earned, awaiting payout</span><strong>'+formatMoney(outstanding)+'</strong></div><div class="publisher-ledger-row"><span>Pending commission (Pay on Collection)</span><strong>'+formatMoney(notEarned)+'</strong></div></div><div class="publisher-policy-note">Commission is provisionally 15% of StoreNest transaction fees actually collected. Pay on Collection commissions remain pending until StoreNest collects the associated fee.</div></section></div></section>';
+}
+function publisherProfileModal(record){
+ var listRecord=publisherRecords.find(function(item){return String(item.id||item.publisherId||'')===String(selectedProfileId)});
+ var name=String((record&&record.name)||(listRecord&&(listRecord.name||listRecord.displayName))||'Publisher');
+ var id=String((record&&record.id)||selectedProfileId||'—');
+ var content='';
+ if(publisherProfileState==='loading')content='<div class="publisher-profile-loading" role="status" aria-live="polite">Loading the registered Publisher profile…</div>';
+ else if(publisherProfileState==='error')content='<div class="publisher-profile-error" role="alert">'+escapeHtml(publisherProfileError||'The Publisher profile could not be loaded.')+'<br><button class="publisher-profile-retry" type="button" data-publisher-profile-retry>Try again</button></div>';
+ else if(record){
+  var email=typeof record.email==='string'?record.email.trim():'';
+  var emailValue=email?'<a href="mailto:'+escapeHtml(email)+'">'+escapeHtml(email)+'</a>':'<strong>Email unavailable</strong>';
+  var phone=typeof record.phone==='string'?record.phone.trim():'';
+  var phoneValue=phone?'<a href="tel:'+escapeHtml(phone)+'">'+escapeHtml(phone)+'</a>':'<strong>Phone not available</strong>';
+  content='<div class="publisher-profile-grid">'+
+   '<div class="publisher-profile-item"><span>Registered email</span>'+emailValue+'</div>'+
+   '<div class="publisher-profile-item"><span>Phone number</span>'+phoneValue+'</div>'+
+   '<div class="publisher-profile-item"><span>Publisher ID</span><strong>'+escapeHtml(id)+'</strong></div>'+
+   '<div class="publisher-profile-item"><span>Account status</span><strong>'+escapeHtml(record.status||'—')+'</strong></div>'+
+   '<div class="publisher-profile-item"><span>Joined StoreNest</span><strong>'+escapeHtml(formatProfileDate(record.registeredAt))+'</strong></div>'+
+   '<div class="publisher-profile-item"><span>Referral code</span><strong>'+escapeHtml(record.referralCode||'—')+'</strong></div>'+
+   '<div class="publisher-profile-item"><span>Terms accepted</span><strong>'+escapeHtml(formatProfileDate(record.termsAcceptedAt))+'</strong></div>'+
+   '<div class="publisher-profile-item"><span>Terms version</span><strong>'+escapeHtml(record.termsVersion||'—')+'</strong></div></div>'+
+   '<section class="publisher-profile-conduct" aria-labelledby="publisher-conduct-title"><h3 id="publisher-conduct-title">Conduct history</h3><p>Conduct and moderation history is not stored in the current StoreNest data source, so there are no verified conduct records to show yet.</p></section>';
+ }
+ return '<div class="publisher-profile-backdrop" data-publisher-profile-backdrop><section class="publisher-profile-dialog" role="dialog" aria-modal="true" aria-labelledby="publisher-profile-title" tabindex="-1"><header class="publisher-profile-head"><div class="publisher-profile-heading"><span class="publisher-avatar">'+escapeHtml((name.trim().charAt(0)||'P').toUpperCase())+'</span><div><span class="publisher-profile-kicker">Publisher profile</span><h2 id="publisher-profile-title">'+escapeHtml(name)+'</h2><p>Registered account details and available conduct records</p></div></div><button class="publisher-close" type="button" data-publisher-profile-close aria-label="Close Publisher profile">Close</button></header>'+content+'</section></div>';
+}
+async function loadPublisherProfile(id){
+ var request=++publisherProfileRequest;
+ selectedProfileId=id;publisherProfileState='loading';publisherProfileData=null;publisherProfileError='';
+ if(selected==='publishers')renderPublisherPage();
+ var closeButton=document.querySelector('[data-publisher-profile-close]');if(closeButton)closeButton.focus();
+ try{
+  var response=await fetch('/api/publishers?profileId='+encodeURIComponent(id),{method:'GET',headers:{Accept:'application/json'},credentials:'same-origin',cache:'no-store'});
+  var payload=await response.json().catch(function(){return {}});
+  if(request!==publisherProfileRequest)return;
+  if(!response.ok||!payload.publisher){publisherProfileState='error';publisherProfileError=response.status===404?'This active Publisher profile could not be found.':'The Publisher profile could not be loaded.'}
+  else{publisherProfileState='loaded';publisherProfileData=payload.publisher}
+ }catch(_){if(request!==publisherProfileRequest)return;publisherProfileState='error';publisherProfileError='The Publisher profile could not be loaded.'}
+ if(selected==='publishers'&&selectedProfileId===id){renderPublisherPage();var close=document.querySelector('[data-publisher-profile-close]');if(close)close.focus()}
+}
+function closePublisherProfile(){
+ var returnId=profileReturnFocusId||selectedProfileId;
+ selectedProfileId=null;publisherProfileRequest++;publisherProfileState='idle';publisherProfileData=null;publisherProfileError='';
+ renderPublisherPage();
+ if(returnId){var buttons=document.querySelectorAll('[data-publisher-profile]');for(var i=0;i<buttons.length;i++){if(buttons[i].getAttribute('data-publisher-profile')===returnId){buttons[i].focus();break}}}
+}
+function publisherConnectionPanel(){
+ if(publisherDataState==='loading')return '<div class="publisher-connection"><div class="publisher-connection-copy"><strong>Loading the StoreNest registration registry</strong><p>Reading Publisher referral and registered Business Owner account records through HQ’s server-side, read-only connection.</p></div></div>';
+ if(publisherDataState==='connected')return '<div class="publisher-connection connected"><div class="publisher-connection-copy"><strong>StoreNest Publisher and Business Owner registry connected</strong><p>HQ can now identify registered Business Owner accounts and the Publisher referral attached to each account. Contact details are not shown here.</p><div class="publisher-connection-note">Business registration and referral attribution are live. The new pending-payments figure uses outstanding StoreNest fee obligations; collection and payout history remain separate.</div></div></div>';
+ return '<div class="publisher-connection"><div class="publisher-connection-copy"><strong>StoreNest registration data is not connected to HQ</strong><p>This is an administrator tracking page. Publishers should never enter their personal StoreNest login here.</p><div class="publisher-connection-note">A secure, server-side HQ data connection is required to load registered Publishers and Business Owner accounts.</div>'+(publisherDataError?'<div class="publisher-connection-note" role="status">'+escapeHtml(publisherDataError)+'</div>':'')+'</div></div>';
+}
+function publisherSection(){
+ var active=publisherRecordsActive(),filtered=active.filter(function(record){var query=publisherQuery.trim().toLowerCase();return !query||String(record.name||record.displayName||'').toLowerCase().includes(query)||String(record.id||record.publisherId||'').toLowerCase().includes(query)});
+ var activeCount=publisherDataConnected?formatCount(active.length):'—';
+ var referred=publisherTotal('referredBusinesses'),trading=publisherTotal('activeTradingBusinesses'),fees=publisherTotal('storeNestFeesCollected');
+ var earned=publisherCommissionsTotal();
+ var businessFoot=publisherDataConnected?'Registered Business Owner accounts attributed to Publisher links':'Waiting for StoreNest referral attribution';
+ var feeFoot='StoreNest fee-collection records are not connected';
+ var commissionFoot='Commission and payout records are not connected';
+ var tableEmpty=publisherQuery?(publisherDataConnected?'No matching active publishers':'Publisher records are not connected'):publisherDataConnected?'No active publishers to display':'Publisher records are not connected';
+ var tableHelp=publisherQuery?(publisherDataConnected?'Try another name or Publisher ID.':'An authorized HQ data source is required to search.'):publisherDataConnected?'Newly registered active Publisher accounts will appear here.':'Connect an authorized HQ administrator data source to view active publishers.';
+ var tableRows=filtered.length?filtered.map(function(record){var id=String(record.id||record.publisherId||'—'),name=String(record.name||record.displayName||'Publisher'),businessCount=periodNumber(record,'referredBusinesses'),collected=periodNumber(record,'storeNestFeesCollected'),earnedValue=recordNumber(publisherPeriodData(record),'commissionsEarned');if(earnedValue===null&&collected!==null)earnedValue=collected*.15;return '<tr><td data-label="Publisher"><div class="publisher-identity"><span class="publisher-avatar">'+escapeHtml((name.trim().charAt(0)||'P').toUpperCase())+'</span><span class="publisher-identity-text"><strong>'+escapeHtml(name)+'</strong><small>'+escapeHtml(id)+'</small></span></div></td><td data-label="Businesses">'+formatCount(businessCount)+'</td><td data-label="Earnings">'+formatMoney(earnedValue)+'</td><td data-label="Action"><span class="publisher-actions"><button class="publisher-view" type="button" data-publisher-view="'+escapeHtml(id)+'">View</button><button class="publisher-profile-button" type="button" data-publisher-profile="'+escapeHtml(id)+'">Profile</button></span></td></tr>'}).join(''):'<tr><td colspan="4"><div class="publisher-empty"><span class="softbubble" style="margin:0 auto">'+icon('megaphone',20)+'</span><strong>'+tableEmpty+'</strong>'+tableHelp+'</div></td></tr>';
+ var selectedRecord=selectedPublisherId===null?null:publisherRecords.find(function(record){return String(record.id||record.publisherId||'')===String(selectedPublisherId)&&String(record.status||'').toLowerCase()==='active'});
+ return '<div class="publisher-page">'+heading('Publishers','Track the StoreNest publisher network using verified account, referral, and financial records.')+publisherConnectionPanel()+
+ '<div class="section-row"><div><h2>General Analytics</h2><p>Reporting period · '+escapeHtml(selectedPeriod)+'</p></div><span class="badge-preview">'+(publisherDataState==='connected'?'Live publisher records':publisherDataState==='loading'?'Loading publisher records':publisherDataState==='error'?'Publisher data unavailable':'HQ data source not connected')+'</span></div>'+
+ '<div class="publisher-kpis">'+publisherCard('Active Publishers','users',activeCount,publisherDataConnected?'Count of registered active Publisher accounts':'Waiting for HQ publisher data')+publisherCard('Registered Business Owner Accounts','store',formatCount(referred),businessFoot)+publisherCard('StoreNest Fees Collected','receipt',formatMoney(fees),feeFoot)+publisherCard('Publisher Commissions','wallet',formatMoney(earned),commissionFoot)+publisherCard('Pending Payments for StoreNest','clock',formatMoney(pendingStorePaymentsAmount),pendingStorePaymentsState==='connected'?(pendingStorePaymentsCount===0?'No outstanding platform fees':formatCount(pendingStorePaymentsCount)+' live fee obligations; test entries excluded'):pendingStorePaymentsState==='loading'?'Loading StoreNest fee obligations':'Pending fee totals unavailable')+'</div>'+
+ '<section class="publisher-section" aria-labelledby="active-publishers-title"><div class="publisher-section-head"><div><h2 id="active-publishers-title">Active Publishers</h2><p>Search active publishers by name or Publisher ID.</p></div><label class="publisher-search">'+icon('search',16)+'<input type="search" aria-label="Search publishers by name or ID" placeholder="Search publishers..." value="'+escapeHtml(publisherQuery)+'"></label></div>'+
+ '<div class="publisher-table-wrap"><table class="publishers-table"><thead><tr><th scope="col">Publisher</th><th scope="col">Referred accounts</th><th scope="col">Earnings</th><th scope="col">Action</th></tr></thead><tbody>'+tableRows+'</tbody></table></div></section>'+(selectedRecord?publisherDetail(selectedRecord):'')+(selectedProfileId!==null?publisherProfileModal(publisherProfileData):'')+'</div>';
+}
+function businessRegisteredLabel(value){if(!value)return 'Registration date unavailable';var date=new Date(value);return Number.isFinite(date.getTime())?new Intl.DateTimeFormat('en-ZA',{dateStyle:'medium',timeStyle:'short'}).format(date):'Registration date unavailable'}
+function businessStorefrontHtml(account){
+ var stores=Array.isArray(account&&account.storefronts)?account.storefronts:[];
+ if(!stores.length)return '<small>No storefront created yet</small>';
+ return stores.map(function(store){var label=String(store.name||'Unnamed storefront');var category=String(store.category||'');return '<span class="business-store-chip">'+escapeHtml(label)+(category?' · '+escapeHtml(category):'')+'</span>'}).join('');
+}
+function businessAccountStatus(account){
+ var stores=Array.isArray(account&&account.storefronts)?account.storefronts:[];
+ if(stores.some(function(store){return store.isPublished===true}))return {label:'Published storefront',className:''};
+ if(stores.length)return {label:'Storefront awaiting approval',className:' pending'};
+ return {label:'Account registered',className:' neutral'};
+}
+function businessAccountRow(account){
+ var name=String(account.ownerName||'Business Owner account');
+ var publisher=String(account.referredByPublisherName||'Not referred');
+ var registered=businessRegisteredLabel(account.registeredAt);
+ var status=businessAccountStatus(account);
+ return '<article class="business-account-row"><div class="business-owner-cell"><strong>'+escapeHtml(name)+'</strong><small>Account registered · '+escapeHtml(registered)+'</small></div><div class="business-referrer-cell"><span>Referred by</span><strong>'+escapeHtml(publisher)+'</strong></div><div class="business-store-cell">'+businessStorefrontHtml(account)+'</div><span class="business-status'+status.className+'">'+escapeHtml(status.label)+'</span></article>';
+}
+function businessDirectorySection(){
+ var accounts=registeredBusinessAccounts.slice();
+ var totalStorefronts=accounts.reduce(function(total,account){return total+(Array.isArray(account.storefronts)?account.storefronts.length:0)},0);
+ var publishedStorefronts=accounts.reduce(function(total,account){return total+(Array.isArray(account.storefronts)?account.storefronts.filter(function(store){return store.isPublished===true}).length:0)},0);
+ var referredAccounts=accounts.filter(function(account){return Boolean(account.referredByPublisherId)}).length;
+ var query=businessQuery.trim().toLowerCase();
+ var filtered=accounts.filter(function(account){
+  var storeNames=(Array.isArray(account.storefronts)?account.storefronts:[]).map(function(store){return store.name||''}).join(' ');
+  return !query||String(account.ownerName||'').toLowerCase().includes(query)||String(account.referredByPublisherName||'').toLowerCase().includes(query)||storeNames.toLowerCase().includes(query);
+ });
+ var rows=filtered.length?filtered.map(businessAccountRow).join(''):'<div class="business-empty"><strong>'+(query?'No matching Business Owner accounts':'No Business Owner accounts registered yet')+'</strong>'+(query?'Try a different owner, Publisher, or storefront name.':'Newly registered Business Owner accounts will appear here, including accounts that have not created a storefront yet.')+'</div>';
+ var businessHeading=heading('Businesses','Recognize registered Business Owner accounts and see their referral and storefront status.');var periodStart=businessHeading.indexOf('<select class="select" id="period"');if(periodStart>=0){var periodEnd=businessHeading.indexOf('</select>',periodStart)+9;businessHeading=businessHeading.slice(0,periodStart)+businessHeading.slice(periodEnd)}
+ return '<div class="publisher-page">'+businessHeading+publisherConnectionPanel()+
+ '<div class="section-row"><div><h2>Registered Business Owner accounts</h2><p>Accounts are listed at registration, even before a storefront is created.</p></div><span class="badge-preview">'+(publisherDataConnected?'Live registration records':publisherDataState==='loading'?'Loading registration records':'Registry unavailable')+'</span></div>'+
+ '<div class="publisher-kpis">'+publisherCard('Owner Accounts','users',publisherDataConnected?formatCount(accounts.length):'—','Registered Business Owner accounts in StoreNest')+publisherCard('Referred Accounts','megaphone',publisherDataConnected?formatCount(referredAccounts):'—','Accounts attributed to a Publisher referral link')+publisherCard('Storefronts Created','store',publisherDataConnected?formatCount(totalStorefronts):'—','Storefronts created by registered owners')+publisherCard('Published Storefronts','check',publisherDataConnected?formatCount(publishedStorefronts):'—','Storefronts approved and published')+'</div>'+
+ '<section class="publisher-section"><div class="publisher-section-head"><div><h2>Business Owner registrations</h2><p>Search by account name, Publisher, or storefront.</p></div><label class="publisher-search business-search">'+icon('search',16)+'<input type="search" aria-label="Search Business Owner accounts" placeholder="Search businesses..." value="'+escapeHtml(businessQuery)+'"></label></div><div class="business-account-list">'+rows+'</div></section></div>';
+}
+function messageWorkspace(){
+ return '<div class="hq-message-view">'+
+ '<div class="pagehead"><div><div class="eyebrow">ST O R E N E S T  •  HQ</div><h1 class="title">Messages</h1><p class="subtitle">Start and continue private one-to-one conversations with StoreNest Customers, Business Owners and Publishers.</p></div></div>'+
+ '<section class="panel hq-message-panel"><div class="panel-head"><div><h3>StoreNest inbox</h3><p>Search for a registered StoreNest user or continue a conversation. Messages are private to their two participants.</p></div><span class="badge-preview">Secure messaging</span></div>'+
+ '<div class="hq-message-auth" id="hqMessagesLogin"><h2>HQ administrator sign in</h2><p>Sign in with your StoreNest administrator account to access the shared messaging system.</p><form class="hq-message-form" id="hqMessagingLoginForm"><label class="hq-message-field">Email address<input id="hqMessagingEmail" name="email" type="email" autocomplete="username" required placeholder="you@example.com"></label><label class="hq-message-field">Password<input id="hqMessagingPassword" name="password" type="password" autocomplete="current-password" required></label><button class="hq-message-submit" id="hqMessagingSignIn" type="submit">Sign in securely</button></form><p class="hq-message-auth-status" id="hqMessagingAuthStatus" role="status" aria-live="polite"></p></div>'+
+ '<div class="hq-message-account" id="hqMessagingAccount" hidden><div><strong>Connected to StoreNest messaging</strong><small id="hqMessagingSignedInAs"></small></div><button type="button" class="hq-message-signout" id="hqMessagingSignOut">Sign out</button></div>'+
+ '<div id="hqMessagesMount" hidden></div></section></div>';
+}
+function section(a){
+ if(a.id==='messages')return messageWorkspace();
+ if(a.id==='publishers')return publisherSection();
+ if(a.id==='businesses')return businessDirectorySection();
+ var specialized=a.id==='finance'?'<div class="callout"><strong>Finance rule:</strong> Gross customer order value is not StoreNest revenue. Actual platform fees, payment costs, refunds and settlement obligations must be accounted for separately.</div>':
+ a.id==='products'?'<div class="callout"><strong>Publication rule:</strong> Listings must remain non-public until their specific submitted revision is approved. All approval and rejection decisions require a reviewer, timestamp and audit record.</div>':
+ a.id==='businesses'?'<div class="callout"><strong>Business rule:</strong> Registering an account does not authorize publication. Verified and approved businesses may publish storefronts only after required checks are satisfied.</div>':
+ a.id==='settings'?'<div class="callout"><strong>Access control:</strong> This standalone prototype has no administrative authentication yet. Role-based access and secure auditing are required before any real operational settings are enabled.</div>':
+ '';
+ return heading(a.name,a.desc)+
+ '<div class="hero-notice"><div><strong>'+a.name+' workspace</strong><p>The page structure is available to review. No real StoreNest records or admin actions are connected to this standalone project.</p></div><span class="notebadge">Prototype only</span></div>'+
+ '<div class="section-row"><div><h2>Key indicators</h2><p>These will reflect marketplace-wide data when authorized integrations are added.</p></div></div>'+
+ '<div class="metric-grid">'+a.metrics.map(function(x,i){return metric(x,[a.icon,'activity','clock','chart'][i])}).join('')+'</div>'+
+ '<div class="section-row"><div><h2>'+((a.id==='settings')?'Configuration areas':'Management workspace')+'</h2><p>Review the main tools planned for this section.</p></div></div>'+
+ '<div class="segment" role="tablist" aria-label="'+a.name+' subsections">'+a.tabs.map(function(t,i){return '<button role="tab" aria-selected="'+((selectedTab||a.tabs[0])===t)+'" class="'+((selectedTab||a.tabs[0])===t?'selected':'')+'" data-tab="'+i+'">'+t+'</button>'}).join('')+'</div>'+
+ '<div class="tablewrap"><div class="tabletop"><div><strong>'+ (selectedTab||a.tabs[0]) +'</strong><p>Future operational records will be displayed here.</p></div><span class="badge-preview">Not connected</span></div><table><thead><tr>'+a.cols.map(function(c){return '<th>'+c+'</th>'}).join('')+'</tr></thead></table><div class="empty-table"><span class="softbubble" style="margin:0 auto">'+icon(a.icon,22)+'</span><strong>No live records connected</strong>This independent HQ prototype does not access StoreNest production data.</div></div>'+
+ '<div class="section-row"><div><h2>Planned workflow</h2><p>How this management area will operate after secure backend integration.</p></div></div>'+workflow(a.steps)+specialized+
+ '<div class="section-row"><div><h2>Related sections</h2></div></div><div class="module-grid">'+areas.filter(function(x){return x.id!=='overview'&&x.id!==a.id}).slice(0,4).map(function(x){return navcard(x.id,x.name,x.desc,x.icon)}).join('')+'</div>';
+}
+function renderPublisherPage(){var page=document.getElementById('page'),scrollTop=page.scrollTop;page.innerHTML=publisherSection();page.scrollTop=scrollTop}
+function setPage(id,updateHash){
+ var area=areas.find(function(a){return a.id===id})||areas[0]; selected=area.id;selectedTab='';
+ if(area.id!=='publishers'){selectedPublisherId=null;selectedProfileId=null;profileReturnFocusId=null;publisherProfileRequest++;publisherProfileState='idle';publisherProfileData=null;publisherProfileError=''}
+ var hqMessageCentre=document.getElementById('hqMessageCentre'),hqMessageStash=document.getElementById('hqMessageStash');
+ if(hqMessageCentre&&hqMessageStash)hqMessageStash.appendChild(hqMessageCentre);
+ document.title=area.name+' — StoreNest HQ';
+ if(updateHash)window.location.hash=area.id;
+ document.getElementById('page').innerHTML=area.id==='overview'?overview():section(area);
+ if(area.id==='messages'){
+  var hqMessagesMount=document.getElementById('hqMessagesMount');
+  if(hqMessageCentre&&hqMessagesMount){hqMessagesMount.appendChild(hqMessageCentre);hqMessageCentre.hidden=!window.StoreNestHQAdminAuthorized}
+  window.dispatchEvent(new CustomEvent('storenest:hq-messages-page-shown'));
+ }
+ renderNav(document.getElementById('navsearch').value);
+ document.getElementById('sidebar').classList.remove('open');document.getElementById('shade').classList.remove('show');
+ document.getElementById('page').scrollTop=0;
+ if(area.id==='publishers'||area.id==='businesses')loadPublisherNetwork();
+}
+function initTheme(){document.getElementById('theme').innerHTML=icon(theme==='dark'?'sun':'moon',18);document.getElementById('theme').title=theme==='dark'?'Switch to light mode':'Switch to dark mode'}
+document.addEventListener('click',function(event){
+ var go=event.target.closest('[data-go]');if(go){setPage(go.getAttribute('data-go'),true);return}
+ var profileButton=event.target.closest('[data-publisher-profile]');if(profileButton){profileReturnFocusId=profileButton.getAttribute('data-publisher-profile');loadPublisherProfile(profileReturnFocusId);return}
+ if(event.target.closest('[data-publisher-profile-retry]')){if(selectedProfileId)loadPublisherProfile(selectedProfileId);return}
+ if(event.target.closest('[data-publisher-profile-close]')||event.target.matches('[data-publisher-profile-backdrop]')){closePublisherProfile();return}
+  var publisherView=event.target.closest('[data-publisher-view]');if(publisherView){selectedPublisherId=publisherView.getAttribute('data-publisher-view');renderPublisherPage();return}
+ if(event.target.closest('[data-publisher-close]')){selectedPublisherId=null;renderPublisherPage();return}
+ var tab=event.target.closest('[data-tab]');if(tab){var a=areas.find(function(x){return x.id===selected});if(a){selectedTab=a.tabs[+tab.getAttribute('data-tab')];document.getElementById('page').innerHTML=section(a)}return}
+ if(event.target.closest('#refresh')){if(selected==='publishers')loadPublisherNetwork();else toast('This HQ section has no live data connection to refresh.');return}
+});
+document.addEventListener('keydown',function(event){
+ var dialog=document.querySelector('.publisher-profile-dialog');if(!dialog)return;
+ if(event.key==='Escape'){event.preventDefault();closePublisherProfile();return}
+ if(event.key==='Tab'){
+  var focusable=dialog.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),[tabindex]:not([tabindex="-1"])');
+  if(!focusable.length){event.preventDefault();dialog.focus();return}
+  var first=focusable[0],last=focusable[focusable.length-1];
+  if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}
+  else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}
+ }
+});
+document.getElementById('navsearch').addEventListener('input',function(e){renderNav(e.target.value)});
+document.addEventListener('input',function(e){var page=document.getElementById('page'),scrollTop=page.scrollTop;if(e.target.matches('.business-search input')){businessQuery=e.target.value;page.innerHTML=businessDirectorySection()}else if(e.target.matches('.publisher-search input')){publisherQuery=e.target.value;page.innerHTML=publisherSection()}else{return}page.scrollTop=scrollTop;var selector=e.target.matches('.business-search input')?'.business-search input':'.publisher-search input',replacement=page.querySelector(selector);if(replacement){replacement.focus();replacement.setSelectionRange(replacement.value.length,replacement.value.length)}});
+document.getElementById('theme').addEventListener('click',function(){theme=theme==='light'?'dark':'light';document.body.classList.toggle('dark',theme==='dark');try{localStorage.setItem('storenest-hq-theme',theme)}catch(e){}initTheme()});
+document.getElementById('mobile-menu').addEventListener('click',function(){document.getElementById('sidebar').classList.add('open');document.getElementById('shade').classList.add('show')});
+document.getElementById('shade').addEventListener('click',function(){document.getElementById('sidebar').classList.remove('open');document.getElementById('shade').classList.remove('show')});
+document.addEventListener('change',function(e){
+ if(e.target.id==='period'){selectedPeriod=e.target.value;if(selected==='publishers')renderPublisherPage();toast('Selected '+selectedPeriod+'. Publisher fee and commission reporting is unavailable until those records are tracked.')}
+});
+window.addEventListener('hashchange',function(){var key=location.hash.replace('#','');if(key!==selected)setPage(key,false)});
+initTheme();setPage(location.hash.slice(1)||'overview',false);
+})();
+</script>
+<div id="hqMessageStash" hidden aria-hidden="true"><div id="hqMessageCentre"></div></div>
+<script src="/customer-auth.js" defer></script>
+<script src="/messaging-centre.js" defer></script>
+<script>
+(function(){
+ var client=null,authorized=false,currentUser=null,validating=null;
+ function byId(id){return document.getElementById(id)}
+ function setStatus(message,isError){var el=byId('hqMessagingAuthStatus');if(!el)return;el.textContent=message||'';el.dataset.error=isError?'true':'false'}
+ function syncView(){
+  var login=byId('hqMessagesLogin'),account=byId('hqMessagingAccount'),mount=byId('hqMessagesMount'),centre=byId('hqMessageCentre'),email=byId('hqMessagingSignedInAs');
+  if(login)login.hidden=authorized;
+  if(account){account.hidden=!authorized;if(email)email.textContent=currentUser&&currentUser.email?'Signed in as '+currentUser.email:'Administrator access verified'}
+  if(mount)mount.hidden=!authorized;
+  if(centre)centre.hidden=!authorized;
+ }
+ async function verifyAdministrator(user){
+  if(!client||!user)return false;
+  if(validating)return validating;
+  validating=(async function(){
+   var result=await client.rpc('get_platform_admin_publisher_referrals');
+   if(result.error)throw result.error;
+   currentUser=user;authorized=true;window.StoreNestHQAdminUser=user;window.StoreNestHQAdminAuthorized=true;
+   syncView();setStatus('');
+   window.dispatchEvent(new CustomEvent('storenest:hq-admin-ready',{detail:{client:client,user:user}}));
+   return true;
+  })();
+  try{return await validating}finally{validating=null}
+ }
+ function deny(message){authorized=false;window.StoreNestHQAdminAuthorized=false;window.StoreNestHQAdminUser=null;syncView();setStatus(message||'This account does not have StoreNest HQ administrator access.',true)}
+ async function initialize(){
+  try{
+   if(!window.StoreNestCustomerAuth)throw new Error('StoreNest secure sign-in is unavailable.');
+   client=await window.StoreNestCustomerAuth.getBusinessClient();
+   var auth=client.auth.onAuthStateChange(function(event,session){
+    if(event==='SIGNED_OUT'){authorized=false;currentUser=null;window.StoreNestHQAdminAuthorized=false;window.StoreNestHQAdminUser=null;window.dispatchEvent(new CustomEvent('storenest:hq-admin-signed-out'));syncView();setStatus('')}
+   });
+   sub=auth&&auth.data&&auth.data.subscription?auth.data.subscription:null;
+   var result=await client.auth.getUser();
+   if(result.error)throw result.error;
+   if(result.data&&result.data.user){try{await verifyAdministrator(result.data.user)}catch(error){deny('This signed-in account is not authorized for StoreNest HQ messaging. Sign in with an HQ administrator account.')}}else syncView();
+  }catch(error){syncView();setStatus('StoreNest secure sign-in could not be initialized. Refresh the page and try again.',true);console.error('HQ messaging sign-in unavailable:',error)}
+ }
+ document.addEventListener('submit',async function(event){
+  if(!event.target||event.target.id!=='hqMessagingLoginForm')return;
+  event.preventDefault();if(!client){setStatus('StoreNest secure sign-in is not ready. Refresh the page and try again.',true);return}
+  var button=byId('hqMessagingSignIn');if(button){button.disabled=true;button.textContent='Signing in…'}
+  setStatus('');
+  try{
+   var email=byId('hqMessagingEmail').value.trim().toLowerCase(),password=byId('hqMessagingPassword').value;
+   var result=await client.auth.signInWithPassword({email:email,password:password});
+   if(result.error)throw result.error;
+   try{await verifyAdministrator(result.data.user)}catch(error){deny('The account is valid but does not have StoreNest HQ administrator access.');}
+   if(authorized){byId('hqMessagingLoginForm').reset()}
+  }catch(error){setStatus('The email and password could not be verified. Check them and try again.',true)}
+  finally{if(button){button.disabled=false;button.textContent='Sign in securely'}}
+ });
+ document.addEventListener('click',async function(event){
+  if(!event.target.closest||!event.target.closest('#hqMessagingSignOut'))return;
+  if(!client)return;
+  var button=byId('hqMessagingSignOut');if(button)button.disabled=true;
+  var result=await client.auth.signOut();
+  if(result.error){setStatus('Sign out could not be completed. Try again.',true);if(button)button.disabled=false;return}
+  authorized=false;currentUser=null;window.StoreNestHQAdminAuthorized=false;window.StoreNestHQAdminUser=null;
+  window.dispatchEvent(new CustomEvent('storenest:hq-admin-signed-out'));syncView();setStatus('');
+ });
+ window.addEventListener('storenest:hq-messages-page-shown',syncView);
+ document.addEventListener('DOMContentLoaded',function(){
+  if(window.selected==='messages'&&typeof window.setPage==='function')window.setPage('messages',false);
+  initialize();
+ });
+})();
+</script></body></html>
