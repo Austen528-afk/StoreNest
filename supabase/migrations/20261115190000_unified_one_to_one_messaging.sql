@@ -76,26 +76,22 @@ set sender_role = case
     sender_display_name = case
       when m.sender_id = c.participant_a_id then
         case c.participant_a_role
-          when 'customer' then coalesce(nullif(cp.profile_name, ''), 'Customer')
-          when 'business_owner' then coalesce(nullif(ba.name, ''), nullif(bp.full_name, ''), 'Business Owner')
-          when 'publisher' then coalesce(nullif(pa.display_name, ''), 'Publisher')
+          when 'customer' then coalesce(nullif(pg_catalog.btrim((select profile.profile_name from public.customer_profiles as profile where profile.user_id = m.sender_id)), ''), 'Customer')
+          when 'business_owner' then coalesce(nullif(pg_catalog.btrim(ba.name), ''), nullif(pg_catalog.btrim((select profile.full_name from public.business_owner_profiles as profile where profile.user_id = m.sender_id)), ''), 'Business Owner')
+          when 'publisher' then coalesce(nullif(pg_catalog.btrim((select profile.display_name from public.publisher_profiles as profile where profile.user_id = m.sender_id)), ''), 'Publisher')
           else 'StoreNest HQ'
         end
       else
         case c.participant_b_role
-          when 'customer' then coalesce(nullif(cp.profile_name, ''), 'Customer')
-          when 'business_owner' then coalesce(nullif(bb.name, ''), nullif(bp.full_name, ''), 'Business Owner')
-          when 'publisher' then coalesce(nullif(pb.display_name, ''), 'Publisher')
+          when 'customer' then coalesce(nullif(pg_catalog.btrim((select profile.profile_name from public.customer_profiles as profile where profile.user_id = m.sender_id)), ''), 'Customer')
+          when 'business_owner' then coalesce(nullif(pg_catalog.btrim(bb.name), ''), nullif(pg_catalog.btrim((select profile.full_name from public.business_owner_profiles as profile where profile.user_id = m.sender_id)), ''), 'Business Owner')
+          when 'publisher' then coalesce(nullif(pg_catalog.btrim((select profile.display_name from public.publisher_profiles as profile where profile.user_id = m.sender_id)), ''), 'Publisher')
           else 'StoreNest HQ'
         end
     end
 from public.storefront_conversations as c
 left join public.businesses as ba on ba.id = c.participant_a_business_id
 left join public.businesses as bb on bb.id = c.participant_b_business_id
-left join public.customer_profiles as cp on cp.user_id = m.sender_id
-left join public.business_owner_profiles as bp on bp.user_id = m.sender_id
-left join public.publisher_profiles as pa on pa.user_id = m.sender_id
-left join public.publisher_profiles as pb on pb.user_id = m.sender_id
 where c.id = m.conversation_id;
 
 alter table public.storefront_messages
