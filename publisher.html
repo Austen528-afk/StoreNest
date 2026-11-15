@@ -8,9 +8,11 @@
   <title>Publisher | StoreNest</title>
   <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/publisher.css">
+  <link rel="stylesheet" href="/messaging-centre.css">
   <script src="/theme.js" defer></script>
   <script src="/customer-auth.js" defer></script>
   <script src="/publisher.js" defer></script>
+  <script src="/messaging-centre.js" defer></script>
 </head>
 <body class="publisher-page" data-page-kind="publisher">
   <header class="publisher-topbar">
@@ -244,7 +246,7 @@
           <button type="button" data-section-link="earnings"><span class="nav-icon" aria-hidden="true">↗</span>Earnings &amp; Commissions</button>
           <button type="button" data-section-link="recruitment"><span class="nav-icon" aria-hidden="true">＋</span>Recruitment</button>
           <button type="button" data-section-link="campaigns"><span class="nav-icon" aria-hidden="true">◇</span>Campaigns</button>
-          <button type="button" data-section-link="messages"><span class="nav-icon" aria-hidden="true">▤</span>Messages</button>
+          <button type="button" data-section-link="messages"><span class="nav-icon" aria-hidden="true">▤</span>Messages<span class="publisher-message-unread" data-message-unread="publisher" aria-live="polite" hidden></span></button>
           <button type="button" data-section-link="analytics"><span class="nav-icon" aria-hidden="true">⌁</span>Analytics</button>
           <button type="button" data-section-link="settings"><span class="nav-icon" aria-hidden="true">⚙</span>Settings</button>
         </nav>
@@ -436,6 +438,16 @@
             <p class="form-message referral-message" id="publisherReferralMessage" role="status" aria-live="polite" hidden></p>
             <div class="referral-note">This first step tracks registered Business Owner accounts. It does not calculate or promise commissions or payouts.</div>
           </div>
+          <div class="referral-share-card publisher-contact-share-card">
+            <div>
+              <span class="referral-card-label">PUBLISHER MESSAGE LINK</span>
+              <p>Share this link with a StoreNest customer so they can start a private message request with you.</p>
+            </div>
+            <div class="referral-link-row">
+              <button class="primary-button referral-copy-button" id="copyPublisherMessageLink" type="button">Copy Publisher contact link</button>
+            </div>
+            <p class="form-message referral-message" id="publisherMessageLinkStatus" role="status" aria-live="polite" hidden></p>
+          </div>
         </section>
 
         <section class="dashboard-panel" id="campaignsPanel" data-dashboard-panel="campaigns" hidden>
@@ -444,8 +456,8 @@
         </section>
 
         <section class="dashboard-panel" id="messagesPanel" data-dashboard-panel="messages" hidden>
-          <div class="panel-intro"><span class="eyebrow">COMMUNICATION</span><h2>Messages</h2><p>Messages related to your Publisher work will appear here.</p></div>
-          <div class="empty-state"><span class="empty-icon" aria-hidden="true">▤</span><h3>No Publisher messages</h3><p>Publisher messaging is not active yet. No messages are being shown.</p></div>
+          <div class="panel-intro"><span class="eyebrow">COMMUNICATION</span><h2>Messages</h2><p>Continue private one-to-one conversations with customers, referred Business Owners, and StoreNest HQ.</p></div>
+          <div id="publisherMessageCentre" aria-live="polite"></div>
         </section>
 
         <section class="dashboard-panel" id="analyticsPanel" data-dashboard-panel="analytics" hidden>

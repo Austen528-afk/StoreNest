@@ -1288,3 +1288,7 @@ html[data-theme="dark"] .publisher-analytics-tab.is-selected {
   .analytics-chart-bar-row { grid-template-columns: minmax(84px, 108px) minmax(0, 1fr) auto; gap: 8px; }
   .analytics-chart-bar-label { font-size: 9px; }
 }
+
+.publisher-message-unread{display:inline-grid;min-width:18px;height:18px;margin-left:auto;padding:0 5px;place-items:center;border-radius:999px;background:#0e9c7e;color:#fff;font-size:10px;font-weight:850;line-height:1}
+.publisher-message-unread[hidden]{display:none!important}
+.publisher-contact-share-card{margin-top:14px}

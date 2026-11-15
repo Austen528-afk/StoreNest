@@ -156,6 +156,13 @@ function setSignedInView(user,profile){
  $("profileEmailInput").value=profile?(profile.contact_email??""):(user.email||"");
  $("profilePhoneInput").value=profile?(profile.contact_phone??""):(user.phone||"");
  $("saveProfileButton").textContent=profile?"Save changes":"Save profile";$("profileMessage").hidden=true;
+ if(profile)resumePublisherMessageLink();
+}
+function resumePublisherMessageLink(){
+ const code=new URLSearchParams(location.search).get("message_publisher");
+ if(!code||!currentProfile)return false;
+ location.replace("/?message_publisher="+encodeURIComponent(code));
+ return true;
 }
 async function sendAccountCode(){
  const button=$("sendAccountCode");button.disabled=true;showMessage($("accountAuthMessage"),"");
@@ -268,6 +275,7 @@ async function saveCustomerProfile(event){
   $("profileHelp").textContent="Profile name and place are required. Exact address is optional.";
   $("saveProfileButton").textContent="Save changes";
   showMessage($("profileMessage"),"All profile information saved.");
+  if(resumePublisherMessageLink())return;
  }catch(error){
   console.error("Could not save customer profile:",error);
   showMessage($("profileMessage"),error.message||"Could not save your profile. Please try again.",true);
