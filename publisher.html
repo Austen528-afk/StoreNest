@@ -449,8 +449,92 @@
         </section>
 
         <section class="dashboard-panel" id="analyticsPanel" data-dashboard-panel="analytics" hidden>
-          <div class="panel-intro"><span class="eyebrow">PERFORMANCE</span><h2>Analytics</h2><p>Publisher activity and performance reporting will appear here when the underlying data is available.</p></div>
-          <div class="empty-state"><span class="empty-icon" aria-hidden="true">⌁</span><h3>No analytics data</h3><p>Publisher analytics have not been activated. No figures are displayed.</p></div>
+          <div class="panel-intro">
+            <span class="eyebrow">PERFORMANCE</span>
+            <h2>Analytics</h2>
+            <p>Explore your publisher performance and growth.</p>
+          </div>
+
+          <div class="publisher-analytics">
+            <div class="publisher-analytics-tabs" role="tablist" aria-label="Publisher analytics categories" data-analytics-tablist>
+              <button type="button" class="publisher-analytics-tab is-selected" id="analyticsTabRecruitment" role="tab" aria-selected="true" aria-controls="publisherAnalyticsContent" data-analytics-tab="recruitment">
+                <svg class="analytics-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="10" cy="7" r="4"></circle><path d="M20 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                <span>Recruitment</span>
+              </button>
+              <button type="button" class="publisher-analytics-tab" id="analyticsTabCommissions" role="tab" aria-selected="false" aria-controls="publisherAnalyticsContent" tabindex="-1" data-analytics-tab="commissions">
+                <svg class="analytics-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H21v15H6.5A2.5 2.5 0 0 1 4 17.5z"></path><path d="M4 8h13"></path><path d="M17 13h4"></path><circle cx="17" cy="13" r=".8"></circle><path d="M4 17.5A2.5 2.5 0 0 1 6.5 15H21"></path>
+                </svg>
+                <span>Commissions</span>
+              </button>
+              <button type="button" class="publisher-analytics-tab" id="analyticsTabBusinesses" role="tab" aria-selected="false" aria-controls="publisherAnalyticsContent" tabindex="-1" data-analytics-tab="businesses">
+                <svg class="analytics-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="m3 9 1.5-5h15L21 9"></path><path d="M5 9v11h14V9"></path><path d="M9 20v-7h6v7"></path><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"></path>
+                </svg>
+                <span>My Businesses</span>
+              </button>
+              <button type="button" class="publisher-analytics-tab" id="analyticsTabProgression" role="tab" aria-selected="false" aria-controls="publisherAnalyticsContent" tabindex="-1" data-analytics-tab="progression">
+                <svg class="analytics-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="m22 7-8.5 8.5-5-5L2 17"></path><path d="M16 7h6v6"></path>
+                </svg>
+                <span>Progression</span>
+              </button>
+            </div>
+
+            <section class="publisher-analytics-content" id="publisherAnalyticsContent" role="tabpanel" aria-labelledby="analyticsTabRecruitment" tabindex="0">
+              <div class="publisher-analytics-head">
+                <div>
+                  <span class="eyebrow" id="analyticsCategory">RECRUITMENT</span>
+                  <h3 id="analyticsTitle">Recruitment Analytics</h3>
+                  <p id="analyticsDescription">Understand how effectively you attract and register new businesses.</p>
+                </div>
+                <span class="analytics-preview-pill">Design Preview</span>
+              </div>
+
+              <div class="publisher-analytics-metrics" id="analyticsMetrics" aria-label="Recruitment summary metrics">
+                <article class="publisher-analytics-metric"><span>Referral Visits</span><strong>—</strong></article>
+                <article class="publisher-analytics-metric"><span>Registrations</span><strong>—</strong></article>
+                <article class="publisher-analytics-metric"><span>Conversion Rate</span><strong>—</strong></article>
+              </div>
+
+              <section class="publisher-analytics-chart" aria-labelledby="analyticsChartTitle">
+                <div class="publisher-analytics-chart-head">
+                  <div>
+                    <h4 id="analyticsChartTitle">Recruitment Trends</h4>
+                  </div>
+                  <span class="analytics-chart-badge">Illustrative preview</span>
+                </div>
+                <div class="publisher-analytics-chart-area" role="img" aria-label="Illustrative chart preview. No live analytics data is connected.">
+                  <svg viewBox="0 0 700 180" preserveAspectRatio="none" aria-hidden="true">
+                    <line class="chart-grid-line" x1="20" y1="35" x2="680" y2="35"></line>
+                    <line class="chart-grid-line" x1="20" y1="75" x2="680" y2="75"></line>
+                    <line class="chart-grid-line" x1="20" y1="115" x2="680" y2="115"></line>
+                    <line class="chart-grid-line" x1="20" y1="155" x2="680" y2="155"></line>
+                    <path class="chart-area-fill" d="M20 136 C90 127 107 101 160 111 S245 135 300 95 S389 108 448 77 S539 99 590 53 S645 57 680 31 V180 H20 Z"></path>
+                    <path class="chart-line" d="M20 136 C90 127 107 101 160 111 S245 135 300 95 S389 108 448 77 S539 99 590 53 S645 57 680 31"></path>
+                  </svg>
+                  <div class="analytics-chart-placeholder">
+                    <strong>Chart Preview</strong>
+                    <span id="analyticsChartCaption">Illustrative view of referral visits and business registrations. No live analytics data is connected.</span>
+                  </div>
+                </div>
+              </section>
+
+              <aside class="publisher-analytics-insight">
+                <span class="analytics-insight-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15.1 14a7 7 0 1 0-6.2 0c.8.4 1.1 1.3 1.1 2h4c0-.7.3-1.6 1.1-2Z"></path>
+                  </svg>
+                </span>
+                <div>
+                  <h4>Performance Insights</h4>
+                  <p id="analyticsInsight">Identify which recruitment activities are converting visitors into registered businesses.</p>
+                </div>
+              </aside>
+            </section>
+          </div>
         </section>
 
         <section class="dashboard-panel" id="settingsPanel" data-dashboard-panel="settings" hidden>
