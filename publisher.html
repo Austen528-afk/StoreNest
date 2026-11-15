@@ -490,7 +490,7 @@
                               <h3 id="analyticsTitle">Recruitment Analytics</h3>
                               <p id="analyticsDescription">Understand how effectively you attract and register new businesses.</p>
                             </div>
-                            <span class="analytics-preview-pill">Design Preview</span>
+                            <span class="analytics-preview-pill" id="analyticsDataStatus" role="status" aria-live="polite">Connecting to StoreNest</span>
                           </div>
             
                           <div class="publisher-analytics-metrics" id="analyticsMetrics" aria-label="Recruitment summary metrics">
@@ -500,29 +500,31 @@
                           </div>
             
                           <section class="publisher-analytics-chart" aria-labelledby="analyticsChartTitle">
-                            <div class="publisher-analytics-chart-head">
-                              <div>
-                                <h4 id="analyticsChartTitle">Recruitment Trends</h4>
-                              </div>
-                              <span class="analytics-chart-badge">Illustrative preview</span>
-                            </div>
-                            <div class="publisher-analytics-chart-area" role="img" aria-label="Illustrative chart preview. No live analytics data is connected.">
-                              <svg viewBox="0 0 700 180" preserveAspectRatio="none" aria-hidden="true">
-                                <line class="chart-grid-line" x1="20" y1="35" x2="680" y2="35"></line>
-                                <line class="chart-grid-line" x1="20" y1="75" x2="680" y2="75"></line>
-                                <line class="chart-grid-line" x1="20" y1="115" x2="680" y2="115"></line>
-                                <line class="chart-grid-line" x1="20" y1="155" x2="680" y2="155"></line>
-                                <path class="chart-area-fill" d="M20 136 C90 127 107 101 160 111 S245 135 300 95 S389 108 448 77 S539 99 590 53 S645 57 680 31 V180 H20 Z"></path>
-                                <path class="chart-line" d="M20 136 C90 127 107 101 160 111 S245 135 300 95 S389 108 448 77 S539 99 590 53 S645 57 680 31"></path>
-                              </svg>
-                              <div class="analytics-chart-placeholder">
-                                <strong>Chart Preview</strong>
-                                <span id="analyticsChartCaption">Illustrative view of referral visits and business registrations. No live analytics data is connected.</span>
-                              </div>
-                            </div>
-                          </section>
-            
-                          <aside class="publisher-analytics-insight">
+                <div class="publisher-analytics-chart-head">
+                  <div>
+                    <h4 id="analyticsChartTitle">Recruitment Trends</h4>
+                    <p id="analyticsChartCaption">Waiting for live StoreNest records.</p>
+                  </div>
+                  <span class="analytics-chart-badge" id="analyticsChartBadge">Live records</span>
+                </div>
+                <div class="publisher-analytics-chart-area" role="img" aria-label="Waiting for live publisher analytics data.">
+                  <svg id="analyticsChartSvg" viewBox="0 0 700 180" preserveAspectRatio="none" aria-hidden="true">
+                    <line class="chart-grid-line" x1="20" y1="35" x2="680" y2="35"></line>
+                    <line class="chart-grid-line" x1="20" y1="75" x2="680" y2="75"></line>
+                    <line class="chart-grid-line" x1="20" y1="115" x2="680" y2="115"></line>
+                    <line class="chart-grid-line" x1="20" y1="155" x2="680" y2="155"></line>
+                    <path id="analyticsChartAreaFill" class="chart-area-fill" d="" hidden></path>
+                    <path id="analyticsChartLine" class="chart-line" d="" hidden></path>
+                  </svg>
+                  <div class="analytics-chart-bars" id="analyticsChartBars" hidden></div>
+                  <div class="analytics-chart-month-labels" id="analyticsChartLabels" hidden></div>
+                  <div class="analytics-chart-placeholder" id="analyticsChartPlaceholder">
+                    <strong id="analyticsChartPlaceholderTitle">Waiting for live StoreNest records</strong>
+                  </div>
+                </div>
+              </section>
+
+              <aside class="publisher-analytics-insight">
                             <span class="analytics-insight-icon" aria-hidden="true">
                               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15.1 14a7 7 0 1 0-6.2 0c.8.4 1.1 1.3 1.1 2h4c0-.7.3-1.6 1.1-2Z"></path>
