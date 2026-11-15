@@ -699,7 +699,7 @@
     const placeholder = $("analyticsChartPlaceholder");
     const line = $("analyticsChartLine");
     const fill = $("analyticsChartAreaFill");
-    if (svg) svg.hidden = true;
+    if (svg) svg.setAttribute("hidden", "");
     if (bars) {
       bars.hidden = true;
       bars.replaceChildren();
@@ -710,11 +710,11 @@
     }
     if (placeholder) placeholder.hidden = false;
     if (line) {
-      line.hidden = true;
+      line.setAttribute("hidden", "");
       line.setAttribute("d", "");
     }
     if (fill) {
-      fill.hidden = true;
+      fill.setAttribute("hidden", "");
       fill.setAttribute("d", "");
     }
     if ($("analyticsChartPlaceholderTitle")) $("analyticsChartPlaceholderTitle").textContent = title;
@@ -780,8 +780,8 @@
     const areaPath = linePath + " L " + xEnd + " 165 L " + xStart + " 165 Z";
     line.setAttribute("d", linePath);
     fill.setAttribute("d", areaPath);
-    line.hidden = false;
-    fill.hidden = false;
+    line.removeAttribute("hidden");
+    fill.removeAttribute("hidden");
     svg.hidden = false;
     if (bars) {
       bars.hidden = true;
@@ -810,7 +810,7 @@
     const bars = $("analyticsChartBars");
     const labels = $("analyticsChartLabels");
     const placeholder = $("analyticsChartPlaceholder");
-    if (svg) svg.hidden = true;
+    if (svg) svg.setAttribute("hidden", "");
     if (labels) {
       labels.hidden = true;
       labels.replaceChildren();
