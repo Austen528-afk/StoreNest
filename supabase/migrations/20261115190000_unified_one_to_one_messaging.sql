@@ -674,8 +674,8 @@ as $function$
     and p.referral_code = pg_catalog.upper(pg_catalog.btrim(coalesce(p_referral_code, '')))
   limit 1;
 $function$;
-revoke all on function public.get_public_publisher_message_contact(text) from public, anon;
-grant execute on function public.get_public_publisher_message_contact(text) to authenticated;
+revoke all on function public.get_public_publisher_message_contact(text) from public;
+grant execute on function public.get_public_publisher_message_contact(text) to anon, authenticated;
 
 create or replace function public.get_platform_admin_message_contacts(
   p_search text,
