@@ -177,7 +177,7 @@ body.dark .publisher-connection.connected{background:#1e352d;border-color:#365c4
 .hq-message-signout{padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--text);font-size:11px;font-weight:750}
 #hqMessagesMount[hidden]{display:none!important}
 @media(max-width:640px){.hq-message-panel{padding:12px}.hq-message-auth{padding:16px}.hq-message-form{grid-template-columns:1fr}.hq-message-submit{grid-column:auto}.hq-message-account{align-items:flex-start;flex-direction:column}.hq-message-signout{width:100%}}
-.hq-auth-gate{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;padding:26px clamp(18px,5vw,76px) 18px;background:radial-gradient(ellipse at 50% 35%,#fff 0,#f7faf8 57%,#eef5f1 100%);color:var(--text)}
+.hq-auth-gate{height:100vh;height:100dvh;min-height:100%;overflow-y:auto;display:flex;flex-direction:column;padding:26px clamp(18px,5vw,76px) 18px;background:radial-gradient(ellipse at 50% 35%,#fff 0,#f7faf8 57%,#eef5f1 100%);color:var(--text)}
 .hq-auth-gate[hidden],.app[hidden]{display:none!important}
 .hq-auth-top{width:min(1180px,100%);margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px}
 .hq-auth-brand{display:inline-flex;align-items:center;gap:11px;font-size:18px;font-weight:850;letter-spacing:-.6px}.hq-auth-brand b{margin-left:5px;padding:3px 7px;border:1px solid #cde8db;border-radius:6px;background:#e9f6f0;color:#16775e;font-size:10px;letter-spacing:.08em}
@@ -208,7 +208,7 @@ body.dark .hq-auth-emblem{background:#25483d;color:#70e2c2}
 <body>
 <section class="hq-auth-gate" id="hqAuthGate" aria-labelledby="hqAuthTitle">
  <div class="hq-auth-top">
-  <a class="hq-auth-brand" href="/" aria-label="StoreNest HQ home"><span class="hq-auth-brand-mark">S</span><span>StoreNest <b>HQ</b></span></a>
+  <div class="hq-auth-brand" aria-label="StoreNest HQ"><span class="hq-auth-brand-mark">S</span><span>StoreNest <b>HQ</b></span></div>
   <button class="iconbtn hq-auth-theme" id="hqAuthTheme" type="button" aria-label="Toggle dark mode" title="Toggle theme"></button>
  </div>
  <div class="hq-auth-main"><section class="hq-auth-card">
@@ -709,6 +709,7 @@ initTheme();setPage(location.hash.slice(1)||'overview',false);
    await verifyAdministrator(result.data.user);
    byId('hqLoginForm').reset();
   }catch(error){
+   byId('hqLoginPassword').value='';
    showSignInError('We could not verify this sign-in for StoreNest HQ. Check your credentials and administrator access, then try again.');
   }finally{
    if(button&&client){button.disabled=false;button.textContent='Sign in securely'}
