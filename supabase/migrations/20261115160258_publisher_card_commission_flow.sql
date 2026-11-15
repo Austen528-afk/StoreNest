@@ -226,3 +226,5 @@ WHEN (
   )
 )
 EXECUTE FUNCTION private.record_completed_card_order_financials();
+
+REVOKE ALL ON FUNCTION private.record_completed_card_order_financials() FROM PUBLIC, anon, authenticated;
