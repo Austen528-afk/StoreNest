@@ -428,7 +428,7 @@
       if (record.is_test === true) {
         const testNote = document.createElement("small");
         testNote.className = "earnings-business-test-note";
-        testNote.textContent = "Test 1 · not payable";
+        testNote.textContent = "Sandbox test · not payable";
         businessCopy.appendChild(testNote);
       }
       businessWrap.append(icon, businessCopy);
@@ -495,10 +495,10 @@
       renderPublisherCommissionRecords(records);
       const hasTestRecord = records.some((record) => record.is_test === true);
       if (statusLabel) statusLabel.textContent = hasTestRecord
-        ? "Connected · demo record separated"
+        ? "Connected · sandbox records separated"
         : "Connected to your commission records";
       if (note) note.textContent = hasTestRecord
-        ? "Controlled Test 1 is labelled as a demonstration and excluded from live totals. Only your commission information is shown."
+        ? "Sandbox records are labelled and excluded from live totals. Only your commission information is shown."
         : "Only your commission amount and status are shown here.";
     } catch (error) {
       console.error("Publisher commission records could not be loaded:", error);
