@@ -576,6 +576,7 @@ returns table (
   partner_user_id uuid,
   partner_role text,
   partner_display_name text,
+  partner_logo_url text,
   created_at timestamptz,
   updated_at timestamptz,
   last_message_at timestamptz,
@@ -603,6 +604,10 @@ as $function$
       case when c.participant_a_id = auth.uid() then c.participant_b_role else c.participant_a_role end,
       case when c.participant_a_id = auth.uid() then c.participant_b_business_id else c.participant_a_business_id end
     ),
+    case when (case when c.participant_a_id = auth.uid() then c.participant_b_role else c.participant_a_role end) = 'business_owner'
+      then (select b.logo_url from public.businesses as b
+            where b.id = case when c.participant_a_id = auth.uid() then c.participant_b_business_id else c.participant_a_business_id end)
+      else null::text end,
     c.created_at, c.updated_at, c.last_message_at, c.last_message_preview, c.last_message_sender_id,
     c.requester_user_id, c.request_status,
     (select count(*) from public.storefront_messages as m where m.conversation_id = c.id and m.sender_id <> auth.uid() and m.read_at is null),
