@@ -1342,7 +1342,10 @@
     if (!code || !customer.client) return;
     if (!customer.user) {
       openCustomerCentre().then(function () {
-        textError(customer, "Sign in to message this Publisher. Your contact link will remain available.");
+        textError(customer, "Sign in to message this Publisher. The sign-in link will return you here.");
+        const link = make("a", "sn-message-signin-link", "Sign in to message " + (code ? "this Publisher" : "this account"));
+        link.href = "/customer-account.html?message_publisher=" + encodeURIComponent(code);
+        customer.refs.contacts.appendChild(link);
       }).catch(function () {});
       return;
     }
