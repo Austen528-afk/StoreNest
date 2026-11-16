@@ -82,7 +82,7 @@
         '<div class="sn-message-error" role="status" aria-live="polite" hidden></div>' +
         '<div class="sn-message-contact-results" hidden></div>' +
         '<div class="sn-message-results" hidden></div>' +
-        '<div class="sn-message-list-label"><span>' + (mode === "hq" ? "Accounts & conversations" : customerMode ? "Inbox" : mode === "publisher" ? "Accounts & conversations" : "Conversations") + '</span><span class="sn-message-list-count"></span></div>' +
+        '<div class="sn-message-list-label"><span>' + (mode === "hq" || mode === "owner" ? "Accounts & conversations" : customerMode ? "Inbox" : mode === "publisher" ? "Accounts & conversations" : "Conversations") + '</span><span class="sn-message-list-count"></span></div>' +
         '<div class="sn-message-list" role="list"></div>' +
       '</aside>' +
       '<main class="sn-message-main">' +
@@ -231,10 +231,12 @@
   }
 
 
-  function renderHqDirectory(state) {
+  function renderAccountDirectory(state, mode) {
     const rows = Array.isArray(state.rows) ? state.rows : [];
     const query = String(state.search || "").trim().toLowerCase();
-    const contacts = Array.isArray(state.contacts) ? state.contacts : [];
+    const contacts = mode === "owner"
+      ? [{ role: "hq", displayName: "StoreNest HQ" }].concat(Array.isArray(state.contacts) ? state.contacts : [])
+      : (Array.isArray(state.contacts) ? state.contacts : []);
     const uniqueContacts = [];
     const seenContacts = new Set();
 
@@ -247,6 +249,7 @@
       seenContacts.add(key);
 
       const existingConversation = rows.some(function (row) {
+        if (role === "hq") return row.partner_role === "hq";
         return Boolean(userId)
           && row.partner_user_id === userId
           && row.partner_role === role
@@ -282,8 +285,10 @@
       const empty = make("div", "sn-message-empty-list");
       empty.appendChild(make("strong", "", state.user ? "No accounts or conversations" : "Sign in to see your messages"));
       empty.appendChild(document.createTextNode(query
-        ? "No registered accounts or conversations match this search."
-        : "Search for a registered StoreNest user or continue a conversation."));
+        ? "No accounts or conversations match this search."
+        : mode === "owner"
+          ? "Messages with your customers, Publisher, and StoreNest HQ will appear here."
+          : "Search for a registered StoreNest user or continue a conversation."));
       list.appendChild(empty);
       return;
     }
@@ -305,13 +310,13 @@
           businessId: entry.role === "business_owner" ? entry.businessId : null,
           displayName: entry.name,
           businessName: entry.businessName || null,
-          myRole: "hq",
-          myBusinessId: null
+          myRole: mode === "owner" ? "business_owner" : mode,
+          myBusinessId: mode === "owner" ? state.businessId : null
         };
         const business = entry.role === "business_owner"
           ? { id: target.businessId, name: target.businessName || entry.name }
           : null;
-        openThread(state, "hq", { conversation: null, business: business, target: target });
+        openThread(state, mode, { conversation: null, business: business, target: target });
       });
       list.appendChild(button);
     });
@@ -332,7 +337,7 @@
       button.appendChild(body);
       if (row.unread_count) button.appendChild(make("span", "sn-message-unread", row.unread_count > 99 ? "99+" : String(row.unread_count)));
       button.addEventListener("click", function () {
-        openThread(state, "hq", { conversation: row, business: row.business || null });
+        openThread(state, mode, { conversation: row, business: row.business || (mode === "owner" ? state.business || null : null) });
       });
       list.appendChild(button);
     });
@@ -344,8 +349,8 @@
       renderPublisherDirectory(state);
       return;
     }
-    if (mode === "hq") {
-      renderHqDirectory(state);
+    if (mode === "hq" || mode === "owner") {
+      renderAccountDirectory(state, mode);
       return;
     }
     const rows = state.rows || [];
@@ -471,7 +476,7 @@
     state.contacts = Array.isArray(contacts) ? contacts : [];
     const box = state.refs && state.refs.contacts;
     if (!box) return;
-    if (mode === "publisher" || mode === "hq") {
+    if (mode === "publisher" || mode === "hq" || mode === "owner") {
       box.replaceChildren();
       box.hidden = true;
       renderList(state, mode);
