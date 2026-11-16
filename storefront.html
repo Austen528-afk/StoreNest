@@ -419,6 +419,8 @@ body[data-store-type="decor"] .decor-copy .brand-name{font-weight:780}
 .gallery-product-action-row .add{flex-shrink:0}
 .gallery-bottom{flex-shrink:0}
 .gallery-total-bar{position:sticky;bottom:0;z-index:3;display:flex;flex:0 0 auto;align-items:center;justify-content:space-between;gap:12px;min-height:54px;margin-top:auto;padding:10px 18px;background:#fff;border-top:1px solid #e7ebe8;box-shadow:0 -4px 14px #00000008}.gallery-total-copy{display:flex;align-items:center;gap:12px;min-width:0}.gallery-total-bar .add{flex-shrink:0}
+.gallery-total-actions{display:flex;min-width:0;align-items:center;justify-content:flex-end;gap:8px}
+.gallery-total-actions .service-message{min-height:42px;padding:9px 13px;font-size:12px}
 .gallery-total-bar[hidden]{display:none!important}
 .gallery-total-bar span{font-size:13px;font-weight:700;color:#6d7a71}
 .gallery-total-bar strong{font-size:18px;font-weight:850;color:#171717;white-space:nowrap}
@@ -431,7 +433,10 @@ body[data-store-type="decor"] .decor-copy .brand-name{font-weight:780}
  .gallery-action-row,.gallery-actions{gap:7px}
  .gallery-total-bar{min-height:52px;padding:10px 16px}
  .gallery-total-bar strong{font-size:17px}
+  .gallery-total-actions{gap:6px}
+  .gallery-total-actions .service-message{padding:8px 10px;font-size:11px}
 }
+@media(max-width:360px){.gallery-total-bar{flex-wrap:wrap;gap:8px;padding:9px 12px}.gallery-total-copy,.gallery-total-actions{flex:1 1 100%}.gallery-total-copy{justify-content:space-between}.gallery-total-actions>*{flex:1 1 0;min-width:0;white-space:normal}}
 
 
 /* Reserve the top safe area when an installed web app draws edge-to-edge.
@@ -525,7 +530,7 @@ body[data-local-services-layout="true"] .item-body p{color:#627e70}
 body[data-local-services-layout="true"] .gallery-stage{background:#edf4f0}
 body[data-local-services-layout="true"] .service-action-row{width:100%;min-width:0}
 @media(max-width:600px){
-  body[data-local-services-layout="true"] .service-action-row :is(.add,.service-whatsapp){
+   body[data-local-services-layout="true"] .service-action-row :is(.add,.service-message){
     width:100%;min-width:0;max-width:100%;white-space:normal;text-align:center;
   }
   body[data-local-services-layout="true"] .card:has(.service-disclaimer) .item-body{
@@ -710,7 +715,7 @@ body[data-local-services-layout="true"] .service-action-row{width:100%;min-width
  #galleryDialog.gallery-booking-style .gallery-bottom{padding:12px 17px max(18px,env(safe-area-inset-bottom))}
  #galleryDialog.gallery-booking-style .gallery-action-row{align-items:flex-start;flex-direction:column;gap:12px}
  #galleryDialog.gallery-booking-style .gallery-actions{width:100%;margin-left:0;justify-content:stretch}
- #galleryDialog.gallery-booking-style .gallery-actions :is(.add,.service-whatsapp){flex:1 1 0;min-width:0;text-align:center}
+ #galleryDialog.gallery-booking-style .gallery-actions :is(.add,.service-message){flex:1 1 0;min-width:0;text-align:center}
 }
 
 /* Catering & Decor and Local Services booking cards override owner section styles.
@@ -865,7 +870,7 @@ body:is([data-store-category="events-decor"],[data-store-category="local-service
  min-width:0;
  width:100%
 }
-body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-feed-card .service-action-row :is(.add,.service-whatsapp){
+body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-feed-card .service-action-row :is(.add,.service-message){
  flex:1 1 0;
  min-width:0;
  white-space:normal;
@@ -911,7 +916,7 @@ body:is([data-store-category="events-decor"],[data-store-category="local-service
 }
 @media(max-width:380px){
  body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-feed-card .service-action-row{flex-wrap:wrap}
- body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-feed-card .service-action-row :is(.add,.service-whatsapp){flex-basis:100%}
+ body:is([data-store-category="events-decor"],[data-store-category="local-services"]) #catalog .decor-service-feed-card .service-action-row :is(.add,.service-message){flex-basis:100%}
 }
 
 /* Keep Local Services actions inside the phone card width. The 750px breakpoint
@@ -925,7 +930,7 @@ body:is([data-store-category="events-decor"],[data-store-category="local-service
   gap:8px;
   min-width:0
  }
- body[data-store-category="local-services"] #catalog .decor-service-feed-card .service-action-row :is(.add,.service-whatsapp){
+  body[data-store-category="local-services"] #catalog .decor-service-feed-card .service-action-row :is(.add,.service-message){
   display:flex;
   width:100%;
   min-width:0;
@@ -1301,9 +1306,9 @@ body[data-store-category="home-living"] #catalog .art:has(img) img{
    <div id="galleryChoiceGroups"></div>
    <label class="gallery-notes-label">Special instructions (optional)<textarea id="galleryNotes" maxlength="200" rows="2" placeholder="e.g. Preferred style, size, colour, or other request"></textarea></label>
   </div>
-  <div class="gallery-bottom" id="galleryBottom"><span id="galleryPosition"></span><div id="galleryDots" class="gallery-dots"></div><div id="galleryServiceActionRow" class="gallery-action-row"><strong id="galleryServicePrice" class="gallery-price"></strong><div class="gallery-actions"><button id="galleryAdd" class="add" type="button">＋ Add</button><a id="galleryWhatsApp" class="service-whatsapp" target="_blank" rel="noopener noreferrer" hidden aria-label="Contact business on WhatsApp"><span aria-hidden="true">💬</span> WhatsApp</a></div></div></div>
+  <div class="gallery-bottom" id="galleryBottom"><span id="galleryPosition"></span><div id="galleryDots" class="gallery-dots"></div><div id="galleryServiceActionRow" class="gallery-action-row"><strong id="galleryServicePrice" class="gallery-price"></strong><div class="gallery-actions"><button id="galleryAdd" class="add" type="button">＋ Add</button><button id="galleryMessageBusiness" class="service-message" type="button" hidden aria-label="Message business about this service"><span aria-hidden="true">💬</span> Message Business</button></div></div></div>
   </div>
-  <div id="galleryTotalBar" class="gallery-total-bar" hidden aria-live="polite"><div class="gallery-total-copy"><span>Total</span><strong id="galleryTotal">R0.00</strong></div><button id="galleryProductAdd" class="add" type="button">＋ Add</button></div>
+  <div id="galleryTotalBar" class="gallery-total-bar" hidden aria-live="polite"><div class="gallery-total-copy"><span>Total</span><strong id="galleryTotal">R0.00</strong></div><div class="gallery-total-actions"><button id="galleryProductMessage" class="service-message" type="button" hidden aria-label="Message business about this product"><span aria-hidden="true">💬</span> Message Business</button><button id="galleryProductAdd" class="add" type="button">＋ Add</button></div></div>
  </section>
 </div>
 <script src="/service-bookings.js"></script>
@@ -1456,23 +1461,35 @@ function catalogResponsiveAttributes(entry,sizes){
  const srcset=catalogMediaSrcset(entry);return srcset?' srcset="'+esc(srcset)+'" sizes="'+esc(sizes)+'"':"";
 }
 function money(v){return "R"+Number(v||0).toFixed(2)}
-/* Contact an owner directly via the phone saved in their business profile.
- * Handles local ZA 0XXXXXXXXX, +27..., 27..., and international +... formats.
- * Never invents a WhatsApp number; the link is omitted if no valid number is present.
- */
-function serviceWhatsAppUrl(business,item){
- const raw=String(business?.phone||"").trim();
- if(!raw)return "";
- let digits=raw.replace(/\D/g,"");
- if(digits.startsWith("00"))digits=digits.slice(2);
- else if(/^0\d{9}$/.test(digits))digits="27"+digits.slice(1);
- if(!/^[1-9]\d{7,14}$/.test(digits))return "";
- const message="Hello, I'm interested in "+String(item?.name||"this service")+" from "+String(business?.name||"your business")+". Could we discuss availability and details?";
- return "https://wa.me/"+digits+"?text="+encodeURIComponent(message);
+function storefrontListingMessageContext(business,item){
+ const service=item?.item_type==="service";
+ const price=service?window.StoreNestBookings.priceLabel(item,business):storefrontProductPriceLabel(item);
+ const details=[String(item?.description||"")];
+ if(item===activeGalleryItem&&isStorefrontFashionProduct(item)){
+  const color=storefrontFashionColorSets(item).find(set=>set.id===activeGalleryFashionColorId);
+  if(color?.name)details.push("Colour: "+color.name);
+  const sizeGroup=storefrontFashionSizeGroup(item,activeGalleryFashionColorId);
+  const size=sizeGroup?.options?.find(option=>option.id===activeGalleryFashionSizeId);
+  if(size?.name)details.push("Size: "+size.name);
+ }
+ return {
+  listingId:String(item?.id||""),
+  type:service?"Service":"Product",
+  name:String(item?.name||""),
+  businessName:String(business?.name||""),
+  price:String(price||""),
+  details:details.filter(Boolean).join(" · ").slice(0,700)
+ };
 }
-function serviceWhatsAppAction(business,item){
- const url=serviceWhatsAppUrl(business,item);
- return url?'<a class="service-whatsapp" href="'+esc(url)+'" rel="noopener noreferrer" target="_blank" aria-label="Contact '+esc(business.name)+' directly on WhatsApp about '+esc(item.name)+'"><span aria-hidden="true">💬</span> WhatsApp</a>':"";
+function openBusinessMessage(business,item){
+ if(!business?.id||!item?.id)return;
+ window.dispatchEvent(new CustomEvent("storenest:message-business",{detail:{
+  businessId:String(business.id),
+  listingContext:storefrontListingMessageContext(business,item)
+ }}));
+}
+function serviceMessageAction(business,item){
+ return '<button type="button" class="service-message" data-message-business-item="'+esc(item.id)+'" aria-label="Message '+esc(business.name)+' about '+esc(item.name)+'"><span aria-hidden="true">💬</span> Message Business</button>';
 }
 
 function toast(msg){clearTimeout(toastTimer);$("toast").textContent=msg;$("toast").hidden=false;toastTimer=setTimeout(()=>{$("toast").hidden=true},1900)}
@@ -2524,9 +2541,12 @@ function openProductGallery(id,trigger,cartKey=null){
  renderGalleryOptions(item,editRow?.selection||{});
  if(editRow)$("galleryNotes").value=editRow.note||"";
  updateGalleryOptionsPrice();
- const wa=$("galleryWhatsApp"),waUrl=isBookingOffer?serviceWhatsAppUrl(activePublicBusiness,item):"";
- wa.hidden=!waUrl;
- if(waUrl){wa.href=waUrl;wa.setAttribute("aria-label","Contact "+activePublicBusiness.name+" on WhatsApp about "+item.name)}else wa.removeAttribute("href");
+ const messageLabel="Message "+(activePublicBusiness?.name||"business")+" about "+item.name;
+ const serviceMessage=$("galleryMessageBusiness"),productMessage=$("galleryProductMessage");
+ serviceMessage.hidden=!isBookingOffer;
+ serviceMessage.setAttribute("aria-label",messageLabel);
+ productMessage.hidden=isBookingOffer;
+ productMessage.setAttribute("aria-label",messageLabel);
  const photos=galleryPhotos(item);
  renderGallerySlides();
  if(photos.length)showGalleryImage("auto");else{$("galleryPosition").textContent="No pictures yet";$("galleryPosition").hidden=false;$("galleryDots").hidden=true}
@@ -2614,6 +2634,8 @@ function handleGalleryAdd(){
 
 $("galleryProductAdd").addEventListener("click",handleGalleryAdd);
 $("galleryAdd").addEventListener("click",handleGalleryAdd);
+$("galleryMessageBusiness").addEventListener("click",()=>openBusinessMessage(activePublicBusiness,activeGalleryItem));
+$("galleryProductMessage").addEventListener("click",()=>openBusinessMessage(activePublicBusiness,activeGalleryItem));
 document.addEventListener("keydown",event=>{
  if($("galleryDialog").hidden)return;
  if(event.key==="Escape")handleGalleryClose();
@@ -2674,6 +2696,13 @@ $("main").addEventListener("keydown",event=>{
 });
 window.addEventListener("popstate",()=>{const category=new URLSearchParams(location.search).get("category");if(category)selectStorefrontCategory(category)});
 $("main").addEventListener("click",e=>{
+  const messageButton=e.target.closest("[data-message-business-item]");
+  if(messageButton){
+   e.preventDefault();
+   const item=availableItems.find(row=>String(row.id)===String(messageButton.dataset.messageBusinessItem));
+   if(item)openBusinessMessage(activePublicBusiness,item);
+   return;
+  }
   const category=e.target.closest("[data-category-tab]");
   if(category){selectStorefrontCategory(category.dataset.categoryTab);return}
 
@@ -3047,7 +3076,7 @@ const cardForItem=item=>{
      const media=displayedEntries.map(entry=>entry.url),firstEntry=displayedEntries[0],first=firstEntry?.url||"",count=media.length;
      const bookingFee=service?window.StoreNestBookings.bookingFeeLabel(item,business):"";
      const action=service?(localServiceBooking?"Request service":"Request booking"):"Add";
-     const whatsapp=service?serviceWhatsAppAction(business,item):"";
+     const messageBusiness=service?serviceMessageAction(business,item):"";
      const setAttribute=hasConfiguredColorSets&&firstColorSet?' data-decor-set-id="'+esc(firstColorSet.id)+'"':"";
      const initialSetName=hasConfiguredColorSets&&firstColorSet?firstColorSet.name:"";
      const titleButton='<button class="item-title-open" type="button" data-open-product="'+esc(item.id)+'"'+setAttribute+' title="'+esc(item.name)+'" aria-label="View details for '+esc(item.name)+'">'+esc(item.name)+'</button>';
@@ -3080,10 +3109,10 @@ const cardForItem=item=>{
      if(editorialServiceBooking){
        const colorPicker=hasConfiguredColorSets&&colorSets.length?'<div class="decor-color-set-picker" data-decor-color-picker="'+esc(item.id)+'"><span class="decor-color-set-label">Colour theme</span><div class="decor-color-set-options" role="group" aria-label="Choose a décor colour theme">'+colorSets.map((set,index)=>'<button type="button" class="decor-color-set-option" data-decor-color-set="'+esc(set.id)+'" data-item-id="'+esc(item.id)+'" aria-pressed="'+String(index===0)+'">'+esc(set.name)+'</button>').join("")+'</div></div>':"";
        const description=hasConfiguredColorSets&&firstColorSet?.description?firstColorSet.description:(item.description||"");
-       return '<article class="card decor-service-feed-card'+(cateringBooking?' catering-service-feed-card':'')+'"><div class="decor-service-feed-title"><h3>'+titleButton+'</h3></div><button type="button" class="item-open decor-service-feed-open" data-open-product="'+esc(item.id)+'"'+setAttribute+' aria-label="View '+esc(item.name)+' photos, description and booking details"><div class="art decor-photo-carousel">'+decorArtwork+'</div></button><div class="decor-service-feed-details">'+colorPicker+'<p class="decor-service-description" data-decor-color-description="'+esc(item.id)+'"'+(description?'':' hidden')+'>'+esc(description)+'</p><div class="decor-service-prices"><strong class="decor-service-price">'+esc(window.StoreNestBookings.priceLabel(item,business))+'</strong>'+(bookingFee?'<span class="decor-service-fee">'+esc(bookingFee)+'</span>':'')+'</div><div class="service-action-row">'+actionButton+whatsapp+'</div></div></article>';
+       return '<article class="card decor-service-feed-card'+(cateringBooking?' catering-service-feed-card':'')+'"><div class="decor-service-feed-title"><h3>'+titleButton+'</h3></div><button type="button" class="item-open decor-service-feed-open" data-open-product="'+esc(item.id)+'"'+setAttribute+' aria-label="View '+esc(item.name)+' photos, description and booking details"><div class="art decor-photo-carousel">'+decorArtwork+'</div></button><div class="decor-service-feed-details">'+colorPicker+'<p class="decor-service-description" data-decor-color-description="'+esc(item.id)+'"'+(description?'':' hidden')+'>'+esc(description)+'</p><div class="decor-service-prices"><strong class="decor-service-price">'+esc(window.StoreNestBookings.priceLabel(item,business))+'</strong>'+(bookingFee?'<span class="decor-service-fee">'+esc(bookingFee)+'</span>':'')+'</div><div class="service-action-row">'+actionButton+messageBusiness+'</div></div></article>';
      }
      const visibleArtwork=isFashionCard&&count>1?fashionArtwork:artwork;
-     return '<article class="card"><button type="button" class="item-open'+(isFashionCard&&count>1?' fashion-photo-carousel':'')+'" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos, videos and details"><div class="art">'+visibleArtwork+'</div></button><div class="item-body"><h3>'+titleButton+'</h3><div class="item-bottom"><span class="price">'+esc(service?window.StoreNestBookings.priceLabel(item,business):storefrontProductPriceLabel(item))+'</span>'+(service?'<div class="service-action-row">':'')+actionButton+(service?whatsapp+'</div>':"")+'</div>'+(service&&bookingFee?'<div class="service-disclaimer"><strong>'+esc(bookingFee)+'</strong></div>':"")+'</div></article>';
+     return '<article class="card"><button type="button" class="item-open'+(isFashionCard&&count>1?' fashion-photo-carousel':'')+'" data-open-product="'+esc(item.id)+'" aria-label="View '+esc(item.name)+' photos, videos and details"><div class="art">'+visibleArtwork+'</div></button><div class="item-body"><h3>'+titleButton+'</h3><div class="item-bottom"><span class="price">'+esc(service?window.StoreNestBookings.priceLabel(item,business):storefrontProductPriceLabel(item))+'</span>'+(service?'<div class="service-action-row">':'')+actionButton+(service?messageBusiness+'</div>':"")+'</div>'+(service&&bookingFee?'<div class="service-disclaimer"><strong>'+esc(bookingFee)+'</strong></div>':"")+'</div></article>';
    };
    const cardGridClass=items=>items.some(item=>["events-decor","local-services"].includes(window.StoreNestCategoryId(business.category))&&window.StoreNestBookings.isBookingOffer(item,business))?"grid decor-booking-feed-grid":"grid";
    const hasProducts=availableItems.some(item=>item.item_type==="product");
