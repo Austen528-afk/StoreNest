@@ -36,7 +36,11 @@
 
   function setView(view) {
     activeView = view;
-    if (view !== "dashboard") stopPublisherAnalyticsRefresh();
+    if (view !== "dashboard") {
+      stopPublisherAnalyticsRefresh();
+      document.documentElement.classList.remove("publisher-messages-page");
+      document.body.classList.remove("publisher-messages-page");
+    }
     $("publisherLoading").hidden = true;
     document.querySelectorAll("[data-view]").forEach((element) => {
       element.hidden = element.dataset.view !== view;
@@ -625,6 +629,9 @@
 
   function setDashboardSection(section, updateHistory) {
     const key = SECTION_TITLES[section] ? section : "overview";
+    const isMessagesPage = key === "messages";
+    document.documentElement.classList.toggle("publisher-messages-page", isMessagesPage);
+    document.body.classList.toggle("publisher-messages-page", isMessagesPage);
     document.querySelectorAll("[data-dashboard-panel]").forEach((panel) => {
       panel.hidden = panel.dataset.dashboardPanel !== key;
     });
