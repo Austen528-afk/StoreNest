@@ -452,3 +452,135 @@ html[data-theme="dark"] .sn-message-signin-link:hover{background:#1d4b37}
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+
+/* Publisher Messages: one combined directory, no horizontal overflow, and no page-level scroll. */
+#publisherMessageCentre,
+#publisherMessageCentre .sn-message-app,
+#publisherMessageCentre .sn-message-list-pane,
+#publisherMessageCentre .sn-message-main,
+#publisherMessageCentre .sn-message-thread,
+#publisherMessageCentre .sn-message-thread-scroll,
+#publisherMessageCentre .sn-message-list {
+  min-width: 0;
+  max-width: 100%;
+}
+#publisherMessageCentre {
+  display: flex;
+  width: 100%;
+  min-height: 0;
+  flex: 1 1 0%;
+  overflow: hidden;
+}
+#publisherMessageCentre .sn-message-app {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  max-height: none;
+  grid-template-columns: minmax(0, 350px) minmax(0, 1fr);
+  overflow: hidden;
+}
+#publisherMessageCentre .sn-message-list-head,
+#publisherMessageCentre .sn-message-contact-results,
+#publisherMessageCentre .sn-message-results {
+  display: none !important;
+}
+#publisherMessageCentre .sn-message-list-pane {
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  padding-top: 14px;
+}
+#publisherMessageCentre .sn-message-list-label {
+  flex: 0 0 auto;
+  border-top: 0;
+}
+#publisherMessageCentre .sn-message-list {
+  min-height: 0;
+  flex: 1 1 0%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
+}
+#publisherMessageCentre .sn-message-list .sn-message-row,
+#publisherMessageCentre .sn-message-list .sn-business-result {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+#publisherMessageCentre .sn-message-list .sn-message-row-body {
+  display: block;
+  width: 0;
+  min-width: 0;
+  flex: 1 1 0%;
+  overflow: hidden;
+}
+#publisherMessageCentre .sn-message-list .sn-message-row-top {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+#publisherMessageCentre .sn-message-list .sn-message-row-name {
+  display: block;
+  width: 0;
+  min-width: 0;
+  max-width: none;
+  flex: 1 1 0%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#publisherMessageCentre .sn-message-list .sn-message-row-time {
+  display: block;
+  flex: 0 0 auto;
+  margin-left: auto;
+  white-space: nowrap;
+}
+#publisherMessageCentre .sn-message-list .sn-message-row-preview {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  overflow-wrap: normal;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#publisherMessageCentre .sn-message-main {
+  min-height: 0;
+  overflow: hidden;
+}
+#publisherMessageCentre .sn-message-thread {
+  min-height: 0;
+  overflow: hidden;
+}
+#publisherMessageCentre .sn-message-thread-scroll {
+  min-height: 0;
+  flex: 1 1 0%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+@media (max-width: 760px) {
+  #publisherMessageCentre .sn-message-app {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  #publisherMessageCentre .sn-message-list-pane {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  #publisherMessageCentre .sn-message-main {
+    display: none;
+    grid-column: 1;
+    grid-row: 1;
+  }
+  #publisherMessageCentre .sn-message-app.is-thread-open .sn-message-list-pane {
+    display: none;
+  }
+  #publisherMessageCentre .sn-message-app.is-thread-open .sn-message-main {
+    display: flex;
+  }
+}
