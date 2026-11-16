@@ -997,6 +997,9 @@
     updateRequestControls(state, mode);
     if (loggedIn) state.refs.textarea.focus({ preventScroll: true });
     loadThreadMessages(state, mode).catch(function (error) { messageStatus(state, error.message, true); });
+    if (mode === "owner" && loggedIn && conversation.id) {
+      refreshActiveConversation(state, mode, conversation.id).catch(function () {});
+    }
   }
   async function sendMessage(state, mode, event) {
     event.preventDefault();
@@ -1072,7 +1075,17 @@
       await loadThreadMessages(state, mode);
       state.refs.textarea.focus({ preventScroll: true });
     } catch (error) {
-      messageStatus(state, error.message || "Message could not be sent. Please try again.", true);
+      const errorText = String(error && error.message || "");
+      if (mode === "owner" && current && current.id && /wait for the recipient to accept this message request/i.test(errorText)) {
+        try {
+          const refreshed = await refreshActiveConversation(state, mode, current.id);
+          if (refreshed && refreshed.request_status === "pending") {
+            messageStatus(state, "", false);
+            return;
+          }
+        } catch (_) {}
+      }
+      messageStatus(state, errorText || "Message could not be sent. Please try again.", true);
       state.refs.send.disabled = !String(state.refs.textarea.value || "").trim();
     }
   }
@@ -1449,6 +1462,18 @@
     if (mode === "customer") return loadCustomerInbox();
     if (mode === "owner") return refreshOwnerInbox();
     return loadRoleInbox(state, mode);
+  }
+
+  async function refreshActiveConversation(state, mode, conversationId) {
+    if (!conversationId) return null;
+    await refreshInboxFor(state, mode);
+    const active = state.active;
+    if (!active || !active.conversation || active.conversation.id !== conversationId) return null;
+    const refreshed = (state.rows || []).find(function (row) { return row.id === conversationId; });
+    if (!refreshed) return null;
+    active.conversation = refreshed;
+    updateRequestControls(state, mode);
+    return refreshed;
   }
 
   function ensureRoleRealtime(state, mode) {
