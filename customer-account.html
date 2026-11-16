@@ -156,7 +156,7 @@ function setSignedInView(user,profile){
  $("profileEmailInput").value=profile?(profile.contact_email??""):(user.email||"");
  $("profilePhoneInput").value=profile?(profile.contact_phone??""):(user.phone||"");
  $("saveProfileButton").textContent=profile?"Save changes":"Save profile";$("profileMessage").hidden=true;
- if(profile)resumePublisherMessageLink();
+  if(profile)resumeAfterAuthentication();
 }
 function resumePublisherMessageLink(){
  const code=new URLSearchParams(location.search).get("message_publisher");
@@ -164,6 +164,20 @@ function resumePublisherMessageLink(){
  location.replace("/?message_publisher="+encodeURIComponent(code));
  return true;
 }
+ function resumeAfterAuthentication(){
+  if(!currentProfile)return false;
+  const returnPath=new URLSearchParams(location.search).get("storenest_return");
+  if(returnPath&&returnPath.startsWith("/")&&!returnPath.startsWith("//")){
+   try{
+    const target=new URL(returnPath,location.origin);
+    if(target.origin===location.origin&&target.pathname!=="/customer-account.html"){
+     location.replace(target.pathname+target.search+target.hash);
+     return true;
+    }
+   }catch(_){}
+  }
+  return resumePublisherMessageLink();
+ }
 async function sendAccountCode(){
  const button=$("sendAccountCode");button.disabled=true;showMessage($("accountAuthMessage"),"");
  try{
@@ -275,7 +289,7 @@ async function saveCustomerProfile(event){
   $("profileHelp").textContent="Profile name and place are required. Exact address is optional.";
   $("saveProfileButton").textContent="Save changes";
   showMessage($("profileMessage"),"All profile information saved.");
-  if(resumePublisherMessageLink())return;
+  if(resumeAfterAuthentication())return;
  }catch(error){
   console.error("Could not save customer profile:",error);
   showMessage($("profileMessage"),error.message||"Could not save your profile. Please try again.",true);

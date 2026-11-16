@@ -89,9 +89,10 @@
         '<div class="sn-message-empty"><div class="sn-message-empty-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20.5 11.5a8 8 0 0 1-8 8 8.2 8.2 0 0 1-3.6-.83L4 20l1.32-4.27a7.96 7.96 0 1 1 15.18-4.23Z"/><path d="M8.2 11.5h.01M12.2 11.5h.01M16.2 11.5h.01"/></svg></div><h3>' + (mode === "publisher" ? "Publisher messages" : mode === "hq" ? "HQ messages" : customerMode ? "Your messages" : "Customer conversations") + '</h3><p>' + (customerMode ? "Search for a business to start a private conversation, or select a chat from your inbox." : mode === "publisher" ? "Choose a message from one of your referred businesses or StoreNest HQ." : mode === "hq" ? "Search for a registered StoreNest user to start a private conversation." : "Choose a conversation to read and reply. New messages appear here as they arrive.") + '</p></div>' +
         '<section class="sn-message-thread" hidden>' +
           '<header class="sn-message-thread-head"><button class="sn-message-back" type="button" aria-label="Back to conversations">‹</button><div class="sn-message-thread-identity"><span class="sn-message-avatar"></span><div style="min-width:0"><div class="sn-message-thread-name"></div><div class="sn-message-thread-subtitle"></div></div></div></header>' +
+          '<div class="sn-message-listing-context" hidden></div>' +
           '<div class="sn-message-request-actions" hidden></div>' +
           '<div class="sn-message-thread-scroll" aria-live="polite"></div>' +
-          '<div class="sn-message-composer-wrap"><div class="sn-message-auth-note" hidden></div><form class="sn-message-compose"><textarea rows="1" maxlength="2000" aria-label="Write a message" placeholder="Start a message"></textarea><button class="sn-message-send" type="submit" aria-label="Send message" disabled><svg viewBox="0 0 24 24"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4Z"/></svg></button></form><div class="sn-message-compose-hint">Enter to send · Shift + Enter for a new line</div><div class="sn-message-status" role="status" aria-live="polite"></div></div>' +
+        '<div class="sn-message-composer-wrap"><div class="sn-message-auth-note" hidden></div><form class="sn-message-compose"><textarea rows="1" maxlength="2000" aria-label="Write a message" placeholder="Start a message"></textarea><button class="sn-message-send" type="submit" aria-label="Send message" disabled><svg viewBox="0 0 24 24"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4Z"/></svg></button></form><div class="sn-message-compose-hint">Enter to send · Shift + Enter for a new line</div><div class="sn-message-status" role="status" aria-live="polite"></div></div>' +
         '</section>' +
       '</main>' +
     '</section>';
@@ -110,11 +111,13 @@
       thread: root.querySelector(".sn-message-thread"),
       threadName: root.querySelector(".sn-message-thread-name"),
       threadSubtitle: root.querySelector(".sn-message-thread-subtitle"),
+      listingContext: root.querySelector(".sn-message-listing-context"),
       threadAvatar: root.querySelector(".sn-message-thread-identity .sn-message-avatar"),
       threadBody: root.querySelector(".sn-message-thread-scroll"),
       composeWrap: root.querySelector(".sn-message-composer-wrap"),
       compose: root.querySelector(".sn-message-compose"),
       textarea: root.querySelector(".sn-message-compose textarea"),
+      composeHint: root.querySelector(".sn-message-compose-hint"),
       send: root.querySelector(".sn-message-send"),
       authNote: root.querySelector(".sn-message-auth-note"),
       status: root.querySelector(".sn-message-status"),
@@ -425,12 +428,7 @@
       button.appendChild(body);
       button.appendChild(make("span", "sn-message-row-time", "Message"));
       button.addEventListener("click", function () {
-        const existing = customer.rows.find(function (row) { return row.business_id === business.id && row.partner_role === "business_owner"; });
-        if (existing) openThread(customer, "customer", { conversation: existing, business: business });
-        else openThread(customer, "customer", { conversation: null, business: business, target: {
-          userId: business.owner_id, role: "business_owner", businessId: business.id,
-          displayName: business.name || "StoreNest business", myRole: "customer"
-        } });
+        openBusinessConversation({ businessId: business.id });
       });
       box.appendChild(button);
     });
@@ -466,6 +464,109 @@
   }
   function roleLabel(role) {
     return ({ customer: "Customer", business_owner: "Business Owner", publisher: "Publisher", hq: "StoreNest HQ" })[role] || "StoreNest account";
+  }
+  function normalizeListingContext(value) {
+    if (!value || typeof value !== "object") return null;
+    const clean = function (input, limit) {
+      return String(input || "").replace(/\s+/g, " ").trim().slice(0, limit);
+    };
+    const name = clean(value.name, 120);
+    if (!name) return null;
+    const type = value.type === "Service" ? "Service" : value.type === "Product" ? "Product" : "Listing";
+    return {
+      listingId: clean(value.listingId, 80),
+      type: type,
+      name: name,
+      businessName: clean(value.businessName, 100),
+      price: clean(value.price, 100),
+      details: clean(value.details, 500)
+    };
+  }
+  function listingContextMessage(value) {
+    const context = normalizeListingContext(value);
+    if (!context) return "";
+    const lines = ["StoreNest listing reference:", context.type + ": " + context.name];
+    if (context.businessName) lines.push("Business: " + context.businessName);
+    if (context.price) lines.push("Price shown: " + context.price);
+    if (context.details) lines.push("Details: " + context.details);
+    if (context.listingId) lines.push("Listing reference ID: " + context.listingId);
+    return lines.join("\n").slice(0, 1100);
+  }
+  function redirectToBusinessMessageSignIn(businessId, listingContext) {
+    const returnUrl = new URL(window.location.href);
+    returnUrl.searchParams.set("storenest_message_business", businessId);
+    if (listingContext) returnUrl.searchParams.set("storenest_message_listing", JSON.stringify(listingContext));
+    else returnUrl.searchParams.delete("storenest_message_listing");
+    const accountUrl = new URL("/customer-account.html", window.location.origin);
+    accountUrl.searchParams.set("mode", "signin");
+    accountUrl.searchParams.set("storenest_return", returnUrl.pathname + returnUrl.search + returnUrl.hash);
+    window.location.assign(accountUrl.toString());
+  }
+  async function openBusinessConversation(intent) {
+    const businessId = String(intent && (intent.businessId || (intent.business && intent.business.id)) || "").trim();
+    const listingContext = normalizeListingContext(intent && intent.listingContext);
+    if (!businessId) throw new Error("This StoreNest business link is unavailable.");
+    if (!window.StoreNestCustomerAuth) throw new Error("StoreNest messaging is unavailable right now.");
+    customer.client = customer.client || await window.StoreNestCustomerAuth.getClient();
+    const auth = await customer.client.auth.getUser();
+    customer.user = auth.data && auth.data.user || null;
+    if (!customer.user) {
+      redirectToBusinessMessageSignIn(businessId, listingContext);
+      return;
+    }
+    await openCustomerCentre();
+    const result = await customer.client.from("businesses")
+      .select("id,owner_id,name,slug,logo_url,category,location,is_published")
+      .eq("id", businessId)
+      .eq("is_published", true)
+      .maybeSingle();
+    if (result.error) throw result.error;
+    const business = result.data;
+    if (!business || !business.owner_id) throw new Error("This StoreNest business is unavailable.");
+    if (business.owner_id === customer.user.id) {
+      textError(customer, "You cannot start a customer conversation with your own business.");
+      return;
+    }
+    const existing = customer.rows.find(function (row) {
+      return row.business_id === business.id && row.partner_role === "business_owner";
+    });
+    openThread(customer, "customer", {
+      conversation: existing || null,
+      business: business,
+      target: existing ? null : {
+        userId: business.owner_id,
+        role: "business_owner",
+        businessId: business.id,
+        businessName: business.name || "StoreNest business",
+        displayName: business.name || "StoreNest business",
+        myRole: "customer"
+      },
+      listingContext: listingContext
+    });
+  }
+  function showBusinessMessageError(error) {
+    const message = error && error.message || "Could not open this business conversation.";
+    if (customer.root && !customer.root.hidden) {
+      textError(customer, message);
+      return;
+    }
+    openCustomerCentre().then(function () { textError(customer, message); }).catch(function () {
+      console.error("StoreNest Chat Centre:", message);
+    });
+  }
+  function handleBusinessMessageRoute() {
+    const params = new URLSearchParams(window.location.search);
+    const businessId = params.get("storenest_message_business");
+    if (!businessId) return;
+    let listingContext = null;
+    try {
+      listingContext = JSON.parse(params.get("storenest_message_listing") || "null");
+    } catch (_) {}
+    params.delete("storenest_message_business");
+    params.delete("storenest_message_listing");
+    const query = params.toString();
+    window.history.replaceState(window.history.state, "", window.location.pathname + (query ? "?" + query : "") + window.location.hash);
+    openBusinessConversation({ businessId: businessId, listingContext: listingContext }).catch(showBusinessMessageError);
   }
   function renderMessageContacts(state, mode, contacts) {
     state.contacts = Array.isArray(contacts) ? contacts : [];
@@ -967,8 +1068,24 @@
     }
   }
 
+  function renderListingContext(state, value) {
+    const box = state.refs && state.refs.listingContext;
+    if (!box) return;
+    box.replaceChildren();
+    const context = normalizeListingContext(value);
+    if (!context) {
+      box.hidden = true;
+      return;
+    }
+    box.appendChild(make("span", "sn-message-context-label", "Listing enquiry"));
+    box.appendChild(make("strong", "sn-message-context-name", context.type + " · " + context.name));
+    const details = [context.price, context.details].filter(Boolean).join(" · ");
+    if (details) box.appendChild(make("span", "sn-message-context-details", details));
+    box.hidden = false;
+  }
   function openThread(state, mode, active) {
     state.active = active;
+    state.active.listingContext = normalizeListingContext(active && active.listingContext);
     textError(state, "");
     messageStatus(state, "", false);
     state.refs.empty.hidden = true;
@@ -992,7 +1109,14 @@
       link.href = "/customer-account.html#login";
       state.refs.authNote.appendChild(link);
     }
+    const listingMessage = listingContextMessage(state.active.listingContext);
+    renderListingContext(state, state.active.listingContext);
     state.refs.textarea.value = "";
+    state.refs.textarea.maxLength = listingMessage ? Math.max(1, 2000 - listingMessage.length - 2) : 2000;
+    state.refs.textarea.placeholder = listingMessage ? "Ask about this listing" : "Start a message";
+    state.refs.composeHint.textContent = listingMessage
+      ? "Listing details will be included · Enter to send · Shift + Enter for a new line"
+      : "Enter to send · Shift + Enter for a new line";
     state.refs.send.disabled = true;
     updateRequestControls(state, mode);
     if (loggedIn) state.refs.textarea.focus({ preventScroll: true });
@@ -1011,6 +1135,12 @@
       return;
     }
     const current = state.active.conversation;
+    const listingReference = state.active.messageContextIncluded ? "" : listingContextMessage(state.active.listingContext);
+    const outgoingBody = listingReference ? body + "\n\n" + listingReference : body;
+    if (outgoingBody.length > 2000) {
+      messageStatus(state, "Shorten your message so the listing details fit.", true);
+      return;
+    }
     if (current && (current.request_status === "pending" || current.blocked_by_me || current.blocked_by_partner || current.request_status === "declined")) {
       updateRequestControls(state, mode);
       return;
@@ -1027,7 +1157,7 @@
           p_recipient_role: target.role,
           p_sender_business_id: target.myBusinessId || (mode === "owner" ? state.businessId : null),
           p_recipient_business_id: target.businessId || null,
-          p_initial_message: body
+          p_initial_message: outgoingBody
         });
         if (result.error) throw result.error;
         const started = Array.isArray(result.data) ? result.data[0] : result.data;
@@ -1061,11 +1191,16 @@
         const sent = await state.client.from(MESSAGE_TABLE).insert({
           conversation_id: current.id,
           sender_id: state.user.id,
-          body: body
+          body: outgoingBody
         });
         if (sent.error) throw sent.error;
         state.refs.textarea.value = "";
         state.refs.textarea.style.height = "auto";
+      }
+      if (listingReference) {
+        state.active.messageContextIncluded = true;
+        state.refs.textarea.maxLength = 2000;
+        state.refs.composeHint.textContent = "Enter to send · Shift + Enter for a new line";
       }
       messageStatus(state, "", false);
       await refreshInboxFor(state, mode);
@@ -1408,6 +1543,9 @@
       }
       openCustomerCentre().catch(function (error) { console.error("StoreNest Chat Centre:", error); });
     });
+    window.addEventListener("storenest:message-business", function (event) {
+      openBusinessConversation(event.detail || {}).catch(showBusinessMessageError);
+    });
     window.addEventListener("focus", function () {
       if (customer.user) loadCustomerInbox().catch(function () {});
     });
@@ -1627,6 +1765,7 @@
     initializePublisherMessaging().catch(function () {});
     initializeHqMessaging();
     handleNotificationRoute();
+    handleBusinessMessageRoute();
   }
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initializeMessagingCentre, { once: true });

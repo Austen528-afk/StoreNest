@@ -47,6 +47,10 @@
 .sn-message-thread-name{overflow:hidden;color:var(--sn-ink);font-size:14px;font-weight:850;text-overflow:ellipsis;white-space:nowrap}
 .sn-message-thread-subtitle{overflow:hidden;margin-top:3px;color:var(--sn-muted);font-size:11px;text-overflow:ellipsis;white-space:nowrap}
 .sn-message-thread-scroll{display:flex;min-height:0;flex:1;flex-direction:column;gap:10px;overflow:auto;padding:22px clamp(16px,4vw,42px)}
+.sn-message-listing-context{display:grid;gap:4px;padding:10px 18px;border-bottom:1px solid var(--sn-line);background:#f6faf8}
+.sn-message-context-label{color:var(--sn-green);font-size:10px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}
+.sn-message-context-name{color:var(--sn-ink);font-size:12px;font-weight:800}
+.sn-message-context-details{color:var(--sn-muted);font-size:11px;line-height:1.45;overflow-wrap:anywhere}
 .sn-message-day-label{align-self:center;margin:5px 0 8px;padding:5px 10px;border-radius:999px;background:#f4f7f5;color:#7f8b85;font-size:10px}
 .sn-message-bubble-row{display:flex;max-width:min(78%,530px);flex-direction:column;align-items:flex-start}
 .sn-message-bubble-row.is-mine{align-self:flex-end;align-items:flex-end}
@@ -86,6 +90,7 @@
  .sn-message-list-head{padding-top:max(18px,calc(env(safe-area-inset-top) + 12px))}
  .sn-message-thread-head{padding-top:max(10px,env(safe-area-inset-top))}
  .sn-message-thread-scroll{padding:18px 16px}
+  .sn-message-listing-context{padding:9px 16px}
  .sn-message-bubble-row{max-width:88%}
  .sn-message-composer-wrap{padding-bottom:max(12px,calc(env(safe-area-inset-bottom) + 8px))}
  .sn-owner-message-centre{min-height:calc(100dvh - 240px)}
@@ -189,6 +194,7 @@
 }
 html[data-theme="dark"] .sn-message-app{--sn-ink:#eef5f1;--sn-muted:#a8b9b0;--sn-line:#2b4037;--sn-soft:#172720;--sn-mint-soft:#174334;--sn-green:#57d8b4;background:#101b16;color:var(--sn-ink)}
 html[data-theme="dark"] .sn-message-list-pane,html[data-theme="dark"] .sn-message-main,html[data-theme="dark"] .sn-message-composer-wrap{background:#101b16}
+html[data-theme="dark"] .sn-message-listing-context{background:#15231d;border-color:#2b4037}
 html[data-theme="dark"] .sn-message-close,html[data-theme="dark"] .sn-message-back,html[data-theme="dark"] .sn-message-request-action{border-color:#2b4037;background:#15231d;color:#dcebe3}
 html[data-theme="dark"] .sn-message-search-wrap,html[data-theme="dark"] .sn-message-compose,html[data-theme="dark"] .sn-message-request-actions{border-color:#2b4037;background:#15231d}
 html[data-theme="dark"] .sn-message-search-wrap:focus-within,html[data-theme="dark"] .sn-message-compose:focus-within{background:#101b16}
