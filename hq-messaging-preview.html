@@ -350,7 +350,7 @@ async function loadPendingStoreNestPayments(){
  var request=++pendingStorePaymentsRequest;
  pendingStorePaymentsState='loading';pendingStorePaymentsAmount=null;pendingStorePaymentsCount=null;
  try{
-  var response=await fetch('/api/store-pending-payments',{method:'GET',headers:{Accept:'application/json'},credentials:'same-origin',cache:'no-store'});
+  var response=await window.StoreNestHQAdminFetch('/api/store-pending-payments',{method:'GET',headers:{Accept:'application/json'},credentials:'same-origin',cache:'no-store'});
   var payload=await response.json().catch(function(){return {}});
   var amount=Number(payload.pendingAmount),count=Number(payload.pendingObligations);
   if(request!==pendingStorePaymentsRequest)return;
@@ -366,7 +366,7 @@ async function loadPublisherNetwork(){
  if(selected==='publishers'){renderPublisherPage();loadPendingStoreNestPayments();}
  else if(selected==='businesses')document.getElementById('page').innerHTML=businessDirectorySection();
  try{
-  var response=await fetch('/api/publishers',{method:'GET',headers:{Accept:'application/json'},credentials:'same-origin',cache:'no-store'});
+  var response=await window.StoreNestHQAdminFetch('/api/publishers',{method:'GET',headers:{Accept:'application/json'},credentials:'same-origin',cache:'no-store'});
   var payload=await response.json().catch(function(){return {}});
   if(request!==publisherRequest)return;
   if(response.status===503){publisherDataState='disconnected';publisherDataError='The server-side StoreNest reader has not been configured.'}
@@ -435,7 +435,7 @@ async function loadPublisherProfile(id){
  if(selected==='publishers')renderPublisherPage();
  var closeButton=document.querySelector('[data-publisher-profile-close]');if(closeButton)closeButton.focus();
  try{
-  var response=await fetch('/api/publishers?profileId='+encodeURIComponent(id),{method:'GET',headers:{Accept:'application/json'},credentials:'same-origin',cache:'no-store'});
+  var response=await window.StoreNestHQAdminFetch('/api/publishers?profileId='+encodeURIComponent(id),{method:'GET',headers:{Accept:'application/json'},credentials:'same-origin',cache:'no-store'});
   var payload=await response.json().catch(function(){return {}});
   if(request!==publisherProfileRequest)return;
   if(!response.ok||!payload.publisher){publisherProfileState='error';publisherProfileError=response.status===404?'This active Publisher profile could not be found.':'The Publisher profile could not be loaded.'}
@@ -684,6 +684,18 @@ initTheme();setPage(location.hash.slice(1)||'overview',false);
   window.StoreNestBusinessClient=fallback;
   return fallback;
  }
+ window.StoreNestHQAdminFetch=async function(path,options){
+  if(!authorized||!client)throw new Error('HQ administrator session is not active.');
+  var sessionResult=await client.auth.getSession();
+  var accessToken=sessionResult&&sessionResult.data&&sessionResult.data.session&&sessionResult.data.session.access_token;
+  if(sessionResult.error||!accessToken)throw new Error('HQ administrator session could not be verified.');
+  var requestOptions=Object.assign({},options||{});
+  var headers=new Headers(requestOptions.headers||{});
+  headers.set('Authorization','Bearer '+accessToken);
+  requestOptions.headers=headers;
+  requestOptions.credentials='same-origin';
+  return fetch(path,requestOptions);
+ };
  async function verifyAdministrator(user){
   if(!client||!user)throw new Error('No authenticated StoreNest user was found.');
   if(validating)return validating;
