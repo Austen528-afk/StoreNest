@@ -603,3 +603,177 @@ html[data-theme="dark"] .sn-message-signin-link:hover{background:#1d4b37}
     display: flex;
   }
 }
+
+
+/* Business Owner Messages follows the HQ inbox: one account/conversation list,
+   one vertical list scrollbar, and a fixed chat workspace. */
+body[data-page-kind="owner"] .workspace:has(#messagesSection:not([hidden])) {
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  overflow-x:hidden;
+  padding-top:0;
+  padding-bottom:0;
+}
+body[data-page-kind="owner"] #messagesSection:not([hidden]) {
+  display:flex;
+  min-width:0;
+  min-height:0;
+  flex:1 1 0%;
+  overflow:hidden;
+  padding:0;
+}
+body[data-page-kind="owner"] #messagesSection > .section-heading {
+  display:none !important;
+}
+body[data-page-kind="owner"] #ownerMessageCentre {
+  display:flex;
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  min-height:0;
+  flex:1 1 0%;
+  overflow:hidden;
+  overflow-x:hidden;
+}
+body[data-page-kind="owner"] .sn-owner-message-centre {
+  display:flex;
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  min-height:0;
+  flex:1 1 0%;
+  margin:0;
+  overflow:hidden;
+  overflow-x:hidden;
+}
+body[data-page-kind="owner"] #ownerMessageCentre .sn-message-app {
+  display:grid;
+  width:100%;
+  height:100%;
+  min-width:0;
+  max-width:100%;
+  min-height:0;
+  max-height:none;
+  flex:1 1 0%;
+  grid-template-columns:minmax(0,350px) minmax(0,1fr);
+  overflow:hidden;
+  overflow-x:hidden;
+  border-radius:18px;
+  box-shadow:0 6px 24px rgba(0,0,0,.12);
+}
+body[data-page-kind="owner"] #ownerMessageCentre .sn-message-list-head {
+  display:none !important;
+}
+body[data-page-kind="owner"] #ownerMessageCentre .sn-message-list-pane,
+body[data-page-kind="owner"] #ownerMessageCentre .sn-message-main,
+body[data-page-kind="owner"] #ownerMessageCentre .sn-message-thread,
+body[data-page-kind="owner"] #ownerMessageCentre .sn-message-thread-scroll,
+body[data-page-kind="owner"] #ownerMessageCentre .sn-message-list {
+  min-width:0;
+  max-width:100%;
+}
+body[data-page-kind="owner"] #ownerMessageCentre .sn-message-list-pane {
+  min-height:0;
+  padding-top:14px;
+  overflow:hidden;
+  overflow-x:hidden;
+}
+body[data-page-kind="owner"] #ownerMessageCentre .sn-message-contact-results,
+body[data-page-kind="owner"] #ownerMessageCentre .sn-message-results {
+  display:none !important;
+}
+body[data-page-kind="owner"] #ownerMessageCentre .sn-message-search-wrap {
+  margin-top:0;
+}
+body[data-page-kind="owner"] #ownerMessageCentre .sn-message-list-label {
+  flex:0 0 auto;
+  border-top:0;
+}
+body[data-page-kind="owner"] #ownerMessageCentre .sn-message-list {
+  min-height:0;
+  flex:1 1 0%;
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior-y:contain;
+  scrollbar-gutter:stable;
+}
+body[data-page-kind="owner"] #ownerMessageCentre .sn-message-list .sn-message-row,
+body[data-page-kind="owner"] #ownerMessageCentre .sn-message-list .sn-business-result {
+  width:100%;
+  min-width:0;
+  max-width:100%;
+}
+body[data-page-kind="owner"] #ownerMessageCentre .sn-message-list .sn-message-row-body {
+  display:block;
+  width:0;
+  min-width:0;
+  flex:1 1 0%;
+  overflow:hidden;
+}
+body[data-page-kind="owner"] #ownerMessageCentre .sn-message-list .sn-message-row-top {
+  display:flex;
+  width:100%;
+  min-width:0;
+  align-items:center;
+  gap:8px;
+}
+body[data-page-kind="owner"] #ownerMessageCentre .sn-message-list .sn-message-row-name {
+  display:block;
+  width:0;
+  min-width:0;
+  max-width:none;
+  flex:1 1 0%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+body[data-page-kind="owner"] #ownerMessageCentre .sn-message-list .sn-message-row-time {
+  display:block;
+  flex:0 0 auto;
+  margin-left:auto;
+  white-space:nowrap;
+}
+body[data-page-kind="owner"] #ownerMessageCentre .sn-message-list .sn-message-row-preview {
+  display:block;
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+body[data-page-kind="owner"] #ownerMessageCentre .sn-message-list .sn-message-contact-result .sn-message-row-preview {
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+body[data-page-kind="owner"] #ownerMessageCentre .sn-message-main,
+body[data-page-kind="owner"] #ownerMessageCentre .sn-message-thread {
+  min-height:0;
+  overflow:hidden;
+}
+body[data-page-kind="owner"] #ownerMessageCentre .sn-message-thread-scroll {
+  min-height:0;
+  overflow-x:hidden;
+  overflow-y:auto;
+}
+@media (max-width:760px) {
+  body[data-page-kind="owner"] #ownerMessageCentre .sn-message-app {
+    grid-template-columns:minmax(0,1fr);
+  }
+  body[data-page-kind="owner"] #ownerMessageCentre .sn-message-list-pane {
+    grid-column:1;
+    grid-row:1;
+  }
+  body[data-page-kind="owner"] #ownerMessageCentre .sn-message-main {
+    display:none;
+    grid-column:1;
+    grid-row:1;
+  }
+  body[data-page-kind="owner"] #ownerMessageCentre .sn-message-app.is-thread-open .sn-message-list-pane {
+    display:none;
+  }
+  body[data-page-kind="owner"] #ownerMessageCentre .sn-message-app.is-thread-open .sn-message-main {
+    display:flex;
+  }
+}
