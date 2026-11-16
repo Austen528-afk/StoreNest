@@ -198,3 +198,214 @@ html[data-theme="dark"] .sn-owner-message-centre .sn-message-composer-wrap{backg
 .sn-message-signin-link:hover{border-color:#79cda9;background:#dcf3e9}
 html[data-theme="dark"] .sn-message-signin-link{border-color:#29634b;background:#173d2d;color:#9ce5c2}
 html[data-theme="dark"] .sn-message-signin-link:hover{background:#1d4b37}
+
+
+/* Publisher Messages uses one account list and one vertical scrollbar. */
+#publisherMessageCentre,
+#publisherMessageCentre .sn-message-app,
+#publisherMessageCentre .sn-message-list-pane,
+#publisherMessageCentre .sn-message-list{
+  min-width:0;
+  max-width:100%;
+}
+#publisherMessageCentre .sn-message-list-pane{
+  overflow-x:hidden;
+  overflow-y:hidden;
+}
+#publisherMessageCentre .sn-message-contact-results{
+  display:none!important;
+}
+#publisherMessageCentre .sn-message-list{
+  flex:1 1 0;
+  min-height:0;
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior-y:contain;
+  scrollbar-gutter:stable;
+}
+#publisherMessageCentre .sn-message-list-label{
+  border-top:0;
+}
+#publisherMessageCentre .sn-message-list .sn-message-row,
+#publisherMessageCentre .sn-message-list .sn-business-result{
+  width:100%;
+  min-width:0;
+  max-width:100%;
+}
+#publisherMessageCentre .sn-message-list .sn-message-row-body{
+  min-width:0;
+}
+#publisherMessageCentre .sn-message-list .sn-message-row-top{
+  min-width:0;
+}
+#publisherMessageCentre .sn-message-list .sn-message-row-name,
+#publisherMessageCentre .sn-message-list .sn-message-row-preview{
+  min-width:0;
+  max-width:100%;
+  overflow-wrap:anywhere;
+}
+#publisherMessageCentre .sn-message-list .sn-message-contact-result .sn-message-row-preview{
+  white-space:normal;
+}
+
+/* HQ Messages: one compact list, vertical scrolling only. */
+#hqMessageCentre,
+#hqMessageCentre .sn-message-app,
+#hqMessageCentre .sn-message-list-pane,
+#hqMessageCentre .sn-message-list,
+#hqMessageCentre .sn-message-contact-results,
+#hqMessageCentre .sn-message-results,
+#hqMessageCentre .sn-message-main,
+#hqMessageCentre .sn-message-thread,
+#hqMessageCentre .sn-message-thread-scroll,
+#hqMessagesMount {
+  min-width: 0;
+  max-width: 100%;
+}
+#hqMessagesMount,
+#hqMessageCentre {
+  width: 100%;
+  overflow-x: hidden;
+}
+#hqMessageCentre .sn-message-app {
+  width: 100%;
+  min-width: 0;
+  grid-template-columns: minmax(0, 350px) minmax(0, 1fr);
+  overflow: hidden;
+}
+#hqMessageCentre .sn-message-list-head {
+  display: none !important;
+}
+#hqMessageCentre .sn-message-contact-results,
+#hqMessageCentre .sn-message-results {
+  display: none !important;
+}
+#hqMessageCentre .sn-message-list-pane {
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+#hqMessageCentre .sn-message-list {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
+}
+#hqMessageCentre .sn-message-list-label {
+  border-top: 0;
+}
+#hqMessageCentre .sn-message-list .sn-message-row,
+#hqMessageCentre .sn-message-list .sn-business-result {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+#hqMessageCentre .sn-message-row-body,
+#hqMessageCentre .sn-message-row-top {
+  min-width: 0;
+}
+#hqMessageCentre .sn-message-row-name,
+#hqMessageCentre .sn-message-row-preview {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+#hqMessageCentre .sn-message-thread-scroll {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+@media (max-width: 760px) {
+  #hqMessageCentre .sn-message-app {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* HQ Messages locks the page and scrolls only the profile list. */
+#page.messages-page {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 0%;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 16px clamp(18px, 3vw, 40px);
+}
+#page.messages-page .hq-message-view {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  overflow: hidden;
+}
+#page.messages-page .hq-message-view > .pagehead {
+  display: none;
+}
+#page.messages-page .hq-message-panel {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 14px;
+}
+#page.messages-page .hq-message-panel > .panel-head {
+  min-width: 0;
+  flex: 0 0 auto;
+}
+#page.messages-page .hq-message-account {
+  min-width: 0;
+  flex: 0 0 auto;
+  margin: 10px 0;
+}
+#page.messages-page #hqMessagesMount {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex: 1 1 0;
+  overflow: hidden;
+}
+#page.messages-page #hqMessagesMount[hidden] {
+  display: none !important;
+}
+#page.messages-page #hqMessageCentre {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 0;
+  flex: 1 1 0;
+  overflow: hidden;
+}
+#page.messages-page #hqMessageCentre[hidden] {
+  display: none !important;
+}
+#page.messages-page #hqMessageCentre .sn-message-app {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  min-width: 0;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+#page.messages-page #hqMessageCentre .sn-message-list-pane {
+  min-height: 0;
+  padding-top: 14px;
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+#page.messages-page #hqMessageCentre .sn-message-list {
+  min-height: 0;
+  flex: 1 1 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+}
+#page.messages-page #hqMessageCentre .sn-message-main,
+#page.messages-page #hqMessageCentre .sn-message-thread,
+#page.messages-page #hqMessageCentre .sn-message-thread-scroll {
+  min-width: 0;
+  min-height: 0;
+}
