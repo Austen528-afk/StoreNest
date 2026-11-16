@@ -510,10 +510,7 @@ function businessDirectorySection(){
 }
 function messageWorkspace(){
  return '<div class="hq-message-view">'+
-
- '<section class="panel hq-message-panel"><div class="panel-head"><div><h3>StoreNest inbox</h3><p>Search for a registered StoreNest user or continue a conversation. Messages are private to their two participants.</p></div><span class="badge-preview">Secure messaging</span></div>'+
- '<div class="hq-message-account" id="hqMessagingAccount" hidden><div><strong>HQ administrator session active</strong><small id="hqMessagingSignedInAs"></small></div></div>'+
- '<div id="hqMessagesMount" hidden></div></section></div>';
+ '<section class="panel hq-message-panel"><div id="hqMessagesMount" hidden></div></section></div>';
 }
 function section(a){
  if(a.id==='messages')return messageWorkspace();
