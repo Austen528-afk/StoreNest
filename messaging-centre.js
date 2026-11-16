@@ -82,7 +82,7 @@
         '<div class="sn-message-error" role="status" aria-live="polite" hidden></div>' +
         '<div class="sn-message-contact-results" hidden></div>' +
         '<div class="sn-message-results" hidden></div>' +
-        '<div class="sn-message-list-label"><span>' + (mode === "hq" ? "Accounts & conversations" : customerMode ? "Inbox" : mode === "publisher" ? "Messages" : "Conversations") + '</span><span class="sn-message-list-count"></span></div>' +
+        '<div class="sn-message-list-label"><span>' + (mode === "hq" ? "Accounts & conversations" : customerMode ? "Inbox" : mode === "publisher" ? "Accounts & conversations" : "Conversations") + '</span><span class="sn-message-list-count"></span></div>' +
         '<div class="sn-message-list" role="list"></div>' +
       '</aside>' +
       '<main class="sn-message-main">' +
