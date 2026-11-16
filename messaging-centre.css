@@ -481,10 +481,23 @@ html[data-theme="dark"] .sn-message-signin-link:hover{background:#1d4b37}
   grid-template-columns: minmax(0, 350px) minmax(0, 1fr);
   overflow: hidden;
 }
-#publisherMessageCentre .sn-message-list-head,
 #publisherMessageCentre .sn-message-contact-results,
 #publisherMessageCentre .sn-message-results {
   display: none !important;
+}
+#publisherMessageCentre .sn-message-list-head {
+  display: flex !important;
+  min-height: 38px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 6px 14px 4px;
+}
+#publisherMessageCentre .sn-message-list-head > div:first-child {
+  display: none;
+}
+#publisherMessageCentre .sn-message-notifications {
+  min-height: 28px;
 }
 #publisherMessageCentre .sn-message-list-pane {
   min-height: 0;
