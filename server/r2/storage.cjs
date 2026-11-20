@@ -23,7 +23,7 @@ function config(env){
 // S3 Signature Version 4, path-style endpoint, R2 auto region.
 // Only accepts scoped diagnostic or isolated draft keys and bounded images.
 function sign({account,bucket,access,secret},method,key,now=new Date(),payload=PNG,type='image/png'){
-  if(!['PUT','GET','DELETE'].includes(method)||!new RegExp('^(?:'+PREFIX+'|r2-catalog-draft)/[0-9a-f-]{36}/[0-9a-f-]{36}/[0-9a-f-]{36}\\.(?:png|jpg|webp|gif)$').test(key))throw new ApiError(400,'Invalid storage operation.');
+  if(!['PUT','GET','DELETE'].includes(method)||!new RegExp('^(?:'+PREFIX+'|r2-catalog-draft|r2-catalog-private)/[0-9a-f-]{36}/[0-9a-f-]{36}/[0-9a-f-]{36}\\.(?:png|jpg|webp|gif)$').test(key))throw new ApiError(400,'Invalid storage operation.');
   const host=account+'.r2.cloudflarestorage.com';
   const path='/'+bucket+'/'+key;
   const date=now.toISOString().replace(/[:-]|\.\d{3}/g,'');

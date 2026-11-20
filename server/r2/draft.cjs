@@ -4,12 +4,13 @@ const {UUID,ApiError,config,r2Request,MAX_IMAGE}=require('./storage.cjs');
 const {decodeImage}=require('./image-test.cjs');
 const EXT={'image/png':'png','image/jpeg':'jpg','image/webp':'webp','image/gif':'gif'};
 const digest=b=>createHash('sha256').update(b).digest('hex');
-function prefix(owner,business){
+function prefix(owner,business,namespace='r2-catalog-draft'){
+ if(!['r2-catalog-draft','r2-catalog-private'].includes(namespace))throw new ApiError(400,'Invalid namespace.');
  if(![owner,business].every(x=>typeof x==='string'&&UUID.test(x)))throw new ApiError(400,'Invalid owner or business.');
- return 'r2-catalog-draft/'+owner.toLowerCase()+'/'+business.toLowerCase()+'/';
+ return namespace+'/'+owner.toLowerCase()+'/'+business.toLowerCase()+'/';
 }
-function scopedKey(owner,business,key){
- const start=prefix(owner,business);
+function scopedKey(owner,business,key,namespace='r2-catalog-draft'){
+ const start=prefix(owner,business,namespace);
  if(typeof key!=='string'||!key.startsWith(start)||!(/^[a-f0-9-]{36}\.(png|jpg|webp|gif)$/.test(key.slice(start.length)))||!UUID.test(key.slice(start.length).split('.')[0]))throw new ApiError(403,'Draft object is outside this business.');
  return key;
 }
@@ -22,12 +23,13 @@ async function read(cfg,key,fetcher){
  decodeImage(bytes.toString('base64'),mime);
  return {mime,bytes};
 }
-async function draftOperation({env,owner,business,action,key,mime,base64,fetcher,id=randomUUID()}){
+async function draftOperation({env,owner,business,action,key,mime,base64,fetcher,id=randomUUID(),namespace='r2-catalog-draft'}){
  const cfg=config(env);
+ if(namespace==='r2-catalog-private'&&action==='delete')throw new ApiError(403,'Registered catalogue media must be retained until reference-safe cleanup.');
  if(action==='upload'){
   const bytes=decodeImage(base64,mime);
   if(!UUID.test(id))throw new ApiError(400,'Invalid draft identifier.');
-  key=prefix(owner,business)+id.toLowerCase()+'.'+EXT[mime];
+  key=prefix(owner,business,namespace)+id.toLowerCase()+'.'+EXT[mime];
   const r=await r2Request(cfg,'PUT',key,fetcher,bytes,mime);
   if(!r.ok)throw new ApiError(502,'R2 draft upload failed. HTTP '+r.status);
   try{
@@ -39,7 +41,7 @@ async function draftOperation({env,owner,business,action,key,mime,base64,fetcher
    throw e;
   }
  }
- key=scopedKey(owner,business,key);
+ key=scopedKey(owner,business,key,namespace);
  if(action==='read'){
   const result=await read(cfg,key,fetcher);
   return {key,mime:result.mime,bytes:result.bytes.length,sha256:digest(result.bytes),base64:result.bytes.toString('base64')};

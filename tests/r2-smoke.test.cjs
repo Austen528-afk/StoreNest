@@ -101,3 +101,27 @@ test('persistent draft is retained after upload, can be read, and explicitly del
  assert.equal((await draftOperation({...common,action:'delete',key:saved.key})).deleted,true);
  assert.deepEqual(calls,['PUT','GET','GET','DELETE','GET']);
 });
+
+test('registered private catalogue media is separate from draft keys and cannot be deleted by the draft API',async()=>{
+ const {draftOperation,scopedKey}=require('../server/r2/draft.cjs');
+ const key='r2-catalog-private/'+a+'/'+b+'/'+c+'.png';
+ assert.throws(()=>scopedKey(a,b,key),e=>e.status===403);
+ assert.equal(scopedKey(a,b,key,'r2-catalog-private'),key);
+ assert.throws(()=>scopedKey(a,c,key,'r2-catalog-private'),e=>e.status===403);
+ await assert.rejects(draftOperation({env,owner:a,business:b,action:'delete',key,namespace:'r2-catalog-private'}),e=>e.status===403);
+ const base64='iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aH1sAAAAASUVORK5CYII=';
+ let stored;const calls=[];
+ const fetcher=async(url,options)=>{
+  assert.match(url,/\/r2-catalog-private\//);calls.push(options.method);
+  if(options.method==='PUT'){stored=options.body;return new Response(null,{status:200});}
+  return new Response(stored,{headers:{'content-type':'image/png'}});
+ };
+ const result=await draftOperation({env,owner:a,business:b,id:c,action:'upload',mime:'image/png',base64,namespace:'r2-catalog-private',fetcher});
+ assert.equal(result.key,key);assert.equal(result.verified,true);assert.deepEqual(calls,['PUT','GET']);
+});
+test('catalogue preview source keeps public visibility off and does not use a draft delete path',()=>{
+ const html=require('node:fs').readFileSync(require('node:path').join(__dirname,'../business-owner.html'),'utf8');
+ assert.match(html,/if\(r2CatalogueMode\)\{[\s\S]*?row\.is_available=false;[\s\S]*?\.from\("business_items"\)\.insert\(row\)/);
+ assert.match(html,/r2CatalogueMode\?"\/api\/r2-catalog-private":"\/api\/r2-catalog-draft"/);
+ assert.match(html,/void renderPrivateR2Cover\(card,item\)/);
+});
