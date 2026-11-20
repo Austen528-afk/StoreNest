@@ -34,16 +34,21 @@ function sign({account,bucket,access,secret},method,key,now=new Date()){
   headers.authorization='AWS4-HMAC-SHA256 Credential='+access+'/'+scope+', SignedHeaders='+signed+', Signature='+hmac(k,toSign,'hex');
   return {url:'https://'+host+path,options:{method,headers,redirect:'error',...(method==='PUT'?{body}:{}),signal:AbortSignal.timeout(10000)}};
 }
+async function r2Request(cfg,method,key,fetcher=fetch){
+  let req;try{req=sign(cfg,method,key);}catch(e){if(e instanceof ApiError)throw e;throw new ApiError(502,'R2 '+method+' request signing failed.');}
+  try{return await fetcher(req.url,req.options);}catch{throw new ApiError(502,'R2 '+method+' network request failed.');}
+}
 async function roundTrip({env,owner,business,fetcher=fetch,id=randomUUID()}){
   const cfg=config(env),key=testKey(owner,business,id);
   let created=false,verified=false,removed=false,missing=false;
   try{
-    let req=sign(cfg,'PUT',key),r=await fetcher(req.url,req.options);
-    if(!r.ok)throw new ApiError(502,'R2 test upload failed.');
+    let r=await r2Request(cfg,'PUT',key,fetcher);
+    if(!r.ok)throw new ApiError(502,'R2 test upload failed. HTTP '+r.status+'.');
     created=true;
-    req=sign(cfg,'GET',key);r=await fetcher(req.url,req.options);
-    if(!r.ok||r.headers.get('content-length')!==String(PNG.length)||r.headers.get('content-type')!=='image/png')throw new ApiError(502,'R2 test retrieval failed.');
-    const bytes=Buffer.from(await r.arrayBuffer());
+    r=await r2Request(cfg,'GET',key,fetcher);
+    if(!r.ok)throw new ApiError(502,'R2 test retrieval failed. HTTP '+r.status+'.');
+    if(r.headers.get('content-type')!=='image/png')throw new ApiError(502,'R2 test retrieval returned an unexpected media type.');
+    let bytes;try{bytes=Buffer.from(await r.arrayBuffer());}catch{throw new ApiError(502,'R2 test retrieval body could not be read.');}
     verified=bytes.equals(PNG);
     if(!verified)throw new ApiError(502,'R2 test content did not match.');
   }finally{
@@ -59,4 +64,4 @@ async function roundTrip({env,owner,business,fetcher=fetch,id=randomUUID()}){
   }
   return {uploaded:created,downloaded:verified,byteMatch:verified,deleted:removed,absenceVerified:missing,bytes:PNG.length};
 }
-module.exports={UUID,ApiError,testKey,sign,roundTrip,config};
+module.exports={UUID,ApiError,testKey,sign,roundTrip,config,r2Request};

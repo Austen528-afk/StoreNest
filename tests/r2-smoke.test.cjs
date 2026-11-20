@@ -50,3 +50,8 @@ test('invalid Supabase token is rejected and never reaches ownership lookup',asy
  await assert.rejects(verifyOwner('Bearer '+'x'.repeat(30),b,async()=>{calls++;return new Response(null,{status:401});}),e=>e.status===401);
  assert.equal(calls,1);
 });
+
+test('network failures identify the failing service without exposing credentials',async()=>{
+ await assert.rejects(verifyOwner('Bearer '+'x'.repeat(30),b,async()=>{throw Error('secret internal details');}),/Supabase session verification network request failed/);
+ await assert.rejects(roundTrip({env,owner:a,business:b,id:c,fetcher:async()=>{throw Error('secret internal details');}}),/R2 PUT network request failed/);
+});
