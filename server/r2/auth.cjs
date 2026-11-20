@@ -2,6 +2,14 @@
 const {UUID,ApiError}=require('./storage.cjs');
 const BASE='https://cypbjzbagezdelmemuhb.supabase.co';
 const PUBLIC_KEY="sb_publishable_8W8zyYtggQMWoFlnxrzoVA_BUKjQ9va";
+// Vercel's protected Preview proxy may consume the conventional Authorization header.
+// Use an application-specific header; still validate the supplied token with Supabase.
+function sessionAuthorization(headers={}){
+  const token=headers['x-storenest-session'];
+  if(typeof token!=='string'||!/^[A-Za-z0-9._~-]{20,8192}$/.test(token))
+    throw new ApiError(401,'StoreNest session missing or malformed. Refresh and sign in again if needed.');
+  return 'Bearer '+token;
+}
 async function verifyOwner(authorization,business,fetcher=fetch){
   if(typeof business!=='string'||!UUID.test(business))throw new ApiError(400,'Invalid business identifier.');
   if(typeof authorization!=='string'||!/^Bearer [A-Za-z0-9._~-]{20,8192}$/.test(authorization))throw new ApiError(401,'Sign in first.');
@@ -19,4 +27,4 @@ async function verifyOwner(authorization,business,fetcher=fetch){
   if(!Array.isArray(rows)||rows.length!==1||rows[0].id!==business||rows[0].owner_id!==user.id)throw new ApiError(403,'Business ownership required.');
   return user.id;
 }
-module.exports={verifyOwner};
+module.exports={verifyOwner,sessionAuthorization};

@@ -34,8 +34,8 @@ button.addEventListener('click',async()=>{
   button.disabled=true;business.disabled=true;result.textContent='Running upload, retrieval and cleanup…';
   try{
     const {data:{session},error}=await client.auth.getSession();
-    if(error||!session)throw Error('Sign in again.');
-    const response=await fetch('/api/r2-smoke-test',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token},body:JSON.stringify({businessId:business.value}),cache:'no-store'});
+    if(error||!session?.access_token)throw Error('Sign in again.');
+    const response=await fetch('/api/r2-smoke-test',{method:'POST',headers:{'Content-Type':'application/json','X-StoreNest-Session':session.access_token},body:JSON.stringify({businessId:business.value}),cache:'no-store'});
     const data=await response.json();
     if(!response.ok)throw Error('HTTP '+response.status+': '+(data.error||'Test failed.'));
     const pass=['uploaded','downloaded','byteMatch','deleted','absenceVerified'].every(k=>data[k]===true);

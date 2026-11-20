@@ -1,7 +1,7 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
 const {testKey,sign,roundTrip,config}=require('../server/r2/storage.cjs');
-const {verifyOwner}=require('../server/r2/auth.cjs');
+const {verifyOwner,sessionAuthorization}=require('../server/r2/auth.cjs');
 const a='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',b='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',c='cccccccc-cccc-4ccc-8ccc-cccccccccccc';
 const env={R2_ACCOUNT_ID:'a'.repeat(32),R2_BUCKET_NAME:'storenest-media',R2_ACCESS_KEY_ID:'fake',R2_SECRET_ACCESS_KEY:'fake-secret'};
 test('test keys are tenant scoped and reject path traversal',()=>{
@@ -36,4 +36,12 @@ test('authentication and owner check fail closed',async()=>{
  let n=0;const token='Bearer '+ 'x'.repeat(30);
  await assert.rejects(verifyOwner(token,b,async()=>++n===1?Response.json({id:a}):Response.json([])),e=>e.status===403);
  n=0;assert.equal(await verifyOwner(token,b,async()=>++n===1?Response.json({id:a}):Response.json([{id:b,owner_id:a}])),a);
+});
+
+test('preview session handoff cannot use a proxy authorization header',()=>{
+ const token='header.payload.'+'x'.repeat(30);
+ assert.equal(sessionAuthorization({'x-storenest-session':token,authorization:'Bearer proxy-token'}),'Bearer '+token);
+ for(const headers of [{},{authorization:'Bearer '+token},{'x-storenest-session':['invalid']},{'x-storenest-session':'Bearer '+token},{'x-storenest-session':token+'\n'}]){
+  assert.throws(()=>sessionAuthorization(headers),e=>e.status===401);
+ }
 });

@@ -1,6 +1,6 @@
 'use strict';
 const {ApiError,roundTrip}=require('../server/r2/storage.cjs');
-const {verifyOwner}=require('../server/r2/auth.cjs');
+const {verifyOwner,sessionAuthorization}=require('../server/r2/auth.cjs');
 module.exports=async function handler(req,res){
   res.setHeader('Cache-Control','no-store');
   res.setHeader('X-Content-Type-Options','nosniff');
@@ -10,7 +10,7 @@ module.exports=async function handler(req,res){
   try{
     const body=typeof req.body==='string'?JSON.parse(req.body):req.body;
     if(!body||typeof body!=='object'||Array.isArray(body)||Object.keys(body).length!==1||!Object.hasOwn(body,'businessId'))throw new ApiError(400,'Provide a businessId only.');
-    const owner=await verifyOwner(req.headers.authorization,body.businessId);
+    const owner=await verifyOwner(sessionAuthorization(req.headers),body.businessId);
     const result=await roundTrip({env:process.env,owner,business:body.businessId});
     return res.status(200).json(result);
   }catch(e){
