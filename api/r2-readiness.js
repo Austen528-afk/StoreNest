@@ -15,7 +15,9 @@ module.exports=async function handler(req,res){
    const xml=await r.text();
    return res.status(200).json({stage,upstreamStatus:404,missingObject:/<Code>NoSuchKey<\/Code>/.test(xml),missingBucket:/<Code>NoSuchBucket<\/Code>/.test(xml)});
   }
-  if(r.body)await r.body.cancel();
-  return res.status(200).json({stage,upstreamStatus:r.status,missingObject:false});
+  const xml=await r.text();
+  const code=/<Code>([A-Za-z0-9]+)<\/Code>/.exec(xml)?.[1];
+  const known=['InvalidArgument','InvalidRequest','InvalidAccessKeyId','SignatureDoesNotMatch','AccessDenied','AuthorizationHeaderMalformed','RequestTimeTooSkewed','InvalidToken','ExpiredToken','BadRequest','NotImplemented','InternalError','InvalidBucketName','InvalidURI','InvalidSecurity','InvalidDigest','MissingSecurityHeader'];
+  return res.status(200).json({stage,upstreamStatus:r.status,missingObject:false,upstreamCode:known.includes(code)?code:'Unclassified',accessKeyFormat:/^[a-f0-9]{32}$/i.test(cfg.access),secretKeyFormat:/^[a-f0-9]{64}$/i.test(cfg.secret)});
  }catch(e){return res.status(502).json({stage,error:e instanceof ApiError?e.message:'Unexpected readiness failure.'});}
 };
