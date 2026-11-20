@@ -1,5 +1,6 @@
 'use strict';
 const {createHash,createHmac,randomUUID}=require('node:crypto');
+const https=require('node:https');
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const PREFIX='r2-integration-test';
 const PNG=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aH1sAAAAASUVORK5CYII=','base64');
@@ -13,6 +14,7 @@ const hmac=(k,x,encoding)=>createHmac('sha256',k).update(x).digest(encoding);
 function config(env){
   const {R2_ACCOUNT_ID:account,R2_BUCKET_NAME:bucket,R2_ACCESS_KEY_ID:access,R2_SECRET_ACCESS_KEY:secret}=env;
   if(!/^[a-f0-9]{32}$/i.test(account||'')||bucket!=='storenest-media'||!access||!secret)throw new ApiError(503,'Storage is not configured.');
+  if(/[^\x21-\x7e]/.test(access)||/[^\x21-\x7e]/.test(secret))throw new ApiError(503,'R2 credentials contain whitespace or invalid characters.');
   return {account,bucket,access,secret};
 }
 // S3 Signature Version 4, path-style endpoint, R2 auto region.
@@ -34,11 +36,33 @@ function sign({account,bucket,access,secret},method,key,now=new Date()){
   headers.authorization='AWS4-HMAC-SHA256 Credential='+access+'/'+scope+', SignedHeaders='+signed+', Signature='+hmac(k,toSign,'hex');
   return {url:'https://'+host+path,options:{method,headers,redirect:'error',...(method==='PUT'?{body}:{}),signal:AbortSignal.timeout(10000)}};
 }
-async function r2Request(cfg,method,key,fetcher=fetch){
-  let req;try{req=sign(cfg,method,key);}catch(e){if(e instanceof ApiError)throw e;throw new ApiError(502,'R2 '+method+' request signing failed.');}
-  try{return await fetcher(req.url,req.options);}catch{throw new ApiError(502,'R2 '+method+' network request failed.');}
+// Only for tiny diagnostic objects. Bound response size, time, and error details.
+function nativeRequest(url,options){
+  return new Promise((resolve,reject)=>{
+    const req=https.request(url,{method:options.method,headers:options.headers,signal:options.signal},res=>{
+      const chunks=[];let length=0;
+      res.on('error',reject);
+      res.on('data',chunk=>{length+=chunk.length;if(length>65536){const e=new Error('Response limit');e.code='RESPONSE_LIMIT';res.destroy(e);req.destroy(e);reject(e);}else chunks.push(chunk);});
+      res.on('end',()=>{
+        try{
+          const status=res.statusCode,headers=new Headers();
+          for(const [k,v] of Object.entries(res.headers))if(v!==undefined)headers.set(k,Array.isArray(v)?v.join(', '):v);
+          resolve(new Response([204,205,304].includes(status)?null:Buffer.concat(chunks),{status,headers}));
+        }catch(e){reject(e);}
+      });
+    });
+    req.on('error',reject);
+    req.setTimeout(10000,()=>{const e=new Error('Timeout');e.code='ETIMEDOUT';req.destroy(e);});
+    req.end(options.body);
+  });
 }
-async function roundTrip({env,owner,business,fetcher=fetch,id=randomUUID()}){
+const NETWORK_CODES=new Set(['ENOTFOUND','EAI_AGAIN','ECONNREFUSED','ECONNRESET','ETIMEDOUT','EHOSTUNREACH','ENETUNREACH','UND_ERR_CONNECT_TIMEOUT','UND_ERR_SOCKET','ERR_TLS_CERT_ALTNAME_INVALID','CERT_HAS_EXPIRED','UNABLE_TO_VERIFY_LEAF_SIGNATURE','DEPTH_ZERO_SELF_SIGNED_CERT','SELF_SIGNED_CERT_IN_CHAIN','ABORT_ERR','RESPONSE_LIMIT']);
+function safeNetworkCode(e){const code=e?.cause?.code||e?.code;return NETWORK_CODES.has(code)?code:e?.name==='TimeoutError'?'ETIMEDOUT':'UNKNOWN';}
+async function r2Request(cfg,method,key,fetcher=nativeRequest){
+  let req;try{req=sign(cfg,method,key);}catch(e){if(e instanceof ApiError)throw e;throw new ApiError(502,'R2 '+method+' request signing failed.');}
+  try{return await fetcher(req.url,req.options);}catch(e){throw new ApiError(502,'R2 '+method+' network request failed. '+safeNetworkCode(e));}
+}
+async function roundTrip({env,owner,business,fetcher=nativeRequest,id=randomUUID()}){
   const cfg=config(env),key=testKey(owner,business,id);
   let created=false,verified=false,removed=false,missing=false;
   try{

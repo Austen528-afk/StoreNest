@@ -55,3 +55,8 @@ test('network failures identify the failing service without exposing credentials
  await assert.rejects(verifyOwner('Bearer '+'x'.repeat(30),b,async()=>{throw Error('secret internal details');}),/Supabase session verification network request failed/);
  await assert.rejects(roundTrip({env,owner:a,business:b,id:c,fetcher:async()=>{throw Error('secret internal details');}}),/R2 PUT network request failed/);
 });
+
+test('network diagnostic reports allowlisted codes only',async()=>{
+ await assert.rejects(roundTrip({env,owner:a,business:b,id:c,fetcher:async()=>{throw Object.assign(new Error('private data'),{code:'ENOTFOUND'});}}),/ENOTFOUND/);
+ assert.throws(()=>config({...env,R2_SECRET_ACCESS_KEY:'bad\nkey'}),/whitespace or invalid characters/);
+});
