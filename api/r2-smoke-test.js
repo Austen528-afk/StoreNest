@@ -9,8 +9,8 @@ module.exports=async function handler(req,res){
   if(!/^application\/json(?:;|$)/i.test(req.headers['content-type']||''))return res.status(415).json({error:'JSON required.'});
   try{
     const body=typeof req.body==='string'?JSON.parse(req.body):req.body;
-    if(!body||typeof body!=='object'||Array.isArray(body)||Object.keys(body).length!==1||!Object.hasOwn(body,'businessId'))throw new ApiError(400,'Provide a businessId only.');
-    const owner=await verifyOwner(sessionAuthorization(req.headers),body.businessId);
+    if(!body||typeof body!=='object'||Array.isArray(body)||Object.keys(body).length!==2||!Object.hasOwn(body,'businessId')||!Object.hasOwn(body,'sessionToken'))throw new ApiError(400,'Provide a businessId and sessionToken.');
+    const owner=await verifyOwner(sessionAuthorization(body.sessionToken),body.businessId);
     const result=await roundTrip({env:process.env,owner,business:body.businessId});
     return res.status(200).json(result);
   }catch(e){

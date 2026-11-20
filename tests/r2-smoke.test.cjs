@@ -38,10 +38,15 @@ test('authentication and owner check fail closed',async()=>{
  n=0;assert.equal(await verifyOwner(token,b,async()=>++n===1?Response.json({id:a}):Response.json([{id:b,owner_id:a}])),a);
 });
 
-test('preview session handoff cannot use a proxy authorization header',()=>{
+test('diagnostic body session must be a valid bearer-token string',()=>{
  const token='header.payload.'+'x'.repeat(30);
- assert.equal(sessionAuthorization({'x-storenest-session':token,authorization:'Bearer proxy-token'}),'Bearer '+token);
- for(const headers of [{},{authorization:'Bearer '+token},{'x-storenest-session':['invalid']},{'x-storenest-session':'Bearer '+token},{'x-storenest-session':token+'\n'}]){
-  assert.throws(()=>sessionAuthorization(headers),e=>e.status===401);
+ assert.equal(sessionAuthorization(token),'Bearer '+token);
+ for(const input of [undefined,{},[],['invalid'],'Bearer '+token,token+'\n','x'.repeat(16385)]){
+  assert.throws(()=>sessionAuthorization(input),e=>e.status===401);
  }
+});
+test('invalid Supabase token is rejected and never reaches ownership lookup',async()=>{
+ let calls=0;
+ await assert.rejects(verifyOwner('Bearer '+'x'.repeat(30),b,async()=>{calls++;return new Response(null,{status:401});}),e=>e.status===401);
+ assert.equal(calls,1);
 });

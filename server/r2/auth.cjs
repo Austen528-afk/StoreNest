@@ -2,17 +2,18 @@
 const {UUID,ApiError}=require('./storage.cjs');
 const BASE='https://cypbjzbagezdelmemuhb.supabase.co';
 const PUBLIC_KEY="sb_publishable_8W8zyYtggQMWoFlnxrzoVA_BUKjQ9va";
-// Vercel's protected Preview proxy may consume the conventional Authorization header.
-// Use an application-specific header; still validate the supplied token with Supabase.
-function sessionAuthorization(headers={}){
-  const token=headers['x-storenest-session'];
-  if(typeof token!=='string'||token.length<20||token.length>8192||/[^A-Za-z0-9._~-]/.test(token))
-    throw new ApiError(401,'StoreNest session missing or malformed. Refresh and sign in again if needed.');
+// Diagnostic only: accept the token in an HTTPS POST body because the preview
+// proxy did not reliably forward authorization headers. Never log the body.
+function sessionAuthorization(token){
+  if(typeof token!=='string'||!token)throw new ApiError(401,'StoreNest session was not received.');
+  if(token.length<20||token.length>16384||/[^A-Za-z0-9._~+\/=\-]/.test(token))
+    throw new ApiError(401,'StoreNest session format is invalid.');
   return 'Bearer '+token;
 }
 async function verifyOwner(authorization,business,fetcher=fetch){
   if(typeof business!=='string'||!UUID.test(business))throw new ApiError(400,'Invalid business identifier.');
-  if(typeof authorization!=='string'||!/^Bearer [A-Za-z0-9._~-]{20,8192}$/.test(authorization))throw new ApiError(401,'Sign in first.');
+  if(typeof authorization!=='string'||!authorization.startsWith('Bearer '))throw new ApiError(401,'Sign in first.');
+  authorization=sessionAuthorization(authorization.slice(7));
   const headers={apikey:PUBLIC_KEY,authorization};
   const opts={headers,redirect:'error',signal:AbortSignal.timeout(8000)};
   const userResponse=await fetcher(BASE+'/auth/v1/user',opts);
