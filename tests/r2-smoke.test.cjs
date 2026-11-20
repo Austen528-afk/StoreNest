@@ -60,3 +60,24 @@ test('network diagnostic reports allowlisted codes only',async()=>{
  await assert.rejects(roundTrip({env,owner:a,business:b,id:c,fetcher:async()=>{throw Object.assign(new Error('private data'),{code:'ENOTFOUND'});}}),/ENOTFOUND/);
  assert.throws(()=>config({...env,R2_SECRET_ACCESS_KEY:'bad\nkey'}),/whitespace or invalid characters/);
 });
+
+test('real-image test validates content and rejects disguised or oversized payloads',()=>{
+ const {decodeImage}=require('../server/r2/image-test.cjs');
+ const original='iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aH1sAAAAASUVORK5CYII=';
+ assert.equal(decodeImage(original,'image/png').length,68);
+ assert.throws(()=>decodeImage(original,'image/jpeg'),e=>e.status===415);
+ assert.throws(()=>decodeImage(Buffer.from('<svg/>').toString('base64'),'image/svg+xml'),e=>e.status===415);
+ assert.throws(()=>decodeImage('A'.repeat(3000000),'image/png'),e=>e.status===400);
+});
+test('image signing uses actual payload and media type',async()=>{
+ const image=Buffer.from('RIFF0000WEBPVP8 test');
+ const calls=[];let stored;
+ const fetcher=async(url,opts)=>{
+  calls.push(opts.method);assert.match(url,/\.webp$/);
+  if(opts.method==='PUT'){assert.equal(opts.headers['content-type'],'image/webp');stored=opts.body;return new Response(null,{status:200});}
+  if(opts.method==='DELETE'){stored=null;return new Response(null,{status:204});}
+  return stored?new Response(stored,{headers:{'content-type':'image/webp'}}):new Response(null,{status:404});
+ };
+ const result=await roundTrip({env,owner:a,business:b,id:c,fetcher,payload:image,type:'image/webp'});
+ assert.equal(result.bytes,image.length);assert.equal(result.absenceVerified,true);assert.deepEqual(calls,['PUT','GET','DELETE','GET']);
+});
