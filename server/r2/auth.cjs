@@ -6,7 +6,7 @@ const PUBLIC_KEY="sb_publishable_8W8zyYtggQMWoFlnxrzoVA_BUKjQ9va";
 // Use an application-specific header; still validate the supplied token with Supabase.
 function sessionAuthorization(headers={}){
   const token=headers['x-storenest-session'];
-  if(typeof token!=='string'||!/^[A-Za-z0-9._~-]{20,8192}$/.test(token))
+  if(typeof token!=='string'||token.length<20||token.length>8192||/[^A-Za-z0-9._~-]/.test(token))
     throw new ApiError(401,'StoreNest session missing or malformed. Refresh and sign in again if needed.');
   return 'Bearer '+token;
 }
