@@ -81,3 +81,23 @@ test('image signing uses actual payload and media type',async()=>{
  const result=await roundTrip({env,owner:a,business:b,id:c,fetcher,payload:image,type:'image/webp'});
  assert.equal(result.bytes,image.length);assert.equal(result.absenceVerified,true);assert.deepEqual(calls,['PUT','GET','DELETE','GET']);
 });
+
+test('persistent draft is retained after upload, can be read, and explicitly deleted',async()=>{
+ const {draftOperation}=require('../server/r2/draft.cjs');
+ const base64='iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aH1sAAAAASUVORK5CYII=';
+ const calls=[];let bytes;
+ const fetcher=async(url,opts)=>{
+  calls.push(opts.method);assert.match(url,/\/r2-catalog-draft\//);
+  if(opts.method==='PUT'){bytes=opts.body;return new Response(null,{status:200});}
+  if(opts.method==='DELETE'){bytes=null;return new Response(null,{status:204});}
+  return bytes?new Response(bytes,{headers:{'content-type':'image/png'}}):new Response(null,{status:404});
+ };
+ const common={env,owner:a,business:b,fetcher,id:c};
+ const saved=await draftOperation({...common,action:'upload',mime:'image/png',base64});
+ assert.equal(saved.verified,true);assert.deepEqual(calls,['PUT','GET']);
+ const loaded=await draftOperation({...common,action:'read',key:saved.key});
+ assert.equal(loaded.sha256,saved.sha256);assert.equal(loaded.base64,base64);
+ await assert.rejects(draftOperation({...common,business:c,action:'delete',key:saved.key}),e=>e.status===403);
+ assert.equal((await draftOperation({...common,action:'delete',key:saved.key})).deleted,true);
+ assert.deepEqual(calls,['PUT','GET','GET','DELETE','GET']);
+});
