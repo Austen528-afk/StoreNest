@@ -143,5 +143,14 @@ test('owner edit uses optimistic version check and preserves unavailable status'
  const html=require('node:fs').readFileSync(require('node:path').join(__dirname,'../business-owner.html'),'utf8');
  assert.match(html,/\.update\(row\)\.eq\("id",savedId\)\.eq\("business_id",draftContext\.business\)\.eq\("updated_at",version\)/);
  assert.match(html,/if\(\(r2DraftMode\|\|privateSave\)&&entry\.file\)/);
- assert.match(html,/Historical media retained/);
+ assert.match(html,/Removal is disabled until safe archiving preserves historical bookings and analytics/);
+});
+
+test('owner dashboard inline JavaScript parses without syntax errors',()=>{
+ const fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
+ const html=fs.readFileSync(path.join(__dirname,'../business-owner.html'),'utf8');
+ for(const match of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)){
+  if(/\bsrc\s*=/.test(match[1])||/\btype\s*=\s*["'](?:application\/json|application\/ld\+json)["']/i.test(match[1]))continue;
+  if(match[2].trim())new vm.Script(match[2]);
+ }
 });
