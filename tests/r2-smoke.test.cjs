@@ -154,3 +154,22 @@ test('owner dashboard inline JavaScript parses without syntax errors',()=>{
   if(match[2].trim())new vm.Script(match[2]);
  }
 });
+
+test('customer preview only accepts scoped private reference format and permits only created blob URLs',()=>{
+ const fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
+ const html=fs.readFileSync(path.join(__dirname,'../storefront.html'),'utf8');
+ const grab=(s,e)=>{const i=html.indexOf(s),j=html.indexOf(e,i);assert.ok(i>=0&&j>i);return html.slice(i,j);};
+ const ctx={URL,ownerCataloguePreview:true,privatePreviewUrls:new Set(['blob:known'])};vm.createContext(ctx);
+ vm.runInContext(grab('function safeUrl','function isProductVideo')+grab('function isPrivatePreviewRef','function installOwnerPreviewGuard'),ctx);
+ assert.equal(ctx.safeUrl('blob:known'),'blob:known');assert.equal(ctx.safeUrl('blob:unknown'),'');
+ assert.equal(ctx.isPrivatePreviewRef('r2://storenest-media/r2-catalog-private/'+a+'/'+b+'/'+c+'.png'),true);
+ assert.equal(ctx.isPrivatePreviewRef('r2://storenest-media/r2-catalog-draft/'+a+'/'+b+'/'+c+'.png'),false);
+ assert.match(html,/if\(ownerCataloguePreview\)\{await loadOwnerCataloguePreview\(root,slug\);return;\}/);
+ assert.match(html,/\.eq\("owner_id",user\.id\)/);
+ assert.match(html,/if\(readOnly\)return;\s*syncCartBadge/);
+ assert.match(html,/renderPublishedStorefront\(root,null,business,items,sections\.data\|\|\[\],true\)/);
+ for(const match of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)){
+  if(/\bsrc\s*=/.test(match[1])||/\btype\s*=\s*["'](?:application\/json|application\/ld\+json)["']/i.test(match[1]))continue;
+  if(match[2].trim())new vm.Script(match[2]);
+ }
+});
