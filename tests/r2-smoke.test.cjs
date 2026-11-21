@@ -190,5 +190,5 @@ test('approval candidate restricts admin decisions and preserves legacy availabi
  const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
  const sql=fs.readFileSync(path.join(__dirname,'../docs/listing-approval-candidate.sql'),'utf8');
  assert.match(sql,/else 'legacy' end/);assert.match(sql,/Both checks must pass/);assert.match(sql,/approval_status='approved' and i.is_available and b.is_published/);
- new vm.Script(fs.readFileSync(path.join(__dirname,'../listing-approvals.js'),'utf8'));
+ assert.ok(sql.includes('hq_review_listing'));
 });
