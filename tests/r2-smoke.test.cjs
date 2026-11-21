@@ -121,7 +121,27 @@ test('registered private catalogue media is separate from draft keys and cannot 
 });
 test('catalogue preview source keeps public visibility off and does not use a draft delete path',()=>{
  const html=require('node:fs').readFileSync(require('node:path').join(__dirname,'../business-owner.html'),'utf8');
- assert.match(html,/if\(r2CatalogueMode\)\{[\s\S]*?row\.is_available=false;[\s\S]*?\.from\("business_items"\)\.insert\(row\)/);
- assert.match(html,/r2CatalogueMode\?"\/api\/r2-catalog-private":"\/api\/r2-catalog-draft"/);
+ assert.match(html,/if\(privateSave\)\{[\s\S]*?row\.is_available=false;[\s\S]*?\.from\("business_items"\)\.insert\(\{\.\.\.row,id:savedId\}\)/);
+ assert.match(html,/privateSave\?"\/api\/r2-catalog-private":"\/api\/r2-catalog-draft"/);
  assert.match(html,/void renderPrivateR2Cover\(card,item\)/);
+});
+
+test('private catalogue normalization preserves references and hashes, without accepting arbitrary URI schemes',()=>{
+ const fs=require('node:fs'),vm=require('node:vm');
+ const html=fs.readFileSync(require('node:path').join(__dirname,'../business-owner.html'),'utf8');
+ const extract=(from,to)=>{const i=html.indexOf(from),j=html.indexOf(to,i);assert.ok(i>=0&&j>i);return html.slice(i,j);};
+ const ctx={};vm.createContext(ctx);
+ vm.runInContext(extract('const R2_PRIVATE_URI=','async function loadPrivateR2Image')+extract('function normalizeCatalogMedia','function catalogMediaEntries'),ctx);
+ const url='r2://storenest-media/r2-catalog-private/'+a+'/'+b+'/'+c+'.png';
+ const obj=ctx.normalizeCatalogMedia({url,width:400,height:600,sha256:'hash',variants:[{url:url.replace('.png','.webp'),width:300,sha256:'variant-hash'}]});
+ assert.equal(obj.url,url);assert.equal(obj.sha256,'hash');assert.equal(obj.variants[0].sha256,'variant-hash');
+ assert.equal(ctx.normalizeCatalogMedia('javascript:alert(1)'),null);
+ assert.equal(ctx.normalizeCatalogMedia('r2://storenest-media/r2-catalog-draft/'+a+'/'+b+'/'+c+'.png'),null);
+ assert.equal(ctx.normalizeCatalogMedia('https://example.com/image.jpg').url,'https://example.com/image.jpg');
+});
+test('owner edit uses optimistic version check and preserves unavailable status',()=>{
+ const html=require('node:fs').readFileSync(require('node:path').join(__dirname,'../business-owner.html'),'utf8');
+ assert.match(html,/\.update\(row\)\.eq\("id",savedId\)\.eq\("business_id",draftContext\.business\)\.eq\("updated_at",version\)/);
+ assert.match(html,/if\(\(r2DraftMode\|\|privateSave\)&&entry\.file\)/);
+ assert.match(html,/Historical media retained/);
 });
