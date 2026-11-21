@@ -173,3 +173,22 @@ test('customer preview only accepts scoped private reference format and permits 
   if(match[2].trim())new vm.Script(match[2]);
  }
 });
+
+test('public R2 image delivery fails closed before storage read when approval RPC is absent or refuses reference',async()=>{
+ const {readCatalogueImage}=require('../server/r2/public-media.cjs');
+ const ref='r2://storenest-media/r2-catalog-private/'+a+'/'+b+'/'+c+'.png';
+ let reads=0;
+ for(const dbFetch of [async()=>new Response(null,{status:404}),async()=>Response.json(null),async()=>Response.json(ref+'other')]){
+  await assert.rejects(readCatalogueImage({env,item:c,ref,dbFetch,r2Fetch:async()=>{reads++;throw Error('must not read');}}));
+ }
+ assert.equal(reads,0);
+ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aH1sAAAAASUVORK5CYII=','base64');
+ const image=await readCatalogueImage({env,item:c,ref,dbFetch:async(url,opts)=>{assert.equal(opts.headers.authorization,undefined);assert.equal(JSON.parse(opts.body).p_review,false);return Response.json(ref)},r2Fetch:async()=>new Response(png,{headers:{'content-type':'image/png'}})});
+ assert.equal(image.bytes.equals(png),true);
+});
+test('approval candidate restricts admin decisions and preserves legacy availability',()=>{
+ const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+ const sql=fs.readFileSync(path.join(__dirname,'../docs/listing-approval-candidate.sql'),'utf8');
+ assert.match(sql,/else 'legacy' end/);assert.match(sql,/Both checks must pass/);assert.match(sql,/approval_status='approved' and i.is_available and b.is_published/);
+ new vm.Script(fs.readFileSync(path.join(__dirname,'../listing-approvals.js'),'utf8'));
+});

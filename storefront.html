@@ -3024,9 +3024,15 @@ function openBasketItemEditorFromUrl(){
  openProductGallery(item.id,trigger,basketEditCartKey);
 }
 
+function mapPublishedR2Media(item){
+ const map=url=>isPrivatePreviewRef(url)?location.origin+"/api/r2-catalogue-image?"+new URLSearchParams({item:item.id,ref:url}).toString():url;
+ const media=(Array.isArray(item.media_urls)?item.media_urls:[]).map(e=>typeof e==="string"?map(e):({...e,url:map(e.url),variants:(e.variants||[]).map(v=>({...v,url:map(v.url)}))}));
+ const sets=x=>(Array.isArray(x)?x:[]).map(s=>({...s,media_urls:(s.media_urls||[]).map(map)}));
+ return {...item,image_url:map(item.image_url),media_urls:media,fashion_color_sets:sets(item.fashion_color_sets),decor_color_sets:sets(item.decor_color_sets)};
+}
 function renderPublishedStorefront(root,client,business,items,storefrontSections,readOnly=false){
    activePublicBusiness=business;activePublicSections=storefrontSections||[];
-   availableItems=items.filter(item=>item?.is_available!==false);
+   availableItems=items.filter(item=>item?.is_available!==false).map(item=>readOnly?item:mapPublishedR2Media(item));
    if(!readOnly)restoreCurrentStoreBasket(business);
    if(client&&!readOnly)window.StoreNestBookings.setContext(client,business,availableItems);
    // Do not add dashboard preview frames to customer browsing history.

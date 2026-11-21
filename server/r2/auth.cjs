@@ -28,4 +28,4 @@ async function verifyOwner(authorization,business,fetcher=fetch){
   if(!Array.isArray(rows)||rows.length!==1||rows[0].id!==business||rows[0].owner_id!==user.id)throw new ApiError(403,'Business ownership required.');
   return user.id;
 }
-module.exports={verifyOwner,sessionAuthorization};
+module.exports={verifyOwner,sessionAuthorization,BASE,PUBLIC_KEY};
