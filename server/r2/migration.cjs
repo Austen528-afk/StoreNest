@@ -124,6 +124,52 @@ function signRequest(cfg, method, key, body, mime, now = new Date()) {
   };
 }
 
+
+const PRESIGNED_READ_TTL_SECONDS = 900;
+const MEDIA_EXTENSIONS = new Set(Object.values(MIME_EXTENSIONS).flatMap(extensions => [...extensions]));
+
+function presignedReadUrl(cfg, key, now = new Date()) {
+  if (!validDestinationKey(key)) throw new ApiError(400, 'Invalid migration object key.');
+  const host = cfg.account + '.r2.cloudflarestorage.com';
+  const uri = '/' + cfg.bucket + '/' + key.split('/').map(encodedSegment).join('/');
+  const timestamp = now.toISOString().replace(/[:-]|\.\d{3}/g, '');
+  const day = timestamp.slice(0, 8);
+  const scope = day + '/auto/s3/aws4_request';
+  const parameters = [
+    ['X-Amz-Algorithm', 'AWS4-HMAC-SHA256'],
+    ['X-Amz-Content-Sha256', 'UNSIGNED-PAYLOAD'],
+    ['X-Amz-Credential', cfg.access + '/' + scope],
+    ['X-Amz-Date', timestamp],
+    ['X-Amz-Expires', String(PRESIGNED_READ_TTL_SECONDS)],
+    ['X-Amz-SignedHeaders', 'host']
+  ];
+  const query = parameters
+    .sort(([left], [right]) => left < right ? -1 : left > right ? 1 : 0)
+    .map(([name, value]) => encodedSegment(name) + '=' + encodedSegment(value))
+    .join('&');
+  const canonicalHeaders = 'host:' + host + '\n';
+  const canonicalRequest = ['GET', uri, query, canonicalHeaders, 'host', 'UNSIGNED-PAYLOAD'].join('\n');
+  const stringToSign = ['AWS4-HMAC-SHA256', timestamp, scope, sha256(canonicalRequest)].join('\n');
+  const signingKey = hmac(hmac(hmac(hmac('AWS4' + cfg.secret, day), 'auto'), 's3'), 'aws4_request');
+  const signature = hmac(signingKey, stringToSign, 'hex');
+  return 'https://' + host + uri + '?' + query + '&X-Amz-Signature=' + signature;
+}
+
+function createMigrationMediaUrl(env, sourceBucket, key, now = new Date()) {
+  if (!SOURCE_BUCKETS.has(sourceBucket) || typeof key !== 'string' || key.length > 1500) {
+    throw new ApiError(400, 'Invalid migrated media reference.');
+  }
+  const parts = key.split('/');
+  if (parts.length < 3 || parts.length > 12 || !parts.every(safeSegment)
+    || !UUID.test(parts[0] || '') || !UUID.test(parts[1] || '')) {
+    throw new ApiError(400, 'Invalid migrated media reference.');
+  }
+  const extension = parts[parts.length - 1].split('.').pop().toLowerCase();
+  if (!MEDIA_EXTENSIONS.has(extension)) throw new ApiError(415, 'Unsupported media type.');
+  const target = destinationKey(sourceBucket, key);
+  return presignedReadUrl(config(env), target, now);
+}
+
 function nativeRequest(url, options, maxResponseBytes) {
   return new Promise((resolve, reject) => {
     const request = https.request(url, {
@@ -296,5 +342,6 @@ module.exports = {
   MAX_OBJECT_BYTES,
   MAX_BATCH_ITEMS,
   MAX_BATCH_BYTES,
-  copySupabaseMediaBatch
+  copySupabaseMediaBatch,
+  createMigrationMediaUrl
 };
