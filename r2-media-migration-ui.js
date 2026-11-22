@@ -108,10 +108,11 @@
     if (!Object.hasOwn(SUPPORTED, mime) || !SUPPORTED[mime].has(extension)) return '';
     return mime;
   }
-  async function listTree(client, bucket, root, ownerId, businessId, progress) {
+  async function listTree(client, bucket, root, ownerId, businessId) {
     const found = [];
     const seen = new Set();
     let visited = 0;
+    let skipped = 0;
     async function walk(directory, depth) {
       if (depth > 8) throw Error('Media folder nesting is too deep to scan safely.');
       if (seen.has(directory)) return;
@@ -127,26 +128,25 @@
         for (const entry of entries) {
           visited++;
           if (visited > 5000) throw Error('This business has over 5,000 media objects; use a smaller migration batch.');
-          if (!safeName(entry?.name)) continue;
-          const key = directory + '/' + entry.name;
-          if (entry.id === null) {
-            folders.push(key);
+          if (entry?.id === null) {
+            if (safeName(entry?.name)) folders.push(directory + '/' + entry.name);
             continue;
           }
+          if (!safeName(entry?.name)) { skipped++; continue; }
+          const key = directory + '/' + entry.name;
           const mime = mimeFor(entry);
           const size = Number(entry.metadata?.size ?? entry.metadata?.contentLength);
-          if (!mime || !Number.isSafeInteger(size) || size < 1 || size > MAX_OBJECT_BYTES) continue;
-          if (!key.startsWith(ownerId + '/' + businessId + '/')) continue;
+          if (!mime || !Number.isSafeInteger(size) || size < 1 || size > MAX_OBJECT_BYTES) { skipped++; continue; }
+          if (!key.startsWith(ownerId + '/' + businessId + '/')) { skipped++; continue; }
           found.push({ sourceBucket: bucket, key, mime, expectedBytes: size, businessId });
         }
         for (const folder of folders) await walk(folder, depth + 1);
         if (entries.length < 100) break;
         offset += entries.length;
       }
-      if (progress) progress(visited);
     }
     await walk(root, 0);
-    return found;
+    return { found, skipped };
   }
   function renderScan(result) {
     summaryBody.replaceChildren();
@@ -193,16 +193,12 @@
           const root = ownerId + '/' + business.id;
           const before = items.length;
           const listed = await listTree(client, bucket, root, ownerId, business.id);
-          for (const item of listed) {
+          for (const item of listed.found) {
             items.push(item);
             count++;
             bytes += item.expectedBytes;
           }
-          // Count files excluded by the type/size allowlist without retaining their names.
-          const { data, error } = await client.storage.from(bucket).list(root, { limit: 100, offset: 0 });
-          if (error) throw error;
-          const directFiles = (data || []).filter(entry => entry?.id !== null && safeName(entry?.name));
-          skipped += Math.max(0, directFiles.length - (items.length - before));
+          skipped += listed.skipped;
         }
         rows.push({ id: business.id, name: business.name || 'Business', count, bytes });
       }
@@ -248,12 +244,13 @@
     scanButton.disabled = true;
     runButton.disabled = true;
     stopButton.disabled = false;
-    const client = await loadAuth();
     const batches = makeBatches(scan.items);
     let verifiedCount = 0;
     let verifiedBytes = 0;
     let failedCount = 0;
+    let incomplete = false;
     try {
+      const client = await loadAuth();
       for (let index = 0; index < batches.length; index++) {
         if (stopRequested) break;
         if (currentUser?.id !== scan.ownerId) throw Error('The signed-in account changed; copy stopped.');
@@ -287,12 +284,14 @@
             status.textContent = 'Stopped at ' + entry.key + ': ' + (entry.error || 'R2 copy could not be verified.');
           }
         }
-        if (!result.complete) break;
+        if (!result.complete) { incomplete = true; break; }
       }
       if (failedCount) {
         status.textContent = 'Stopped with ' + verifiedCount + ' files verified (' + formatBytes(verifiedBytes) + '); ' + failedCount + ' file(s) need attention. Rescan and retry after reviewing the error.';
       } else if (stopRequested) {
         status.textContent = 'Stopped after the current request: ' + verifiedCount + ' files verified (' + formatBytes(verifiedBytes) + '). Rescan and resume when ready.';
+      } else if (incomplete) {
+        status.textContent = 'The server stopped before verifying the entire batch. ' + verifiedCount + ' files are verified; rescan and retry.';
       } else {
         status.textContent = 'Copy and R2 hash verification complete for ' + verifiedCount + ' files (' + formatBytes(verifiedBytes) + '). Supabase originals and database URLs remain unchanged.';
       }
