@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/r2-media-migration.js": {
+      "maxDuration": 60
+    }
+  }
+}
