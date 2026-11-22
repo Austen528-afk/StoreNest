@@ -3,10 +3,14 @@
 (() => {
   const params = new URLSearchParams(location.search);
   const allowedPreview = location.hostname.endsWith('.vercel.app')
-    && location.hostname.includes('feat-r2-storage-integration')
     && params.get('r2migration') === '1';
   if (!allowedPreview) return;
-
+  fetch('/api/r2-media-migration', {
+    method: 'GET', credentials: 'same-origin', cache: 'no-store', redirect: 'error'
+  }).then(response => response.ok ? response.json() : null)
+    .then(result => { if (result?.ready === true) initialize(); })
+    .catch(() => {});
+  function initialize() {
   const MAX_OBJECT_BYTES = 20 * 1024 * 1024;
   const MAX_BATCH_BYTES = 20 * 1024 * 1024;
   const MAX_BATCH_ITEMS = 4;
@@ -191,7 +195,6 @@
         let bytes = 0;
         for (const bucket of BUCKETS) {
           const root = ownerId + '/' + business.id;
-          const before = items.length;
           const listed = await listTree(client, bucket, root, ownerId, business.id);
           for (const item of listed.found) {
             items.push(item);
@@ -316,4 +319,5 @@
     status.textContent = 'Will stop after the current file batch finishes…';
   });
   openPanel();
+  }
 })();
