@@ -14,6 +14,7 @@ module.exports = async function handler(req, res) {
   if (process.env.VERCEL_ENV !== 'preview' || process.env.VERCEL_GIT_COMMIT_REF !== 'feat/r2-storage-integration') {
     return res.status(404).json({ error: 'Not found.' });
   }
+  if (req.method === 'GET') return res.status(200).json({ ready: true });
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'Method not allowed.' });
