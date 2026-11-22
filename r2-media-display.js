@@ -2,7 +2,7 @@
   'use strict';
 
   const branchPreview = location.hostname.endsWith('.vercel.app')
-    && location.hostname.includes('r2-storage-integration');
+    && location.hostname.includes('git-feat-r2-storage-int-');
   if (!branchPreview) return;
 
   const params = new URLSearchParams(location.search);
