@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="en">
 <head>
+<script src="/r2-media-display.js"></script>
+<script src="/r2-media-upload-client.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#10171d">
@@ -901,7 +903,7 @@ html[data-theme="dark"] .dashboard-header-reopen:hover{background:#2d4540}
   <div id="activityEmpty"></div><div id="activityList"></div><div id="chartEmpty"></div><div id="visitChart"></div><span id="allCount">0</span>
  </div>
 </section>
-<section class="dashboard-section" data-section-view="items" hidden><div class="section-heading"><div><h3>Products &amp; Services</h3><p>Keep your catalogue up to date for customers.</p></div><div class="storefront-heading-actions" role="group" aria-label="Catalogue actions"><button class="outline-button" id="previewStoreButton" type="button">↗ Preview storefront</button><button class="primary-button" id="addItemButton" type="button">＋ Add item</button></div></div><div class="toolbar"><label class="search-box"><span>⌕</span><input id="itemSearch" type="search" placeholder="Search products and services…"></label><div class="filter-group"><button class="filter-chip active" data-filter="all">All items <b id="allCount">0</b></button><button class="filter-chip" data-filter="product">Products</button><button class="filter-chip" data-filter="service">Services</button></div></div><section class="owner-sections"><div class="section-heading"><div><h3>Storefront Sections</h3><p>Create your own sections and choose how customers see each offering.</p></div><button type="button" class="outline-button" id="newSectionButton">+ New section</button></div><div id="sectionCards" class="section-cards"></div></section><div class="item-grid" id="itemGrid"></div><div class="catalog-empty" id="catalogEmpty"><div class="empty-icon">▧</div><strong>Your catalogue is ready for its first item</strong><p>Add a product or service to start building your storefront.</p><button class="primary-button" type="button" id="emptyAddButton">＋ Add your first item</button></div></section>
+<section class="dashboard-section" data-section-view="items" hidden><div class="section-heading"><div><h3>Products &amp; Services</h3><p>Keep your catalogue up to date for customers.</p></div><div class="storefront-heading-actions" role="group" aria-label="Catalogue actions"><button class="outline-button" id="previewStoreButton" type="button">↗ Preview storefront</button><button class="primary-button" id="addItemButton" type="button">＋ Add item</button></div></div><div class="toolbar"><label class="search-box"><span>⌕</span><input id="itemSearch" type="search" placeholder="Search products and services…"></label><div class="filter-group"><button class="filter-chip active" data-filter="all">All items <b id="allCount">0</b></button><button class="filter-chip" data-filter="product">Products</button><button class="filter-chip" data-filter="service">Services</button></div></div><section class="owner-sections"><div class="section-heading"><div><h3>Storefront Sections</h3><p>Create your own sections and choose how customers see each offering.</p></div><button type="button" class="outline-button" id="newSectionButton">+ New section</button></div><div id="sectionCards" class="section-cards"></div></section><p id="r2CatalogueBanner" class="message" hidden>Catalogue preview: new private products remain unavailable to customers until publication is ready. Use Preview storefront for an owner-only customer view. Existing public listings are unchanged.</p><div class="item-grid" id="itemGrid"></div><div class="catalog-empty" id="catalogEmpty"><div class="empty-icon">▧</div><strong>Your catalogue is ready for its first item</strong><p>Add a product or service to start building your storefront.</p><button class="primary-button" type="button" id="emptyAddButton">＋ Add your first item</button></div></section>
       <section class="dashboard-section" data-section-view="storefront" hidden><div class="section-heading storefront-heading"><div class="storefront-heading-title"><h3>My Storefront</h3><p>Preview and manage your public StoreNest page.</p></div><div class="storefront-heading-actions" role="group" aria-label="Storefront publishing actions"><button class="outline-button" type="button" id="saveStoreDraft">Save draft</button><button class="primary-button" type="button" id="publishStoreDesign">Publish frontend</button><button class="outline-button" type="button" id="publishButton" hidden>Unpublish storefront</button></div></div><article class="panel storefront-card"><div id="liveStorefrontPreview" class="live-storefront-preview" hidden><iframe id="storefrontHeroFrame" title="Customer-facing storefront design preview" loading="lazy" scrolling="no" tabindex="-1" referrerpolicy="same-origin"></iframe></div><div class="store-preview-art" id="storefrontDraftFallback"><div id="storeLogoPreview" class="store-logo-preview">SN</div><div class="preview-title"><small>STOREFRONT NOT PUBLISHED</small><strong id="storePreviewName">Your business name</strong><span id="storePreviewCategory">Choose a category</span><span class="draft-preview-note">Publish your storefront to see the actual customer-facing design here.</span></div></div><div class="store-url-row"><div><small>YOUR STORENEST LINK</small><strong id="storeUrlText">storenest-eight.vercel.app/store/your-business</strong></div><button class="outline-button" id="copyStoreUrl" type="button">Copy link</button></div></article>
 <article class="panel" style="padding:22px;margin-top:16px">
 <form id="storefrontBuilder" class="business-form">
@@ -1115,14 +1117,14 @@ html[data-theme="dark"] .dashboard-header-reopen:hover{background:#2d4540}
  </div>
 </div><div id="cateringServiceNote" class="catering-service-note full-field" hidden><strong>Catering service</strong><span>Customers will send their event date, venue and guest count with a booking request. Use the description for general service information; confirm the service scope and final details with the customer.</span></div><div class="field"><label for="itemCategory">Category</label><div class="category-input"><select id="itemCategory"><option value="">No category</option></select><button type="button" id="addCategoryButton" aria-label="Add category">＋</button></div></div><div class="field full-field" id="itemDescriptionField"><label id="itemDescriptionLabel" for="itemDescription">Description</label><textarea id="itemDescription" rows="3" maxlength="500" placeholder="Describe your product or service"></textarea></div>
 <div id="fashionSharedSizesEditor" class="fashion-shared-settings full-field" hidden><div class="fashion-shared-heading"><div><strong>Shared product defaults</strong><small id="fashionSharedDefaultsHelp">Set a common base price and description for every colour. Leave size prices blank to use the common price, or set a colour’s own sizes and description below.</small></div></div><div id="fashionSharedDescriptionSlot"></div><div class="field fashion-shared-base-price"><label for="fashionSharedBasePrice">Common price (optional)</label><div class="price-input"><span>R</span><input id="fashionSharedBasePrice" type="number" min="0" max="100000" step="0.01" placeholder="e.g. 200" aria-describedby="fashionSharedPriceHelp"></div><small id="fashionSharedPriceHelp">Default price for every variant and size. A size price overrides a variant price, which overrides this common price.</small></div><div class="fashion-shared-size-panel"><div class="fashion-shared-size-heading"><strong id="fashionSharedSizesTitle">Shared sizes and prices</strong><small id="fashionSharedSizesHelp">Leave a size price blank to use the common base price. Enter a different price for any size, or give a colour its own sizes and prices.</small></div><div id="fashionSharedSizePresets" class="fashion-size-presets"></div><div class="fashion-size-add-row"><input id="fashionSharedSizeInput" type="text" maxlength="200" placeholder="e.g. 28, 30, 32 or 38, 39, 40" aria-label="Enter shared product sizes"><button type="button" id="addFashionSharedSizes" class="outline-button">Add sizes</button></div><div id="fashionSharedSizesList" class="fashion-size-chips fashion-size-chips-priced"></div></div></div>
-<div id="itemMediaField" class="field full-field"><label id="itemMediaLabel" for="itemMedia">Photos, GIFs & short videos (up to 12)</label><input id="itemMedia" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"><small>Images/GIFs: max 10 MB. MP4/WebM videos: max 20 MB and 30 seconds. First file is the cover.</small><small id="itemMediaQualityNote" class="media-quality-note" role="status" aria-live="polite">Original photos are preserved. New photos get responsive storefront sizes.</small><div id="itemMediaGallery" class="owner-gallery"></div><small id="itemGalleryCount" role="status" aria-live="polite">Gallery media: 0 / 12 uploaded</small></div><div id="decorColorSetsEditor" class="decor-color-sets-editor full-field" hidden><div class="decor-color-sets-heading"><div><strong>Décor colour sets</strong><small>Group photos of the same setup by colour theme. Each set can have its own optional description.</small></div><button type="button" id="addDecorColorSet" class="outline-button">+ Add colour set</button></div><div id="decorColorSetsList"></div><small class="decor-color-sets-note">Upload up to 12 pictures across all colour sets. The first picture in the first set is the main storefront photo.</small></div><div id="fashionColorSetsEditor" class="decor-color-sets-editor full-field" hidden><div class="decor-color-sets-heading"><div><strong id="fashionColorSetsTitle">Product colour variants</strong><small id="fashionColorSetsHelp">Add each colour of this product and upload its photos. Customers can choose a colour before adding it to their basket.</small></div><button type="button" id="addFashionColorSet" class="outline-button">+ Add colour</button></div><div id="fashionColorSetsList"></div><small id="fashionColorSetsNote" class="decor-color-sets-note">Upload up to 12 pictures across all colours. The first picture in the first variant is the storefront cover.</small></div><!-- Product sizes and prices can be shared above or configured for each colour variant. --><div class="field"><label for="itemAvailability">Availability</label><select id="itemAvailability"><option value="true">Available</option><option value="false">Unavailable</option></select><small>Available items appear on your storefront; unavailable items are hidden from customers.</small></div><div class="field"><label for="itemOrderDisplay">Storefront position</label><input id="itemOrder" type="hidden" value="0"><input id="itemOrderDisplay" type="text" value="1" readonly aria-describedby="itemOrderHelp"><small id="itemOrderHelp">Assigned automatically. New items appear after existing items; gallery photos have their own order above.</small></div></div>
+<div id="itemMediaField" class="field full-field"><label id="itemMediaLabel" for="itemMedia">Photos, GIFs & short videos (up to 12)</label><input id="itemMedia" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"><small>Images/GIFs: max 10 MB. MP4/WebM videos: max 20 MB and 30 seconds. First file is the cover.</small><small id="itemMediaQualityNote" class="media-quality-note" role="status" aria-live="polite">Original photos are preserved. New photos get responsive storefront sizes.</small><div id="itemMediaGallery" class="owner-gallery"></div><small id="itemGalleryCount" role="status" aria-live="polite">Gallery media: 0 / 12 uploaded</small><div id="r2CatalogTrial" hidden><button type="button" class="outline-button" id="r2CatalogTrialRun">Test selected photo with Cloudflare R2</button><small id="r2CatalogTrialStatus" role="status" aria-live="polite">Preview only. Select a new image up to 2 MB; no listing will be saved.</small></div></div><div id="decorColorSetsEditor" class="decor-color-sets-editor full-field" hidden><div class="decor-color-sets-heading"><div><strong>Décor colour sets</strong><small>Group photos of the same setup by colour theme. Each set can have its own optional description.</small></div><button type="button" id="addDecorColorSet" class="outline-button">+ Add colour set</button></div><div id="decorColorSetsList"></div><small class="decor-color-sets-note">Upload up to 12 pictures across all colour sets. The first picture in the first set is the main storefront photo.</small></div><div id="fashionColorSetsEditor" class="decor-color-sets-editor full-field" hidden><div class="decor-color-sets-heading"><div><strong id="fashionColorSetsTitle">Product colour variants</strong><small id="fashionColorSetsHelp">Add each colour of this product and upload its photos. Customers can choose a colour before adding it to their basket.</small></div><button type="button" id="addFashionColorSet" class="outline-button">+ Add colour</button></div><div id="fashionColorSetsList"></div><small id="fashionColorSetsNote" class="decor-color-sets-note">Upload up to 12 pictures across all colours. The first picture in the first variant is the storefront cover.</small></div><!-- Product sizes and prices can be shared above or configured for each colour variant. --><div class="field"><label for="itemAvailability">Availability</label><select id="itemAvailability"><option value="true">Available</option><option value="false">Unavailable</option></select><small>Available items appear on your storefront; unavailable items are hidden from customers.</small></div><div class="field"><label for="itemOrderDisplay">Storefront position</label><input id="itemOrder" type="hidden" value="0"><input id="itemOrderDisplay" type="text" value="1" readonly aria-describedby="itemOrderHelp"><small id="itemOrderHelp">Assigned automatically. New items appear after existing items; gallery photos have their own order above.</small></div></div>
 <div id="itemOptionsEditor" class="item-options-editor">
   <div class="item-options-heading"><div><strong>Customizations &amp; options</strong><small>Create choice groups for sizes, colours, service levels, and other options. You can add an optional extra price to any choice.</small></div>
   <div class="item-options-actions"><button type="button" id="addScaleGroup" class="outline-button">+ Add scale</button><button type="button" id="addCustomizationGroup" class="outline-button">+ Add choice group</button></div></div>
   <div id="customizationGroupsList"></div>
   <small class="item-options-note">Scales start with None, Less, Mid and Extra, with Mid selected by default. Choose a default level and set an optional extra price for each level. Options can be used on products and services.</small>
 </div>
-<div class="message" id="itemFormMessage" role="status" aria-live="polite" hidden></div><div class="modal-actions"><button class="outline-button" type="button" data-close-modal>Cancel</button><button class="primary-button" type="submit">Save item <span>→</span></button></div></form></div></div>
+<div id="r2CatalogueNotice" class="field full-field" hidden><strong>Catalogue preview</strong><small>New and previously private products remain unavailable to customers until publication is ready. Images are stored privately. Existing photos can be retained, reordered, replaced or removed; removed files are retained for historical records.</small></div><div id="r2DraftPanel" class="field full-field" hidden><strong>Cloudflare R2 — isolated save mode</strong><small>Save item keeps new images in a private R2 draft area. Catalogue details stay in this browser; nothing is published or saved to the live catalogue.</small><div id="r2DraftStatus" role="status" aria-live="polite"></div><div id="r2DraftImages"></div><button type="button" class="outline-button" id="r2DraftRead">Verify saved draft images</button><button type="button" class="outline-button" id="r2DraftDelete">Remove saved test draft</button></div><div class="message" id="itemFormMessage" role="status" aria-live="polite" hidden></div><div class="modal-actions"><button class="outline-button" type="button" data-close-modal>Cancel</button><button class="primary-button" type="submit">Save item <span>→</span></button></div></form></div></div>
   <div class="modal-backdrop" id="categoryModal" hidden><div class="modal-card small-modal" role="dialog" aria-modal="true" aria-labelledby="categoryModalTitle"><div class="modal-head"><div><span class="eyebrow">CATALOGUE ORGANISATION</span><h3 id="categoryModalTitle">Add a category</h3></div><button class="close-modal" type="button" data-close-modal aria-label="Close">×</button></div><form id="categoryForm"><div class="field"><label for="categoryName">Section name</label><input id="categoryName" required maxlength="60" placeholder="e.g. Haircare, Home décor or Electronics"><label for="categoryMarketplace">Marketplace category</label><select id="categoryMarketplace"><option value="food-drink">Food & Drinks</option><option value="events-decor">Catering and Decor Services</option><option value="electronics">Electronics</option><option value="study-supplies">Education &amp; Study Supplies</option><option value="fashion">Fashion & Accessories</option><option value="cosmetics">Cosmetics</option><option value="beauty">Personal Services</option><option value="home-living">Home & Living</option><option value="groceries">Groceries & Essentials</option><option value="local-services">Local Services</option><option value="gifts-occasions">Gifts &amp; Occasions</option><option value="other">Other</option></select><small>Controls where customers discover this section on StoreNest. It does not restrict what you offer.</small><label for="categoryStyle">Display style</label><select id="categoryStyle"><option value="auto">Automatic</option><option value="menu">Food menu</option><option value="showcase">Visual showcase</option><option value="portfolio">Service portfolio</option><option value="catalogue">Product catalogue</option><option value="booking">Booking / enquiry</option></select><small id="categoryStyleHelp">Choose how this section appears on the storefront.</small><label for="categoryDescription">Short introduction (optional)</label><textarea id="categoryDescription" maxlength="300" rows="2" placeholder="What this section offers"></textarea><input id="categoryEditId" type="hidden"></div><div class="message" id="categoryMessage" role="status" aria-live="polite" hidden></div><div class="modal-actions"><button class="outline-button" type="button" data-close-modal>Cancel</button><button class="primary-button" type="submit">Add category</button></div></form></div></div>
   <div class="modal-backdrop" id="deleteBusinessModal" hidden><div class="modal-card small-modal danger-store-modal" role="dialog" aria-modal="true" aria-labelledby="deleteBusinessTitle"><div class="modal-head"><div><span class="eyebrow">PERMANENT STORE REMOVAL</span><h3 id="deleteBusinessTitle">Delete this store?</h3></div><button class="close-modal" type="button" data-close-modal aria-label="Cancel">×</button></div><p class="modal-subtitle">You are deleting <strong id="deleteBusinessName">this store</strong>. This also permanently removes its products and services, categories, storefront design, booking requests, and uploaded media. This cannot be undone.</p><p class="delete-business-status" id="deleteBusinessStatus" role="status" aria-live="polite" hidden></p><div class="modal-actions"><button class="outline-button" type="button" data-close-modal>Cancel</button><button class="danger-button" type="button" id="confirmDeleteBusiness">Delete store</button></div></div></div>
   <div class="message dashboard-toast" id="dashboardToast" role="status" aria-live="polite" hidden></div>
@@ -1530,11 +1532,14 @@ async function uploadBrand(client,file,kind){
  if(kind==="cover")await validateVideoDuration(uploadFile);
  if(!currentUser||!currentBusiness)throw Error("Sign in first.");
  const path=currentUser.id+"/"+currentBusiness.id+"/"+kind+"/"+crypto.randomUUID()+"."+BRAND_MIME[uploadFile.type];
+ const upload=await window.StoreNestR2Upload.upload(client,{businessId:currentBusiness.id,sourceBucket:BRAND_BUCKET,key:path,file:uploadFile});
+ const url=client.storage.from(BRAND_BUCKET).getPublicUrl(path).data.publicUrl;
+ if(upload)return {path,url,storage:"r2",sha256:upload.sha256};
  const {error}=await client.storage.from(BRAND_BUCKET).upload(path,uploadFile,{contentType:uploadFile.type,upsert:false});
  if(error)throw error;
- return {path,url:client.storage.from(BRAND_BUCKET).getPublicUrl(path).data.publicUrl};
+ return {path,url,storage:"supabase"};
 }
-async function clearBrandUpload(client,asset){if(asset)try{await client.storage.from(BRAND_BUCKET).remove([asset.path])}catch{}}
+async function clearBrandUpload(client,asset){if(asset&&asset.storage!=="r2")try{await client.storage.from(BRAND_BUCKET).remove([asset.path])}catch{}}
 function resetBrandFields(config){
  removeLogo=false;removeCover=false;
  $("builderLogoFile").value="";$("builderCoverFile").value="";
@@ -1615,7 +1620,7 @@ $("saveStoreDraft").addEventListener("click",async()=>{
 $("publishStoreDesign").addEventListener("click",async()=>{if(!currentBusiness||!currentUser)return;if(!isProfileComplete()){builderStatus("Complete your business name and category before publishing.");return}const btn=$("publishStoreDesign");btn.disabled=true;try{const config=await saveStorefrontDraft();const client=await loadAuth();const {data,error}=await client.from("businesses").update({storefront_config:config,logo_url:config.logo||null,is_published:true,updated_at:new Date().toISOString()}).eq("id",currentBusiness.id).eq("owner_id",currentUser.id).select("*").single();if(error)throw error;applyBusiness(data);updateLiveStorefrontPreview(data,true);builderStatus("Frontend published. Customers can now find and open your storefront.");showToast("Storefront frontend published.")}catch(e){builderStatus(friendlyError(e))}finally{btn.disabled=false}});
 
 function updateStats(){$("statItems").textContent=String(businessItems.length);$("allCount").textContent=String(businessItems.length);$("statViews").textContent="—";$("statOrders").textContent="—";$("statPending").textContent="—";$("statCompleted").textContent="—";$("statBookings").textContent="—";$("statRevenue").textContent="—";$("chartEmpty").hidden=false;$("visitChart").hidden=true;$("activityEmpty").hidden=false;$("activityList").replaceChildren()}
-function renderItems(){const grid=$("itemGrid"),empty=$("catalogEmpty");const filtered=businessItems.filter(item=>(selectedFilter==="all"||item.item_type===selectedFilter)&&(!itemQuery||(`${item.name} ${item.description}`.toLowerCase().includes(itemQuery))));grid.replaceChildren();for(const item of filtered){const card=document.createElement("article");card.className="item-card";card.innerHTML=`<div class="item-art">${itemMediaList(item).length?(isProductVideo(itemMediaList(item)[0])?`<video src="${escapeHtml(itemMediaList(item)[0])}" muted loop playsinline autoplay preload="metadata"></video>`:`<img src="${escapeHtml(itemMediaList(item)[0])}" alt="">`):item.item_type==="service"?"✦":"▧"}<span class="item-status ${item.is_available?"":"unavailable"}">${item.is_available?"Available":"Unavailable"}</span></div><div class="item-card-body"><div class="item-card-top"><h4 title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</h4><span class="item-type-tag">${item.item_type==="service"?"Service":"Product"}</span></div><p>${escapeHtml(item.description||"No description added yet.")}</p><div class="item-card-bottom"><span class="item-price">${escapeHtml(ownerItemPriceLabel(item))}</span><div class="item-card-actions"><button type="button" class="small-action edit-item-button" data-action="edit" data-id="${item.id}" aria-label="Edit ${escapeHtml(item.name)}">Edit</button><button type="button" class="small-action" data-action="delete" data-id="${item.id}" aria-label="Delete ${escapeHtml(item.name)}">Delete</button></div></div></div>`;grid.append(card);card.querySelector(".edit-item-button").addEventListener("click",event=>{event.preventDefault();event.stopPropagation();openItemModal(item)})}empty.hidden=businessItems.length>0;grid.hidden=!businessItems.length||!filtered.length;if(businessItems.length&&filtered.length===0){grid.hidden=false;grid.innerHTML='<div class="empty-filter">No items match this search.</div>'}}
+function renderItems(){const grid=$("itemGrid"),empty=$("catalogEmpty");const filtered=businessItems.filter(item=>(selectedFilter==="all"||item.item_type===selectedFilter)&&(!itemQuery||(`${item.name} ${item.description}`.toLowerCase().includes(itemQuery))));grid.replaceChildren();for(const item of filtered){const card=document.createElement("article");card.className="item-card";card.innerHTML=`<div class="item-art">${itemMediaList(item).length?(isProductVideo(itemMediaList(item)[0])?`<video src="${escapeHtml(itemMediaList(item)[0])}" muted loop playsinline autoplay preload="metadata"></video>`:`<img ${isPrivateR2Uri(itemMediaList(item)[0])?"":`src="${escapeHtml(itemMediaList(item)[0])}"`} alt="">`):item.item_type==="service"?"✦":"▧"}<span class="item-status ${item.is_available?"":"unavailable"}">${item.is_available?"Available":"Unavailable"}</span></div><div class="item-card-body"><div class="item-card-top"><h4 title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</h4><span class="item-type-tag">${item.item_type==="service"?"Service":"Product"}</span></div><p>${escapeHtml(item.description||"No description added yet.")}</p><div class="item-card-bottom"><span class="item-price">${escapeHtml(ownerItemPriceLabel(item))}</span><div class="item-card-actions"><button type="button" class="small-action edit-item-button" data-action="edit" data-id="${item.id}" aria-label="Edit ${escapeHtml(item.name)}">Edit</button><button type="button" class="small-action" data-action="delete" data-id="${item.id}" aria-label="Delete ${escapeHtml(item.name)}">Delete</button></div></div></div>`;grid.append(card);if(isPrivateR2Item(item)){const badge=card.querySelector(".item-status");badge.textContent="Unavailable";badge.classList.add("unavailable");if(r2CatalogueMode)void renderPrivateR2Cover(card,item);}card.querySelector(".edit-item-button").addEventListener("click",event=>{event.preventDefault();event.stopPropagation();if(isPrivateR2Item(item)&&!r2CatalogueMode){showToast("Open the catalogue Preview to edit this private product.",true);return;}openItemModal(item)})}empty.hidden=businessItems.length>0;grid.hidden=!businessItems.length||!filtered.length;if(businessItems.length&&filtered.length===0){grid.hidden=false;grid.innerHTML='<div class="empty-filter">No items match this search.</div>'}}
 function escapeHtml(value){return String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]))}
 function renderCategories(){const select=$("itemCategory");const existing=select.value;select.replaceChildren(new Option("No section",""));for(const cat of businessCategories)select.add(new Option(cat.name,cat.id));if(businessCategories.some(cat=>cat.id===existing))select.value=existing;renderSectionCards()}
 function renderSectionCards(){const list=$("sectionCards");if(!list)return;list.replaceChildren();if(!businessCategories.length){list.innerHTML='<p class="section-empty">No sections yet. Create one to organize your products or services, such as Haircuts, Clothing or Home Décor.</p>';return}
@@ -2040,7 +2045,7 @@ function nextItemDisplayOrder(excludeId=null){const remaining=businessItems.filt
   $("itemBookingFeeMax").value=item?.booking_fee_max??"";
   syncItemPricingFields();$("itemDescription").value=item?.description||"";
   editedOptionGroups=window.StoreNestOptions.normalize(item?.customization_options).filter(group=>group.id!==FASHION_COLOR_GROUP_ID&&group.id!==FASHION_SIZE_GROUP_ID);drawCustomizationEditor();
-  const savedStorefrontOrder=item?.display_order;const storefrontOrder=savedStorefrontOrder!=null&&Number.isFinite(Number(savedStorefrontOrder))?Math.max(0,Math.trunc(Number(savedStorefrontOrder))):nextItemDisplayOrder(item?.id??null);$("itemAvailability").value=String(item?.is_available??true);$("itemOrder").value=String(storefrontOrder);$("itemOrderDisplay").value=String(storefrontOrder+1);$("itemCategory").value=item?.category_id||"";
+  const savedStorefrontOrder=item?.display_order;const storefrontOrder=savedStorefrontOrder!=null&&Number.isFinite(Number(savedStorefrontOrder))?Math.max(0,Math.trunc(Number(savedStorefrontOrder))):nextItemDisplayOrder(item?.id??null);$("itemAvailability").value=String(item?.is_available??true);$("itemAvailability").disabled=Boolean(r2CatalogueMode&&(!item||isPrivateR2Item(item)));if($("itemAvailability").disabled)$("itemAvailability").value="false";$("itemOrder").value=String(storefrontOrder);$("itemOrderDisplay").value=String(storefrontOrder+1);$("itemCategory").value=item?.category_id||"";
   $("itemFormMessage").hidden=true;editedDecorColorSets=[];editedFashionColorSets=[];resetItemGallery(item);loadDecorColorSets(item);loadFashionColorSets(item);loadFashionSizes();syncDecorColorSetEditor();openModal("itemModal");
   if($("itemModal")?.hidden)throw new Error("The edit form could not be opened.");
  }catch(error){console.error("StoreNest item edit error",error);showToast("Could not open the item editor: "+friendlyError(error),true)}
@@ -2414,9 +2419,10 @@ let galleryEntries=[],galleryObjectUrls=[],editedDecorColorSets=[],editedFashion
 const fashionDescriptionField=$("itemDescription")?.closest(".field"),fashionDescriptionHomeParent=fashionDescriptionField?.parentNode||null,fashionDescriptionHomeNext=fashionDescriptionField?.nextSibling||null,fashionDescriptionLabel=$("itemDescriptionLabel"),fashionDescriptionInput=$("itemDescription"),fashionDescriptionOriginalLabel=fashionDescriptionLabel?.textContent||"Description",fashionDescriptionOriginalPlaceholder=fashionDescriptionInput?.placeholder||"Describe your product or service";
 function normalizeCatalogMedia(value){
  const source=typeof value==="string"?{url:value}:value;
- if(!source||typeof source.url!=="string"||!/^https:\/\//i.test(source.url))return null;
- const variants=Array.isArray(source.variants)?source.variants.map(variant=>({width:Number(variant?.width)||0,url:typeof variant?.url==="string"?variant.url:""})).filter(variant=>variant.width>0&&/^https:\/\//i.test(variant.url)):[];
- return {url:source.url,width:Number(source.width)||0,height:Number(source.height)||0,variants};
+ const accepted=url=>typeof url==="string"&&(/^https:\/\//i.test(url)||isPrivateR2Uri(url));
+ if(!source||!accepted(source.url))return null;
+ const variants=Array.isArray(source.variants)?source.variants.map(variant=>({width:Number(variant?.width)||0,url:typeof variant?.url==="string"?variant.url:"",...(typeof variant?.sha256==="string"?{sha256:variant.sha256}:{})})).filter(variant=>variant.width>0&&accepted(variant.url)):[];
+ return {url:source.url,width:Number(source.width)||0,height:Number(source.height)||0,variants,...(typeof source.sha256==="string"?{sha256:source.sha256}:{})};
 }
 function catalogMediaEntries(item){
  const entries=Array.isArray(item?.media_urls)?item.media_urls.map(normalizeCatalogMedia).filter(Boolean):[];
@@ -2483,7 +2489,7 @@ function renderOwnerGalleryTiles(root,records,decorSetId=null){
  records.forEach((record,localIndex)=>{
   const {entry,index}=record,tile=document.createElement("div");tile.className="owner-gallery-tile";
   const video=entry.file?entry.file.type.startsWith("video/"):isProductVideo(entry.url);
-  const image=document.createElement(video?"video":"img");image.src=entry.url;
+  const image=document.createElement(video?"video":"img");if(isPrivateR2Uri(entry.url)){if(r2CatalogueMode)void loadPrivateR2Image(image,entry,currentBusiness?.id,currentUser?.id);}else image.src=entry.url;
   if(video){image.muted=true;image.loop=true;image.playsInline=true;image.autoplay=true;image.preload="metadata";image.play().catch(()=>{});}else{image.alt="Item photo "+(localIndex+1);image.loading="lazy";}
   const actions=document.createElement("div");actions.className="owner-gallery-actions";
   const label=document.createElement("span");label.textContent=(localIndex===0?"Cover":"Media "+(localIndex+1))+(video?" · Video":"");
@@ -2871,6 +2877,127 @@ $("itemMedia").addEventListener("change",async event=>{
  }catch(error){showToast(error.message||"Invalid item media.",true)}
  finally{input.value=""}
 });
+// Isolated opt-in preview trial. Never saves catalogue rows or switches the live uploader.
+if(location.hostname.endsWith('.vercel.app')&&new URLSearchParams(location.search).get('r2trial')==='1'){
+ $("r2CatalogTrial").hidden=false;
+ $("r2CatalogTrialRun").addEventListener("click",async()=>{
+  const btn=$("r2CatalogTrialRun"),out=$("r2CatalogTrialStatus");
+  btn.disabled=true;
+  try{
+   if(!currentUser||!currentBusiness)throw Error("Sign in and select a business.");
+   const file=galleryEntries.find(e=>e.file&&["image/jpeg","image/png","image/webp","image/gif"].includes(e.file.type))?.file;
+   if(!file||file.size>2*1048576)throw Error("Select a new JPG, PNG, WebP or GIF up to 2 MB first.");
+   const businessId=currentBusiness.id,client=await loadAuth(),{data:{session},error}=await client.auth.getSession();
+   if(error||!session?.access_token)throw Error("Sign in again.");
+   const imageData=await createCatalogImageVariants(file);
+   if(file.type!=="image/gif"&&(!imageData.width||!imageData.height))throw Error("Could not decode this image.");
+   const assets=[{blob:file,label:"Original"},...imageData.variants.map(v=>({blob:v.blob,label:v.width+" px WebP"}))];
+   let count=0,total=0;
+   for(const asset of assets){
+    if(currentBusiness?.id!==businessId)throw Error("Business changed; test stopped.");
+    out.textContent="Testing "+asset.label+" ("+(count+1)+"/"+assets.length+")…";
+    const base64=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(",")[1]);reader.onerror=()=>reject(Error("Image could not be read."));reader.readAsDataURL(asset.blob);});
+    const response=await fetch("/api/r2-image-test",{method:"POST",credentials:"same-origin",redirect:"error",cache:"no-store",headers:{"Content-Type":"application/json"},body:JSON.stringify({businessId,sessionToken:session.access_token,mime:asset.blob.type,base64})});
+    const result=await response.json();
+    if(!response.ok||!["uploaded","downloaded","byteMatch","deleted","absenceVerified"].every(k=>result[k]===true)||result.bytes!==asset.blob.size)throw Error(result.error||"Incomplete verification.");
+    count++;total+=result.bytes;
+   }
+   out.textContent="PASS — "+count+" image file(s), "+total+" bytes verified and removed. No listing saved.";
+  }catch(e){out.textContent="Test failed: "+e.message;}
+  finally{btn.disabled=false;}
+ });
+}
+const r2DraftMode=location.hostname.endsWith('.vercel.app')&&new URLSearchParams(location.search).get('r2save')==='1';
+const r2CatalogueMode=!r2DraftMode&&location.hostname.endsWith('.vercel.app')&&new URLSearchParams(location.search).get('r2catalog')==='1';
+const R2_PRIVATE_URI="r2://storenest-media/r2-catalog-private/";
+function isPrivateR2Uri(url){return typeof url==="string"&&url.startsWith(R2_PRIVATE_URI)&&/^[a-f0-9-]{36}\/[a-f0-9-]{36}\/[a-f0-9-]{36}\.(?:png|jpg|webp|gif)$/.test(url.slice(R2_PRIVATE_URI.length));}
+async function loadPrivateR2Image(img,media,businessId,ownerId){
+ if(!businessId||!ownerId||!isPrivateR2Uri(media.url))return;
+ try{
+  const result=await draftApi(await loadAuth(),businessId,{action:"read",key:media.url.slice("r2://storenest-media/".length)},"/api/r2-catalog-private");
+  if(media.sha256&&result.sha256!==media.sha256)throw Error("Image integrity mismatch.");
+  if(currentBusiness?.id!==businessId||currentUser?.id!==ownerId||!img.isConnected)return;
+  const bytes=Uint8Array.from(atob(result.base64),c=>c.charCodeAt(0));
+  const url=URL.createObjectURL(new Blob([bytes],{type:result.mime}));
+  img.onload=img.onerror=()=>URL.revokeObjectURL(url);img.src=url;
+ }catch{if(img.isConnected)img.title="Private image could not be loaded. Refresh to retry.";}
+}
+function privateR2Media(item){return (Array.isArray(item?.media_urls)?item.media_urls:[]).filter(e=>typeof e?.url==="string"&&e.url.startsWith(R2_PRIVATE_URI));}
+function isPrivateR2Item(item){return privateR2Media(item).length>0||String(item?.image_url||"").startsWith(R2_PRIVATE_URI);}
+if(r2CatalogueMode){$("r2CatalogueNotice").hidden=false;$("r2CatalogueBanner").hidden=false;$("r2CatalogTrial").hidden=true;}
+async function renderPrivateR2Cover(card,item){
+ const media=catalogMediaEntries(item)[0];
+ if(!media||!isPrivateR2Uri(media.url)||!currentUser||!currentBusiness||!card.isConnected)return;
+ const art=card.querySelector(".item-art");
+ if(!art)return;
+ let img=art.querySelector("img");
+ if(!img){img=document.createElement("img");art.prepend(img);}
+ img.removeAttribute("src");img.alt=item.name;
+ await loadPrivateR2Image(img,media,currentBusiness.id,currentUser.id);
+}
+function draftLocalKey(owner,business){return "storenest:r2-catalog-draft:v1:"+owner+":"+business;}
+function readLocalDraft(owner,business){const value=localStorage.getItem(draftLocalKey(owner,business));return value?JSON.parse(value):null;}
+async function draftApi(client,businessId,request,endpoint="/api/r2-catalog-draft"){
+ const {data:{session},error}=await client.auth.getSession();
+ if(error||!session?.access_token)throw Error("Sign in again.");
+ const response=await fetch(endpoint,{method:"POST",credentials:"same-origin",redirect:"error",cache:"no-store",headers:{"Content-Type":"application/json"},body:JSON.stringify({...request,businessId,sessionToken:session.access_token})});
+ const result=await response.json();if(!response.ok)throw Error(result.error||"R2 draft request failed.");return result;
+}
+async function blob64(blob){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(",")[1]);reader.onerror=()=>reject(Error("Could not read image."));reader.readAsDataURL(blob);});}
+async function removeDraftKeys(client,businessId,keys){
+ const failed=[];
+ for(const key of keys){try{const result=await draftApi(client,businessId,{action:"delete",key});if(!result.deleted)failed.push(key);}catch{failed.push(key);}}
+ return failed;
+}
+async function uploadDraftMedia(client,file,businessId,keys,endpoint="/api/r2-catalog-draft"){
+ if(!["image/jpeg","image/png","image/webp","image/gif"].includes(file.type)||file.size>2*1048576||!file.size)throw Error("Isolated R2 save supports images up to 2 MB, not videos.");
+ const imageData=await createCatalogImageVariants(file);
+ if(file.type!=="image/gif"&&(!imageData.width||!imageData.height))throw Error("Could not decode this image.");
+ const assets=[{blob:file},...imageData.variants.map(v=>({blob:v.blob,width:v.width}))],saved=[];
+ for(const asset of assets){
+  const result=await draftApi(client,businessId,{action:"upload",mime:asset.blob.type,base64:await blob64(asset.blob)},endpoint);
+  if(typeof result.key!=="string")throw Error("No R2 key returned.");
+  keys.push(result.key);
+  if(!result.verified||result.bytes!==asset.blob.size)throw Error("Image verification did not complete.");
+  saved.push({...result,width:asset.width||0,url:"r2://storenest-media/"+result.key});
+ }
+ return {url:saved[0].url,key:saved[0].key,sha256:saved[0].sha256,width:imageData.width,height:imageData.height,variants:saved.slice(1).map(x=>({url:x.url,key:x.key,width:x.width,sha256:x.sha256}))};
+}
+if(r2DraftMode){
+ $("r2DraftPanel").hidden=false;
+ $("r2CatalogTrial").hidden=true;
+ const status=$("r2DraftStatus"),images=$("r2DraftImages");
+ const context=()=>{if(!currentUser||!currentBusiness)throw Error("Sign in and select your business.");return {owner:currentUser.id,business:currentBusiness.id};};
+ $("r2DraftRead").addEventListener("click",async()=>{
+  const button=$("r2DraftRead");button.disabled=true;images.replaceChildren();
+  try{
+   const {owner,business}=context(),draft=readLocalDraft(owner,business);
+   if(!draft)throw Error("No saved draft for this business in this browser.");
+   const client=await loadAuth();let count=0;
+   for(const media of draft.row.media_urls){
+    for(const image of [media,...media.variants]){
+     const result=await draftApi(client,business,{action:"read",key:image.key});
+     if(result.sha256!==image.sha256)throw Error("Stored image integrity mismatch.");
+     const raw=Uint8Array.from(atob(result.base64),c=>c.charCodeAt(0));
+     const url=URL.createObjectURL(new Blob([raw],{type:result.mime}));
+     const el=document.createElement("img");el.alt="Saved R2 draft image";el.style.cssText="max-width:120px;max-height:120px;margin:4px;object-fit:contain";el.onload=el.onerror=()=>URL.revokeObjectURL(url);el.src=url;images.appendChild(el);count++;
+    }
+   }
+   status.textContent="PASS — "+draft.row.name+": "+count+" saved R2 image(s) retrieved and verified.";
+  }catch(e){status.textContent=e.message;}finally{button.disabled=false;}
+ });
+ $("r2DraftDelete").addEventListener("click",async()=>{
+  const button=$("r2DraftDelete");button.disabled=true;
+  try{
+   const {owner,business}=context(),draft=readLocalDraft(owner,business);
+   if(!draft)throw Error("No saved draft.");
+   if(!confirm("Remove the isolated R2 draft images? The live catalogue is not affected."))return;
+   const failed=await removeDraftKeys(await loadAuth(),business,draft.keys);
+   if(failed.length){localStorage.setItem(draftLocalKey(owner,business),JSON.stringify({...draft,keys:failed}));throw Error("Some draft objects could not be removed; retry cleanup.");}
+   localStorage.removeItem(draftLocalKey(owner,business));images.replaceChildren();status.textContent="Draft images deleted and absence verified.";
+  }catch(e){status.textContent=e.message;}finally{button.disabled=false;}
+ });
+}
 async function uploadCatalogMedia(client,file){
  validateProductMedia(file);await validateProductVideo(file);
  if(!currentBusiness||!currentUser)throw Error("Sign in before uploading.");
@@ -2878,16 +3005,19 @@ async function uploadCatalogMedia(client,file){
  let imageData={width:0,height:0,variants:[]};
  try{imageData=await createCatalogImageVariants(file)}catch(error){console.warn("Could not prepare responsive image sizes; the original will be used.",error)}
  const uploadedPaths=[],bucket=client.storage.from(ITEM_BUCKET),basePath=path.replace(/\.[^.]+$/,"");
- try{
-  const {error}=await bucket.upload(path,file,{contentType:file.type,cacheControl:"31536000",upsert:false});
+ const uploadOne=async(objectPath,blob)=>{
+  const r2=await window.StoreNestR2Upload.upload(client,{businessId:currentBusiness.id,sourceBucket:ITEM_BUCKET,key:objectPath,file:blob});
+  if(r2)return;
+  const {error}=await bucket.upload(objectPath,blob,{contentType:blob.type,cacheControl:"31536000",upsert:false});
   if(error)throw error;
-  uploadedPaths.push(path);
+  uploadedPaths.push(objectPath);
+ };
+ try{
+  await uploadOne(path,file);
   const originalUrl=bucket.getPublicUrl(path).data.publicUrl,variants=[];
   for(const variant of imageData.variants){
    const variantPath=basePath+"-"+variant.width+".webp";
-   const {error:variantError}=await bucket.upload(variantPath,variant.blob,{contentType:"image/webp",cacheControl:"31536000",upsert:false});
-   if(variantError){console.warn("An optimized image size could not be uploaded; the original will be used.",variantError);continue}
-   uploadedPaths.push(variantPath);
+   try{await uploadOne(variantPath,variant.blob)}catch(variantError){console.warn("An optimized image size could not be uploaded; the original will be used.",variantError);continue}
    variants.push({width:variant.width,url:bucket.getPublicUrl(variantPath).data.publicUrl});
   }
   return {entry:{url:originalUrl,width:imageData.width,height:imageData.height,variants},paths:uploadedPaths};
@@ -2911,9 +3041,23 @@ function mediaStoragePaths(entry){
 
 $("itemForm").addEventListener("submit",async event=>{
  event.preventDefault();const form=event.currentTarget,message=$("itemFormMessage"),itemId=$("itemId").value;
- busy(form,true);message.hidden=true;let client=null,uploads=[];
+ busy(form,true);message.hidden=true;let client=null,uploads=[],draftKeys=[],draftContext=null,draftCommitted=false,privateSave=false;
  try{
   if(!currentBusiness||!currentUser)throw Error("Sign in to save this item.");
+  const existingItem=businessItems.find(item=>item.id===itemId);
+  privateSave=r2CatalogueMode&&(!itemId||isPrivateR2Item(existingItem));
+  if(itemId&&isPrivateR2Item(existingItem)&&!privateSave)throw Error("Open catalogue Preview to edit this product.");
+  if(privateSave){
+   if($("itemType").value!=="product")throw Error("Private catalogue Preview supports products only.");
+   if(!galleryEntries.length||galleryEntries.some(e=>e.file?(!["image/jpeg","image/png","image/webp","image/gif"].includes(e.file.type)||!e.file.size||e.file.size>2*1048576):!isPrivateR2Uri(e.url)))throw Error("Keep or select at least one photo. New images must be up to 2 MB; videos are not supported yet.");
+   draftContext={owner:currentUser.id,business:currentBusiness.id};
+  }
+  if(r2DraftMode){
+   if(itemId||$("itemType").value!=="product")throw Error("R2 isolated save is for a new test product only. Existing items are unchanged.");
+   draftContext={owner:currentUser.id,business:currentBusiness.id};
+   if(readLocalDraft(draftContext.owner,draftContext.business))throw Error("An isolated draft already exists. Verify or remove it first.");
+   if(!galleryEntries.length||galleryEntries.some(e=>!e.file||!["image/jpeg","image/png","image/webp","image/gif"].includes(e.file.type)||e.file.size>2*1048576))throw Error("Select new images up to 2 MB each. Videos are not supported in this test.");
+  }
   const bookingPricing=usesBookingPricing();
   const fromRaw=bookingPricing?String($("itemPriceRangeMin").value).trim():"";
   const toRaw=bookingPricing?String($("itemPriceRangeMax").value).trim():"";
@@ -2933,8 +3077,9 @@ $("itemForm").addEventListener("submit",async event=>{
   client=await loadAuth();
   const entries=[],orderedEntries=isDecorItem?orderedDecorGalleryEntries():isFashionItem?orderedFashionGalleryEntries():galleryEntries;
   for(const entry of orderedEntries){
-   if(entry.file){const uploaded=await uploadCatalogMedia(client,entry.file);uploads.push(uploaded);entries.push(uploaded.entry)}
-   else entries.push({url:entry.url,width:entry.width||0,height:entry.height||0,variants:entry.variants||[]});
+   if((r2DraftMode||privateSave)&&entry.file){if(currentBusiness?.id!==draftContext.business||currentUser?.id!==draftContext.owner)throw Error("Business changed during save.");entries.push(await uploadDraftMedia(client,entry.file,draftContext.business,draftKeys,privateSave?"/api/r2-catalog-private":"/api/r2-catalog-draft"));}
+   else if(entry.file){const uploaded=await uploadCatalogMedia(client,entry.file);uploads.push(uploaded);entries.push(uploaded.entry)}
+   else entries.push({url:entry.url,width:entry.width||0,height:entry.height||0,variants:entry.variants||[],...(entry.sha256?{sha256:entry.sha256}:{})});
   }
   const primaryImage=entries.find(entry=>!isProductVideo(entry.url))?.url||null;
   const decorColorSets=isDecorItem?serializeDecorColorSets(entries):[],fashionColorSets=isFashionItem?serializeFashionColorSets(entries):[];
@@ -2944,6 +3089,33 @@ $("itemForm").addEventListener("submit",async event=>{
   if(sharedSizeGroup)customizationOptions.unshift(sharedSizeGroup);
   if(fashionColorSets.length>1)customizationOptions.unshift(fashionColourOptionGroup(fashionColorSets));
   const row={image_url:primaryImage,media_urls:entries,decor_color_sets:decorColorSets,fashion_color_sets:fashionColorSets,customization_options:customizationOptions,business_id:currentBusiness.id,item_type:$("itemType").value,name:$("itemName").value.trim(),description:$("itemDescription").value.trim(),price:bookingPricing?(priceRangeMin??priceRangeMax??0):isFashionItem?minimumFashionPrice:Number($("itemPrice").value),price_range_min:bookingPricing?priceRangeMin:(prior?.price_range_min??null),price_range_max:bookingPricing?priceRangeMax:(prior?.price_range_max??null),booking_fee:bookingPricing?((bookingFeeMin===null)!==(bookingFeeMax===null)?(bookingFeeMin??bookingFeeMax):null):(prior?.booking_fee??null),booking_fee_min:bookingPricing?bookingFeeMin:(prior?.booking_fee_min??prior?.booking_fee??null),booking_fee_max:bookingPricing?bookingFeeMax:(prior?.booking_fee_max??null),category_id:$("itemCategory").value||null,is_available:$("itemAvailability").value==="true",display_order:Number($("itemOrder").value)||0,updated_at:new Date().toISOString()};
+  if(r2DraftMode){
+   if(currentBusiness?.id!==draftContext.business||currentUser?.id!==draftContext.owner)throw Error("Business changed during save.");
+   localStorage.setItem(draftLocalKey(draftContext.owner,draftContext.business),JSON.stringify({row,keys:draftKeys,savedAt:new Date().toISOString()}));
+   draftCommitted=true;
+   $("r2DraftStatus").textContent="SAVED — "+row.name+". "+draftKeys.length+" R2 image(s) retained. No live listing created. Click Verify saved draft images.";
+   message.textContent="Isolated draft saved successfully.";message.className="message";message.hidden=false;
+   return;
+  }
+  if(privateSave){
+   if(currentBusiness?.id!==draftContext.business||currentUser?.id!==draftContext.owner)throw Error("Business changed during save.");
+   row.is_available=false;
+   const savedId=itemId||crypto.randomUUID();
+   // Optimistic version check avoids overwriting another session's edit.
+   const version=existingItem?.updated_at;
+   if(itemId&&!version)throw Error("Reload the catalogue before editing.");
+   const query=itemId?client.from("business_items").update(row).eq("id",savedId).eq("business_id",draftContext.business).eq("updated_at",version):client.from("business_items").insert({...row,id:savedId});
+   const saved=await query.select("id,is_available,updated_at").single();
+   if(saved.error||saved.data?.id!==savedId||saved.data?.is_available!==false){
+    const check=await client.from("business_items").select("id,is_available,updated_at").eq("business_id",draftContext.business).eq("id",savedId).maybeSingle();
+    if(check.error||check.data?.id!==savedId||check.data?.is_available!==false||Date.parse(check.data?.updated_at)!==Date.parse(row.updated_at))throw Error("Catalogue save not confirmed; reload before retrying. Uploaded files retained for reconciliation. Product ID: "+savedId);
+   }
+   draftCommitted=true;
+   await loadBusinessData();
+   closeModal($("itemModal"));
+   showToast(itemId?"Product updated.":"Product added.");
+   return;
+  }
   const query=itemId?client.from("business_items").update(row).eq("id",itemId).eq("business_id",currentBusiness.id):client.from("business_items").insert(row);
   const {data,error}=await query.select("id");
   if(error)throw error;if(!data?.length)throw Error("The product could not be saved. Please retry.");
@@ -2952,18 +3124,22 @@ $("itemForm").addEventListener("submit",async event=>{
   if(unused.length)client.storage.from(ITEM_BUCKET).remove(unused).catch(error=>console.warn("Media cleanup failed",error));
   await loadBusinessData();closeModal($("itemModal"));const itemLabel=$("itemType").value==="service"?"Service":"Product";showToast(itemId?itemLabel+" gallery updated.":itemLabel+" added.");
  }catch(error){
+  if(r2DraftMode&&client&&draftContext&&draftKeys.length&&!draftCommitted){
+   const failed=await removeDraftKeys(client,draftContext.business,draftKeys);
+   if(failed.length){try{localStorage.setItem(draftLocalKey(draftContext.owner,draftContext.business),JSON.stringify({row:{name:"Incomplete draft cleanup",media_urls:[]},keys:failed}));}catch{}}
+  }
   if(client&&uploads.length)await client.storage.from(ITEM_BUCKET).remove(uploads.flatMap(upload=>upload.paths)).catch(()=>{});
-  message.textContent=friendlyError(error);message.className="message error";message.hidden=false;
+  message.textContent=(privateSave&&draftCommitted?"Product was saved; refresh your catalogue to verify. ":r2CatalogueMode&&draftKeys.length?"Some private R2 objects were retained for reconciliation. ":"")+friendlyError(error);message.className="message error";message.hidden=false;
  }finally{busy(form,false)}
 });
-$("itemGrid").addEventListener("click",async event=>{const button=event.target.closest("[data-action]");if(!button)return;const item=businessItems.find(row=>row.id===button.dataset.id);if(!item)return;if(button.dataset.action==="delete"){if(!confirm(`Delete “${item.name}” from your catalogue?`))return;button.disabled=true;try{const client=await loadAuth();const {error}=await client.from("business_items").delete().eq("id",item.id).eq("business_id",currentBusiness.id);if(error)throw error;const paths=catalogMediaEntries(item).flatMap(mediaStoragePaths);if(paths.length)await client.storage.from(ITEM_BUCKET).remove(paths).catch(()=>{});await loadBusinessData();showToast("Item deleted.")}catch(error){showToast(friendlyError(error),true)}finally{button.disabled=false}}});
+$("itemGrid").addEventListener("click",async event=>{const button=event.target.closest("[data-action]");if(!button)return;const item=businessItems.find(row=>row.id===button.dataset.id);if(!item)return;if(button.dataset.action==="delete"){if(isPrivateR2Item(item)){showToast("Removal is disabled until safe archiving preserves historical bookings and analytics.",true);return;}if(!confirm(`Delete “${item.name}” from your catalogue?`))return;button.disabled=true;try{const client=await loadAuth();const {error}=await client.from("business_items").delete().eq("id",item.id).eq("business_id",currentBusiness.id);if(error)throw error;const paths=catalogMediaEntries(item).flatMap(mediaStoragePaths);if(paths.length)await client.storage.from(ITEM_BUCKET).remove(paths).catch(()=>{});await loadBusinessData();showToast("Item deleted.")}catch(error){showToast(friendlyError(error),true)}finally{button.disabled=false}}});
 $("itemSearch").addEventListener("input",event=>{itemQuery=event.target.value.trim().toLowerCase();renderItems()});document.querySelectorAll("[data-filter]").forEach(button=>button.addEventListener("click",()=>{selectedFilter=button.dataset.filter;document.querySelectorAll("[data-filter]").forEach(el=>el.classList.toggle("active",el===button));renderItems()}));
 $("dashboardSidebar").addEventListener("click",event=>{const button=event.target.closest("[data-section]");if(button)setDashboardSection(button.dataset.section)});
 $("mobileNavToggle").addEventListener("click",()=>{const list=$("mobileNavList"),open=list.hidden;list.hidden=!open;$("mobileNavToggle").setAttribute("aria-expanded",String(open))});populateMobileNav();
 document.querySelectorAll(".modal-backdrop").forEach(backdrop=>{backdrop.addEventListener("click",event=>{if(event.target===backdrop)closeModal(backdrop);handleModalClose(event)})});document.addEventListener("click",event=>{const close=event.target.closest("[data-close-modal]");if(close)closeModal(close.closest(".modal-backdrop"))});document.addEventListener("keydown",event=>{if(event.key==="Escape"){document.querySelectorAll(".modal-backdrop:not([hidden])").forEach(closeModal);if(!siteMenu.hidden){setMenuOpen(false);menuToggle.focus()}}});
 $("copyStoreUrl").addEventListener("click",async()=>{try{await navigator.clipboard.writeText($("storeUrlText").textContent);showToast("Storefront link copied.")}catch{showToast("Copy failed. Select and copy your storefront link.",true)}});
 $("publishButton").addEventListener("click",async()=>{if(!currentBusiness?.is_published)return;try{const client=await loadAuth();const {data,error}=await client.from("businesses").update({is_published:false,updated_at:new Date().toISOString()}).eq("id",currentBusiness.id).eq("owner_id",currentUser.id).select("*").single();if(error)throw error;applyBusiness(data);showToast("Your storefront is unpublished.")}catch(error){showToast(friendlyError(error),true)}});
-$("previewStoreButton").addEventListener("click",()=>{if(!currentBusiness?.is_published){showToast("Publish your storefront before previewing it.",true);return}window.open(location.origin+"/storefront.html?slug="+encodeURIComponent(currentBusiness.slug),"_blank","noopener,noreferrer")});$("notificationsButton").addEventListener("click",()=>showToast("No new business activity yet."));
+$("previewStoreButton").addEventListener("click",()=>{if(r2CatalogueMode&&currentBusiness?.slug){window.open(location.origin+"/storefront.html?slug="+encodeURIComponent(currentBusiness.slug)+"&ownerCataloguePreview=1","_blank","noopener,noreferrer");return;}if(!currentBusiness?.is_published){showToast("Publish your storefront before previewing it.",true);return}window.open(location.origin+"/storefront.html?slug="+encodeURIComponent(currentBusiness.slug),"_blank","noopener,noreferrer")});$("notificationsButton").addEventListener("click",()=>showToast("No new business activity yet."));
 window.addEventListener("hashchange",()=>{const hash=location.hash.replace("#","");if(["start","register","login","forgot","verify-email"].includes(hash))showView(hash)});const pendingConfirmationEmail=getPendingOwnerConfirmationEmail();if(pendingConfirmationEmail){$("verificationEmail").value=pendingConfirmationEmail;$("verificationEmailSummary").textContent=pendingConfirmationEmail}const requestedAuthView=location.hash.slice(1);showView(pendingConfirmationEmail?"verify-email":(["start","register","login","forgot","verify-email"].includes(requestedAuthView)?requestedAuthView:"start"));
 if(isConfigured())loadAuth().then(async client=>{const {data,error}=await client.auth.getUser();if(error&&error.name!=="AuthSessionMissingError")return;if(data.user&&!recovering){await upsertOwnerProfile(client,data.user);await activateDashboard(data.user)}}).catch(()=>{});
 if("serviceWorker" in navigator){let hadOwnerServiceWorker=Boolean(navigator.serviceWorker.controller),ownerPaymentsUpdateReload=false;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!hadOwnerServiceWorker){hadOwnerServiceWorker=true;return}if(ownerPaymentsUpdateReload)return;const paymentsOpen=!$("paymentsDashboard")?.hidden,modalOpen=Boolean(document.querySelector(".modal-backdrop:not([hidden])"));if(paymentsOpen&&!modalOpen){ownerPaymentsUpdateReload=true;window.location.reload()}else showToast("A StoreNest update is ready. Refresh when you finish your current work.")});window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js",{updateViaCache:"none"}).then(registration=>registration.update()).catch(()=>{}))}let installPrompt=null;const installBtn=$("installBtn");window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();installPrompt=event;installBtn.classList.add("visible")});installBtn.addEventListener("click",async()=>{if(!installPrompt){alert("Open your browser menu, then choose Install app or Add to Home screen.");return}const prompt=installPrompt;installPrompt=null;installBtn.classList.remove("visible");await prompt.prompt()});window.addEventListener("appinstalled",()=>installBtn.classList.remove("visible"));if(/Android/i.test(navigator.userAgent))installBtn.classList.add("visible");
@@ -2974,6 +3150,7 @@ document.getElementById("pageRefreshButton")?.addEventListener("click",()=>{
  window.location.reload();
 });
 </script>
+<script src="/r2-media-migration-ui.js"></script>
 <script src="/owner-order-viewer.js"></script>
 <script src="/payments-dashboard.js?v=47"></script>
 <script src="/analytics-engine.js"></script>

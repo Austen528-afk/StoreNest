@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+<script src="/r2-media-display.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#10171d">
@@ -1319,6 +1320,8 @@ body[data-store-category="home-living"] #catalog .art:has(img) img{
 const CONFIG={url:"https://cypbjzbagezdelmemuhb.supabase.co",key:"sb_publishable_8W8zyYtggQMWoFlnxrzoVA_BUKjQ9va"};
 const FASHION_COLOR_GROUP_ID="fashion-color",FASHION_SIZE_GROUP_ID="fashion-size";
 const GLOBAL_BASKET_STORAGE_KEY="storenest:global-basket:v1",GLOBAL_CHECKOUT_STORAGE_KEY="storenest:global-checkout:v1",GLOBAL_BASKET_SELECTION_STORAGE_KEY="storenest:global-basket-selection:v1";
+const ownerCataloguePreview=new URLSearchParams(location.search).get("ownerCataloguePreview")==="1";
+const privatePreviewUrls=new Set();
 const cart=new Map();
 let storefrontClient=null,availableItems=[],toastTimer=null,activeGalleryItem=null,galleryIndex=0,galleryPhotoOnlyReturn=false,galleryReturnFocus=null,activePublicBusiness=null,galleryEditCartKey=null,activeGalleryDecorSetId=null,activeGalleryFashionColorId=null,activeGalleryFashionSizeId=null,activePublicSections=[],basketEditAutostarted=false;
 let checkoutPendingCode=null,checkoutVerifiedUser=null,checkoutVerifiedProfile=null,checkoutPendingPassword="",checkoutAuthMode="signup";
@@ -1341,7 +1344,7 @@ if(returnCategoryId&&window.StoreNestCategories?.some(row=>row.id===returnCatego
 }
 function esc(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function initials(name){return String(name||"SN").split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join("").toUpperCase()||"SN"}
-function safeUrl(value){try{const u=new URL(value);return ["https:","http:"].includes(u.protocol)?u.href:""}catch{return""}}
+function safeUrl(value){if(ownerCataloguePreview&&privatePreviewUrls.has(value))return value;try{const u=new URL(value);return ["https:","http:"].includes(u.protocol)?u.href:""}catch{return""}}
 function isProductVideo(value){return /\.(mp4|webm)(?:[?#]|$)/i.test(String(value||""))}
 function normalizeStorefrontMedia(value){
  const source=typeof value==="string"?{url:value}:value;
@@ -3022,13 +3025,19 @@ function openBasketItemEditorFromUrl(){
  openProductGallery(item.id,trigger,basketEditCartKey);
 }
 
-function renderPublishedStorefront(root,client,business,items,storefrontSections){
+function mapPublishedR2Media(item){
+ const map=url=>isPrivatePreviewRef(url)?location.origin+"/api/r2-catalogue-image?"+new URLSearchParams({item:item.id,ref:url}).toString():url;
+ const media=(Array.isArray(item.media_urls)?item.media_urls:[]).map(e=>typeof e==="string"?map(e):({...e,url:map(e.url),variants:(e.variants||[]).map(v=>({...v,url:map(v.url)}))}));
+ const sets=x=>(Array.isArray(x)?x:[]).map(s=>({...s,media_urls:(s.media_urls||[]).map(map)}));
+ return {...item,image_url:map(item.image_url),media_urls:media,fashion_color_sets:sets(item.fashion_color_sets),decor_color_sets:sets(item.decor_color_sets)};
+}
+function renderPublishedStorefront(root,client,business,items,storefrontSections,readOnly=false){
    activePublicBusiness=business;activePublicSections=storefrontSections||[];
-   availableItems=items.filter(item=>item?.is_available!==false);
-   restoreCurrentStoreBasket(business);
-   if(client)window.StoreNestBookings.setContext(client,business,availableItems);
+   availableItems=items.filter(item=>item?.is_available!==false).map(item=>readOnly?item:mapPublishedR2Media(item));
+   if(!readOnly)restoreCurrentStoreBasket(business);
+   if(client&&!readOnly)window.StoreNestBookings.setContext(client,business,availableItems);
    // Do not add dashboard preview frames to customer browsing history.
-   try{
+   if(!readOnly)try{
      const key="storenest:recent-businesses:v1";
      const slugText=String(business.slug||"");
      if(/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slugText)){
@@ -3178,10 +3187,81 @@ const cardForItem=item=>{
    root.querySelectorAll("[data-fashion-photo-track]").forEach(wireFashionPhotoTrack);
    activateBackgroundVideos(root);
    activateCatalogPreviews(root);
+   if(readOnly)return;
    syncCartBadge();
    if(restoreTrackedOrderFromUrl())openCart();
    else openBasketCheckoutFromUrl(business);
 
+}
+// Read-only owner preview of the actual customer layout. Never writes catalogue availability,
+// restores a basket, tracks a customer visit, or exposes a private R2 object publicly.
+function isPrivatePreviewRef(url){return typeof url==="string"&&/^r2:\/\/storenest-media\/r2-catalog-private\/[a-f0-9-]{36}\/[a-f0-9-]{36}\/[a-f0-9-]{36}\.(?:png|jpg|webp|gif)$/.test(url);}
+function installOwnerPreviewGuard(){
+ document.documentElement.dataset.ownerCataloguePreview="true";
+ const style=document.createElement("style");style.textContent='html[data-owner-catalogue-preview] #globalBasketButton, html[data-owner-catalogue-preview] #cartBackdrop{display:none!important} .owner-preview-notice{position:sticky;top:0;z-index:10000;padding:12px 18px;background:#fff4d6;color:#664700;text-align:center;font:600 14px system-ui}';document.head.append(style);
+ const notice=document.createElement("div");notice.className="owner-preview-notice";notice.textContent="Owner-only customer preview — unpublished products are visible here for review. Shopping and booking are disabled.";document.body.prepend(notice);
+ const guard=event=>{
+  if(event.type==="keydown"&&!["Enter"," ","Spacebar"].includes(event.key))return;
+  if(event.target.closest?.("[data-category-tab]"))return;
+  // Allow normal scrolling and browsing categories only.
+  event.preventDefault();event.stopImmediatePropagation();
+ };
+ for(const type of ["click","submit","keydown","auxclick"])window.addEventListener(type,guard,true);
+ window.addEventListener("pagehide",()=>{for(const url of privatePreviewUrls)URL.revokeObjectURL(url);privatePreviewUrls.clear();},{once:true});
+}
+async function hydrateOwnerPreviewMedia(item,businessId,ownerId,token){
+ const mapped=new Map();
+ async function resolve(url,hash){
+  if(!isPrivatePreviewRef(url))return url;
+  const prefix="r2://storenest-media/r2-catalog-private/"+ownerId+"/"+businessId+"/";
+  if(!url.startsWith(prefix))throw Error("Private media scope mismatch.");
+  if(mapped.has(url))return mapped.get(url);
+  const response=await fetch("/api/r2-catalog-private",{method:"POST",credentials:"same-origin",redirect:"error",cache:"no-store",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"read",businessId,sessionToken:token,key:url.slice("r2://storenest-media/".length)})});
+  const result=await response.json();
+  if(!response.ok||!["image/png","image/jpeg","image/webp","image/gif"].includes(result.mime)||typeof result.base64!=="string"||(hash&&result.sha256!==hash))throw Error("Private image retrieval failed.");
+  const bytes=Uint8Array.from(atob(result.base64),c=>c.charCodeAt(0));
+  if(!bytes.length||bytes.length>2*1048576)throw Error("Unexpected image size.");
+  const objectUrl=URL.createObjectURL(new Blob([bytes],{type:result.mime}));privatePreviewUrls.add(objectUrl);mapped.set(url,objectUrl);return objectUrl;
+ }
+ const media=[];
+ for(const input of Array.isArray(item.media_urls)?item.media_urls:[]){
+  const entry=typeof input==="string"?{url:input}:input;
+  if(!entry||typeof entry.url!=="string")continue;
+  const variants=[];
+  for(const v of Array.isArray(entry.variants)?entry.variants:[])variants.push({...v,url:await resolve(v.url,v.sha256)});
+  media.push({...entry,url:await resolve(entry.url,entry.sha256),variants});
+ }
+ const image_url=await resolve(item.image_url);
+ function remapSets(sets){return (Array.isArray(sets)?sets:[]).map(set=>({...set,media_urls:(set.media_urls||[]).map(u=>mapped.get(u)||u)}));}
+ return {...item,media_urls:media,image_url,decor_color_sets:remapSets(item.decor_color_sets),fashion_color_sets:remapSets(item.fashion_color_sets)};
+}
+async function loadOwnerCataloguePreview(root,slug){
+ installOwnerPreviewGuard();
+ try{
+  if(new URLSearchParams(location.search).has("globalCheckout")||!slug)throw Error("Invalid preview link.");
+  const client=await window.StoreNestCustomerAuth.getBusinessClient();
+  const {data:{user},error:authError}=await client.auth.getUser();
+  const {data:{session},error:sessionError}=await client.auth.getSession();
+  if(authError||sessionError||!user||!session?.access_token)throw Error("Sign in to the business owner dashboard on this Preview first.");
+  const b=await client.from("businesses").select("id,owner_id,name,slug,category,description,logo_url,location,phone,email,website,is_published,storefront_config").eq("slug",slug).eq("owner_id",user.id).maybeSingle();
+  if(b.error||!b.data||b.data.owner_id!==user.id)throw Error("Business ownership required.");
+  const business=b.data;
+  const [catalog,sections]=await Promise.all([
+   client.from("business_items").select("id,name,item_type,description,price,price_range_min,price_range_max,booking_fee,booking_fee_min,booking_fee_max,image_url,media_urls,decor_color_sets,fashion_color_sets,category_id,customization_options,is_available").eq("business_id",business.id).order("display_order").order("created_at",{ascending:false}),
+   client.from("business_categories").select("id,name,description,display_style,display_order").eq("business_id",business.id).order("display_order").order("name")
+  ]);
+  if(catalog.error||sections.error)throw Error("Catalogue could not load.");
+  const items=[];
+  for(const item of catalog.data||[]){
+   const hasPrivate=isPrivatePreviewRef(item.image_url)||(Array.isArray(item.media_urls)&&item.media_urls.some(e=>isPrivatePreviewRef(typeof e==="string"?e:e?.url)));
+   if(!hasPrivate&&item.is_available===false)continue;
+   const hydrated=hasPrivate?await hydrateOwnerPreviewMedia(item,business.id,user.id,session.access_token):item;
+   // A display-only copy is visible to the owner; the stored record is unchanged.
+   items.push({...hydrated,is_available:true});
+  }
+  renderPublishedStorefront(root,null,business,items,sections.data||[],true);
+  root.querySelectorAll("button:not([data-category-tab]),input,select,textarea").forEach(el=>{el.disabled=true;});
+ }catch(error){root.textContent=error.message||"Owner preview could not load.";}
 }
 async function load(){
  const search=new URLSearchParams(location.search);
@@ -3191,6 +3271,7 @@ async function load(){
  const slug=search.get("slug");
  const root=$("main");
  if(embedded){setupPrivateHeroPreview(root);return}
+ if(ownerCataloguePreview){await loadOwnerCataloguePreview(root,slug);return;}
  if(search.get("globalCheckout")==="1"&&!globalCheckoutRows?.length){
   root.innerHTML='<div class="notice">Your item selection expired. Return to your basket and select the items again.</div>';return;
  }
@@ -3241,7 +3322,7 @@ async function load(){
    console.error("Storefront load error",error);
  }
 }
-syncCartBadge();
+if(!ownerCataloguePreview)syncCartBadge();
 load();
 </script>
 <script src="/storefront-analytics.js"></script>

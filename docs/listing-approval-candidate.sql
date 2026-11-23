@@ -1,0 +1,4 @@
+-- SUPERSEDED — DO NOT APPLY.
+-- This historical Marketplace copy is intentionally non-executable.
+-- The sole authoritative approval migration candidate is maintained in:
+-- Austen528-afk/StoreNest-HQ, docs/listing-approval-candidate.sql
