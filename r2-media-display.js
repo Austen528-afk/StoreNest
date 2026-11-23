@@ -3,20 +3,27 @@
 
   const branchPreview = location.hostname.endsWith('.vercel.app')
     && location.hostname.includes('git-feat-r2-storage-int-');
-  if (!branchPreview) return;
+  const productionSite = location.hostname === 'storenest-eight.vercel.app';
+  if (!branchPreview && !productionSite) return;
 
   const params = new URLSearchParams(location.search);
-  const modeKey = 'storenest.r2delivery.preview';
-  if (params.get('r2delivery') === '0') {
-    try { sessionStorage.removeItem(modeKey); } catch {}
+  const modeKey = branchPreview
+    ? 'storenest.r2delivery.preview'
+    : 'storenest.r2delivery.production';
+  const requested = params.get('r2delivery');
+  if (requested === '0') {
+    try { sessionStorage.setItem(modeKey, '0'); } catch {}
     return;
   }
-  if (params.get('r2delivery') === '1') {
+  if (requested === '1') {
     try { sessionStorage.setItem(modeKey, '1'); } catch {}
-  } else {
-    try { if (sessionStorage.getItem(modeKey) !== '1') return; } catch { return; }
   }
+  let sessionMode = null;
+  try { sessionMode = sessionStorage.getItem(modeKey); } catch {}
+  const previewOptIn = branchPreview && (requested === '1' || sessionMode === '1');
+  const productionOptOut = productionSite && sessionMode === '0';
 
+  function installAdapter() {
   const sourceOrigin = 'https://cypbjzbagezdelmemuhb.supabase.co';
   const sourcePrefix = '/storage/v1/object/public/';
   const buckets = new Set(['storenest-product-media', 'storenest-brand-media']);
@@ -145,4 +152,21 @@
     attributeFilter: ['src', 'srcset', 'poster', 'href', 'style', 'data-src', 'data-srcset', 'data-lazy-src', 'data-original', 'data-poster']
   });
   scan(document.documentElement);
+  }
+
+  if (branchPreview && !previewOptIn) return;
+  if (productionSite && productionOptOut) return;
+  fetch('/api/r2-media-status', {
+    method: 'GET',
+    credentials: 'same-origin',
+    cache: 'no-store',
+    redirect: 'error'
+  }).then(response => {
+    if (!response.ok) throw new Error('R2 delivery status unavailable.');
+    return response.json();
+  }).then(status => {
+    const allowed = status?.deliveryEnabled === true
+      && (branchPreview ? previewOptIn : status.defaultDelivery === true || requested === '1' || sessionMode === '1');
+    if (allowed) installAdapter();
+  }).catch(() => {});
 })();

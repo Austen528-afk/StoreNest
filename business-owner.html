@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <script src="/r2-media-display.js"></script>
+<script src="/r2-media-upload-client.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#10171d">
@@ -1531,11 +1532,14 @@ async function uploadBrand(client,file,kind){
  if(kind==="cover")await validateVideoDuration(uploadFile);
  if(!currentUser||!currentBusiness)throw Error("Sign in first.");
  const path=currentUser.id+"/"+currentBusiness.id+"/"+kind+"/"+crypto.randomUUID()+"."+BRAND_MIME[uploadFile.type];
+ const upload=await window.StoreNestR2Upload.upload(client,{businessId:currentBusiness.id,sourceBucket:BRAND_BUCKET,key:path,file:uploadFile});
+ const url=client.storage.from(BRAND_BUCKET).getPublicUrl(path).data.publicUrl;
+ if(upload)return {path,url,storage:"r2",sha256:upload.sha256};
  const {error}=await client.storage.from(BRAND_BUCKET).upload(path,uploadFile,{contentType:uploadFile.type,upsert:false});
  if(error)throw error;
- return {path,url:client.storage.from(BRAND_BUCKET).getPublicUrl(path).data.publicUrl};
+ return {path,url,storage:"supabase"};
 }
-async function clearBrandUpload(client,asset){if(asset)try{await client.storage.from(BRAND_BUCKET).remove([asset.path])}catch{}}
+async function clearBrandUpload(client,asset){if(asset&&asset.storage!=="r2")try{await client.storage.from(BRAND_BUCKET).remove([asset.path])}catch{}}
 function resetBrandFields(config){
  removeLogo=false;removeCover=false;
  $("builderLogoFile").value="";$("builderCoverFile").value="";
@@ -3001,16 +3005,19 @@ async function uploadCatalogMedia(client,file){
  let imageData={width:0,height:0,variants:[]};
  try{imageData=await createCatalogImageVariants(file)}catch(error){console.warn("Could not prepare responsive image sizes; the original will be used.",error)}
  const uploadedPaths=[],bucket=client.storage.from(ITEM_BUCKET),basePath=path.replace(/\.[^.]+$/,"");
- try{
-  const {error}=await bucket.upload(path,file,{contentType:file.type,cacheControl:"31536000",upsert:false});
+ const uploadOne=async(objectPath,blob)=>{
+  const r2=await window.StoreNestR2Upload.upload(client,{businessId:currentBusiness.id,sourceBucket:ITEM_BUCKET,key:objectPath,file:blob});
+  if(r2)return;
+  const {error}=await bucket.upload(objectPath,blob,{contentType:blob.type,cacheControl:"31536000",upsert:false});
   if(error)throw error;
-  uploadedPaths.push(path);
+  uploadedPaths.push(objectPath);
+ };
+ try{
+  await uploadOne(path,file);
   const originalUrl=bucket.getPublicUrl(path).data.publicUrl,variants=[];
   for(const variant of imageData.variants){
    const variantPath=basePath+"-"+variant.width+".webp";
-   const {error:variantError}=await bucket.upload(variantPath,variant.blob,{contentType:"image/webp",cacheControl:"31536000",upsert:false});
-   if(variantError){console.warn("An optimized image size could not be uploaded; the original will be used.",variantError);continue}
-   uploadedPaths.push(variantPath);
+   try{await uploadOne(variantPath,variant.blob)}catch(variantError){console.warn("An optimized image size could not be uploaded; the original will be used.",variantError);continue}
    variants.push({width:variant.width,url:bucket.getPublicUrl(variantPath).data.publicUrl});
   }
   return {entry:{url:originalUrl,width:imageData.width,height:imageData.height,variants},paths:uploadedPaths};

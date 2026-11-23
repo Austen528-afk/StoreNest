@@ -10,8 +10,11 @@ module.exports = async function handler(req, res) {
   res.setHeader('Referrer-Policy', 'no-referrer');
   res.setHeader('X-Content-Type-Options', 'nosniff');
 
-  if (process.env.VERCEL_ENV !== 'preview'
-    || process.env.VERCEL_GIT_COMMIT_REF !== 'feat/r2-storage-integration') {
+  const branchPreview = process.env.VERCEL_ENV === 'preview'
+    && process.env.VERCEL_GIT_COMMIT_REF === 'feat/r2-storage-integration';
+  const enabledProduction = process.env.VERCEL_ENV === 'production'
+    && process.env.R2_MEDIA_DELIVERY_ENABLED === 'true';
+  if (!branchPreview && !enabledProduction) {
     return res.status(404).json({ error: 'Not found.' });
   }
   if (req.method !== 'GET') {

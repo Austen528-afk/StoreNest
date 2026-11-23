@@ -155,6 +155,111 @@ function presignedReadUrl(cfg, key, now = new Date()) {
   return 'https://' + host + uri + '?' + query + '&X-Amz-Signature=' + signature;
 }
 
+
+const PRESIGNED_UPLOAD_TTL_SECONDS = 300;
+
+function presignedUploadUrl(cfg, key, mime, expectedBytes, now = new Date()) {
+  const normalizedMime = String(mime || '').toLowerCase();
+  if (!validDestinationKey(key) || !Object.hasOwn(MIME_EXTENSIONS, normalizedMime)
+    || !Number.isSafeInteger(expectedBytes) || expectedBytes < 1 || expectedBytes > MAX_OBJECT_BYTES) {
+    throw new ApiError(400, 'Invalid R2 upload request.');
+  }
+
+  const host = cfg.account + '.r2.cloudflarestorage.com';
+  const uri = '/' + cfg.bucket + '/' + key.split('/').map(encodedSegment).join('/');
+  const timestamp = now.toISOString().replace(/[:-]|\.\d{3}/g, '');
+  const day = timestamp.slice(0, 8);
+  const scope = day + '/auto/s3/aws4_request';
+  const signedHeaders = 'cache-control;content-length;content-type;host;if-none-match';
+  const parameters = [
+    ['X-Amz-Algorithm', 'AWS4-HMAC-SHA256'],
+    ['X-Amz-Content-Sha256', 'UNSIGNED-PAYLOAD'],
+    ['X-Amz-Credential', cfg.access + '/' + scope],
+    ['X-Amz-Date', timestamp],
+    ['X-Amz-Expires', String(PRESIGNED_UPLOAD_TTL_SECONDS)],
+    ['X-Amz-SignedHeaders', signedHeaders]
+  ];
+  const query = parameters
+    .sort(([left], [right]) => left < right ? -1 : left > right ? 1 : 0)
+    .map(([name, value]) => encodedSegment(name) + '=' + encodedSegment(value))
+    .join('&');
+  const canonicalHeaders = [
+    'cache-control:public,max-age=3600\n',
+    'content-length:' + expectedBytes + '\n',
+    'content-type:' + normalizedMime + '\n',
+    'host:' + host + '\n',
+    'if-none-match:*\n'
+  ].join('');
+  const canonicalRequest = ['PUT', uri, query, canonicalHeaders, signedHeaders, 'UNSIGNED-PAYLOAD'].join('\n');
+  const stringToSign = ['AWS4-HMAC-SHA256', timestamp, scope, sha256(canonicalRequest)].join('\n');
+  const signingKey = hmac(hmac(hmac(hmac('AWS4' + cfg.secret, day), 'auto'), 's3'), 'aws4_request');
+  const signature = hmac(signingKey, stringToSign, 'hex');
+
+  return {
+    url: 'https://' + host + uri + '?' + query + '&X-Amz-Signature=' + signature,
+    headers: {
+      'Cache-Control': 'public,max-age=3600',
+      'Content-Type': normalizedMime,
+      'If-None-Match': '*'
+    },
+    expiresInSeconds: PRESIGNED_UPLOAD_TTL_SECONDS
+  };
+}
+
+function assertMediaSignature(bytes, mime) {
+  const valid = mime === 'image/jpeg'
+    ? bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff
+    : mime === 'image/png'
+      ? bytes.length >= 8 && bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
+      : mime === 'image/webp'
+        ? bytes.length >= 12 && bytes.toString('ascii', 0, 4) === 'RIFF' && bytes.toString('ascii', 8, 12) === 'WEBP'
+        : mime === 'image/gif'
+          ? bytes.length >= 6 && ['GIF87a', 'GIF89a'].includes(bytes.toString('ascii', 0, 6))
+          : mime === 'video/mp4'
+            ? bytes.length >= 12 && bytes.toString('ascii', 4, 8) === 'ftyp'
+            : mime === 'video/webm'
+              ? bytes.length >= 4 && bytes.subarray(0, 4).equals(Buffer.from([0x1a, 0x45, 0xdf, 0xa3]))
+              : false;
+  if (!valid) throw new ApiError(415, 'File contents do not match the declared media type.');
+}
+
+function createMediaUploadUrl({ env, owner, business, item, now = new Date() }) {
+  const source = validateItem({ owner, business, ...item });
+  const target = destinationKey(source.sourceBucket, source.key);
+  return {
+    ...presignedUploadUrl(config(env), target, source.mime, source.expectedBytes, now),
+    sourceBucket: source.sourceBucket,
+    key: source.key,
+    mime: source.mime,
+    expectedBytes: source.expectedBytes
+  };
+}
+
+async function verifyUploadedMedia({ env, owner, business, item }) {
+  const source = validateItem({ owner, business, ...item });
+  if (typeof item.expectedSha256 !== 'string' || !/^[a-f0-9]{64}$/i.test(item.expectedSha256)) {
+    throw new ApiError(400, 'Invalid media verification hash.');
+  }
+  const expectedHash = item.expectedSha256.toLowerCase();
+  const target = destinationKey(source.sourceBucket, source.key);
+  const response = await r2Request(config(env), 'GET', target, undefined, source.mime);
+  if (response.status === 404) throw new ApiError(409, 'Uploaded R2 media is missing.');
+  if (!response.ok) throw new ApiError(502, 'R2 media verification read failed. HTTP ' + response.status + '.');
+
+  const responseMime = (response.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
+  let bytes;
+  try { bytes = Buffer.from(await response.arrayBuffer()); } catch {
+    throw new ApiError(502, 'R2 media verification read failed.');
+  }
+  if (responseMime !== source.mime || bytes.length !== source.expectedBytes) {
+    throw new ApiError(409, 'Uploaded R2 media does not match its declared type or size.');
+  }
+  assertMediaSignature(bytes, source.mime);
+  const actualHash = sha256(bytes);
+  if (actualHash !== expectedHash) throw new ApiError(409, 'Uploaded R2 media failed its integrity check.');
+  return { sourceBucket: source.sourceBucket, key: source.key, verified: true, bytes: bytes.length, sha256: actualHash };
+}
+
 function createMigrationMediaUrl(env, sourceBucket, key, now = new Date()) {
   if (!SOURCE_BUCKETS.has(sourceBucket) || typeof key !== 'string' || key.length > 1500) {
     throw new ApiError(400, 'Invalid migrated media reference.');
@@ -342,6 +447,10 @@ module.exports = {
   MAX_OBJECT_BYTES,
   MAX_BATCH_ITEMS,
   MAX_BATCH_BYTES,
+  validateItem,
+  destinationKey,
+  createMediaUploadUrl,
+  verifyUploadedMedia,
   copySupabaseMediaBatch,
   createMigrationMediaUrl
 };
