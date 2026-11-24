@@ -30,6 +30,8 @@
   const extensions = new Set(['jpg', 'jpeg', 'png', 'webp', 'gif', 'mp4', 'webm']);
   const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   const resourceAttributes = ['src', 'srcset', 'poster', 'href', 'data-src', 'data-srcset', 'data-lazy-src', 'data-original', 'data-poster'];
+  const imageSourceFallbacks = new WeakMap();
+  const imageFallbackAttempted = new WeakSet();
 
   function routeFor(value) {
     if (typeof value !== 'string' || !value || value.length > 8192) return null;
@@ -75,12 +77,27 @@
     });
   }
 
+  function rememberImageFallback(element, attribute, original, routed) {
+    if (element.tagName !== 'IMG' || original === routed) return;
+    const fallback = imageSourceFallbacks.get(element) || {};
+    if (attribute === 'srcset' || attribute === 'data-srcset') fallback.srcset = original;
+    else if (['src', 'data-src', 'data-lazy-src', 'data-original'].includes(attribute)) fallback.src = original;
+    imageSourceFallbacks.set(element, fallback);
+  }
+
   function routeAttribute(element, name, value) {
     const attribute = String(name).toLowerCase();
-    if (attribute === 'srcset' || attribute === 'data-srcset') return routeSrcset(value);
+    if (element.tagName === 'IMG' && imageFallbackAttempted.has(element)) return value;
+    if (attribute === 'srcset' || attribute === 'data-srcset') {
+      const updated = routeSrcset(value);
+      rememberImageFallback(element, attribute, value, updated);
+      return updated;
+    }
     if (attribute === 'style') return routeCss(value);
     if (attribute === 'href' && !/^(A|AREA)$/i.test(element.tagName || '')) return value;
-    return routeFor(String(value)) || value;
+    const updated = routeFor(String(value)) || value;
+    rememberImageFallback(element, attribute, value, updated);
+    return updated;
   }
 
   const nativeSetAttribute = Element.prototype.setAttribute;
@@ -89,7 +106,7 @@
     return nativeSetAttribute.call(this, name, updated);
   };
 
-  function patchProperty(constructorName, property, kind) {
+  function patchProperty(constructorName, property) {
     const constructor = window[constructorName];
     const descriptor = constructor && Object.getOwnPropertyDescriptor(constructor.prototype, property);
     if (!descriptor || !descriptor.configurable || typeof descriptor.set !== 'function') return;
@@ -98,25 +115,37 @@
       enumerable: descriptor.enumerable,
       get: descriptor.get,
       set(value) {
-        const updated = kind === 'srcset'
-          ? routeSrcset(String(value))
-          : routeFor(String(value)) || value;
+        const updated = routeAttribute(this, property, String(value));
         descriptor.set.call(this, updated);
       }
     });
   }
 
-  patchProperty('HTMLImageElement', 'src', 'url');
-  patchProperty('HTMLImageElement', 'srcset', 'srcset');
-  patchProperty('HTMLSourceElement', 'src', 'url');
-  patchProperty('HTMLSourceElement', 'srcset', 'srcset');
-  patchProperty('HTMLVideoElement', 'src', 'url');
-  patchProperty('HTMLVideoElement', 'poster', 'url');
-  patchProperty('HTMLAudioElement', 'src', 'url');
-  patchProperty('HTMLAnchorElement', 'href', 'url');
+  patchProperty('HTMLImageElement', 'src');
+  patchProperty('HTMLImageElement', 'srcset');
+  patchProperty('HTMLSourceElement', 'src');
+  patchProperty('HTMLSourceElement', 'srcset');
+  patchProperty('HTMLVideoElement', 'src');
+  patchProperty('HTMLVideoElement', 'poster');
+  patchProperty('HTMLAudioElement', 'src');
+  patchProperty('HTMLAnchorElement', 'href');
+
+  document.addEventListener('error', event => {
+    const image = event.target;
+    if (!image || image.tagName !== 'IMG' || imageFallbackAttempted.has(image)) return;
+    const fallback = imageSourceFallbacks.get(image);
+    if (!fallback || (!fallback.src && !fallback.srcset)) return;
+
+    imageFallbackAttempted.add(image);
+    if (fallback.srcset) nativeSetAttribute.call(image, 'srcset', fallback.srcset);
+    else image.removeAttribute('srcset');
+    if (fallback.src) nativeSetAttribute.call(image, 'src', fallback.src);
+    else image.removeAttribute('src');
+  }, true);
 
   function rewriteElement(element) {
-    if (!element || element.nodeType !== 1) return;
+    if (!element || element.nodeType !== 1
+      || (element.tagName === 'IMG' && imageFallbackAttempted.has(element))) return;
     for (const name of resourceAttributes) {
       if (element.hasAttribute(name)) {
         const current = element.getAttribute(name);
