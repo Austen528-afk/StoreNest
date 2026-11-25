@@ -15,6 +15,7 @@ const baseEnv={
   STORENEST_APPROVAL_PREVIEW_WRITES_ENABLED:'true',
   STORENEST_APPROVAL_PREVIEW_R2_BUCKET:'storenest-approval-ci',
   STORENEST_SUPABASE_URL:'https://synthetic-staging.supabase.co',
+  STORENEST_APPROVAL_PREVIEW_SUPABASE_HOST:'synthetic-staging.supabase.co',
   STORENEST_SUPABASE_PUBLISHABLE_KEY:'synthetic-publishable-key',
   STORENEST_SUPABASE_SERVICE_ROLE_KEY:'synthetic-service-role-key',
   R2_ACCOUNT_ID:'a'.repeat(32),
@@ -98,6 +99,11 @@ test('evidence endpoint rejects production writes and rejects requests from anot
   assert.equal(crossSite.statusCode,403);
   const preview=await withEnv(baseEnv,{method:'GET',url:'/api/listing-approval-evidence?file='+id,headers:{origin:'https://storenest.example',host:'storenest.example'}});
   assert.equal(preview.statusCode,401,'isolated preview is reachable but a missing session is rejected');
+  let productionRequests=0;
+  const unsafePreview={...baseEnv,STORENEST_SUPABASE_URL:'https://cypbjzbagezdelmemuhb.supabase.co',STORENEST_APPROVAL_PREVIEW_SUPABASE_HOST:'cypbjzbagezdelmemuhb.supabase.co'};
+  const blockedPreview=await withEnv(unsafePreview,{method:'POST',fetcher:async()=>{productionRequests++;return rpc({});},headers:{origin:'https://storenest.example',host:'storenest.example','content-type':'application/json'}});
+  assert.equal(blockedPreview.statusCode,404,'preview cannot write if configured against the production database');
+  assert.equal(productionRequests,0);
 });
 
 test('owner upload authorization rejects a different business owner before any R2 request',async()=>{

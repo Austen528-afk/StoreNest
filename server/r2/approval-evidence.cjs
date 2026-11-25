@@ -10,10 +10,12 @@ function evidenceR2Env(env){
   if(!env||typeof env.STORENEST_SUPABASE_URL!=='string')return null;
   let supabaseHost;
   try{supabaseHost=new URL(env.STORENEST_SUPABASE_URL).hostname.toLowerCase();}catch{return null;}
+  const previewHost=String(env.STORENEST_APPROVAL_PREVIEW_SUPABASE_HOST||'').toLowerCase();
   let bucket;
   if(env.VERCEL_ENV==='preview'
     &&env.VERCEL_GIT_COMMIT_REF==='feat/listing-approval-operations'
     &&env.STORENEST_APPROVAL_PREVIEW_WRITES_ENABLED==='true'
+    &&previewHost!==''&&supabaseHost===previewHost
     &&supabaseHost!=='cypbjzbagezdelmemuhb.supabase.co'
     &&typeof env.STORENEST_APPROVAL_PREVIEW_R2_BUCKET==='string'
     &&env.STORENEST_APPROVAL_PREVIEW_R2_BUCKET
