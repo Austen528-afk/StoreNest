@@ -16,19 +16,25 @@ const sha=x=>createHash('sha256').update(x).digest('hex');
 const hmac=(k,x,encoding)=>createHmac('sha256',k).update(x).digest(encoding);
 function config(env){
   const {R2_ACCOUNT_ID:account,R2_BUCKET_NAME:bucket,R2_ACCESS_KEY_ID:access,R2_SECRET_ACCESS_KEY:secret}=env;
-  if(!/^[a-f0-9]{32}$/i.test(account||'')||bucket!=='storenest-media'||!access||!secret)throw new ApiError(503,'Storage is not configured.');
+  const isolatedPreview=env.VERCEL_ENV==='preview'&&env.VERCEL_GIT_COMMIT_REF==='feat/listing-approval-operations'&&env.STORENEST_APPROVAL_PREVIEW_WRITES_ENABLED==='true'&&typeof env.STORENEST_APPROVAL_PREVIEW_R2_BUCKET==='string'&&env.STORENEST_APPROVAL_PREVIEW_R2_BUCKET===bucket&&bucket!=='storenest-media';
+  if(!/^[a-f0-9]{32}$/i.test(account||'')||(bucket!=='storenest-media'&&!isolatedPreview)||!access||!secret)throw new ApiError(503,'Storage is not configured.');
   if(/[^\x21-\x7e]/.test(access)||/[^\x21-\x7e]/.test(secret))throw new ApiError(503,'R2 credentials contain whitespace or invalid characters.');
   return {account,bucket,access,secret};
 }
 // S3 Signature Version 4, path-style endpoint, R2 auto region.
-// Only accepts scoped diagnostic or isolated draft keys and bounded images.
+// Accepts scoped diagnostic, catalogue, migrated review, and private evidence keys.
 function sign({account,bucket,access,secret},method,key,now=new Date(),payload=PNG,type='image/png'){
-  if(!['PUT','GET','DELETE'].includes(method)||!new RegExp('^(?:'+PREFIX+'|r2-catalog-draft|r2-catalog-private)/[0-9a-f-]{36}/[0-9a-f-]{36}/[0-9a-f-]{36}\\.(?:png|jpg|webp|gif)$').test(key))throw new ApiError(400,'Invalid storage operation.');
+  const standardKey=new RegExp('^(?:'+PREFIX+'|r2-catalog-draft|r2-catalog-private)/[0-9a-f-]{36}/[0-9a-f-]{36}/[0-9a-f-]{36}\\.(?:png|jpe?g|webp|gif)$','i').test(key||'');
+  const evidenceKey=/^r2-approval-evidence\/[0-9a-f-]{36}\/[0-9a-f-]{36}\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.(?:pdf|jpg|png|webp)$/i.test(key||'');
+  if(!['PUT','GET','DELETE'].includes(method)||(!standardKey&&!evidenceKey&&!(method==='GET'&&isMigratedImageKey(key))))throw new ApiError(400,'Invalid storage operation.');
   const host=account+'.r2.cloudflarestorage.com';
   const path='/'+bucket+'/'+key;
   const date=now.toISOString().replace(/[:-]|\.\d{3}/g,'');
   const day=date.slice(0,8),scope=day+'/auto/s3/aws4_request';
-  if(method==='PUT'&&(!Buffer.isBuffer(payload)||!payload.length||payload.length>MAX_IMAGE||!Object.hasOwn(EXT,type)||!key.endsWith('.'+EXT[type])))throw new ApiError(400,'Invalid test payload.');
+  const evidencePdf=evidenceKey&&type==='application/pdf'&&key.endsWith('.pdf');
+  if(method==='PUT'&&(!Buffer.isBuffer(payload)||!payload.length||payload.length>MAX_IMAGE
+    ||(!Object.hasOwn(EXT,type)&&!evidencePdf)
+    ||!(evidencePdf?key.endsWith('.pdf'):key.endsWith('.'+EXT[type]))))throw new ApiError(400,'Invalid test payload.');
   const body=method==='PUT'?payload:Buffer.alloc(0);
   const headers={host,'x-amz-content-sha256':sha(body),'x-amz-date':date};
   if(method==='PUT'){headers['content-type']=type;headers['if-none-match']='*';headers['cache-control']='no-store';}
@@ -95,3 +101,4 @@ async function roundTrip({env,owner,business,fetcher=nativeRequest,id=randomUUID
 module.exports={UUID,ApiError,testKey,sign,roundTrip,config,r2Request};
 
 module.exports.MAX_IMAGE=MAX_IMAGE;
+

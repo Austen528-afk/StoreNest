@@ -1,7 +1,7 @@
 'use strict';
 const {UUID,ApiError}=require('./storage.cjs');
-const BASE='https://cypbjzbagezdelmemuhb.supabase.co';
-const PUBLIC_KEY="sb_publishable_8W8zyYtggQMWoFlnxrzoVA_BUKjQ9va";
+const BASE=process.env.STORENEST_SUPABASE_URL||'https://cypbjzbagezdelmemuhb.supabase.co';
+const PUBLIC_KEY=process.env.STORENEST_SUPABASE_PUBLISHABLE_KEY||'sb_publishable_8W8zyYtggQMWoFlnxrzoVA_BUKjQ9va';
 // Diagnostic only: accept the token in an HTTPS POST body because the preview
 // proxy did not reliably forward authorization headers. Never log the body.
 function sessionAuthorization(token){
@@ -29,3 +29,4 @@ async function verifyOwner(authorization,business,fetcher=fetch){
   return user.id;
 }
 module.exports={verifyOwner,sessionAuthorization,BASE,PUBLIC_KEY};
+

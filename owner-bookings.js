@@ -149,3 +149,16 @@ $("ownerBookingsList").addEventListener("click",async e=>{
 });
 window.StoreNestOwnerBookings={refresh};
 })();
+
+(function loadListingApprovalStatusPanel(){
+ const mount=()=>{
+  if(!document.getElementById("storenest-owner-listing-approvals-style")){
+   const link=document.createElement("link");link.id="storenest-owner-listing-approvals-style";link.rel="stylesheet";link.href="/listing-approval-owner.css";document.head.append(link);
+  }
+  if(!document.getElementById("storenest-owner-listing-approvals-script")){
+   const script=document.createElement("script");script.id="storenest-owner-listing-approvals-script";script.src="/listing-approval-owner.js";script.async=false;document.head.append(script);
+  }
+ };
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();
+})();
+
