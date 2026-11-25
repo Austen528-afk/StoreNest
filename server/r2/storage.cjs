@@ -17,7 +17,15 @@ const hmac=(k,x,encoding)=>createHmac('sha256',k).update(x).digest(encoding);
 function config(env){
   const {R2_ACCOUNT_ID:account,R2_BUCKET_NAME:bucket,R2_ACCESS_KEY_ID:access,R2_SECRET_ACCESS_KEY:secret}=env;
   const isolatedPreview=env.VERCEL_ENV==='preview'&&env.VERCEL_GIT_COMMIT_REF==='feat/listing-approval-operations'&&env.STORENEST_APPROVAL_PREVIEW_WRITES_ENABLED==='true'&&typeof env.STORENEST_APPROVAL_PREVIEW_R2_BUCKET==='string'&&env.STORENEST_APPROVAL_PREVIEW_R2_BUCKET===bucket&&bucket!=='storenest-media';
-  if(!/^[a-f0-9]{32}$/i.test(account||'')||(bucket!=='storenest-media'&&!isolatedPreview)||!access||!secret)throw new ApiError(503,'Storage is not configured.');
+  let supabaseHost='';
+  try{supabaseHost=new URL(env.STORENEST_SUPABASE_URL||'').hostname.toLowerCase();}catch{}
+  const privateProductionEvidence=env.VERCEL_ENV==='production'&&env.VERCEL_GIT_COMMIT_REF==='main'
+    &&env.STORENEST_APPROVAL_EVIDENCE_PRODUCTION_UPLOADS_ENABLED==='true'
+    &&env.STORENEST_HQ_APPROVAL_WRITES_ENABLED==='true'
+    &&supabaseHost==='cypbjzbagezdelmemuhb.supabase.co'
+    &&typeof env.STORENEST_APPROVAL_EVIDENCE_R2_BUCKET==='string'
+    &&env.STORENEST_APPROVAL_EVIDENCE_R2_BUCKET===bucket&&bucket!=='storenest-media';
+  if(!/^[a-f0-9]{32}$/i.test(account||'')||(bucket!=='storenest-media'&&!isolatedPreview&&!privateProductionEvidence)||!access||!secret)throw new ApiError(503,'Storage is not configured.');
   if(/[^\x21-\x7e]/.test(access)||/[^\x21-\x7e]/.test(secret))throw new ApiError(503,'R2 credentials contain whitespace or invalid characters.');
   return {account,bucket,access,secret};
 }

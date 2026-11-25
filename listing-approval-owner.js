@@ -68,6 +68,10 @@ function panelFor(item,evaluation){
         const line=document.createElement("p");line.className="owner-approval-file";
         line.textContent=(file.file_name||"Submitted file")+" · "+(file.review_status||"awaiting review");box.append(line);
         if(file.review_note){const review=document.createElement("p");review.className="owner-approval-feedback";review.textContent=file.review_note;box.append(review);}
+        const download=document.createElement("button");download.type="button";download.className="owner-approval-upload-button";
+        download.textContent="Download my evidence";
+        download.addEventListener("click",()=>void downloadOwnerEvidence(file.id,download));
+        box.append(download);
       }
       if(["requested","submitted"].includes(request.status)&&["pending","changes_requested"].includes(status))box.append(uploadForm(request.id));
       section.append(box);
@@ -76,6 +80,25 @@ function panelFor(item,evaluation){
     panel.append(section);
   }
   return panel;
+}
+async function downloadOwnerEvidence(fileId,button){
+  if(typeof fileId!=="string")return;
+  button.disabled=true;
+  try{
+    const client=await loadAuth();const {data,error}=await client.auth.getSession();if(error)throw error;
+    const token=data?.session?.access_token;if(!token)throw Error("Sign in again to open your evidence.");
+    const response=await fetch("/api/listing-approval-evidence?file="+encodeURIComponent(fileId),{
+      method:"GET",credentials:"same-origin",headers:{Authorization:"Bearer "+token},cache:"no-store",redirect:"error"
+    });
+    if(!response.ok)throw Error("Your evidence file is unavailable.");
+    const blob=await response.blob();if(!blob.size)throw Error("Your evidence file is unavailable.");
+    const url=URL.createObjectURL(blob);
+    const link=document.createElement("a");link.href=url;link.download="StoreNest-evidence";link.click();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }catch(error){
+    const feedback=document.createElement("p");feedback.className="owner-approval-feedback";
+    feedback.textContent=error?.message||"Your evidence file is unavailable.";button.after(feedback);
+  }finally{button.disabled=false;}
 }
 function uploadForm(requestId){
   const form=document.createElement("form");form.className="owner-approval-upload";

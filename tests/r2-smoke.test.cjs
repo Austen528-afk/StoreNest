@@ -186,9 +186,9 @@ test('public R2 image delivery fails closed before storage read when approval RP
  const image=await readCatalogueImage({env,item:c,ref,dbFetch:async(url,opts)=>{assert.equal(opts.headers.authorization,undefined);assert.equal(JSON.parse(opts.body).p_review,false);return Response.json(ref)},r2Fetch:async()=>new Response(png,{headers:{'content-type':'image/png'}})});
  assert.equal(image.bytes.equals(png),true);
 });
-test('approval candidate restricts admin decisions and preserves legacy availability',()=>{
- const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+test('superseded Marketplace approval SQL is clearly marked read-only',()=>{
+ const fs=require('node:fs'),path=require('node:path');
  const sql=fs.readFileSync(path.join(__dirname,'../docs/listing-approval-candidate.sql'),'utf8');
- assert.match(sql,/else 'legacy' end/);assert.match(sql,/Both checks must pass/);assert.match(sql,/approval_status='approved' and i.is_available and b.is_published/);
- assert.ok(sql.includes('hq_review_listing'));
+ assert.match(sql,/SUPERSEDED — DO NOT APPLY/);
+ assert.match(sql,/sole authoritative approval migration candidate is maintained in/i);
 });
