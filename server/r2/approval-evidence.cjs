@@ -33,8 +33,11 @@ function evidenceR2Env(env){
     &&env.STORENEST_APPROVAL_EVIDENCE_R2_BUCKET!=='storenest-media'){
     bucket=env.STORENEST_APPROVAL_EVIDENCE_R2_BUCKET;
   }
-  if(!bucket||!env.R2_ACCOUNT_ID||!env.R2_ACCESS_KEY_ID||!env.R2_SECRET_ACCESS_KEY)return null;
-  return {...env,R2_BUCKET_NAME:bucket};
+  const account=env.STORENEST_APPROVAL_EVIDENCE_R2_ACCOUNT_ID;
+  const access=env.STORENEST_APPROVAL_EVIDENCE_R2_ACCESS_KEY_ID;
+  const secret=env.STORENEST_APPROVAL_EVIDENCE_R2_SECRET_ACCESS_KEY;
+  if(!bucket||!account||!access||!secret)return null;
+  return {...env,R2_BUCKET_NAME:bucket,R2_ACCOUNT_ID:account,R2_ACCESS_KEY_ID:access,R2_SECRET_ACCESS_KEY:secret};
 }
 
 function scopedKey(owner,business,item,id,extension){

@@ -20,8 +20,11 @@ const baseEnv={
   STORENEST_SUPABASE_SERVICE_ROLE_KEY:'synthetic-service-role-key',
   R2_ACCOUNT_ID:'a'.repeat(32),
   R2_BUCKET_NAME:'storenest-approval-ci',
-  R2_ACCESS_KEY_ID:'synthetic-access',
-  R2_SECRET_ACCESS_KEY:'synthetic-secret'
+  R2_ACCESS_KEY_ID:'synthetic-public-media-access',
+  R2_SECRET_ACCESS_KEY:'synthetic-public-media-secret',
+  STORENEST_APPROVAL_EVIDENCE_R2_ACCOUNT_ID:'b'.repeat(32),
+  STORENEST_APPROVAL_EVIDENCE_R2_ACCESS_KEY_ID:'synthetic-evidence-write-access',
+  STORENEST_APPROVAL_EVIDENCE_R2_SECRET_ACCESS_KEY:'synthetic-evidence-write-secret'
 };
 const rpc=(value,status=200)=>new Response(JSON.stringify(value),{status,headers:{'content-type':'application/json'}});
 function makeResponse(){
@@ -76,6 +79,12 @@ test('evidence upload uses an isolated R2 bucket and verifies stored bytes and c
 test('production evidence storage requires explicit flags and a separate private R2 bucket',()=>{
   const {evidenceR2Env}=require('../server/r2/approval-evidence.cjs');
   const {config}=require('../server/r2/storage.cjs');
+  const previewScoped=evidenceR2Env(baseEnv);
+  assert.equal(config(previewScoped).account,'b'.repeat(32));
+  assert.equal(config(previewScoped).access,'synthetic-evidence-write-access');
+  assert.equal(config(previewScoped).secret,'synthetic-evidence-write-secret');
+  assert.equal(baseEnv.R2_ACCESS_KEY_ID,'synthetic-public-media-access','public-media credentials remain separate');
+  assert.equal(evidenceR2Env({...baseEnv,STORENEST_APPROVAL_EVIDENCE_R2_ACCESS_KEY_ID:''}),null,'evidence access fails closed without its dedicated token');
   const production={
     ...baseEnv,VERCEL_ENV:'production',VERCEL_GIT_COMMIT_REF:'main',
     STORENEST_SUPABASE_URL:'https://cypbjzbagezdelmemuhb.supabase.co',
@@ -85,7 +94,10 @@ test('production evidence storage requires explicit flags and a separate private
   assert.equal(evidenceR2Env(production),null,'production configuration is disabled by default');
   const enabled={...production,STORENEST_APPROVAL_EVIDENCE_PRODUCTION_UPLOADS_ENABLED:'true',STORENEST_HQ_APPROVAL_WRITES_ENABLED:'true'};
   assert.equal(evidenceR2Env(enabled).R2_BUCKET_NAME,'storenest-approval-private');
-  assert.equal(config(evidenceR2Env(enabled)).bucket,'storenest-approval-private');
+  const productionScoped=evidenceR2Env(enabled);
+  assert.equal(config(productionScoped).bucket,'storenest-approval-private');
+  assert.equal(config(productionScoped).access,'synthetic-evidence-write-access');
+  assert.equal(evidenceR2Env({...enabled,STORENEST_APPROVAL_EVIDENCE_R2_SECRET_ACCESS_KEY:''}),null,'production uploads fail closed without dedicated credentials');
   assert.equal(evidenceR2Env({...enabled,STORENEST_APPROVAL_EVIDENCE_R2_BUCKET:'storenest-media'}),null);
   assert.equal(evidenceR2Env({...enabled,STORENEST_HQ_APPROVAL_WRITES_ENABLED:'false'}),null);
   assert.equal(evidenceR2Env({...enabled,STORENEST_SUPABASE_URL:'https://synthetic-staging.supabase.co'}),null);

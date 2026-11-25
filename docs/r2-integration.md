@@ -61,3 +61,22 @@ The feature branch now prepares the marketplace for a controlled production roll
 - Direct browser uploads require the private bucket's CORS policy to allow PUT from only the exact StoreNest Preview and Production origins, with `Content-Type`, `Cache-Control`, and `If-None-Match`; the signed request also binds the expected `Content-Length`. The bucket must remain private; do not enable public bucket access.
 
 The feature Preview still requires `?r2delivery=1` for reads. Preview uploads stay on Supabase unless both upload flags are explicitly enabled; do not enable them against the shared production Supabase database. After the code is merged and deployed to Production, first set only `R2_MEDIA_DELIVERY_ENABLED=true` and leave default delivery and uploads off. Test representative migrated images and video with `?r2delivery=1`, then remove the query flag and confirm normal Supabase rendering. Only after that canary succeeds should default delivery and R2 uploads be enabled together. Retain Supabase originals as rollback copies until the production cutover and follow-up retention decision are complete. New R2 objects are not automatically deleted on failed saves or listing removal; reconcile those separately to protect order history.
+
+
+## Phase 9: isolated private approval-evidence credentials
+
+The approval evidence routes now require dedicated R2 credentials instead of reusing the shared Marketplace media credential pair. The generic `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, and `R2_BUCKET_NAME` remain reserved for existing catalogue/media behavior and are not changed by the evidence helper.
+
+For each Vercel target, the evidence helper reads these exact variables:
+
+- `STORENEST_APPROVAL_EVIDENCE_R2_ACCOUNT_ID`
+- `STORENEST_APPROVAL_EVIDENCE_R2_ACCESS_KEY_ID`
+- `STORENEST_APPROVAL_EVIDENCE_R2_SECRET_ACCESS_KEY`
+
+The same names are used in HQ and Marketplace, but their values must differ by project and target. Marketplace should receive an R2 Object Read & Write token scoped to only the private evidence bucket, because it uploads, verifies, and may remove an unrecorded object. HQ should receive a separate Object Read only token scoped to that same bucket. Never share the Marketplace write token with HQ or with a Preview that points at another bucket. The account ID is not a secret; access keys are.
+
+Production evidence continues to require the existing explicit source-code gates: `STORENEST_APPROVAL_EVIDENCE_PRODUCTION_UPLOADS_ENABLED=true`, `STORENEST_HQ_APPROVAL_WRITES_ENABLED=true`, production branch/database checks, and `STORENEST_APPROVAL_EVIDENCE_R2_BUCKET`. Preview remains separately guarded by `STORENEST_APPROVAL_PREVIEW_WRITES_ENABLED`, `STORENEST_APPROVAL_PREVIEW_SUPABASE_HOST`, and `STORENEST_APPROVAL_PREVIEW_R2_BUCKET`. Missing evidence-specific credentials now fail closed; there is no fallback to the shared media credentials.
+
+No evidence bucket or evidence credentials were created or configured by this change. The proposed production bucket is `storenest-approval-evidence`, with public access, `r2.dev`, and public custom domains disabled. Do not use the public Marketplace media bucket for private documents. Creating a bucket, adding values to Vercel, or enabling the production flags remains a separate authorized step.
+
+The endpoint continues to require an authenticated business-owner session, verify business ownership and listing/request context through the existing Supabase authorization paths, validate file type and the 2 MiB limit, verify uploaded bytes and SHA-256, detect duplicate submissions, and reconcile a failed database recording before cleanup. Private reads still require the owner session; HQ reads use the administrator-protected HQ endpoint. These are mocked CI checks, not a live R2 or production Supabase integration test.
