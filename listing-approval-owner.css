@@ -1,0 +1,11 @@
+.owner-approval-panel{display:grid;gap:9px;min-width:0;margin-top:13px;padding:12px;border:1px solid #dfe8e3;border-radius:12px;background:#f7faf8;color:#23342e}
+.owner-approval-heading{display:flex;align-items:center;justify-content:space-between;gap:9px;min-width:0}
+.owner-approval-heading strong{font-size:12px}
+.owner-approval-status{display:inline-flex;align-items:center;max-width:100%;padding:4px 8px;border:1px solid #dfe8e3;border-radius:99px;background:#fff;color:#64756e;font-size:10px;font-weight:700;line-height:1.35;overflow-wrap:anywhere}
+.owner-approval-status.status-pending{border-color:#edd9b7;background:#fff7e9;color:#8b642b}
+.owner-approval-status.status-changes_requested{border-color:#dfd7f4;background:#f4f0ff;color:#6551a3}
+.owner-approval-status.status-approved{border-color:#cce7da;background:#e9f8ef;color:#18775f}
+.owner-approval-status.status-rejected{border-color:#efd1cb;background:#fff0ee;color:#a04c42}
+.owner-approval-hint,.owner-approval-feedback{margin:0;color:#5c6d66;font-size:11px;line-height:1.5;overflow-wrap:anywhere}
+.owner-approval-feedback{padding:8px 10px;border-left:3px solid #1a9b83;background:#fff;color:#34453e}
+@media(max-width:620px){.owner-approval-heading{align-items:flex-start;flex-direction:column}}

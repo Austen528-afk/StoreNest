@@ -16,7 +16,18 @@ const sha=x=>createHash('sha256').update(x).digest('hex');
 const hmac=(k,x,encoding)=>createHmac('sha256',k).update(x).digest(encoding);
 function config(env){
   const {R2_ACCOUNT_ID:account,R2_BUCKET_NAME:bucket,R2_ACCESS_KEY_ID:access,R2_SECRET_ACCESS_KEY:secret}=env;
-  if(!/^[a-f0-9]{32}$/i.test(account||'')||bucket!=='storenest-media'||!access||!secret)throw new ApiError(503,'Storage is not configured.');
+  const isolatedPreview=env.VERCEL_ENV==='preview'
+    &&env.VERCEL_GIT_COMMIT_REF==='feat/listing-approval-operations'
+    &&env.STORENEST_APPROVAL_PREVIEW_WRITES_ENABLED==='true'
+    &&typeof env.STORENEST_APPROVAL_PREVIEW_R2_BUCKET==='string'
+    &&env.STORENEST_APPROVAL_PREVIEW_R2_BUCKET===bucket
+    &&bucket!=='storenest-media';
+  let supabaseHost='';
+  try{supabaseHost=new URL(env.STORENEST_SUPABASE_URL||'').hostname.toLowerCase();}catch{}
+  const previewHost=String(env.STORENEST_APPROVAL_PREVIEW_SUPABASE_HOST||'').toLowerCase();
+  const allowedBucket=bucket==='storenest-media'
+    ||(isolatedPreview&&previewHost&&supabaseHost===previewHost&&supabaseHost!=='cypbjzbagezdelmemuhb.supabase.co');
+  if(!/^[a-f0-9]{32}$/i.test(account||'')||!allowedBucket||!access||!secret)throw new ApiError(503,'Storage is not configured.');
   if(/[^\x21-\x7e]/.test(access)||/[^\x21-\x7e]/.test(secret))throw new ApiError(503,'R2 credentials contain whitespace or invalid characters.');
   return {account,bucket,access,secret};
 }
