@@ -28,16 +28,16 @@ test('preview R2 bucket remains isolated from the production StoreNest database'
  assert.throws(()=>config({...isolated,VERCEL_ENV:'production',VERCEL_GIT_COMMIT_REF:'main'}),/Storage is not configured/);
 });
 
-test('new live products and services require a valid storefront category before save',()=>{
+test('listing category is optional while any selected category must belong to the storefront',()=>{
  const source=fs.readFileSync('business-owner.html','utf8'),vm=require('node:vm');
- assert.match(source,/categorySelect\.required=!item&&!r2DraftMode&&!r2CatalogueMode/);
- assert.match(source,/categoryPlaceholder\.textContent=categorySelect\.required\?"Choose a category":"No section"/);
+ assert.match(source,/categorySelect\.required=false/);
+ assert.match(source,/categoryPlaceholder\.textContent="No category"/);
  const start=source.indexOf('function validateListingCategory('),end=source.indexOf('\nfunction renderCategories',start);
  assert.ok(start>=0&&end>start);
  const context={};vm.createContext(context);vm.runInContext(source.slice(start,end),context);
  const categories=[{id:'section-a'}];
  assert.doesNotThrow(()=>context.validateListingCategory({itemId:'',selectedCategoryId:'section-a',businessCategories:categories}));
- assert.throws(()=>context.validateListingCategory({itemId:'',selectedCategoryId:'',businessCategories:categories}),/Choose or add a category/);
+ assert.doesNotThrow(()=>context.validateListingCategory({itemId:'',selectedCategoryId:'',businessCategories:categories}));
  assert.throws(()=>context.validateListingCategory({itemId:'',selectedCategoryId:'foreign',businessCategories:categories}),/belonging to this storefront/);
  assert.doesNotThrow(()=>context.validateListingCategory({itemId:'',selectedCategoryId:'',businessCategories:[],privateSave:true}));
  assert.doesNotThrow(()=>context.validateListingCategory({itemId:'',selectedCategoryId:'',businessCategories:[],r2DraftMode:true}));
