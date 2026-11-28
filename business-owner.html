@@ -241,7 +241,8 @@ html,body{background:#f8faf9;color:#192622}
 .item-card-actions .small-action:hover{background:#dff3e9;color:#0a745e}
 .item-card-actions .small-action:focus-visible{outline:2px solid #168b70;outline-offset:2px}
 /* Pin listing actions to the bottom-left of each catalogue image. */
-.item-card .item-art{isolation:isolate;position:relative}
+.item-card .item-art{isolation:isolate;position:relative;height:auto;aspect-ratio:3/2;overflow:hidden}
+.item-card .item-art img,.item-card .item-art video{display:block;width:100%;height:100%;object-fit:cover}
 .item-card .item-art .item-status{z-index:2}
 .item-card .item-art .item-art-action-dock{position:absolute;inset:auto 0 0;z-index:3;min-height:58px;display:flex;align-items:flex-end;justify-content:flex-start;gap:6px;flex-wrap:nowrap;padding:8px;pointer-events:none;background:linear-gradient(transparent,rgba(0,0,0,.38))}
 .item-card .item-art-action-dock .small-action{position:relative;z-index:1;pointer-events:auto;min-width:50px;min-height:30px;padding:7px 10px;box-shadow:0 1px 5px #0002}
